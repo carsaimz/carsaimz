@@ -278,7 +278,7 @@ Expandindo o ecossistema Carsai e aprendendo novas tecnologias para melhorar ain
 
 ### 🎯 Principais Repositórios
 
-[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsaidev-app&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/carsaidev-app)
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsaivpn&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/carsaivpn)
 [![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsailms&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/carsailms)
 [![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=mpesa-api&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/mpesa-api)
 [![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsaibot&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/carsaibot)
