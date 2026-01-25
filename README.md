@@ -1,6 +1,6 @@
 <div align="center">
 
-# 👋 Olá, eu sou Carsai!
+# 👋 Olá, eu sou Carimo Saide (Carsai)!
 
 [![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=28&pause=1000&color=00D9FF&center=true&vCenter=true&random=false&width=700&lines=Desenvolvedor+Web+%F0%9F%92%BB;CEO+%26+Fundador+da+Carsai+Mozambique+%F0%9F%9A%80;Construindo+Solu%C3%A7%C3%B5es+Digitais+%E2%9C%A8;Transformando+Mo%C3%A7ambique+%F0%9F%87%B2%F0%9F%87%BF)](https://git.io/typing-svg)
 
