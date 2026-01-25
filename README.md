@@ -278,10 +278,10 @@ Expandindo o ecossistema Carsai e aprendendo novas tecnologias para melhorar ain
 
 ### 🎯 Principais Repositórios
 
-[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsai-host&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/carsai-host)
-[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsai-lms&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/carsai-lms)
-[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsai-bms&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/carsai-bms)
-[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsaidev&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/carsaidev)
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsaidev-app&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/carsaidev-app)
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsailms&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/carsailms)
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=mpesa-api&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/mpesa-api)
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsaibot&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/carsaibot)
 
 </div>
 
