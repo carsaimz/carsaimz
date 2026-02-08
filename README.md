@@ -8,10 +8,17 @@
 
 [![Website](https://img.shields.io/badge/Website-CarsaiMz-FF6B6B?style=for-the-badge&logo=google-chrome&logoColor=white)](https://carsaimz.linkpc.net)
 [![Portfolio](https://img.shields.io/badge/Portf%C3%B3lio-CarsaiDev-4ECDC4?style=for-the-badge&logo=safari&logoColor=white)](https://carsaidev.linkpc.net)
-[![Blog](https://img.shields.io/badge/Blog-Artigos_T%C3%A9cnicos-FFA07A?style=for-the-badge&logo=blogger&logoColor=white)](https://carsaidev.blogspot.com)
+[![Blog](https://img.shields.io/badge/Blog-Artigos-FFA07A?style=for-the-badge&logo=blogger&logoColor=white)](https://carsaidev.blogspot.com)
 
-![Visualizações](https://komarev.com/ghpvc/?username=carsaimz&color=blueviolet&style=flat-square&label=Visualiza%C3%A7%C3%B5es)
-[![Seguidores](https://img.shields.io/github/followers/carsaimz?logo=github&style=flat-square&color=blue&labelColor=0d1117&label=Seguidores)](https://github.com/carsaimz)
+<br>
+
+<!-- Contador de Visitas com Personagens Anime -->
+<img src="https://count.getloli.com/get/@carsaimz?theme=moebooru" alt="Contador de Visitas" />
+
+<br>
+
+![Visualizações do Perfil](https://komarev.com/ghpvc/?username=carsaimz&color=blueviolet&style=for-the-badge&label=VISUALIZA%C3%87%C3%95ES)
+[![Seguidores](https://img.shields.io/github/followers/carsaimz?logo=github&style=for-the-badge&color=blue&labelColor=0d1117&label=SEGUIDORES)](https://github.com/carsaimz)
 
 </div>
 
@@ -34,9 +41,11 @@
 
 ## 🛠️ Stack Tecnológica
 
+<div align="center">
+
 ### Linguagens
 
-<p align="left">
+<p>
 <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/html5/html5-original.svg" alt="HTML5" width="50" height="50"/>
 <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/css3/css3-original.svg" alt="CSS3" width="50" height="50"/>
 <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" alt="JavaScript" width="50" height="50"/>
@@ -52,12 +61,11 @@
 
 ### Ferramentas & Tecnologias
 
-<p align="left">
+<p>
 <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/git/git-original.svg" alt="Git" width="50" height="50"/>
 <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/github/github-original.svg" alt="GitHub" width="50" height="50"/>
 <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/vscode/vscode-original.svg" alt="VS Code" width="50" height="50"/>
 <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/linux/linux-original.svg" alt="Linux" width="50" height="50"/>
-<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/markdown/markdown-original.svg" alt="Markdown" width="50" height="50"/>
 </p>
 
 ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
@@ -66,25 +74,123 @@
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ![Markdown](https://img.shields.io/badge/Markdown-000000?style=for-the-badge&logo=markdown&logoColor=white)
 
+</div>
+
 ---
 
-## 🌐 Ecossistema Carsai
+## 🌐 Ecossistema Carsai Mozambique
 
 <div align="center">
 
-| 💻 **CarsaiDev** | ☁️ **Carsai Host** | 📚 **Carsai LMS** | 💼 **Carsai BMS** | 🌍 **Carsai IPT** |
-|:---:|:---:|:---:|:---:|:---:|
-| Desenvolvimento Web | Hospedagem Gratuita | Cursos Online | Gestão Empresarial | Instituto de Inglês |
-| [Visitar](https://carsaidev.linkpc.net) | [Visitar](https://carsaihost.linkpc.net) | [Visitar](https://carsailms.linkpc.net) | [Visitar](https://carsaibms.linkpc.net) | [Visitar](https://carsaiipt.linkpc.net) |
+<img src="https://user-images.githubusercontent.com/74038190/212284115-f47cd8ff-2ffb-4b04-b5bf-4d1c14c0247f.gif" width="900">
 
-### 📋 Descrição das Plataformas
+### 🚀 Minhas Plataformas
 
-**💻 CarsaiDev** - Soluções web personalizadas, sites institucionais, e-commerce e sistemas responsivos  
-**☁️ Carsai Host** - Hospedagem web gratuita com SSL, alta disponibilidade e suporte técnico  
-**📚 Carsai LMS** - Plataforma de cursos online com certificações reconhecidas  
-**💼 Carsai BMS** - Sistema completo para PDV, controle de estoque e relatórios gerenciais  
-**🌍 Carsai IPT** - Cursos de inglês do básico ao avançado, incluindo inglês para negócios
+</div>
 
+<table>
+  <tr>
+    <td align="center" width="180">
+      <img src="./carsaidev.png" alt="CarsaiDev" width="120" height="120"/><br>
+      <strong>💻 CarsaiDev</strong><br>
+      <sub>Desenvolvimento Web</sub><br><br>
+      <a href="https://carsaidev.linkpc.net">
+        <img src="https://img.shields.io/badge/Website-00D9FF?style=flat-square&logo=google-chrome&logoColor=white"/>
+      </a>
+      <a href="https://carsaidev.blogspot.com">
+        <img src="https://img.shields.io/badge/Blog-FF5722?style=flat-square&logo=blogger&logoColor=white"/>
+      </a>
+    </td>
+    <td>
+      <h3>🎨 Desenvolvimento Web Profissional</h3>
+      <p>Criação de sites personalizados, sistemas web e soluções digitais sob medida para seu negócio.</p>
+      <ul>
+        <li>✨ Sites Institucionais</li>
+        <li>🛒 E-commerce</li>
+        <li>📱 Sistemas Responsivos</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./carsaihost.png" alt="Carsai Host" width="120" height="120"/><br>
+      <strong>☁️ Carsai Host</strong><br>
+      <sub>Hospedagem Gratuita</sub><br><br>
+      <a href="https://carsaihost.linkpc.net">
+        <img src="https://img.shields.io/badge/Acessar-00C853?style=flat-square&logo=google-chrome&logoColor=white"/>
+      </a>
+    </td>
+    <td>
+      <h3>🌐 Plataforma de Hospedagem Web</h3>
+      <p>Hospedagem gratuita e acessível para seus projetos web. Tenha seu site online sem custos iniciais.</p>
+      <ul>
+        <li>🆓 Hospedagem Gratuita</li>
+        <li>🔒 SSL Certificado</li>
+        <li>⚡ Alta Disponibilidade</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./carsailms.png" alt="Carsai LMS" width="120" height="120"/><br>
+      <strong>📚 Carsai LMS</strong><br>
+      <sub>Cursos Online</sub><br><br>
+      <a href="https://carsailms.linkpc.net">
+        <img src="https://img.shields.io/badge/Estudar-FF6B6B?style=flat-square&logo=google-chrome&logoColor=white"/>
+      </a>
+    </td>
+    <td>
+      <h3>🎓 Sistema de Gestão de Aprendizagem</h3>
+      <p>Plataforma completa de cursos online com conteúdo de qualidade e certificações reconhecidas.</p>
+      <ul>
+        <li>📖 Cursos Variados</li>
+        <li>🏆 Certificados</li>
+        <li>👨‍🏫 Aprendizado Flexível</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./carsaibms.png" alt="Carsai BMS" width="120" height="120"/><br>
+      <strong>💼 Carsai BMS</strong><br>
+      <sub>Gestão Empresarial</sub><br><br>
+      <a href="https://carsaibms.linkpc.net">
+        <img src="https://img.shields.io/badge/Explorar-FFD93D?style=flat-square&logo=google-chrome&logoColor=black"/>
+      </a>
+    </td>
+    <td>
+      <h3>📊 Sistema de Gestão de Negócios</h3>
+      <p>Software completo para gerenciar seu negócio: vendas, estoque, finanças e muito mais.</p>
+      <ul>
+        <li>💰 Ponto de Venda (PDV)</li>
+        <li>📦 Controle de Estoque</li>
+        <li>📈 Relatórios Gerenciais</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./carsaiipt.png" alt="Carsai IPT" width="120" height="120"/><br>
+      <strong>🌍 Carsai IPT</strong><br>
+      <sub>Ensino de Inglês</sub><br><br>
+      <a href="https://carsaiipt.linkpc.net">
+        <img src="https://img.shields.io/badge/Conhecer-A78BFA?style=flat-square&logo=google-chrome&logoColor=white"/>
+      </a>
+    </td>
+    <td>
+      <h3>🗣️ Instituto de Ensino de Inglês</h3>
+      <p>Cursos especializados de língua inglesa com metodologia moderna e professores qualificados.</p>
+      <ul>
+        <li>🎯 Inglês para Iniciantes</li>
+        <li>💼 Inglês para Negócios</li>
+        <li>🎓 Preparação para Certificações</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+<div align="center">
+<img src="https://user-images.githubusercontent.com/74038190/212284158-e840e285-664b-44d7-b79b-e264b5e54825.gif" width="400">
 </div>
 
 ---
@@ -93,9 +199,11 @@
 
 <div align="center">
 
+<img src="https://user-images.githubusercontent.com/74038190/212284087-bbe7e430-757e-4901-90bf-4cd2ce3e1852.gif" width="100">
+
 ### 🔥 Sequência de Contribuições
 
-![GitHub Streak](https://github-readme-streak-stats.herokuapp.com/?user=carsaimz&theme=tokyonight&hide_border=true&date_format=M%20j%5B%2C%20Y%5D&locale=pt_BR)
+[![GitHub Streak](https://streak-stats.demolab.com/?user=carsaimz&theme=tokyonight&hide_border=true&locale=pt_BR&date_format=j%20M%5B%20Y%5D)](https://git.io/streak-stats)
 
 ### 📈 Estatísticas Gerais
 
@@ -106,15 +214,15 @@
 
 ### 🏆 Troféus do GitHub
 
-![Troféus](https://github-profile-trophy.vercel.app/?username=carsaimz&theme=tokyonight&no-frame=true&row=1&column=7&margin-w=10&margin-h=10)
+[![Troféus](https://github-profile-trophy.vercel.app/?username=carsaimz&theme=tokyonight&no-frame=true&row=1&column=7&margin-w=10&margin-h=10)](https://github.com/ryo-ma/github-profile-trophy)
 
 ### 📊 Gráfico de Atividade
 
-![Gráfico de Atividade](https://github-readme-activity-graph.vercel.app/graph?username=carsaimz&theme=tokyo-night&hide_border=true&area=true)
+[![Gráfico de Atividade](https://github-readme-activity-graph.vercel.app/graph?username=carsaimz&theme=tokyo-night&hide_border=true&area=true)](https://github.com/ashutosh00710/github-readme-activity-graph)
 
-### 🐍 Snake de Contribuições
+### 🐍 Contribuições Snake
 
-![Snake animation](https://github.com/carsaimz/carsaimz/blob/output/github-contribution-grid-snake-dark.svg)
+![Snake animation](https://raw.githubusercontent.com/carsaimz/carsaimz/output/github-contribution-grid-snake-dark.svg)
 
 </div>
 
@@ -123,6 +231,8 @@
 ## 🎯 Projetos em Destaque
 
 <div align="center">
+
+<img src="https://user-images.githubusercontent.com/74038190/212257472-08e52665-c503-4bd9-aa20-f5a4dae769b5.gif" width="100">
 
 <a href="https://github.com/carsaimz/carsaivpn">
   <img src="https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsaivpn&theme=tokyonight&hide_border=true" />
@@ -146,6 +256,8 @@
 
 <div align="center">
 
+<img src="https://user-images.githubusercontent.com/74038190/212257465-7ce8d493-cac5-494e-982a-5a9deb852c4b.gif" width="100">
+
 ### 💼 Contatos Profissionais
 
 | 📧 Pessoal | 🏢 Empresarial | 💻 Desenvolvimento | 🆘 Suporte |
@@ -155,7 +267,7 @@
 
 ### 🌐 Redes Sociais
 
-<p align="center">
+<p>
 <a href="https://linkedin.com/in/carsaimz">
   <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"/>
 </a>
@@ -178,6 +290,8 @@
 
 <div align="center">
 
+<img src="https://user-images.githubusercontent.com/74038190/212257468-1e9a91f1-b626-4baa-b15d-5c385dfa7ed2.gif" width="100">
+
 Se você gosta do meu trabalho, considere:
 
 ⭐ **Dar estrela** nos repositórios  
@@ -196,10 +310,12 @@ Se você gosta do meu trabalho, considere:
 
 <div align="center">
 
+<img src="https://user-images.githubusercontent.com/74038190/212284136-03988914-d899-44b4-b1d9-4eeccf656e44.gif" width="400">
+
 | 📅 Ano | 🎯 Marco Importante |
 |:---:|:---|
-| **2022** | 🚀 Fundação da Carsai Mozambique |
-| **2025** | 🎯 Lançamento do Ecossistema Completo (5 plataformas) |
+| **2022** | 🚀 Fundação da Carsai Mozambique - O início de tudo |
+| **2025** | 🎯 Lançamento do Ecossistema Completo (5 plataformas integradas) |
 | **2026** | 🌟 Expansão e crescimento contínuo |
 
 </div>
