@@ -17,7 +17,7 @@
 
 <br>
 
-![Visualizações do Perfil](https://komarev.com/ghpvc/?username=carsaimz&color=blueviolet&style=for-the-badge&label=VISUALIZA%C3%87%C3%95ES)
+![Visualizações](https://komarev.com/ghpvc/?username=carsaimz&color=blueviolet&style=for-the-badge&label=VISUALIZA%C3%87%C3%95ES)
 [![Seguidores](https://img.shields.io/github/followers/carsaimz?logo=github&style=for-the-badge&color=blue&labelColor=0d1117&label=SEGUIDORES)](https://github.com/carsaimz)
 
 </div>
@@ -203,22 +203,27 @@
 
 ### 🔥 Sequência de Contribuições
 
-[![GitHub Streak](https://streak-stats.demolab.com/?user=carsaimz&theme=tokyonight&hide_border=true&locale=pt_BR&date_format=j%20M%5B%20Y%5D)](https://git.io/streak-stats)
+![GitHub Streak](https://nirzak-streak-stats.vercel.app/?user=carsaimz&theme=tokyonight&hide_border=true&locale=pt_BR&date_format=j%20M%5B%20Y%5D)
 
-### 📈 Estatísticas Gerais
+### 📈 Estatísticas e Linguagens
 
 <p align="center">
-  <img width="49%" src="https://github-readme-stats.vercel.app/api?username=carsaimz&show_icons=true&theme=tokyonight&hide_border=true&count_private=true&include_all_commits=true&locale=pt-br" alt="Estatísticas do GitHub" />
-  <img width="49%" src="https://github-readme-stats.vercel.app/api/top-langs/?username=carsaimz&layout=compact&theme=tokyonight&hide_border=true&langs_count=8&locale=pt-br" alt="Linguagens Mais Usadas" />
+  <img width="49%" src="https://github-profile-summary-cards.vercel.app/api/cards/stats?username=carsaimz&theme=tokyonight" alt="Estatísticas do GitHub" />
+  <img width="49%" src="https://github-profile-summary-cards.vercel.app/api/cards/most-commit-language?username=carsaimz&theme=tokyonight" alt="Linguagens Mais Usadas" />
+</p>
+
+<p align="center">
+  <img width="49%" src="https://github-profile-summary-cards.vercel.app/api/cards/repos-per-language?username=carsaimz&theme=tokyonight" alt="Repos por Linguagem" />
+  <img width="49%" src="https://github-profile-summary-cards.vercel.app/api/cards/productive-time?username=carsaimz&theme=tokyonight&utcOffset=2" alt="Tempo Produtivo" />
 </p>
 
 ### 🏆 Troféus do GitHub
 
-[![Troféus](https://github-profile-trophy.vercel.app/?username=carsaimz&theme=tokyonight&no-frame=true&row=1&column=7&margin-w=10&margin-h=10)](https://github.com/ryo-ma/github-profile-trophy)
+![Troféus](https://github-profile-trophy.vercel.app/?username=carsaimz&theme=tokyonight&no-frame=true&row=1&column=7&margin-w=10&margin-h=10)
 
-### 📊 Gráfico de Atividade
+### 📊 Perfil Detalhado
 
-[![Gráfico de Atividade](https://github-readme-activity-graph.vercel.app/graph?username=carsaimz&theme=tokyo-night&hide_border=true&area=true)](https://github.com/ashutosh00710/github-readme-activity-graph)
+![Profile Details](https://github-profile-summary-cards.vercel.app/api/cards/profile-details?username=carsaimz&theme=tokyonight)
 
 ### 🐍 Contribuições Snake
 
@@ -228,25 +233,22 @@
 
 ---
 
-## 🎯 Projetos em Destaque
+## 🎯 Meus Repositórios
 
 <div align="center">
 
 <img src="https://user-images.githubusercontent.com/74038190/212257472-08e52665-c503-4bd9-aa20-f5a4dae769b5.gif" width="100">
 
-<a href="https://github.com/carsaimz/carsaivpn">
-  <img src="https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsaivpn&theme=tokyonight&hide_border=true" />
-</a>
-<a href="https://github.com/carsaimz/carsailms">
-  <img src="https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsailms&theme=tokyonight&hide_border=true" />
-</a>
+### 🌟 Projetos Principais
 
-<a href="https://github.com/carsaimz/mpesa-api">
-  <img src="https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=mpesa-api&theme=tokyonight&hide_border=true" />
-</a>
-<a href="https://github.com/carsaimz/carsaibot">
-  <img src="https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsaibot&theme=tokyonight&hide_border=true" />
-</a>
+[![Repo CarsaiVPN](https://img.shields.io/badge/🔐_CarsaiVPN-VPN_Service-4ECDC4?style=for-the-badge)](https://github.com/carsaimz/carsaivpn)
+[![Repo CarsaiLMS](https://img.shields.io/badge/📚_CarsaiLMS-Learning_System-FF6B6B?style=for-the-badge)](https://github.com/carsaimz/carsailms)
+[![Repo MPesa](https://img.shields.io/badge/💳_MPesa_API-Payment_Integration-00C853?style=for-the-badge)](https://github.com/carsaimz/mpesa-api)
+[![Repo Bot](https://img.shields.io/badge/🤖_CarsaiBot-Automation-FFD93D?style=for-the-badge)](https://github.com/carsaimz/carsaibot)
+
+### 📂 Explore Todos os Projetos
+
+[![Explorar Repositórios](https://img.shields.io/badge/Ver_Todos_os_Repos-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/carsaimz?tab=repositories)
 
 </div>
 
