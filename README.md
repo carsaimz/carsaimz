@@ -1,150 +1,314 @@
 <div align="center">
 
-# 👋 Olá, eu sou Carimo Saide
+```
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                                                                           ║
+║   ██████╗ █████╗ ██████╗ ███████╗ █████╗ ██╗    ███╗   ███╗███████╗     ║
+║  ██╔════╝██╔══██╗██╔══██╗██╔════╝██╔══██╗██║    ████╗ ████║╚══███╔╝     ║
+║  ██║     ███████║██████╔╝███████╗███████║██║    ██╔████╔██║  ███╔╝      ║
+║  ██║     ██╔══██║██╔══██╗╚════██║██╔══██║██║    ██║╚██╔╝██║ ███╔╝       ║
+║  ╚██████╗██║  ██║██║  ██║███████║██║  ██║██║    ██║ ╚═╝ ██║███████╗     ║
+║   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝    ╚═╝     ╚═╝╚══════╝     ║
+║                                                                           ║
+║              [ CYBER ARCHITECT • DIGITAL REVOLUTIONARY ]                 ║
+║                    [ MOZAMBIQUE TECH ECOSYSTEM ]                         ║
+║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+```
 
-[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=28&pause=1000&color=00D9FF&center=true&vCenter=true&random=false&width=700&lines=Desenvolvedor+Web+Full+Stack+%F0%9F%92%BB;CEO+%26+Fundador+da+Carsai+Mozambique+%F0%9F%9A%80;Transformando+Mo%C3%A7ambique+Digitalmente+%F0%9F%87%B2%F0%9F%87%BF)](https://git.io/typing-svg)
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="100%">
 
-[![Portfolio](https://img.shields.io/badge/🌐_Website-CarsaiMz-00D9FF?style=for-the-badge)](https://carsaimz.linkpc.net)
-[![Blog](https://img.shields.io/badge/📝_Blog-CarsaiDev-FF5722?style=for-the-badge&logo=blogger&logoColor=white)](https://carsaidev.blogspot.com)
-[![GitHub followers](https://img.shields.io/github/followers/carsaimz?logo=github&style=for-the-badge&color=00d9ff)](https://github.com/carsaimz)
-![Profile Views](https://komarev.com/ghpvc/?username=carsaimz&color=00d9ff&style=for-the-badge&label=VISITANTES)
+```ascii
+┌─────────────────────────────────────────────────────────────────────────┐
+│ [SYSTEM_STATUS]: ████████████████████ ONLINE                            │
+│ [USER_LEVEL]:    ████████████░░░░░░░░ CEO/FOUNDER                       │
+│ [LOCATION]:      ████████████████████ MOZAMBIQUE_NODE_001               │
+│ [MISSION]:       ████████████████████ DIGITAL_TRANSFORMATION_ACTIVE     │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+[![Website](https://img.shields.io/badge/🌐_MAINFRAME-carsaimz.linkpc.net-00ff41?style=for-the-badge&labelColor=000000)](https://carsaimz.linkpc.net)
+[![Dev Portal](https://img.shields.io/badge/💻_DEV_PORTAL-carsaidev-00d9ff?style=for-the-badge&labelColor=000000&logo=code&logoColor=00d9ff)](https://carsaidev.linkpc.net)
+[![Data Stream](https://img.shields.io/badge/📡_DATA_STREAM-blog-ff0080?style=for-the-badge&labelColor=000000&logo=rss&logoColor=ff0080)](https://carsaidev.blogspot.com)
+
+![Visitors](https://komarev.com/ghpvc/?username=carsaimz&color=00ff41&style=for-the-badge&label=NETWORK_INTRUSIONS)
+[![Followers](https://img.shields.io/github/followers/carsaimz?logo=github&style=for-the-badge&color=00ff41&labelColor=000000&label=NODES_CONNECTED)](https://github.com/carsaimz)
 
 </div>
 
 ---
 
-## 🚀 Sobre Mim
+## 🖥️ SYSTEM_PROFILE.exe
 
-```typescript
-const carsai = {
-    role: "CEO & Fundador @ Carsai Mozambique",
-    location: "Moçambique 🇲🇿",
-    code: ["JavaScript", "PHP", "HTML", "CSS", "SQL"],
-    technologies: {
-        frontEnd: ["HTML5", "CSS3", "JavaScript"],
-        backEnd: ["PHP"],
-        databases: ["MySQL"],
-        tools: ["Git", "VS Code", "Markdown"]
+```python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+class CyberArchitect:
+    def __init__(self):
+        self.username = "CarsaiMz"
+        self.real_name = "Carimo Saide"
+        self.role = "CEO & Founder @ Carsai Mozambique"
+        self.location = "🇲🇿 Mozambique [SECTOR_001]"
+        self.status = "ONLINE"
+        
+    def get_skillset(self):
+        return {
+            "languages": ["JavaScript", "PHP", "SQL", "HTML5", "CSS3"],
+            "frontend": ["HTML5", "CSS3", "JavaScript", "Responsive_Design"],
+            "backend": ["PHP", "MySQL", "RESTful_APIs"],
+            "tools": ["Git", "VS_Code", "CLI", "Markdown"],
+            "specialization": ["Web_Development", "System_Architecture", "Digital_Ecosystems"]
+        }
+    
+    def current_mission(self):
+        return """
+        [MISSION_OBJECTIVE]: Democratize technology access in Mozambique
+        [STATUS]: Building integrated digital ecosystem
+        [PLATFORMS_DEPLOYED]: 5/5 ✓
+        [UPTIME]: Since 2022
+        [TARGET]: Transform digital landscape of Mozambique
+        """
+    
+    def contact_protocol(self):
+        return {
+            "personal": "carimosaidempinda@gmail.com",
+            "business": "carsaimozambique@gmail.com",
+            "dev_ops": "carsaideveloper@gmail.com",
+            "support": "suporte.carsaimz@gmail.com"
+        }
+
+# Initialize system
+architect = CyberArchitect()
+print(architect.current_mission())
+```
+
+---
+
+## 🌐 DIGITAL_ECOSYSTEM.network
+
+```
+╔════════════════════════════════════════════════════════════════════════╗
+║                      [ CARSAI MOZAMBIQUE NETWORK ]                     ║
+║                    [ 5 NODES • ALL SYSTEMS ACTIVE ]                    ║
+╚════════════════════════════════════════════════════════════════════════╝
+```
+
+<table>
+<tr>
+<td width="120" align="center">
+
+```
+┌─────────┐
+│ NODE_01 │
+└─────────┘
+```
+**💻 CARSAI.DEV**  
+`[WEB_DEVELOPMENT]`
+
+</td>
+<td>
+
+**🔹 DEVELOPMENT PORTAL**  
+```
+> Custom web solutions
+> E-commerce systems
+> Responsive frameworks
+> Full-stack architecture
+```
+🔗 **ACCESS**: [carsaidev.linkpc.net](https://carsaidev.linkpc.net) • [blog.carsaidev](https://carsaidev.blogspot.com)
+
+</td>
+</tr>
+
+<tr>
+<td align="center">
+
+```
+┌─────────┐
+│ NODE_02 │
+└─────────┘
+```
+**☁️ CARSAI.HOST**  
+`[CLOUD_HOSTING]`
+
+</td>
+<td>
+
+**🔹 HOSTING INFRASTRUCTURE**  
+```
+> Free hosting platform
+> SSL encryption enabled
+> 99.9% uptime guarantee
+> Mozambique servers
+```
+🔗 **ACCESS**: [carsaihost.linkpc.net](https://carsaihost.linkpc.net)
+
+</td>
+</tr>
+
+<tr>
+<td align="center">
+
+```
+┌─────────┐
+│ NODE_03 │
+└─────────┘
+```
+**📚 CARSAI.LMS**  
+`[LEARNING_SYSTEM]`
+
+</td>
+<td>
+
+**🔹 EDUCATION MATRIX**  
+```
+> Online course platform
+> Digital certificates
+> Skill development
+> Knowledge database
+```
+🔗 **ACCESS**: [carsailms.linkpc.net](https://carsailms.linkpc.net)
+
+</td>
+</tr>
+
+<tr>
+<td align="center">
+
+```
+┌─────────┐
+│ NODE_04 │
+└─────────┘
+```
+**💼 CARSAI.BMS**  
+`[BUSINESS_MGMT]`
+
+</td>
+<td>
+
+**🔹 BUSINESS CONTROL SYSTEM**  
+```
+> Point of Sale (POS)
+> Inventory management
+> Financial analytics
+> Enterprise dashboard
+```
+🔗 **ACCESS**: [carsaibms.linkpc.net](https://carsaibms.linkpc.net)
+
+</td>
+</tr>
+
+<tr>
+<td align="center">
+
+```
+┌─────────┐
+│ NODE_05 │
+└─────────┘
+```
+**🌍 CARSAI.IPT**  
+`[LANGUAGE_INST]`
+
+</td>
+<td>
+
+**🔹 ENGLISH TRAINING MODULE**  
+```
+> Professional English courses
+> Business communication
+> Certification prep
+> Native methodology
+```
+🔗 **ACCESS**: [carsaiipt.linkpc.net](https://carsaiipt.linkpc.net)
+
+</td>
+</tr>
+</table>
+
+---
+
+## ⚡ TECH_STACK.config
+
+```javascript
+const SYSTEM_ARSENAL = {
+    // CORE WEAPONS
+    languages: {
+        web: ['HTML5', 'CSS3', 'JavaScript'],
+        backend: ['PHP'],
+        database: ['MySQL', 'SQL'],
+        markup: ['Markdown']
     },
-    mission: "Democratizar o acesso à tecnologia em Moçambique",
-    currentFocus: "Expandindo o ecossistema Carsai",
-    funFact: "Transformo café em código desde 2022 ☕→💻"
+    
+    // DEVELOPMENT TOOLS
+    arsenal: {
+        versionControl: 'Git',
+        editor: 'VS Code',
+        terminal: 'Bash/Zsh',
+        platform: 'GitHub'
+    },
+    
+    // DEPLOYMENT STATUS
+    status: {
+        mode: 'PRODUCTION',
+        environment: 'LIVE',
+        security: 'ENCRYPTED',
+        availability: '24/7'
+    }
 };
 ```
 
-### 💡 O que eu faço?
-
-Desenvolvo **soluções digitais completas** que resolvem problemas reais para pequenas empresas e empreendedores em Moçambique. Desde 2022, venho construindo um ecossistema integrado de plataformas que facilitam a transformação digital no nosso país.
-
----
-
-## 🏢 Ecossistema Carsai
-
-<table>
-  <tr>
-    <td align="center" width="200">
-      <img src="./carsaidev.png" alt="CarsaiDev" width="100" height="100"/><br>
-      <strong>💻 CarsaiDev</strong><br>
-      <sub>Desenvolvimento Web</sub>
-    </td>
-    <td>
-      <strong>Soluções Web Personalizadas</strong><br>
-      Sites institucionais, e-commerce e sistemas web responsivos sob medida.<br>
-      <a href="https://carsaidev.linkpc.net">🌐 Website</a> • 
-      <a href="https://carsaidev.blogspot.com">📝 Blog</a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="./carsaihost.png" alt="Carsai Host" width="100" height="100"/><br>
-      <strong>☁️ Carsai Host</strong><br>
-      <sub>Hospedagem Gratuita</sub>
-    </td>
-    <td>
-      <strong>Hospedagem Web Acessível</strong><br>
-      Hospedagem gratuita com SSL, alta disponibilidade e suporte técnico.<br>
-      <a href="https://carsaihost.linkpc.net">🌐 Acessar Plataforma</a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="./carsailms.png" alt="Carsai LMS" width="100" height="100"/><br>
-      <strong>📚 Carsai LMS</strong><br>
-      <sub>Educação Online</sub>
-    </td>
-    <td>
-      <strong>Sistema de Gestão de Aprendizagem</strong><br>
-      Plataforma completa de cursos online com certificações reconhecidas.<br>
-      <a href="https://carsailms.linkpc.net">🎓 Explorar Cursos</a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="./carsaibms.png" alt="Carsai BMS" width="100" height="100"/><br>
-      <strong>💼 Carsai BMS</strong><br>
-      <sub>Gestão Empresarial</sub>
-    </td>
-    <td>
-      <strong>Business Management System</strong><br>
-      Sistema completo para PDV, controle de estoque e relatórios gerenciais.<br>
-      <a href="https://carsaibms.linkpc.net">📊 Conhecer Sistema</a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="./carsaiipt.png" alt="Carsai IPT" width="100" height="100"/><br>
-      <strong>🌍 Carsai IPT</strong><br>
-      <sub>Ensino de Inglês</sub>
-    </td>
-    <td>
-      <strong>Instituto de Língua Inglesa</strong><br>
-      Cursos de inglês do básico ao avançado, incluindo inglês para negócios.<br>
-      <a href="https://carsaiipt.linkpc.net">🗣️ Inscrever-se</a>
-    </td>
-  </tr>
-</table>
-
----
-
-## 💻 Tech Stack
-
 <div align="center">
 
-### Linguagens & Frameworks
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
-![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
-
-### Ferramentas & Plataformas
-![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
-![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
-![VS Code](https://img.shields.io/badge/VS_Code-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white)
-![Markdown](https://img.shields.io/badge/Markdown-000000?style=for-the-badge&logo=markdown&logoColor=white)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white&labelColor=000000)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white&labelColor=000000)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black&labelColor=000000)
+![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white&labelColor=000000)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white&labelColor=000000)
+![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white&labelColor=000000)
+![VS Code](https://img.shields.io/badge/VS_Code-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white&labelColor=000000)
 
 </div>
 
 ---
 
-## 📊 GitHub Stats
+## 📊 SYSTEM_ANALYTICS.db
 
 <div align="center">
 
-[![GitHub Streak](https://github-readme-streak-stats.vercel.app/api?username=carsaimz&theme=radical&hide_border=true&background=0D1117&stroke=00D9FF&ring=00D9FF&fire=FF6B6B&currStreakLabel=00D9FF)](https://git.io/streak-stats)
+```
+┌───────────────────── PERFORMANCE METRICS ─────────────────────┐
+│                                                                │
+│  [████████████████████████████░░░░░░░░░░] 70% Contribution   │
+│  [██████████████████████░░░░░░░░░░░░░░░░] 55% Code Quality   │
+│  [████████████████████████████████░░░░░░] 80% Commit Streak  │
+│  [████████████████████████████████████░░] 90% Project Active │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+```
+
+[![GitHub Streak](https://github-readme-streak-stats.vercel.app/api?username=carsaimz&theme=highcontrast&hide_border=true&background=000000&stroke=00ff41&ring=00ff41&fire=ff0080&currStreakLabel=00ff41&sideNums=00d9ff&currStreakNum=ffffff&sideLabels=00ff41&dates=666666)](https://git.io/streak-stats)
 
 <table>
-  <tr>
-    <td>
-      <img src="https://github-readme-stats.vercel.app/api?username=carsaimz&show_icons=true&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF&count_private=true&include_all_commits=true" alt="GitHub Stats" />
-    </td>
-    <td>
-      <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=carsaimz&layout=compact&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&text_color=FFFFFF&langs_count=6" alt="Top Languages" />
-    </td>
-  </tr>
+<tr>
+<td>
+<img src="https://github-readme-stats.vercel.app/api?username=carsaimz&show_icons=true&theme=chartreuse-dark&hide_border=true&bg_color=000000&title_color=00ff41&icon_color=00d9ff&text_color=ffffff&border_color=00ff41" />
+</td>
+<td>
+<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=carsaimz&layout=compact&theme=chartreuse-dark&hide_border=true&bg_color=000000&title_color=00ff41&text_color=ffffff&border_color=00ff41" />
+</td>
+</tr>
 </table>
 
-[![GitHub Trophies](https://github-profile-trophy.vercel.app/?username=carsaimz&theme=radical&no-frame=true&no-bg=false&margin-w=4&row=1&column=7)](https://github.com/ryo-ma/github-profile-trophy)
+```
+┌─────────────────────── ACHIEVEMENT UNLOCKED ───────────────────────┐
+│                                                                     │
+```
+[![trophy](https://github-profile-trophy.vercel.app/?username=carsaimz&theme=matrix&no-frame=true&no-bg=true&margin-w=4&column=7&title=Stars,Followers,Commits,Repositories,Issues,PullRequest,MultiLanguage)](https://github.com/ryo-ma/github-profile-trophy)
+```
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
 ![Snake animation](https://github.com/carsaimz/carsaimz/blob/output/github-contribution-grid-snake-dark.svg)
 
@@ -152,84 +316,154 @@ Desenvolvo **soluções digitais completas** que resolvem problemas reais para p
 
 ---
 
-## 🎯 Projetos em Destaque
+## 🎯 FEATURED_PROJECTS.dir
 
 <div align="center">
 
-[![Carsai VPN](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsaivpn&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/carsaivpn)
-[![Carsai LMS](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsailms&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/carsailms)
-[![M-Pesa API](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=mpesa-api&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/mpesa-api)
-[![Carsai Bot](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsaibot&theme=radical&hide_border=true&bg_color=0D1117&title_color=00D9FF&icon_color=00D9FF&text_color=FFFFFF)](https://github.com/carsaimz/carsaibot)
+```
+╔══════════════════════════════════════════════════════════════╗
+║                    [ CORE REPOSITORIES ]                     ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+[![Carsai VPN](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsaivpn&theme=chartreuse-dark&hide_border=true&bg_color=000000&title_color=00ff41&icon_color=00d9ff&text_color=ffffff&border_color=00ff41)](https://github.com/carsaimz/carsaivpn)
+[![Carsai LMS](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsailms&theme=chartreuse-dark&hide_border=true&bg_color=000000&title_color=00ff41&icon_color=00d9ff&text_color=ffffff&border_color=00ff41)](https://github.com/carsaimz/carsailms)
+
+[![M-Pesa API](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=mpesa-api&theme=chartreuse-dark&hide_border=true&bg_color=000000&title_color=00ff41&icon_color=00d9ff&text_color=ffffff&border_color=00ff41)](https://github.com/carsaimz/mpesa-api)
+[![Carsai Bot](https://github-readme-stats.vercel.app/api/pin/?username=carsaimz&repo=carsaibot&theme=chartreuse-dark&hide_border=true&bg_color=000000&title_color=00ff41&icon_color=00d9ff&text_color=ffffff&border_color=00ff41)](https://github.com/carsaimz/carsaibot)
 
 </div>
 
 ---
 
-## 📫 Vamos Conectar
+## 📡 COMMUNICATION_CHANNELS.net
 
 <div align="center">
 
-### 🌐 Websites
-[![CarsaiMz](https://img.shields.io/badge/🏢_CarsaiMz-Principal-00D9FF?style=for-the-badge)](https://carsaimz.linkpc.net)
-[![CarsaiDev](https://img.shields.io/badge/💻_CarsaiDev-Desenvolvimento-61DAFB?style=for-the-badge)](https://carsaidev.linkpc.net)
-[![Blog](https://img.shields.io/badge/📝_Blog-Artigos-FF5722?style=for-the-badge&logo=blogger&logoColor=white)](https://carsaidev.blogspot.com)
-[![LMS](https://img.shields.io/badge/📚_LMS-Cursos-FF6B6B?style=for-the-badge)](https://carsailms.linkpc.net)
+```
+╔════════════════════════════════════════════════════════════════╗
+║                    [ NETWORK CONNECTIONS ]                     ║
+╚════════════════════════════════════════════════════════════════╝
+```
 
-### 📧 Contatos Profissionais
+### 🌐 MAINFRAME ACCESS
 
-| 📧 **Pessoal** | 🏢 **Empresarial** | 💻 **Desenvolvimento** | 🆘 **Suporte** |
-|:---:|:---:|:---:|:---:|
-| [carimosaidempinda@gmail.com](mailto:carimosaidempinda@gmail.com) | [carsaimozambique@gmail.com](mailto:carsaimozambique@gmail.com) | [carsaideveloper@gmail.com](mailto:carsaideveloper@gmail.com) | [suporte.carsaimz@gmail.com](mailto:suporte.carsaimz@gmail.com) |
-| *Networking* | *Parcerias* | *Projetos* | *Técnico* |
+[![Main Portal](https://img.shields.io/badge/🏢_MAIN_PORTAL-carsaimz-00ff41?style=for-the-badge&labelColor=000000)](https://carsaimz.linkpc.net)
+[![Dev Portal](https://img.shields.io/badge/💻_DEV_PORTAL-carsaidev-00d9ff?style=for-the-badge&labelColor=000000)](https://carsaidev.linkpc.net)
+[![Blog Stream](https://img.shields.io/badge/📝_BLOG_STREAM-articles-ff0080?style=for-the-badge&labelColor=000000&logo=blogger)](https://carsaidev.blogspot.com)
+[![Learning Hub](https://img.shields.io/badge/📚_LEARNING_HUB-lms-ffd700?style=for-the-badge&labelColor=000000)](https://carsailms.linkpc.net)
 
-### 🌐 Redes Sociais
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/carsaimz)
-[![Twitter](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/carsaimz)
-[![Instagram](https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://instagram.com/carsaimz)
-[![Facebook](https://img.shields.io/badge/Facebook-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://facebook.com/carsaimz)
+### 📧 SECURE CHANNELS
+
+```ascii
+┌─────────────┬──────────────────────────────┬────────────────────┐
+│   CHANNEL   │         ENDPOINT             │      PURPOSE       │
+├─────────────┼──────────────────────────────┼────────────────────┤
+│  PERSONAL   │ carimosaidempinda@gmail.com  │  Personal comms    │
+│  BUSINESS   │ carsaimozambique@gmail.com   │  Partnerships      │
+│  DEVELOPER  │ carsaideveloper@gmail.com    │  Dev projects      │
+│  SUPPORT    │ suporte.carsaimz@gmail.com   │  Technical support │
+└─────────────┴──────────────────────────────┴────────────────────┘
+```
+
+### 🔗 SOCIAL NETWORK NODES
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white&labelColor=000000)](https://linkedin.com/in/carsaimz)
+[![Twitter](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white&labelColor=000000)](https://twitter.com/carsaimz)
+[![Instagram](https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white&labelColor=000000)](https://instagram.com/carsaimz)
+[![Facebook](https://img.shields.io/badge/Facebook-1877F2?style=for-the-badge&logo=facebook&logoColor=white&labelColor=000000)](https://facebook.com/carsaimz)
 
 </div>
 
 ---
 
-## 🤝 Contribua com os Projetos
+## 🔐 CONTRIBUTION_PROTOCOL.md
 
 <div align="center">
 
-Se você gostou do meu trabalho, aqui está como pode contribuir:
+```
+┌────────────────────────────────────────────────────────────────┐
+│                   [ OPEN SOURCE PROTOCOL ]                     │
+└────────────────────────────────────────────────────────────────┘
+```
 
-⭐ **Star** nos repositórios interessantes  
-🐛 **Reporte bugs** ou problemas  
-💡 **Sugira melhorias** através das Issues  
-🔄 **Compartilhe** com sua rede  
-📝 **Contribua** com código ou documentação
+**⭐ STAR_REPOSITORY** → Support project visibility  
+**🐛 REPORT_BUGS** → Submit issue tickets  
+**💡 SUGGEST_FEATURES** → Open enhancement requests  
+**🔀 FORK_AND_PR** → Submit pull requests  
+**📖 IMPROVE_DOCS** → Contribute to documentation  
+**🔄 SHARE_NETWORK** → Spread the word
 
-[![Explore Repositórios](https://img.shields.io/badge/🔍_Explorar-Repositórios-00D9FF?style=for-the-badge)](https://github.com/carsaimz?tab=repositories)
+[![Explore Repository](https://img.shields.io/badge/🔍_BROWSE-REPOSITORIES-00ff41?style=for-the-badge&labelColor=000000)](https://github.com/carsaimz?tab=repositories)
 
 </div>
 
 ---
 
-## 📈 Trajetória
+## 📈 MISSION_TIMELINE.log
 
-| Ano | Marco |
-|:---:|:------|
-| **2022** | 🚀 Fundação da **Carsai Mozambique** |
-| **2025** | 🎯 Lançamento do **Ecossistema Completo** (5 plataformas integradas) |
+```
+╔════════════════════════════════════════════════════════════════════╗
+║                        [ SYSTEM EVENTS ]                           ║
+╚════════════════════════════════════════════════════════════════════╝
+
+[2022] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       │
+       ├─> INITIALIZATION: Carsai Mozambique founded
+       ├─> OBJECTIVE: Build digital infrastructure
+       └─> STATUS: Development phase initiated
+
+[2025] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       │
+       ├─> DEPLOYMENT: Full ecosystem launched
+       ├─> NODES_ACTIVE: 5/5 platforms operational
+       ├─> REACH: Mozambique-wide coverage
+       └─> STATUS: Production environment live
+
+[2026] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       │
+       ├─> EXPANSION: Scaling operations
+       ├─> MISSION: Digital transformation continues
+       └─> STATUS: Active development & maintenance
+```
 
 ---
 
 <div align="center">
 
-### 💭 Filosofia
-
-> *"A tecnologia é a ponte entre os sonhos e a realidade.*  
-> *Estou construindo essa ponte em Moçambique."*
+```
+╔═══════════════════════════════════════════════════════════════════╗
+║                                                                   ║
+║  "Code is poetry. Technology is art. Innovation is revolution."  ║
+║                                                                   ║
+║           [ Building the digital future of Mozambique ]          ║
+║                                                                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+```
 
 ---
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=100&section=footer&text=Desenvolvido%20com%20❤️%20em%20Moçambique%20🇲🇿&fontSize=16&fontColor=fff&animation=twinkling" width="100%">
+```ascii
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   ███████╗██╗   ██╗███████╗████████╗███████╗███╗   ███╗       │
+│   ██╔════╝╚██╗ ██╔╝██╔════╝╚══██╔══╝██╔════╝████╗ ████║       │
+│   ███████╗ ╚████╔╝ ███████╗   ██║   █████╗  ██╔████╔██║       │
+│   ╚════██║  ╚██╔╝  ╚════██║   ██║   ██╔══╝  ██║╚██╔╝██║       │
+│   ███████║   ██║   ███████║   ██║   ███████╗██║ ╚═╝ ██║       │
+│   ╚══════╝   ╚═╝   ╚══════╝   ╚═╝   ╚══════╝╚═╝     ╚═╝       │
+│                                                                 │
+│                     STATUS: ONLINE                              │
+│                  LOCATION: MOZAMBIQUE 🇲🇿                       │
+│                   MISSION: ACTIVE                               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-**© 2025 Carsai Mozambique • Construindo soluções digitais acessíveis para todos** ✨
+**© 2025 CARSAI_MOZAMBIQUE.sys** • *Building accessible digital solutions*
+
+```
+[EOF] ─────────────────────────────────────────── README.terminate()
+```
 
 </div>
