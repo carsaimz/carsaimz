@@ -169,6 +169,8 @@ Expandindo o ecossistema Carsai e aprendendo novas tecnologias para melhorar ain
 
 [![GitHub Streak](https://github-readme-streak-stats.vercel.app/api?username=carsaimz&theme=radical&hide_border=true&background=0D1117&stroke=00D9FF&ring=00D9FF&fire=FF6B6B&currStreakLabel=00D9FF&sideNums=00D9FF&currStreakNum=FFFFFF&sideLabels=00D9FF&dates=8B949E)](https://git.io/streak-stats)
 
+---
+### 🔥 GitHub Stats
 ![](https://github-readme-stats.vercel.app/api?username=carsaimz&theme=flag-india&hide_border=true&include_all_commits=true&count_private=true)<br/>
 ![](https://github-readme-streak-stats.herokuapp.com/?user=carsaimz&theme=flag-india&hide_border=true)<br/>
 ![](https://github-readme-stats.vercel.app/api/top-langs/?username=carsaimz&theme=flag-india&hide_border=true&include_all_commits=true&count_private=true&layout=compact)
