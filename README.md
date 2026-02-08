@@ -169,6 +169,15 @@ Expandindo o ecossistema Carsai e aprendendo novas tecnologias para melhorar ain
 
 [![GitHub Streak](https://github-readme-streak-stats.vercel.app/api?username=carsaimz&theme=radical&hide_border=true&background=0D1117&stroke=00D9FF&ring=00D9FF&fire=FF6B6B&currStreakLabel=00D9FF&sideNums=00D9FF&currStreakNum=FFFFFF&sideLabels=00D9FF&dates=8B949E)](https://git.io/streak-stats)
 
+![](https://github-readme-stats.vercel.app/api?username=carsaimz&theme=flag-india&hide_border=true&include_all_commits=true&count_private=true)<br/>
+![](https://github-readme-streak-stats.herokuapp.com/?user=carsaimz&theme=flag-india&hide_border=true)<br/>
+![](https://github-readme-stats.vercel.app/api/top-langs/?username=carsaimz&theme=flag-india&hide_border=true&include_all_commits=true&count_private=true&layout=compact)
+
+---
+[![](https://visitcount.itsvg.in/api?id=carsaimz&icon=0&color=0)](https://visitcount.itsvg.in)
+
+<img src="https://count.getloli.com/@:carsaimz?theme=booru-lewd&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto" alt="CarsaiMz's github profile visitor counter" />
+
 ### 📈 Visão Geral
 
 <table>
