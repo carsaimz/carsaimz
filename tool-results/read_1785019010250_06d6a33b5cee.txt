@@ -1,0 +1,569 @@
+     1→'use client';
+     2→
+     3→import { useState } from 'react';
+     4→import { motion } from 'framer-motion';
+     5→import {
+     6→  FileText,
+     7→  CreditCard,
+     8→  Receipt,
+     9→  Download,
+    10→  Eye,
+    11→  Plus,
+    12→  CheckCircle2,
+    13→  Clock,
+    14→  XCircle,
+    15→  AlertCircle,
+    16→  Phone,
+    17→  Building2,
+    18→  BanknoteIcon,
+    19→  Send,
+    20→  ArrowRight,
+    21→  Search,
+    22→  Filter,
+    23→  DollarSign,
+    24→  TrendingUp,
+    25→} from 'lucide-react';
+    26→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+    27→import { Badge } from '@/components/ui/badge';
+    28→import { Button } from '@/components/ui/button';
+    29→import { Input } from '@/components/ui/input';
+    30→import { Label } from '@/components/ui/label';
+    31→import { Textarea } from '@/components/ui/textarea';
+    32→import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+    33→import {
+    34→  Table,
+    35→  TableBody,
+    36→  TableCell,
+    37→  TableHead,
+    38→  TableHeader,
+    39→  TableRow,
+    40→} from '@/components/ui/table';
+    41→import {
+    42→  Select,
+    43→  SelectContent,
+    44→  SelectItem,
+    45→  SelectTrigger,
+    46→  SelectValue,
+    47→} from '@/components/ui/select';
+    48→import {
+    49→  Dialog,
+    50→  DialogContent,
+    51→  DialogDescription,
+    52→  DialogFooter,
+    53→  DialogHeader,
+    54→  DialogTitle,
+    55→  DialogTrigger,
+    56→} from '@/components/ui/dialog';
+    57→import { Separator } from '@/components/ui/separator';
+    58→import { useLanguage } from '@/contexts/language-context';
+    59→
+    60→// ── Animation variants ──
+    61→const containerVariants = {
+    62→  hidden: { opacity: 0 },
+    63→  visible: {
+    64→    opacity: 1,
+    65→    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
+    66→  },
+    67→};
+    68→
+    69→const itemVariants = {
+    70→  hidden: { opacity: 0, y: 20 },
+    71→  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+    72→};
+    73→
+    74→// ── Mock data ──
+    75→const mockQuotes = [
+    76→  { id: 'Q-001', service: 'Website Development', description: 'Corporate website with 10 pages', amount: 75000, status: 'approved', date: '2025-01-15', validUntil: '2025-02-15' },
+    77→  { id: 'Q-002', service: 'Mobile App Development', description: 'Android/iOS app for banking', amount: 150000, status: 'pending', date: '2025-02-20', validUntil: '2025-03-20' },
+    78→  { id: 'Q-003', service: 'Cloud Infrastructure', description: 'AWS setup and monitoring', amount: 45000, status: 'rejected', date: '2025-03-10', validUntil: '2025-04-10' },
+    79→  { id: 'Q-004', service: 'SEO & Marketing', description: '6-month SEO campaign', amount: 25000, status: 'approved', date: '2025-04-05', validUntil: '2025-05-05' },
+    80→  { id: 'Q-005', service: 'AI Integration', description: 'Chatbot and analytics AI', amount: 120000, status: 'pending', date: '2025-05-01', validUntil: '2025-06-01' },
+    81→  { id: 'Q-006', service: 'UI/UX Design', description: 'App redesign and prototyping', amount: 35000, status: 'approved', date: '2025-05-20', validUntil: '2025-06-20' },
+    82→];
+    83→
+    84→const mockProposals = [
+    85→  { id: 'P-001', client: 'Empresa Alpha', title: 'E-commerce Solution', amount: 85000, status: 'sent', date: '2025-01-18' },
+    86→  { id: 'P-002', client: 'Beta Solutions', title: 'Mobile Banking Platform', amount: 160000, status: 'accepted', date: '2025-02-22' },
+    87→  { id: 'P-003', client: 'Gamma Corp', title: 'Cloud Migration Plan', amount: 50000, status: 'rejected', date: '2025-03-12' },
+    88→  { id: 'P-004', client: 'Delta Services', title: 'Digital Marketing Package', amount: 28000, status: 'sent', date: '2025-04-08' },
+    89→  { id: 'P-005', client: 'Omega Ltd', title: 'AI Analytics Suite', amount: 130000, status: 'accepted', date: '2025-05-03' },
+    90→];
+    91→
+    92→const mockPayments = [
+    93→  { id: 'PAY-001', description: 'Website Dev - Phase 1', amount: 37500, method: 'mpesa', status: 'confirmed', date: '2025-01-20' },
+    94→  { id: 'PAY-002', description: 'SEO Package - Monthly', amount: 25000, method: 'transfer', status: 'confirmed', date: '2025-04-10' },
+    95→  { id: 'PAY-003', description: 'Mobile App - Deposit', amount: 50000, method: 'deposit', status: 'pending', date: '2025-02-25' },
+    96→  { id: 'PAY-004', description: 'Cloud Setup - Initial', amount: 22500, method: 'mpesa', status: 'confirmed', date: '2025-03-15' },
+    97→  { id: 'PAY-005', description: 'UI/UX Design - Milestone', amount: 17500, method: 'transfer', status: 'confirmed', date: '2025-05-25' },
+    98→];
+    99→
+   100→const mockInvoices = [
+   101→  { id: 'INV-001', client: 'Empresa Alpha', amount: 75000, status: 'paid', date: '2025-01-20', dueDate: '2025-02-20' },
+   102→  { id: 'INV-002', client: 'Beta Solutions', amount: 50000, status: 'paid', date: '2025-02-25', dueDate: '2025-03-25' },
+   103→  { id: 'INV-003', client: 'Delta Services', amount: 25000, status: 'unpaid', date: '2025-04-10', dueDate: '2025-05-10' },
+   104→  { id: 'INV-004', client: 'Gamma Corp', amount: 45000, status: 'overdue', date: '2025-03-15', dueDate: '2025-04-15' },
+   105→  { id: 'INV-005', client: 'Omega Ltd', amount: 120000, status: 'unpaid', date: '2025-05-01', dueDate: '2025-06-01' },
+   106→];
+   107→
+   108→export function FinancialSection() {
+   109→  const { t, formatCurrency, formatDate } = useLanguage();
+   110→  const [activeTab, setActiveTab] = useState('quotes');
+   111→  const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
+   112→  const [newQuoteService, setNewQuoteService] = useState('');
+   113→  const [newQuoteDescription, setNewQuoteDescription] = useState('');
+   114→  const [newQuoteBudget, setNewQuoteBudget] = useState('');
+   115→
+   116→  const statusBadge = (status: string) => {
+   117→    switch (status) {
+   118→      case 'approved':
+   119→      case 'confirmed':
+   120→      case 'paid':
+   121→      case 'accepted':
+   122→        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>;
+   123→      case 'pending':
+   124→      case 'sent':
+   125→      case 'unpaid':
+   126→        return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{t('common.pending')}</Badge>;
+   127→      case 'rejected':
+   128→        return <Badge className="bg-red-100 text-red-700 border-red-200">{t('common.rejected')}</Badge>;
+   129→      case 'overdue':
+   130→        return <Badge className="bg-red-100 text-red-800 border-red-200">{t('financial.invoiceOverdue')}</Badge>;
+   131→      default:
+   132→        return <Badge variant="outline">{status}</Badge>;
+   133→    }
+   134→  };
+   135→
+   136→  const methodBadge = (method: string) => {
+   137→    switch (method) {
+   138→      case 'mpesa':
+   139→        return (
+   140→          <Badge variant="outline" className="text-emerald-600 border-emerald-200">
+   141→            <Phone className="h-3 w-3 mr-1" />
+   142→            {t('financial.mpesa')}
+   143→          </Badge>
+   144→        );
+   145→      case 'transfer':
+   146→        return (
+   147→          <Badge variant="outline" className="text-emerald-600 border-emerald-200">
+   148→            <Building2 className="h-3 w-3 mr-1" />
+   149→            {t('financial.transfer')}
+   150→          </Badge>
+   151→        );
+   152→      case 'deposit':
+   153→        return (
+   154→          <Badge variant="outline" className="text-emerald-600 border-emerald-200">
+   155→            <BanknoteIcon className="h-3 w-3 mr-1" />
+   156→            Deposit
+   157→          </Badge>
+   158→        );
+   159→      default:
+   160→        return <Badge variant="outline">{method}</Badge>;
+   161→    }
+   162→  };
+   163→
+   164→  const handleSubmitQuote = () => {
+   165→    // Mock submit — just close the dialog
+   166→    setQuoteDialogOpen(false);
+   167→    setNewQuoteService('');
+   168→    setNewQuoteDescription('');
+   169→    setNewQuoteBudget('');
+   170→  };
+   171→
+   172→  // Summary stats
+   173→  const totalQuotesValue = mockQuotes.reduce((s, q) => s + q.amount, 0);
+   174→  const totalPaymentsValue = mockPayments.reduce((s, p) => s + p.amount, 0);
+   175→  const totalInvoicesValue = mockInvoices.reduce((s, i) => s + i.amount, 0);
+   176→  const overdueInvoices = mockInvoices.filter(i => i.status === 'overdue').length;
+   177→
+   178→  return (
+   179→    <motion.div
+   180→      variants={containerVariants}
+   181→      initial="hidden"
+   182→      animate="visible"
+   183→      className="space-y-6"
+   184→    >
+   185→      {/* ── Summary Stats ── */}
+   186→      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   187→        <Card className="border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow">
+   188→          <CardContent className="p-4 sm:p-5">
+   189→            <div className="flex items-start justify-between">
+   190→              <div>
+   191→                <p className="text-sm text-muted-foreground">{t('dashboard.quotes')}</p>
+   192→                <p className="text-2xl font-bold">{mockQuotes.length}</p>
+   193→                <p className="text-xs text-emerald-600 mt-1">Value: {formatCurrency(totalQuotesValue)}</p>
+   194→              </div>
+   195→              <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+   196→                <FileText className="h-5 w-5" />
+   197→              </div>
+   198→            </div>
+   199→          </CardContent>
+   200→        </Card>
+   201→
+   202→        <Card className="border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow">
+   203→          <CardContent className="p-4 sm:p-5">
+   204→            <div className="flex items-start justify-between">
+   205→              <div>
+   206→                <p className="text-sm text-muted-foreground">{t('financial.proposal')}</p>
+   207→                <p className="text-2xl font-bold">{mockProposals.length}</p>
+   208→                <p className="text-xs text-emerald-600 mt-1">2 accepted</p>
+   209→              </div>
+   210→              <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+   211→                <Send className="h-5 w-5" />
+   212→              </div>
+   213→            </div>
+   214→          </CardContent>
+   215→        </Card>
+   216→
+   217→        <Card className="border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow">
+   218→          <CardContent className="p-4 sm:p-5">
+   219→            <div className="flex items-start justify-between">
+   220→              <div>
+   221→                <p className="text-sm text-muted-foreground">{t('financial.payment')}</p>
+   222→                <p className="text-2xl font-bold">{formatCurrency(totalPaymentsValue)}</p>
+   223→                <p className="text-xs text-emerald-600 mt-1">4 confirmed</p>
+   224→              </div>
+   225→              <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+   226→                <CreditCard className="h-5 w-5" />
+   227→              </div>
+   228→            </div>
+   229→          </CardContent>
+   230→        </Card>
+   231→
+   232→        <Card className="border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow">
+   233→          <CardContent className="p-4 sm:p-5">
+   234→            <div className="flex items-start justify-between">
+   235→              <div>
+   236→                <p className="text-sm text-muted-foreground">{t('financial.invoice')}</p>
+   237→                <p className="text-2xl font-bold">{mockInvoices.length}</p>
+   238→                <p className="text-xs text-red-600 mt-1">{overdueInvoices} overdue</p>
+   239→              </div>
+   240→              <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+   241→                <Receipt className="h-5 w-5" />
+   242→              </div>
+   243→            </div>
+   244→          </CardContent>
+   245→        </Card>
+   246→      </motion.div>
+   247→
+   248→      {/* ── Main Tabs ── */}
+   249→      <motion.div variants={itemVariants}>
+   250→        <Tabs value={activeTab} onValueChange={setActiveTab}>
+   251→          <TabsList className="bg-emerald-50 w-full sm:w-auto">
+   252→            <TabsTrigger value="quotes" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white flex-1 sm:flex-none">
+   253→              {t('dashboard.quotes')}
+   254→            </TabsTrigger>
+   255→            <TabsTrigger value="proposals" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white flex-1 sm:flex-none">
+   256→              {t('financial.proposal')}
+   257→            </TabsTrigger>
+   258→            <TabsTrigger value="payments" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white flex-1 sm:flex-none">
+   259→              {t('financial.payment')}
+   260→            </TabsTrigger>
+   261→            <TabsTrigger value="invoices" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white flex-1 sm:flex-none">
+   262→              {t('financial.invoice')}
+   263→            </TabsTrigger>
+   264→          </TabsList>
+   265→
+   266→          {/* ── Quotes Tab ── */}
+   267→          <TabsContent value="quotes" className="space-y-4 mt-4">
+   268→            {/* Request New Quote */}
+   269→            <Card>
+   270→              <CardHeader>
+   271→                <div className="flex items-center justify-between">
+   272→                  <CardTitle className="text-lg flex items-center gap-2">
+   273→                    <Plus className="h-5 w-5 text-emerald-600" />
+   274→                    {t('financial.quoteRequestTitle')}
+   275→                  </CardTitle>
+   276→                </div>
+   277→                <CardDescription>{t('financial.quoteRequestDesc')}</CardDescription>
+   278→              </CardHeader>
+   279→              <CardContent>
+   280→                <Dialog open={quoteDialogOpen} onOpenChange={setQuoteDialogOpen}>
+   281→                  <DialogTrigger asChild>
+   282→                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
+   283→                      <Plus className="h-4 w-4 mr-2" />
+   284→                      {t('dashboard.quoteRequest')}
+   285→                    </Button>
+   286→                  </DialogTrigger>
+   287→                  <DialogContent className="sm:max-w-lg">
+   288→                    <DialogHeader>
+   289→                      <DialogTitle>{t('financial.quoteRequestTitle')}</DialogTitle>
+   290→                      <DialogDescription>{t('financial.quoteRequestDesc')}</DialogDescription>
+   291→                    </DialogHeader>
+   292→                    <div className="space-y-4">
+   293→                      <div className="space-y-2">
+   294→                        <Label>{t('services.title')}</Label>
+   295→                        <Select value={newQuoteService} onValueChange={setNewQuoteService}>
+   296→                          <SelectTrigger className="w-full">
+   297→                            <SelectValue placeholder="Select a service" />
+   298→                          </SelectTrigger>
+   299→                          <SelectContent>
+   300→                            <SelectItem value="web-dev">{t('services.webDev')}</SelectItem>
+   301→                            <SelectItem value="mobile-dev">{t('services.mobileDev')}</SelectItem>
+   302→                            <SelectItem value="cloud">{t('services.cloud')}</SelectItem>
+   303→                            <SelectItem value="ai">{t('services.ai')}</SelectItem>
+   304→                            <SelectItem value="consulting">{t('services.consulting')}</SelectItem>
+   305→                            <SelectItem value="design">{t('services.design')}</SelectItem>
+   306→                            <SelectItem value="seo">{t('services.seo')}</SelectItem>
+   307→                            <SelectItem value="maintenance">{t('services.maintenance')}</SelectItem>
+   308→                          </SelectContent>
+   309→                        </Select>
+   310→                      </div>
+   311→                      <div className="space-y-2">
+   312→                        <Label>{t('financial.description')}</Label>
+   313→                        <Textarea
+   314→                          value={newQuoteDescription}
+   315→                          onChange={(e) => setNewQuoteDescription(e.target.value)}
+   316→                          placeholder="Describe your requirements..."
+   317→                        />
+   318→                      </div>
+   319→                      <div className="space-y-2">
+   320→                        <Label>{t('financial.amount')} ({t('financial.currency')})</Label>
+   321→                        <Input
+   322→                          type="number"
+   323→                          value={newQuoteBudget}
+   324→                          onChange={(e) => setNewQuoteBudget(e.target.value)}
+   325→                          placeholder="Estimated budget in MT"
+   326→                        />
+   327→                      </div>
+   328→                    </div>
+   329→                    <DialogFooter className="mt-4">
+   330→                      <Button variant="outline" onClick={() => setQuoteDialogOpen(false)}>
+   331→                        {t('common.cancel')}
+   332→                      </Button>
+   333→                      <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={handleSubmitQuote}>
+   334→                        <Send className="h-4 w-4 mr-2" />
+   335→                        {t('common.confirm')}
+   336→                      </Button>
+   337→                    </DialogFooter>
+   338→                  </DialogContent>
+   339→                </Dialog>
+   340→              </CardContent>
+   341→            </Card>
+   342→
+   343→            {/* Existing Quotes List */}
+   344→            <Card>
+   345→              <CardHeader>
+   346→                <CardTitle className="text-lg flex items-center gap-2">
+   347→                  <FileText className="h-5 w-5 text-emerald-600" />
+   348→                  {t('dashboard.quotesHistory')}
+   349→                </CardTitle>
+   350→              </CardHeader>
+   351→              <CardContent>
+   352→                <Table>
+   353→                  <TableHeader>
+   354→                    <TableRow>
+   355→                      <TableHead>ID</TableHead>
+   356→                      <TableHead>{t('financial.item')}</TableHead>
+   357→                      <TableHead>{t('financial.description')}</TableHead>
+   358→                      <TableHead>{t('financial.amount')}</TableHead>
+   359→                      <TableHead>{t('common.status')}</TableHead>
+   360→                      <TableHead>{t('common.createdAt')}</TableHead>
+   361→                      <TableHead>{t('common.actions')}</TableHead>
+   362→                    </TableRow>
+   363→                  </TableHeader>
+   364→                  <TableBody>
+   365→                    {mockQuotes.map((quote) => (
+   366→                      <TableRow key={quote.id}>
+   367→                        <TableCell className="font-medium">{quote.id}</TableCell>
+   368→                        <TableCell>{quote.service}</TableCell>
+   369→                        <TableCell className="max-w-[200px] truncate">{quote.description}</TableCell>
+   370→                        <TableCell className="font-semibold">{formatCurrency(quote.amount)}</TableCell>
+   371→                        <TableCell>{statusBadge(quote.status)}</TableCell>
+   372→                        <TableCell>{formatDate(quote.date)}</TableCell>
+   373→                        <TableCell>
+   374→                          <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+   375→                            <Eye className="h-4 w-4" />
+   376→                          </Button>
+   377→                        </TableCell>
+   378→                      </TableRow>
+   379→                    ))}
+   380→                  </TableBody>
+   381→                </Table>
+   382→              </CardContent>
+   383→            </Card>
+   384→          </TabsContent>
+   385→
+   386→          {/* ── Proposals Tab ── */}
+   387→          <TabsContent value="proposals" className="mt-4">
+   388→            <Card>
+   389→              <CardHeader>
+   390→                <CardTitle className="text-lg flex items-center gap-2">
+   391→                  <Send className="h-5 w-5 text-emerald-600" />
+   392→                  {t('financial.proposal')}
+   393→                </CardTitle>
+   394→              </CardHeader>
+   395→              <CardContent>
+   396→                <Table>
+   397→                  <TableHeader>
+   398→                    <TableRow>
+   399→                      <TableHead>ID</TableHead>
+   400→                      <TableHead>Client</TableHead>
+   401→                      <TableHead>{t('common.details')}</TableHead>
+   402→                      <TableHead>{t('financial.amount')}</TableHead>
+   403→                      <TableHead>{t('common.status')}</TableHead>
+   404→                      <TableHead>{t('common.createdAt')}</TableHead>
+   405→                      <TableHead>{t('common.actions')}</TableHead>
+   406→                    </TableRow>
+   407→                  </TableHeader>
+   408→                  <TableBody>
+   409→                    {mockProposals.map((proposal) => (
+   410→                      <TableRow key={proposal.id}>
+   411→                        <TableCell className="font-medium">{proposal.id}</TableCell>
+   412→                        <TableCell>{proposal.client}</TableCell>
+   413→                        <TableCell>{proposal.title}</TableCell>
+   414→                        <TableCell className="font-semibold">{formatCurrency(proposal.amount)}</TableCell>
+   415→                        <TableCell>{statusBadge(proposal.status)}</TableCell>
+   416→                        <TableCell>{formatDate(proposal.date)}</TableCell>
+   417→                        <TableCell>
+   418→                          <div className="flex gap-1">
+   419→                            <Button variant="ghost" size="sm" className="text-emerald-600">
+   420→                              <Eye className="h-4 w-4" />
+   421→                            </Button>
+   422→                            {proposal.status === 'sent' && (
+   423→                              <>
+   424→                                <Button variant="ghost" size="sm" className="text-emerald-600">
+   425→                                  <CheckCircle2 className="h-4 w-4" />
+   426→                                </Button>
+   427→                                <Button variant="ghost" size="sm" className="text-red-500">
+   428→                                  <XCircle className="h-4 w-4" />
+   429→                                </Button>
+   430→                              </>
+   431→                            )}
+   432→                          </div>
+   433→                        </TableCell>
+   434→                      </TableRow>
+   435→                    ))}
+   436→                  </TableBody>
+   437→                </Table>
+   438→              </CardContent>
+   439→            </Card>
+   440→          </TabsContent>
+   441→
+   442→          {/* ── Payments Tab ── */}
+   443→          <TabsContent value="payments" className="space-y-4 mt-4">
+   444→            {/* Payment Methods Info */}
+   445→            <Card className="border-l-4 border-l-emerald-500">
+   446→              <CardHeader>
+   447→                <CardTitle className="text-lg">{t('financial.paymentMethod')}</CardTitle>
+   448→              </CardHeader>
+   449→              <CardContent>
+   450→                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+   451→                  <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-100 hover:border-emerald-300 transition-colors">
+   452→                    <div className="flex items-center gap-2 mb-2">
+   453→                      <Phone className="h-5 w-5 text-emerald-600" />
+   454→                      <h4 className="font-semibold">{t('financial.mpesa')}</h4>
+   455→                    </div>
+   456→                    <p className="text-sm text-muted-foreground mb-3">{t('financial.mpesaPay')}</p>
+   457→                    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Instant</Badge>
+   458→                  </div>
+   459→                  <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-100 hover:border-emerald-300 transition-colors">
+   460→                    <div className="flex items-center gap-2 mb-2">
+   461→                      <Building2 className="h-5 w-5 text-emerald-600" />
+   462→                      <h4 className="font-semibold">{t('financial.transfer')}</h4>
+   463→                    </div>
+   464→                    <p className="text-sm text-muted-foreground mb-3">Direct bank transfer</p>
+   465→                    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">1-2 days</Badge>
+   466→                  </div>
+   467→                  <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-100 hover:border-emerald-300 transition-colors">
+   468→                    <div className="flex items-center gap-2 mb-2">
+   469→                      <BanknoteIcon className="h-5 w-5 text-emerald-600" />
+   470→                      <h4 className="font-semibold">Deposit</h4>
+   471→                    </div>
+   472→                    <p className="text-sm text-muted-foreground mb-3">Cash deposit at bank</p>
+   473→                    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Same day</Badge>
+   474→                  </div>
+   475→                </div>
+   476→              </CardContent>
+   477→            </Card>
+   478→
+   479→            {/* Payment History */}
+   480→            <Card>
+   481→              <CardHeader>
+   482→                <CardTitle className="text-lg flex items-center gap-2">
+   483→                  <CreditCard className="h-5 w-5 text-emerald-600" />
+   484→                  {t('dashboard.paymentHistory')}
+   485→                </CardTitle>
+   486→              </CardHeader>
+   487→              <CardContent>
+   488→                <Table>
+   489→                  <TableHeader>
+   490→                    <TableRow>
+   491→                      <TableHead>ID</TableHead>
+   492→                      <TableHead>{t('financial.description')}</TableHead>
+   493→                      <TableHead>{t('financial.paymentMethod')}</TableHead>
+   494→                      <TableHead>{t('financial.amount')}</TableHead>
+   495→                      <TableHead>{t('common.status')}</TableHead>
+   496→                      <TableHead>{t('common.createdAt')}</TableHead>
+   497→                    </TableRow>
+   498→                  </TableHeader>
+   499→                  <TableBody>
+   500→                    {mockPayments.map((payment) => (
+   501→                      <TableRow key={payment.id}>
+   502→                        <TableCell className="font-medium">{payment.id}</TableCell>
+   503→                        <TableCell>{payment.description}</TableCell>
+   504→                        <TableCell>{methodBadge(payment.method)}</TableCell>
+   505→                        <TableCell className="font-semibold">{formatCurrency(payment.amount)}</TableCell>
+   506→                        <TableCell>{statusBadge(payment.status)}</TableCell>
+   507→                        <TableCell>{formatDate(payment.date)}</TableCell>
+   508→                      </TableRow>
+   509→                    ))}
+   510→                  </TableBody>
+   511→                </Table>
+   512→              </CardContent>
+   513→            </Card>
+   514→          </TabsContent>
+   515→
+   516→          {/* ── Invoices Tab ── */}
+   517→          <TabsContent value="invoices" className="mt-4">
+   518→            <Card>
+   519→              <CardHeader>
+   520→                <CardTitle className="text-lg flex items-center gap-2">
+   521→                  <Receipt className="h-5 w-5 text-emerald-600" />
+   522→                  {t('financial.invoice')}
+   523→                </CardTitle>
+   524→              </CardHeader>
+   525→              <CardContent>
+   526→                <Table>
+   527→                  <TableHeader>
+   528→                    <TableRow>
+   529→                      <TableHead>{t('financial.invoiceNumber')}</TableHead>
+   530→                      <TableHead>Client</TableHead>
+   531→                      <TableHead>{t('financial.amount')}</TableHead>
+   532→                      <TableHead>{t('common.status')}</TableHead>
+   533→                      <TableHead>{t('financial.invoiceDate')}</TableHead>
+   534→                      <TableHead>{t('financial.invoiceDueDate')}</TableHead>
+   535→                      <TableHead>{t('common.actions')}</TableHead>
+   536→                    </TableRow>
+   537→                  </TableHeader>
+   538→                  <TableBody>
+   539→                    {mockInvoices.map((invoice) => (
+   540→                      <TableRow key={invoice.id}>
+   541→                        <TableCell className="font-medium">{invoice.id}</TableCell>
+   542→                        <TableCell>{invoice.client}</TableCell>
+   543→                        <TableCell className="font-semibold">{formatCurrency(invoice.amount)}</TableCell>
+   544→                        <TableCell>{statusBadge(invoice.status)}</TableCell>
+   545→                        <TableCell>{formatDate(invoice.date)}</TableCell>
+   546→                        <TableCell>{formatDate(invoice.dueDate)}</TableCell>
+   547→                        <TableCell>
+   548→                          <div className="flex gap-1">
+   549→                            <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+   550→                              <Eye className="h-4 w-4" />
+   551→                            </Button>
+   552→                            <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+   553→                              <Download className="h-4 w-4" />
+   554→                            </Button>
+   555→                          </div>
+   556→                        </TableCell>
+   557→                      </TableRow>
+   558→                    ))}
+   559→                  </TableBody>
+   560→                </Table>
+   561→              </CardContent>
+   562→            </Card>
+   563→          </TabsContent>
+   564→        </Tabs>
+   565→      </motion.div>
+   566→    </motion.div>
+   567→  );
+   568→}
+   569→

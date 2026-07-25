@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   FileText,
@@ -22,6 +22,7 @@ import {
   Filter,
   DollarSign,
   TrendingUp,
+  Inbox,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -55,6 +56,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
 
 // ── Animation variants ──
@@ -71,60 +74,158 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
 };
 
-// ── Mock data ──
-const mockQuotes = [
-  { id: 'Q-001', service: 'Website Development', description: 'Corporate website with 10 pages', amount: 75000, status: 'approved', date: '2025-01-15', validUntil: '2025-02-15' },
-  { id: 'Q-002', service: 'Mobile App Development', description: 'Android/iOS app for banking', amount: 150000, status: 'pending', date: '2025-02-20', validUntil: '2025-03-20' },
-  { id: 'Q-003', service: 'Cloud Infrastructure', description: 'AWS setup and monitoring', amount: 45000, status: 'rejected', date: '2025-03-10', validUntil: '2025-04-10' },
-  { id: 'Q-004', service: 'SEO & Marketing', description: '6-month SEO campaign', amount: 25000, status: 'approved', date: '2025-04-05', validUntil: '2025-05-05' },
-  { id: 'Q-005', service: 'AI Integration', description: 'Chatbot and analytics AI', amount: 120000, status: 'pending', date: '2025-05-01', validUntil: '2025-06-01' },
-  { id: 'Q-006', service: 'UI/UX Design', description: 'App redesign and prototyping', amount: 35000, status: 'approved', date: '2025-05-20', validUntil: '2025-06-20' },
-];
+// ── Types for API data ──
+interface ApiQuote {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  createdAt: string;
+  proposals: {
+    id: string;
+    title: string;
+    description: string | null;
+    totalAmount: number | null;
+    status: string;
+    validUntil: string | null;
+    createdAt: string;
+  }[];
+}
 
-const mockProposals = [
-  { id: 'P-001', client: 'Empresa Alpha', title: 'E-commerce Solution', amount: 85000, status: 'sent', date: '2025-01-18' },
-  { id: 'P-002', client: 'Beta Solutions', title: 'Mobile Banking Platform', amount: 160000, status: 'accepted', date: '2025-02-22' },
-  { id: 'P-003', client: 'Gamma Corp', title: 'Cloud Migration Plan', amount: 50000, status: 'rejected', date: '2025-03-12' },
-  { id: 'P-004', client: 'Delta Services', title: 'Digital Marketing Package', amount: 28000, status: 'sent', date: '2025-04-08' },
-  { id: 'P-005', client: 'Omega Ltd', title: 'AI Analytics Suite', amount: 130000, status: 'accepted', date: '2025-05-03' },
-];
+interface ApiProposal {
+  id: string;
+  title: string;
+  description: string | null;
+  totalAmount: number | null;
+  status: string;
+  validUntil: string | null;
+  createdAt: string;
+  quote: {
+    id: string;
+    title: string;
+    userId: string;
+  };
+}
 
-const mockPayments = [
-  { id: 'PAY-001', description: 'Website Dev - Phase 1', amount: 37500, method: 'mpesa', status: 'confirmed', date: '2025-01-20' },
-  { id: 'PAY-002', description: 'SEO Package - Monthly', amount: 25000, method: 'transfer', status: 'confirmed', date: '2025-04-10' },
-  { id: 'PAY-003', description: 'Mobile App - Deposit', amount: 50000, method: 'deposit', status: 'pending', date: '2025-02-25' },
-  { id: 'PAY-004', description: 'Cloud Setup - Initial', amount: 22500, method: 'mpesa', status: 'confirmed', date: '2025-03-15' },
-  { id: 'PAY-005', description: 'UI/UX Design - Milestone', amount: 17500, method: 'transfer', status: 'confirmed', date: '2025-05-25' },
-];
+interface ApiPayment {
+  id: string;
+  amount: number;
+  method: string;
+  status: string;
+  createdAt: string;
+  proposal: {
+    id: string;
+    title: string;
+    description: string | null;
+    totalAmount: number | null;
+    status: string;
+    createdAt: string;
+    quote: {
+      id: string;
+      title: string;
+      status: string;
+    };
+  } | null;
+}
 
-const mockInvoices = [
-  { id: 'INV-001', client: 'Empresa Alpha', amount: 75000, status: 'paid', date: '2025-01-20', dueDate: '2025-02-20' },
-  { id: 'INV-002', client: 'Beta Solutions', amount: 50000, status: 'paid', date: '2025-02-25', dueDate: '2025-03-25' },
-  { id: 'INV-003', client: 'Delta Services', amount: 25000, status: 'unpaid', date: '2025-04-10', dueDate: '2025-05-10' },
-  { id: 'INV-004', client: 'Gamma Corp', amount: 45000, status: 'overdue', date: '2025-03-15', dueDate: '2025-04-15' },
-  { id: 'INV-005', client: 'Omega Ltd', amount: 120000, status: 'unpaid', date: '2025-05-01', dueDate: '2025-06-01' },
-];
+interface ApiInvoice {
+  id: string;
+  number: string;
+  totalAmount: number;
+  status: string;
+  dueDate: string | null;
+  createdAt: string;
+  proposal: {
+    id: string;
+    title: string;
+    quote: {
+      id: string;
+      title: string;
+      userId: string;
+    };
+  };
+  items: {
+    id: string;
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+  }[];
+}
 
 export function FinancialSection() {
   const { t, formatCurrency, formatDate } = useLanguage();
+  const user = useAuthStore((s) => s.user);
+
   const [activeTab, setActiveTab] = useState('quotes');
   const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
   const [newQuoteService, setNewQuoteService] = useState('');
   const [newQuoteDescription, setNewQuoteDescription] = useState('');
   const [newQuoteBudget, setNewQuoteBudget] = useState('');
 
+  const [quotes, setQuotes] = useState<ApiQuote[]>([]);
+  const [payments, setPayments] = useState<ApiPayment[]>([]);
+  const [invoices, setInvoices] = useState<ApiInvoice[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [submittingQuote, setSubmittingQuote] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    Promise.all([
+      fetch(`/api/quotes?userId=${user.id}`).then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      }),
+      fetch(`/api/payments?userId=${user.id}`).then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      }),
+      fetch(`/api/invoices?userId=${user.id}`).then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      }),
+    ])
+      .then(([quotesJson, paymentsJson, invoicesJson]) => {
+        if (quotesJson.success) setQuotes(quotesJson.data || []);
+        if (paymentsJson.success) setPayments(paymentsJson.data || []);
+        if (invoicesJson.success) setInvoices(invoicesJson.data || []);
+      })
+      .catch((err) => {
+        setError(err.message || 'Network error');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [user?.id]);
+
+  // Derive proposals from quotes
+  const proposals: ApiProposal[] = quotes.flatMap((q) =>
+    q.proposals.map((p) => ({
+      ...p,
+      quote: { id: q.id, title: q.title, userId: q.id },
+    }))
+  );
+
   const statusBadge = (status: string) => {
     switch (status) {
       case 'approved':
+      case 'accepted':
       case 'confirmed':
       case 'paid':
-      case 'accepted':
+      case 'resolved':
+      case 'closed':
         return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>;
       case 'pending':
       case 'sent':
+      case 'open':
+      case 'in_progress':
+      case 'issued':
       case 'unpaid':
         return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{t('common.pending')}</Badge>;
       case 'rejected':
+      case 'failed':
         return <Badge className="bg-red-100 text-red-700 border-red-200">{t('common.rejected')}</Badge>;
       case 'overdue':
         return <Badge className="bg-red-100 text-red-800 border-red-200">{t('financial.invoiceOverdue')}</Badge>;
@@ -161,19 +262,127 @@ export function FinancialSection() {
     }
   };
 
-  const handleSubmitQuote = () => {
-    // Mock submit — just close the dialog
-    setQuoteDialogOpen(false);
-    setNewQuoteService('');
-    setNewQuoteDescription('');
-    setNewQuoteBudget('');
+  const handleSubmitQuote = async () => {
+    if (!user?.id || !newQuoteService) return;
+
+    setSubmittingQuote(true);
+    try {
+      const res = await fetch('/api/quotes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          title: newQuoteService,
+          description: newQuoteDescription,
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        // Refresh quotes list
+        const quotesRes = await fetch(`/api/quotes?userId=${user.id}`);
+        const quotesJson = await quotesRes.json();
+        if (quotesJson.success) setQuotes(quotesJson.data || []);
+
+        setQuoteDialogOpen(false);
+        setNewQuoteService('');
+        setNewQuoteDescription('');
+        setNewQuoteBudget('');
+      }
+    } catch (err) {
+      console.error('Failed to submit quote:', err);
+    } finally {
+      setSubmittingQuote(false);
+    }
   };
 
-  // Summary stats
-  const totalQuotesValue = mockQuotes.reduce((s, q) => s + q.amount, 0);
-  const totalPaymentsValue = mockPayments.reduce((s, p) => s + p.amount, 0);
-  const totalInvoicesValue = mockInvoices.reduce((s, i) => s + i.amount, 0);
-  const overdueInvoices = mockInvoices.filter(i => i.status === 'overdue').length;
+  // Summary stats from real data
+  const totalQuotesValue = proposals.reduce((s, p) => s + (p.totalAmount || 0), 0);
+  const totalPaymentsValue = payments.reduce((s, p) => s + p.amount, 0);
+  const totalInvoicesValue = invoices.reduce((s, i) => s + i.totalAmount, 0);
+  const overdueInvoices = invoices.filter((i) => i.status === 'overdue').length;
+  const acceptedProposals = proposals.filter((p) => p.status === 'accepted').length;
+  const confirmedPayments = payments.filter((p) => p.status === 'confirmed').length;
+
+  // ── Loading skeletons ──
+  if (loading) {
+    return (
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="border-l-4 border-l-emerald-500">
+              <CardContent className="p-4 sm:p-5">
+                <Skeleton className="h-4 w-20 mb-2" />
+                <Skeleton className="h-8 w-24 mb-1" />
+                <Skeleton className="h-3 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <Card>
+          <CardContent className="p-6">
+            <Skeleton className="h-10 w-full mb-4" />
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Skeleton key={i} className="h-14 rounded-lg" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  }
+
+  // ── Error state ──
+  if (error) {
+    return (
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6"
+      >
+        <Card className="border-l-4 border-l-red-500">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-6 w-6 text-red-500" />
+              <div>
+                <h3 className="font-semibold text-red-700">Failed to load financial data</h3>
+                <p className="text-sm text-muted-foreground">{error}</p>
+              </div>
+            </div>
+            <Button
+              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={() => {
+                setError(null);
+                setLoading(true);
+                Promise.all([
+                  fetch(`/api/quotes?userId=${user?.id}`).then((r) => r.json()),
+                  fetch(`/api/payments?userId=${user?.id}`).then((r) => r.json()),
+                  fetch(`/api/invoices?userId=${user?.id}`).then((r) => r.json()),
+                ])
+                  .then(([q, p, i]) => {
+                    if (q.success) setQuotes(q.data || []);
+                    if (p.success) setPayments(p.data || []);
+                    if (i.success) setInvoices(i.data || []);
+                  })
+                  .catch((err) => setError(err.message))
+                  .finally(() => setLoading(false));
+              }}
+            >
+              {t('common.retry') || 'Retry'}
+            </Button>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -189,8 +398,10 @@ export function FinancialSection() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{t('dashboard.quotes')}</p>
-                <p className="text-2xl font-bold">{mockQuotes.length}</p>
-                <p className="text-xs text-emerald-600 mt-1">Value: {formatCurrency(totalQuotesValue)}</p>
+                <p className="text-2xl font-bold">{quotes.length}</p>
+                <p className="text-xs text-emerald-600 mt-1">
+                  {totalQuotesValue > 0 ? `Value: ${formatCurrency(totalQuotesValue)}` : 'No proposals yet'}
+                </p>
               </div>
               <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
                 <FileText className="h-5 w-5" />
@@ -204,8 +415,8 @@ export function FinancialSection() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{t('financial.proposal')}</p>
-                <p className="text-2xl font-bold">{mockProposals.length}</p>
-                <p className="text-xs text-emerald-600 mt-1">2 accepted</p>
+                <p className="text-2xl font-bold">{proposals.length}</p>
+                <p className="text-xs text-emerald-600 mt-1">{acceptedProposals} accepted</p>
               </div>
               <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
                 <Send className="h-5 w-5" />
@@ -220,7 +431,7 @@ export function FinancialSection() {
               <div>
                 <p className="text-sm text-muted-foreground">{t('financial.payment')}</p>
                 <p className="text-2xl font-bold">{formatCurrency(totalPaymentsValue)}</p>
-                <p className="text-xs text-emerald-600 mt-1">4 confirmed</p>
+                <p className="text-xs text-emerald-600 mt-1">{confirmedPayments} confirmed</p>
               </div>
               <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
                 <CreditCard className="h-5 w-5" />
@@ -234,7 +445,7 @@ export function FinancialSection() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{t('financial.invoice')}</p>
-                <p className="text-2xl font-bold">{mockInvoices.length}</p>
+                <p className="text-2xl font-bold">{invoices.length}</p>
                 <p className="text-xs text-red-600 mt-1">{overdueInvoices} overdue</p>
               </div>
               <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
@@ -330,9 +541,13 @@ export function FinancialSection() {
                       <Button variant="outline" onClick={() => setQuoteDialogOpen(false)}>
                         {t('common.cancel')}
                       </Button>
-                      <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={handleSubmitQuote}>
+                      <Button
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                        onClick={handleSubmitQuote}
+                        disabled={submittingQuote || !newQuoteService}
+                      >
                         <Send className="h-4 w-4 mr-2" />
-                        {t('common.confirm')}
+                        {submittingQuote ? 'Submitting...' : t('common.confirm')}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -349,36 +564,42 @@ export function FinancialSection() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>{t('financial.item')}</TableHead>
-                      <TableHead>{t('financial.description')}</TableHead>
-                      <TableHead>{t('financial.amount')}</TableHead>
-                      <TableHead>{t('common.status')}</TableHead>
-                      <TableHead>{t('common.createdAt')}</TableHead>
-                      <TableHead>{t('common.actions')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockQuotes.map((quote) => (
-                      <TableRow key={quote.id}>
-                        <TableCell className="font-medium">{quote.id}</TableCell>
-                        <TableCell>{quote.service}</TableCell>
-                        <TableCell className="max-w-[200px] truncate">{quote.description}</TableCell>
-                        <TableCell className="font-semibold">{formatCurrency(quote.amount)}</TableCell>
-                        <TableCell>{statusBadge(quote.status)}</TableCell>
-                        <TableCell>{formatDate(quote.date)}</TableCell>
-                        <TableCell>
-                          <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+                {quotes.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Inbox className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground">{t('common.noData') || 'No quotes found'}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t('financial.quoteRequestDesc') || 'Request your first quote'}</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>{t('financial.item')}</TableHead>
+                        <TableHead>{t('financial.description')}</TableHead>
+                        <TableHead>{t('common.status')}</TableHead>
+                        <TableHead>{t('common.createdAt')}</TableHead>
+                        <TableHead>{t('common.actions')}</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {quotes.map((quote) => (
+                        <TableRow key={quote.id}>
+                          <TableCell className="font-medium">{quote.id.slice(0, 8)}</TableCell>
+                          <TableCell>{quote.title}</TableCell>
+                          <TableCell className="max-w-[200px] truncate">{quote.description || '—'}</TableCell>
+                          <TableCell>{statusBadge(quote.status)}</TableCell>
+                          <TableCell>{formatDate(quote.createdAt)}</TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -393,48 +614,56 @@ export function FinancialSection() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Client</TableHead>
-                      <TableHead>{t('common.details')}</TableHead>
-                      <TableHead>{t('financial.amount')}</TableHead>
-                      <TableHead>{t('common.status')}</TableHead>
-                      <TableHead>{t('common.createdAt')}</TableHead>
-                      <TableHead>{t('common.actions')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockProposals.map((proposal) => (
-                      <TableRow key={proposal.id}>
-                        <TableCell className="font-medium">{proposal.id}</TableCell>
-                        <TableCell>{proposal.client}</TableCell>
-                        <TableCell>{proposal.title}</TableCell>
-                        <TableCell className="font-semibold">{formatCurrency(proposal.amount)}</TableCell>
-                        <TableCell>{statusBadge(proposal.status)}</TableCell>
-                        <TableCell>{formatDate(proposal.date)}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="sm" className="text-emerald-600">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            {proposal.status === 'sent' && (
-                              <>
-                                <Button variant="ghost" size="sm" className="text-emerald-600">
-                                  <CheckCircle2 className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="sm" className="text-red-500">
-                                  <XCircle className="h-4 w-4" />
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </TableCell>
+                {proposals.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Send className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground">{t('common.noData') || 'No proposals yet'}</p>
+                    <p className="text-sm text-muted-foreground mt-1">Proposals are created when quotes are reviewed</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Quote</TableHead>
+                        <TableHead>{t('common.details')}</TableHead>
+                        <TableHead>{t('financial.amount')}</TableHead>
+                        <TableHead>{t('common.status')}</TableHead>
+                        <TableHead>{t('common.createdAt')}</TableHead>
+                        <TableHead>{t('common.actions')}</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {proposals.map((proposal) => (
+                        <TableRow key={proposal.id}>
+                          <TableCell className="font-medium">{proposal.id.slice(0, 8)}</TableCell>
+                          <TableCell>{proposal.quote.title}</TableCell>
+                          <TableCell>{proposal.title}</TableCell>
+                          <TableCell className="font-semibold">{formatCurrency(proposal.totalAmount || 0)}</TableCell>
+                          <TableCell>{statusBadge(proposal.status)}</TableCell>
+                          <TableCell>{formatDate(proposal.createdAt)}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="sm" className="text-emerald-600">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              {proposal.status === 'sent' && (
+                                <>
+                                  <Button variant="ghost" size="sm" className="text-emerald-600">
+                                    <CheckCircle2 className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" className="text-red-500">
+                                    <XCircle className="h-4 w-4" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -485,30 +714,38 @@ export function FinancialSection() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>{t('financial.description')}</TableHead>
-                      <TableHead>{t('financial.paymentMethod')}</TableHead>
-                      <TableHead>{t('financial.amount')}</TableHead>
-                      <TableHead>{t('common.status')}</TableHead>
-                      <TableHead>{t('common.createdAt')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockPayments.map((payment) => (
-                      <TableRow key={payment.id}>
-                        <TableCell className="font-medium">{payment.id}</TableCell>
-                        <TableCell>{payment.description}</TableCell>
-                        <TableCell>{methodBadge(payment.method)}</TableCell>
-                        <TableCell className="font-semibold">{formatCurrency(payment.amount)}</TableCell>
-                        <TableCell>{statusBadge(payment.status)}</TableCell>
-                        <TableCell>{formatDate(payment.date)}</TableCell>
+                {payments.length === 0 ? (
+                  <div className="text-center py-12">
+                    <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground">{t('common.noData') || 'No payments found'}</p>
+                    <p className="text-sm text-muted-foreground mt-1">Payments are linked to accepted proposals</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>{t('financial.description')}</TableHead>
+                        <TableHead>{t('financial.paymentMethod')}</TableHead>
+                        <TableHead>{t('financial.amount')}</TableHead>
+                        <TableHead>{t('common.status')}</TableHead>
+                        <TableHead>{t('common.createdAt')}</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {payments.map((payment) => (
+                        <TableRow key={payment.id}>
+                          <TableCell className="font-medium">{payment.id.slice(0, 8)}</TableCell>
+                          <TableCell>{payment.proposal?.title || `Payment ${payment.id.slice(0, 8)}`}</TableCell>
+                          <TableCell>{methodBadge(payment.method)}</TableCell>
+                          <TableCell className="font-semibold">{formatCurrency(payment.amount)}</TableCell>
+                          <TableCell>{statusBadge(payment.status)}</TableCell>
+                          <TableCell>{formatDate(payment.createdAt)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -523,41 +760,49 @@ export function FinancialSection() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t('financial.invoiceNumber')}</TableHead>
-                      <TableHead>Client</TableHead>
-                      <TableHead>{t('financial.amount')}</TableHead>
-                      <TableHead>{t('common.status')}</TableHead>
-                      <TableHead>{t('financial.invoiceDate')}</TableHead>
-                      <TableHead>{t('financial.invoiceDueDate')}</TableHead>
-                      <TableHead>{t('common.actions')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockInvoices.map((invoice) => (
-                      <TableRow key={invoice.id}>
-                        <TableCell className="font-medium">{invoice.id}</TableCell>
-                        <TableCell>{invoice.client}</TableCell>
-                        <TableCell className="font-semibold">{formatCurrency(invoice.amount)}</TableCell>
-                        <TableCell>{statusBadge(invoice.status)}</TableCell>
-                        <TableCell>{formatDate(invoice.date)}</TableCell>
-                        <TableCell>{formatDate(invoice.dueDate)}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                {invoices.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Receipt className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground">{t('common.noData') || 'No invoices found'}</p>
+                    <p className="text-sm text-muted-foreground mt-1">Invoices are generated from accepted proposals</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t('financial.invoiceNumber')}</TableHead>
+                        <TableHead>Proposal</TableHead>
+                        <TableHead>{t('financial.amount')}</TableHead>
+                        <TableHead>{t('common.status')}</TableHead>
+                        <TableHead>{t('financial.invoiceDate')}</TableHead>
+                        <TableHead>{t('financial.invoiceDueDate')}</TableHead>
+                        <TableHead>{t('common.actions')}</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {invoices.map((invoice) => (
+                        <TableRow key={invoice.id}>
+                          <TableCell className="font-medium">{invoice.number}</TableCell>
+                          <TableCell>{invoice.proposal?.title || '—'}</TableCell>
+                          <TableCell className="font-semibold">{formatCurrency(invoice.totalAmount)}</TableCell>
+                          <TableCell>{statusBadge(invoice.status)}</TableCell>
+                          <TableCell>{formatDate(invoice.createdAt)}</TableCell>
+                          <TableCell>{invoice.dueDate ? formatDate(invoice.dueDate) : '—'}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

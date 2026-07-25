@@ -12,6 +12,10 @@ export interface User {
   email: string;
   role: UserRole;
   avatar: string | null;
+  phone?: string | null;
+  company?: string | null;
+  bio?: string | null;
+  address?: string | null;
 }
 
 export type NotificationType = 'info' | 'success' | 'warning' | 'error';
@@ -36,24 +40,36 @@ export type Language = 'en' | 'pt' | 'fr';
 export const DEMO_USERS: Record<UserRole, User> = {
   admin: {
     id: 'demo-admin-001',
-    name: 'Carlos Mutemba',
+    name: 'Carlos Silva',
     email: 'admin@carsai.mz',
     role: 'admin',
     avatar: null,
+    phone: '+258 84 123 4567',
+    company: 'Carsai Moçambique',
+    bio: 'Director Executivo da Carsai Moçambique',
+    address: 'Maputo, Moçambique',
   },
   partner: {
     id: 'demo-partner-001',
-    name: 'Ana Rodrigues',
+    name: 'Ana Ferreira',
     email: 'partner@carsai.mz',
     role: 'partner',
     avatar: null,
+    phone: '+258 85 234 5678',
+    company: 'Digital Solutions MZ',
+    bio: 'Parceira estratégica com foco em marketing digital',
+    address: 'Beira, Moçambique',
   },
   user: {
     id: 'demo-user-001',
-    name: 'João Silva',
+    name: 'João Machado',
     email: 'user@carsai.mz',
     role: 'user',
     avatar: null,
+    phone: '+258 86 345 6789',
+    company: 'Tech Startup MZ',
+    bio: 'Empreendedor tech em Maputo',
+    address: 'Maputo, Moçambique',
   },
 };
 

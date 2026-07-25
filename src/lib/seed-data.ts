@@ -1,8 +1,81 @@
 import { db } from '@/lib/db'
 
 /**
+ * Helper: Convert an SVG string to a base64 data URI.
+ * Used to generate compact placeholder images for seed data.
+ */
+function svgToDataUri(svg: string): string {
+  const base64 = Buffer.from(svg).toString('base64')
+  return `data:image/svg+xml;base64,${base64}`
+}
+
+// === Base64 Placeholder SVGs ===
+
+const AVATAR_SVG_TEMPLATE = (initials: string, bgColor: string, textColor: string = '#fff') =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><circle cx="40" cy="40" r="40" fill="${bgColor}"/><text x="40" y="44" font-family="Arial,sans-serif" font-size="28" font-weight="bold" fill="${textColor}" text-anchor="middle" dominant-baseline="middle">${initials}</text></svg>`
+
+const PROJECT_IMAGE_SVG = (title: string, gradientFrom: string, gradientTo: string) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="240" viewBox="0 0 400 240"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${gradientFrom}"/><stop offset="100%" style="stop-color:${gradientTo}"/></linearGradient></defs><rect width="400" height="240" fill="url(#g)" rx="8"/><text x="200" y="130" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="#fff" text-anchor="middle">${title}</text></svg>`
+
+const FEATURED_IMAGE_SVG = (title: string, gradientFrom: string, gradientTo: string) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${gradientFrom}"/><stop offset="100%" style="stop-color:${gradientTo}"/></linearGradient></defs><rect width="600" height="300" fill="url(#g)" rx="6"/><text x="300" y="160" font-family="Arial,sans-serif" font-size="22" font-weight="bold" fill="#fff" text-anchor="middle">${title}</text></svg>`
+
+const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#10b981"/><path d="M8 16 L16 8 L24 16 L16 24 Z" fill="#fff"/></svg>`
+
+// Pre-generated base64 data URIs for seed data
+const AVATAR_ADMIN = svgToDataUri(AVATAR_SVG_TEMPLATE('CS', '#10b981'))
+const AVATAR_PARTNER = svgToDataUri(AVATAR_SVG_TEMPLATE('AF', '#8b5cf6'))
+const AVATAR_USER = svgToDataUri(AVATAR_SVG_TEMPLATE('JM', '#f59e0b'))
+
+const TESTIMONIAL_AVATARS = [
+  svgToDataUri(AVATAR_SVG_TEMPLATE('RM', '#2563eb')),
+  svgToDataUri(AVATAR_SVG_TEMPLATE('TN', '#dc2626')),
+  svgToDataUri(AVATAR_SVG_TEMPLATE('AZ', '#7c3aed')),
+  svgToDataUri(AVATAR_SVG_TEMPLATE('ML', '#059669')),
+]
+
+const PROJECT_IMAGES_DATA: Record<string, string[]> = {
+  'carsai-portal': [
+    svgToDataUri(PROJECT_IMAGE_SVG('Carsai Portal - Home', '#10b981', '#0d9488')),
+    svgToDataUri(PROJECT_IMAGE_SVG('Carsai Portal - Dashboard', '#059669', '#047857')),
+  ],
+  'mpesa-dashboard': [
+    svgToDataUri(PROJECT_IMAGE_SVG('M-Pesa Dashboard - Analytics', '#2563eb', '#1d4ed8')),
+    svgToDataUri(PROJECT_IMAGE_SVG('M-Pesa Dashboard - Transactions', '#3b82f6', '#2563eb')),
+  ],
+  'edumoz-learning': [
+    svgToDataUri(PROJECT_IMAGE_SVG('EduMoz - Learning Platform', '#f59e0b', '#d97706')),
+    svgToDataUri(PROJECT_IMAGE_SVG('EduMoz - Course View', '#eab308', '#ca8a04')),
+  ],
+  'govmoz-digital': [
+    svgToDataUri(PROJECT_IMAGE_SVG('GovMoz - Digital Services', '#dc2626', '#b91c1c')),
+    svgToDataUri(PROJECT_IMAGE_SVG('GovMoz - Citizen Portal', '#ef4444', '#dc2626')),
+  ],
+  'agritech-platform': [
+    svgToDataUri(PROJECT_IMAGE_SVG('AgriTech - Farm Dashboard', '#22c55e', '#16a34a')),
+    svgToDataUri(PROJECT_IMAGE_SVG('AgriTech - Marketplace', '#4ade80', '#22c55e')),
+  ],
+  'healthconnect': [
+    svgToDataUri(PROJECT_IMAGE_SVG('HealthConnect - Telemedicine', '#0ea5e9', '#0284c7')),
+    svgToDataUri(PROJECT_IMAGE_SVG('HealthConnect - Appointments', '#38bdf8', '#0ea5e9')),
+  ],
+}
+
+const POST_FEATURED_IMAGES = [
+  svgToDataUri(FEATURED_IMAGE_SVG('Transformação Digital', '#10b981', '#047857')),
+  svgToDataUri(FEATURED_IMAGE_SVG('Next.js 16', '#2563eb', '#1d4ed8')),
+  svgToDataUri(FEATURED_IMAGE_SVG('Negócio Digital', '#f59e0b', '#d97706')),
+  svgToDataUri(FEATURED_IMAGE_SVG('UI Design Moçambique', '#8b5cf6', '#7c3aed')),
+  svgToDataUri(FEATURED_IMAGE_SVG('React Native MZ', '#0ea5e9', '#0284c7')),
+  svgToDataUri(FEATURED_IMAGE_SVG('IA & Futuro', '#dc2626', '#b91c1c')),
+]
+
+const LOGO_DATA_URI = svgToDataUri(LOGO_SVG)
+
+/**
  * Seeds the Carsai Mozambique database with demo data.
  * Clears existing data first to ensure clean state.
+ * Uses base64 data URIs for images and files instead of server file paths.
  */
 export async function seedDatabase() {
   console.log('🇲🇿 Starting Carsai Mozambique database seeding...')
@@ -39,6 +112,7 @@ export async function seedDatabase() {
   await db.user.deleteMany()
   await db.permission.deleteMany()
   await db.role.deleteMany()
+  await db.fileAttachment.deleteMany()
 
   // === 1. Roles ===
   console.log('Creating roles...')
@@ -63,13 +137,17 @@ export async function seedDatabase() {
     },
   })
 
-  // === 2. Demo Users ===
+  // === 2. Demo Users (with base64 avatars) ===
   console.log('Creating demo users...')
   const adminUser = await db.user.create({
     data: {
       email: 'admin@carsai.mz',
       name: 'Carlos Silva',
       phone: '+258 84 123 4567',
+      company: 'Carsai Moçambique',
+      bio: 'Director Executivo da Carsai Moçambique',
+      address: 'Maputo, Moçambique',
+      avatar: AVATAR_ADMIN,
       roleId: adminRole.id,
       isActive: true,
       emailVerified: true,
@@ -81,6 +159,10 @@ export async function seedDatabase() {
       email: 'partner@carsai.mz',
       name: 'Ana Ferreira',
       phone: '+258 85 234 5678',
+      company: 'Digital Solutions MZ',
+      bio: 'Parceira estratégica com foco em marketing digital',
+      address: 'Beira, Moçambique',
+      avatar: AVATAR_PARTNER,
       roleId: partnerRole.id,
       isActive: true,
       emailVerified: true,
@@ -92,21 +174,34 @@ export async function seedDatabase() {
       email: 'user@carsai.mz',
       name: 'João Machado',
       phone: '+258 86 345 6789',
+      company: 'Tech Startup MZ',
+      bio: 'Empreendedor tech em Maputo',
+      address: 'Maputo, Moçambique',
+      avatar: AVATAR_USER,
       roleId: userRole.id,
       isActive: true,
       emailVerified: true,
     },
   })
 
-  // === 3. Services ===
+  // === 3. Services (with base64 icon SVGs) ===
   console.log('Creating services...')
+  const serviceIconSvgs = {
+    'web-development': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#10b981"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="#fff" fill="none" stroke-width="1.5"/></svg>`,
+    'mobile-apps': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3" fill="#8b5cf6"/><rect x="7" y="4" width="10" height="14" rx="1" fill="#fff"/><circle cx="12" cy="19" r="1.5" fill="#fff"/></svg>`,
+    'ui-ux-design': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3" fill="#f59e0b"/><circle cx="8" cy="8" r="2" fill="#fff"/><rect x="12" y="6" width="8" height="2" rx="1" fill="#fff"/><rect x="4" y="14" width="16" height="6" rx="2" fill="#fff" opacity="0.9"/></svg>`,
+    'cloud-solutions': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" fill="#2563eb"/></svg>`,
+    'devops': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><rect x="2" y="8" width="20" height="8" rx="2" fill="#0ea5e9"/><circle cx="8" cy="12" r="2" fill="#fff"/><circle cx="16" cy="12" r="2" fill="#fff"/><line x1="10" y1="12" x2="14" y2="12" stroke="#fff" stroke-width="1.5"/></svg>`,
+    'ai-data-analytics': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#dc2626"/><circle cx="9" cy="10" r="2.5" fill="#fff"/><circle cx="15" cy="10" r="2.5" fill="#fff"/><path d="M8 16 Q12 19 16 16" stroke="#fff" stroke-width="1.5" fill="none"/></svg>`,
+  }
+
   const services = await Promise.all([
     db.service.create({
       data: {
         slug: 'web-development',
         title: 'Web Development',
         description: 'Desenvolvimento de websites e aplicações web modernas com Next.js, React e TypeScript. Soluções completas para empresas moçambicanas que necessitam de presença digital profissional.',
-        icon: 'Globe',
+        icon: svgToDataUri(serviceIconSvgs['web-development']),
         basePrice: 15000,
         isFeatured: true,
         isPublished: true,
@@ -118,7 +213,7 @@ export async function seedDatabase() {
         slug: 'mobile-apps',
         title: 'Mobile Apps',
         description: 'Desenvolvimento de aplicações móveis nativas e híbridas para Android e iOS. Integração com APIs locais como M-Pesa e serviços governamentais de Moçambique.',
-        icon: 'Smartphone',
+        icon: svgToDataUri(serviceIconSvgs['mobile-apps']),
         basePrice: 25000,
         isFeatured: true,
         isPublished: true,
@@ -130,7 +225,7 @@ export async function seedDatabase() {
         slug: 'ui-ux-design',
         title: 'UI/UX Design',
         description: 'Design de interfaces intuitivas e experiências de utilizador centradas no contexto moçambicano. Prototipagem, testes de usabilidade e design systems completos.',
-        icon: 'Palette',
+        icon: svgToDataUri(serviceIconSvgs['ui-ux-design']),
         basePrice: 8000,
         isFeatured: true,
         isPublished: true,
@@ -142,7 +237,7 @@ export async function seedDatabase() {
         slug: 'cloud-solutions',
         title: 'Cloud Solutions',
         description: 'Infraestrutura cloud e migração de sistemas para AWS, Azure e Google Cloud. Soluções de armazenamento e computação adaptadas às necessidades de empresas em Maputo e beyond.',
-        icon: 'Cloud',
+        icon: svgToDataUri(serviceIconSvgs['cloud-solutions']),
         basePrice: 12000,
         isFeatured: false,
         isPublished: true,
@@ -154,7 +249,7 @@ export async function seedDatabase() {
         slug: 'devops',
         title: 'DevOps',
         description: 'Automatização de pipelines CI/CD, monitorização e gestão de infraestrutura. Docker, Kubernetes e Terraform para operações eficientes em Moçambique.',
-        icon: 'Server',
+        icon: svgToDataUri(serviceIconSvgs['devops']),
         basePrice: 10000,
         isFeatured: false,
         isPublished: true,
@@ -166,7 +261,7 @@ export async function seedDatabase() {
         slug: 'ai-data-analytics',
         title: 'AI & Data Analytics',
         description: 'Inteligência artificial e análise de dados para decisões empresariais informadas. Machine learning, dashboards analytics e processamento de dados específicos para o mercado moçambicano.',
-        icon: 'Brain',
+        icon: svgToDataUri(serviceIconSvgs['ai-data-analytics']),
         basePrice: 20000,
         isFeatured: true,
         isPublished: true,
@@ -175,7 +270,7 @@ export async function seedDatabase() {
     }),
   ])
 
-  // === 4. Projects ===
+  // === 4. Projects (with base64 images) ===
   console.log('Creating projects...')
   const projects = await Promise.all([
     db.project.create({
@@ -186,6 +281,7 @@ export async function seedDatabase() {
         client: 'Carsai Mozambique',
         technologies: 'Next.js, React, TypeScript, Prisma, Tailwind CSS',
         demoUrl: 'https://carsai.mz',
+        images: JSON.stringify(PROJECT_IMAGES_DATA['carsai-portal']),
         isPublished: true,
         isFeatured: true,
       },
@@ -198,6 +294,7 @@ export async function seedDatabase() {
         client: 'Vodacom Mozambique',
         technologies: 'React, Node.js, PostgreSQL, Chart.js, M-Pesa API',
         demoUrl: 'https://mpesa-dashboard.carsai.mz',
+        images: JSON.stringify(PROJECT_IMAGES_DATA['mpesa-dashboard']),
         isPublished: true,
         isFeatured: true,
       },
@@ -210,6 +307,7 @@ export async function seedDatabase() {
         client: 'Ministério da Educação Mozambique',
         technologies: 'Next.js, Supabase, Tailwind CSS, Framer Motion',
         demoUrl: 'https://edumoz.carsai.mz',
+        images: JSON.stringify(PROJECT_IMAGES_DATA['edumoz-learning']),
         isPublished: true,
         isFeatured: true,
       },
@@ -222,6 +320,7 @@ export async function seedDatabase() {
         client: 'Governo de Mozambique',
         technologies: 'Angular, Java Spring, PostgreSQL, Docker, Kubernetes',
         demoUrl: 'https://govmoz.carsai.mz',
+        images: JSON.stringify(PROJECT_IMAGES_DATA['govmoz-digital']),
         isPublished: true,
         isFeatured: false,
       },
@@ -234,6 +333,7 @@ export async function seedDatabase() {
         client: 'AgriTech Mozambique',
         technologies: 'React Native, Node.js, MongoDB, TensorFlow Lite',
         demoUrl: 'https://agritech.carsai.mz',
+        images: JSON.stringify(PROJECT_IMAGES_DATA['agritech-platform']),
         isPublished: true,
         isFeatured: true,
       },
@@ -246,13 +346,40 @@ export async function seedDatabase() {
         client: 'Hospital Central de Maputo',
         technologies: 'Next.js, Socket.io, Prisma, WebRTC, Twilio',
         demoUrl: 'https://healthconnect.carsai.mz',
+        images: JSON.stringify(PROJECT_IMAGES_DATA['healthconnect']),
+        isPublished: true,
+        isFeatured: false,
+      },
+    }),
+    db.project.create({
+      data: {
+        slug: 'tourism-moz-portal',
+        title: 'Tourism Moz Portal',
+        description: 'Portal turístico para promover destinos moçambicanos - desde as praias de Tofo até à Ilha de Mozambique. Reservas online, mapas interativos e guias culturais.',
+        client: 'Ministério do Turismo Mozambique',
+        technologies: 'Next.js, MapboxGL, Stripe, Prisma, Tailwind CSS',
+        demoUrl: 'https://tourism.carsai.mz',
+        images: JSON.stringify([svgToDataUri(PROJECT_IMAGE_SVG('Tourism Moz - Destinos', '#f97316', '#ea580c')), svgToDataUri(PROJECT_IMAGE_SVG('Tourism Moz - Reservas', '#fb923c', '#f97316'))]),
+        isPublished: true,
+        isFeatured: true,
+      },
+    }),
+    db.project.create({
+      data: {
+        slug: 'fintech-mz-platform',
+        title: 'FinTech MZ Platform',
+        description: 'Plataforma financeira para micro-crédito e pagamentos móveis em Mozambique. Integração com múltiplos operadores e compliance com regulamentações do Banco de Moçambique.',
+        client: 'FinTech Mozambique',
+        technologies: 'React, Node.js, PostgreSQL, Redis, M-Pesa API, e-Mola API',
+        demoUrl: 'https://fintech.carsai.mz',
+        images: JSON.stringify([svgToDataUri(PROJECT_IMAGE_SVG('FinTech MZ - Dashboard', '#059669', '#047857')), svgToDataUri(PROJECT_IMAGE_SVG('FinTech MZ - Transactions', '#10b981', '#059669'))]),
         isPublished: true,
         isFeatured: false,
       },
     }),
   ])
 
-  // === 5. Testimonials ===
+  // === 5. Testimonials (with base64 avatars) ===
   console.log('Creating testimonials...')
   const testimonials = await Promise.all([
     db.testimonial.create({
@@ -261,6 +388,7 @@ export async function seedDatabase() {
         company: 'Vodacom Mozambique',
         content: 'A Carsai transformou completamente a nossa visão digital. O dashboard M-Pesa que desenvolveram é intuitivo, rápido e totalmente adaptado ao nosso mercado. A equipa understanding do contexto local moçambicano foi fundamental para o sucesso.',
         rating: 5,
+        avatar: TESTIMONIAL_AVATARS[0],
         isPublished: true,
       },
     }),
@@ -270,6 +398,7 @@ export async function seedDatabase() {
         company: 'Banco Commercial de Mozambique',
         content: 'Trabalhar com a Carsai foi uma experiência excepcional. A plataforma de gestão financeira que criaram para nós reduziu o tempo de processamento de transações em 60%. Recomendo sem hesitação.',
         rating: 5,
+        avatar: TESTIMONIAL_AVATARS[1],
         isPublished: true,
       },
     }),
@@ -279,6 +408,7 @@ export async function seedDatabase() {
         company: 'AgriTech Mozambique',
         content: 'A Carsai compreendeu as necessidades únicas dos agricultores moçambicanos e criou uma plataforma que realmente funciona no nosso contexto. A integração com dados meteorológicos locais e o marketplace foram um game-changer.',
         rating: 4,
+        avatar: TESTIMONIAL_AVATARS[2],
         isPublished: true,
       },
     }),
@@ -288,6 +418,27 @@ export async function seedDatabase() {
         company: 'Instituto Nacional de Saúde',
         content: 'O sistema HealthConnect da Carsai está a salvar vidas em Mozambique. A telemedicina permite que pacientes em zonas rurais acedam a médicos especializados em Maputo. A tecnologia adaptada às nossas realidades.',
         rating: 5,
+        avatar: TESTIMONIAL_AVATARS[3],
+        isPublished: true,
+      },
+    }),
+    db.testimonial.create({
+      data: {
+        name: 'Fernando Macamo',
+        company: 'Porto de Maputo',
+        content: 'A Carsai desenvolveu um sistema de gestão portuária que optimizou as operações de carga e descarga. A eficiência aumentou 40% e os custos operacionais diminuíram significativamente.',
+        rating: 5,
+        avatar: svgToDataUri(AVATAR_SVG_TEMPLATE('FM', '#ea580c')),
+        isPublished: true,
+      },
+    }),
+    db.testimonial.create({
+      data: {
+        name: 'Luísa Chissano',
+        company: 'Universidade Eduardo Mondlane',
+        content: 'A plataforma de gestão académica desenvolvida pela Carsai transformou a nossa universidade. Inscrições online, gestão de notas e comunicação com estudantes - tudo digitalizado.',
+        rating: 4,
+        avatar: svgToDataUri(AVATAR_SVG_TEMPLATE('LC', '#be185d')),
         isPublished: true,
       },
     }),
@@ -326,7 +477,7 @@ export async function seedDatabase() {
     db.tag.create({ data: { name: 'nodejs', slug: 'nodejs' } }),
   ])
 
-  // === 8. Blog Posts ===
+  // === 8. Blog Posts (with base64 featured images) ===
   console.log('Creating blog posts...')
   const post1 = await db.post.create({
     data: {
@@ -351,6 +502,7 @@ A tecnologia está a ajudar agricultores moçambicanos a optimizar produções, 
 ## O Futuro é Digital
 
 A Carsai Mozambique está comprometida em ser a ponte entre a tecnologia global e as necessidades locais. Adaptamos soluções de última geração ao contexto moçambicano, garantindo impacto real e sustentável.`,
+      featuredImage: POST_FEATURED_IMAGES[0],
       published: true,
       authorId: adminUser.id,
       categoryId: categories[0].id,
@@ -378,6 +530,7 @@ O streaming de conteúdo permite que utilizadores vejam partes da página antes 
 ## Aplicação Prática em Mozambique
 
 Na Carsai, utilizamos Next.js 16 em todos os nossos projectos principais. O Portal Carsai, EduMoz Learning e o M-Pesa Dashboard são construídos com esta tecnologia, garantindo performance óptima mesmo em condições de rede limitadas.`,
+      featuredImage: POST_FEATURED_IMAGES[1],
       published: true,
       authorId: adminUser.id,
       categoryId: categories[0].id,
@@ -408,6 +561,7 @@ Utilizar analytics e dados para tomar decisões informadas. A análise de padrõ
 ## Casos de Sucesso em Mozambique
 
 Empresas como a Vodacom, BCM e CDM já estão a ver resultados significativos com estratégias digitais bem executadas. A transformação não é opcional - é necessária.`,
+      featuredImage: POST_FEATURED_IMAGES[2],
       published: true,
       authorId: partnerUser.id,
       categoryId: categories[1].id,
@@ -446,6 +600,7 @@ Em climas quentes e húmidos, precisão de touch é reduzida. Targets maiores (4
 ## Boas Práticas da Carsai
 
 Todos os nossos designs passam por testes com utilizadores moçambicanos reais. Esta abordagem garante que cada interface funciona no contexto local.`,
+      featuredImage: POST_FEATURED_IMAGES[3],
       published: true,
       authorId: adminUser.id,
       categoryId: categories[2].id,
@@ -484,6 +639,7 @@ Suporte para mapas e localização adaptados às infraestruturas moçambicanas.
 ## Caso Prático: AgriTech Platform
 
 A AgriTech Platform que desenvolvemos usa React Native para servir agricultores em todas as províncias de Mozambique, com funcionalidades offline para zonas sem connectivity.`,
+      featuredImage: POST_FEATURED_IMAGES[4],
       published: true,
       authorId: partnerUser.id,
       categoryId: categories[3].id,
@@ -527,9 +683,124 @@ Modelos de tradução permitem criar conteúdo em línguas locais (Macua, Tsonga
 ## A Visão da Carsai
 
 A Carsai está a desenvolver soluções IA especificamente para o contexto moçambicano, com datasets locais e modelos treinados para as nossas realidades.`,
+      featuredImage: POST_FEATURED_IMAGES[5],
       published: true,
       authorId: adminUser.id,
       categoryId: categories[4].id,
+    },
+  })
+
+  const post7 = await db.post.create({
+    data: {
+      title: 'Cybersecurity em Mozambique: Protegendo o Futuro Digital',
+      slug: 'cybersecurity-mozambique-futuro-digital',
+      excerpt: 'A segurança digital é essencial para o crescimento económico de Mozambique. Saiba como proteger dados e infraestruturas contra ameaças cibernéticas.',
+      content: `A cybersecurity é um desafio crescente em Mozambique. Com a digitalização acelerada, proteger dados e infraestruturas tornou-se prioritário.
+
+## O Estado da Cybersecurity em Mozambique
+
+### Desafios Actuais
+Mozambique enfrenta desafios únicos em cybersecurity: falta de profissionais qualificados, infraestrutura limitada e regulamentação ainda em desenvolvimento.
+
+### Leis e Regulamentação
+O Decreto-Lei sobre Protecção de Dados Personais está a ser implementado, mas empresas precisam de adoptar práticas de segurança proactivamente.
+
+## Boas Práticas para Empresas Moçambicanas
+
+### 1. Formação e Conscientização
+Investir em formação de cybersecurity para todos os colaboradores. O phishing e scams por email são as maiores ameaças.
+
+### 2. Infraestrutura Segura
+Implementar firewalls, VPNs e sistemas de detecção de intrusão. Cloud providers como AWS oferecem security layers robustas.
+
+### 3. Backup e Recovery
+Planos de backup regular e disaster recovery são essenciais. Dados devem ser armazenados em múltiplas localizações.
+
+## A Abordagem da Carsai
+
+Todos os projectos da Carsai integram cybersecurity desde o design. Segurança não é um add-on - é parte fundamental da arquitectura.`,
+      featuredImage: svgToDataUri(FEATURED_IMAGE_SVG('Cybersecurity MZ', '#dc2626', '#991b1b')),
+      published: true,
+      authorId: partnerUser.id,
+      categoryId: categories[0].id,
+    },
+  })
+
+  const post8 = await db.post.create({
+    data: {
+      title: 'E-commerce em Mozambique: Tendências e Oportunidades',
+      slug: 'ecommerce-mozambique-tendencias-oportunidades',
+      excerpt: 'O mercado de e-commerce em Mozambique está a crescer rapidamente. Descubra as tendências e oportunidades para empreendedores moçambicanos.',
+      content: `O e-commerce em Mozambique está numa fase de crescimento exponencial. Com mais moçambicanos a aceder à internet via smartphone, as oportunidades são vastas.
+
+## Tendências do E-commerce MZ
+
+### Mobile-First Commerce
+Mais de 90% das transações online em Mozambique acontecem via smartphone. Lojas online devem ser optimizadas para mobile.
+
+### Pagamentos Móveis
+M-Pesa, e-Mola e mKash são os métodos de pagamento dominantes. A integração com estas plataformas é obrigatória.
+
+### Social Commerce
+Facebook e Instagram são os principais canais de venda. Many small businesses operam exclusively through social media.
+
+## Oportunidades por Sector
+
+### Moda e Vestuário
+O mercado de moda online está a crescer 30% ao ano. Marcas locais como MOZA Fashion estão a ganhar tração.
+
+### Alimentos e Bebidas
+Delivery de alimentos está a expandir-se em Maputo. Plataformas como Glovo e Deliveroo estão a criar o mercado.
+
+### Serviços Digitais
+From web development a consultoria digital, serviços profissionais estão cada vez mais commercializados online.
+
+## Como Começar
+
+A Carsai oferece soluções completas de e-commerce adaptadas ao mercado moçambicano - desde a loja online até integração de pagamentos.`,
+      featuredImage: svgToDataUri(FEATURED_IMAGE_SVG('E-commerce MZ', '#f59e0b', '#b45309')),
+      published: true,
+      authorId: adminUser.id,
+      categoryId: categories[1].id,
+    },
+  })
+
+  const post9 = await db.post.create({
+    data: {
+      title: 'DevOps e Cloud: Infraestrutura Moderna para Mozambique',
+      slug: 'devops-cloud-infraestrutura-mozambique',
+      excerpt: 'Como DevOps e cloud computing estão a transformar a infraestrutura tecnológica de empresas moçambicanas. Docker, Kubernetes e CI/CD no contexto local.',
+      content: `DevOps e cloud computing são fundamentais para empresas moçambicanas que querem escalar operações digitais eficientemente.
+
+## DevOps em Mozambique
+
+### Containerização com Docker
+Docker permite deploy consistente independentemente do ambiente. Para empresas moçambicanas com infraestrutura limitada, isto é revolucionário.
+
+### CI/CD Pipelines
+Automatização de deploy reduz erros e aumenta velocidade. GitHub Actions e GitLab CI são acessíveis e eficazes.
+
+### Monitorização
+Tools como Prometheus e Grafana permitem monitorizar aplicações em tempo real, crucial para serviços que servem milhões de moçambicanos.
+
+## Cloud Solutions
+
+### AWS em Mozambique
+AWS oferece regions em África (Cape Town), reduzindo latência para aplicações moçambicanas.
+
+### Azure Africa
+Microsoft Azure tem investimentos significativos em África, com data centres em South Africa.
+
+### Google Cloud
+Google Cloud Platform oferece tools de AI e analytics que podem ser leverage para o mercado moçambicano.
+
+## Caso Prático: Carsai Portal
+
+O Portal Carsai utiliza CI/CD com GitHub Actions, deploy automático em Vercel, e monitorização com Sentry. Resultado: deploy em 2 minutos, zero downtime.`,
+      featuredImage: svgToDataUri(FEATURED_IMAGE_SVG('DevOps Cloud MZ', '#2563eb', '#1e40af')),
+      published: true,
+      authorId: partnerUser.id,
+      categoryId: categories[0].id,
     },
   })
 
@@ -547,6 +818,12 @@ A Carsai está a desenvolver soluções IA especificamente para o contexto moça
     db.postTag.create({ data: { postId: post5.id, tagId: tags[1].id } }),
     db.postTag.create({ data: { postId: post6.id, tagId: tags[5].id } }),
     db.postTag.create({ data: { postId: post6.id, tagId: tags[0].id } }),
+    db.postTag.create({ data: { postId: post7.id, tagId: tags[3].id } }),
+    db.postTag.create({ data: { postId: post7.id, tagId: tags[5].id } }),
+    db.postTag.create({ data: { postId: post8.id, tagId: tags[2].id } }),
+    db.postTag.create({ data: { postId: post8.id, tagId: tags[4].id } }),
+    db.postTag.create({ data: { postId: post9.id, tagId: tags[3].id } }),
+    db.postTag.create({ data: { postId: post9.id, tagId: tags[7].id } }),
   ])
 
   // === 9. Forum Categories & Topics ===
@@ -650,6 +927,400 @@ A Carsai está a desenvolver soluções IA especificamente para o contexto moça
         isPinned: false,
       },
     }),
+    db.forumTopic.create({
+      data: {
+        title: 'TypeScript vs JavaScript: Qual usar em Mozambique?',
+        slug: 'typescript-vs-javascript-mozambique',
+        content: 'Para projetos moçambicanos, TypeScript ou JavaScript puro? Considerando a escassez de desenvolvedores com experiência em TypeScript e a necessidade de código robusto.',
+        categoryId: forumCat1.id,
+        authorId: partnerUser.id,
+        isPinned: false,
+        isResolved: true,
+      },
+    }),
+    db.forumTopic.create({
+      data: {
+        title: 'Como construir um SaaS para o mercado moçambicano',
+        slug: 'construir-saas-mercado-mozambicano',
+        content: 'Quero criar um SaaS de gestão empresarial para pequenas empresas em Maputo. Que funcionalidades são mais valorizadas? Facturação, inventory, payroll? Como price para MZN?',
+        categoryId: forumCat3.id,
+        authorId: demoUser.id,
+        isPinned: false,
+      },
+    }),
+    db.forumTopic.create({
+      data: {
+        title: 'Telecommuting em Mozambique: Desafios e Soluções',
+        slug: 'telecommuting-mozambique-desafios-solucoes',
+        content: 'O trabalho remoto está a crescer em Mozambique mas enfrenta desafios: internet instável, falta de home office setups, e cultura de trabalho presencial. Como superar?',
+        categoryId: forumCat4.id,
+        authorId: adminUser.id,
+        isPinned: false,
+      },
+    }),
+  ])
+
+  // === 11. Quotes ===
+  console.log('Creating quotes...')
+  const quote1 = await db.quote.create({
+    data: {
+      title: 'Website para Restaurante em Maputo',
+      description: 'Necessito de um website profissional para o meu restaurante na Baixa de Maputo. Menu online, reservas e integração com M-Pesa para pagamentos.',
+      status: 'proposed',
+      userId: demoUser.id,
+    },
+  })
+
+  const quote2 = await db.quote.create({
+    data: {
+      title: 'App Mobile para Logística',
+      description: 'Desenvolvimento de aplicação móvel para gestão de entregas e tracking de carga no corridor Maputo-Beira.',
+      status: 'accepted',
+      userId: partnerUser.id,
+    },
+  })
+
+  const quote3 = await db.quote.create({
+    data: {
+      title: 'Dashboard de Analytics para Farmácia',
+      description: 'Dashboard para monitorização de vendas, stock e analytics de uma cadeia de farmácias em Mozambique.',
+      status: 'pending',
+      userId: demoUser.id,
+    },
+  })
+
+  const quote4 = await db.quote.create({
+    data: {
+      title: 'Sistema de Gestão Escolar',
+      description: 'Plataforma de gestão académica para escolas secundárias com notas, inscrições e comunicação com pais.',
+      status: 'reviewed',
+      userId: partnerUser.id,
+    },
+  })
+
+  const quote5 = await db.quote.create({
+    data: {
+      title: 'Portal de Turismo para Inhambane',
+      description: 'Portal turístico promovendo destinos em Inhambane - Tofo, Barra e Praia do Tofo. Reservas e informações.',
+      status: 'proposed',
+      userId: demoUser.id,
+    },
+  })
+
+  const quote6 = await db.quote.create({
+    data: {
+      title: 'E-commerce para Boutique em Maputo',
+      description: 'Loja online para boutique de moda com pagamento M-Pesa e delivery em Maputo.',
+      status: 'accepted',
+      userId: adminUser.id,
+    },
+  })
+
+  const quote7 = await db.quote.create({
+    data: {
+      title: 'App de Micro-crédito',
+      description: 'Aplicação para micro-crédito rural em Mozambique com scoring automático e pagamentos móveis.',
+      status: 'rejected',
+      userId: partnerUser.id,
+    },
+  })
+
+  const quote8 = await db.quote.create({
+    data: {
+      title: 'Sistema de Facturação Electrónica',
+      description: 'Sistema compliant com regulamentações do Banco de Moçambique para facturação electrónica.',
+      status: 'pending',
+      userId: demoUser.id,
+    },
+  })
+
+  const quote9 = await db.quote.create({
+    data: {
+      title: 'Plataforma de Telemedicina',
+      description: 'Extensão do HealthConnect para zonas rurais de Nampula e Zambezia com videochamadas.',
+      status: 'reviewed',
+      userId: adminUser.id,
+    },
+  })
+
+  const quote10 = await db.quote.create({
+    data: {
+      title: 'Marketplace Agrícola Digital',
+      description: 'Marketplace para connecting agricultores moçambicanos com compradores e distribuidores.',
+      status: 'proposed',
+      userId: partnerUser.id,
+    },
+  })
+
+  // === 12. Proposals ===
+  console.log('Creating proposals...')
+  const proposal1 = await db.proposal.create({
+    data: {
+      quoteId: quote1.id,
+      title: 'Proposta - Website Restaurante Maputo',
+      description: 'Website profissional com design responsivo, menu digital, sistema de reservas e integração M-Pesa.',
+      items: JSON.stringify([
+        { description: 'Design UI/UX responsivo', quantity: 1, unitPrice: 8000, total: 8000 },
+        { description: 'Desenvolvimento Frontend (Next.js)', quantity: 1, unitPrice: 12000, total: 12000 },
+        { description: 'Integração M-Pesa', quantity: 1, unitPrice: 5000, total: 5000 },
+        { description: 'Sistema de reservas', quantity: 1, unitPrice: 6000, total: 6000 },
+      ]),
+      totalAmount: 31000,
+      validUntil: new Date('2025-06-30'),
+      status: 'sent',
+    },
+  })
+
+  const proposal2 = await db.proposal.create({
+    data: {
+      quoteId: quote2.id,
+      title: 'Proposta - App Mobile Logística',
+      description: 'Aplicação móvel React Native com tracking GPS, gestão de entregas e dashboard de analytics.',
+      items: JSON.stringify([
+        { description: 'Design UI/UX mobile', quantity: 1, unitPrice: 15000, total: 15000 },
+        { description: 'Desenvolvimento React Native', quantity: 1, unitPrice: 35000, total: 35000 },
+        { description: 'Backend API & GPS integration', quantity: 1, unitPrice: 20000, total: 20000 },
+      ]),
+      totalAmount: 70000,
+      validUntil: new Date('2025-07-15'),
+      status: 'accepted',
+    },
+  })
+
+  const proposal3 = await db.proposal.create({
+    data: {
+      quoteId: quote6.id,
+      title: 'Proposta - E-commerce Boutique',
+      description: 'Loja online com catalogo de produtos, checkout M-Pesa/e-Mola e delivery management.',
+      items: JSON.stringify([
+        { description: 'E-commerce platform (Next.js)', quantity: 1, unitPrice: 25000, total: 25000 },
+        { description: 'Payment integration (M-Pesa + e-Mola)', quantity: 1, unitPrice: 8000, total: 8000 },
+        { description: 'Admin dashboard & inventory', quantity: 1, unitPrice: 12000, total: 12000 },
+      ]),
+      totalAmount: 45000,
+      validUntil: new Date('2025-05-31'),
+      status: 'sent',
+    },
+  })
+
+  const proposal4 = await db.proposal.create({
+    data: {
+      quoteId: quote5.id,
+      title: 'Proposta - Portal Turismo Inhambane',
+      description: 'Portal turístico com destinos, reservas de accommodation, mapas interativos e blog.',
+      items: JSON.stringify([
+        { description: 'Portal design & development', quantity: 1, unitPrice: 22000, total: 22000 },
+        { description: 'Booking system integration', quantity: 1, unitPrice: 10000, total: 10000 },
+        { description: 'MapboxGL interactive maps', quantity: 1, unitPrice: 8000, total: 8000 },
+      ]),
+      totalAmount: 40000,
+      validUntil: new Date('2025-08-30'),
+      status: 'sent',
+    },
+  })
+
+  // === 13. Payments ===
+  console.log('Creating payments...')
+  await Promise.all([
+    db.payment.create({
+      data: {
+        proposalId: proposal2.id,
+        userId: partnerUser.id,
+        amount: 35000,
+        method: 'mpesa',
+        status: 'confirmed',
+        reference: 'MPESA-2024-00123',
+      },
+    }),
+    db.payment.create({
+      data: {
+        proposalId: proposal1.id,
+        userId: demoUser.id,
+        amount: 15500,
+        method: 'transfer',
+        status: 'pending',
+        reference: 'BIM-2024-45678',
+      },
+    }),
+    db.payment.create({
+      data: {
+        userId: demoUser.id,
+        amount: 25000,
+        method: 'mpesa',
+        status: 'confirmed',
+        reference: 'MPESA-2024-00456',
+      },
+    }),
+    db.payment.create({
+      data: {
+        proposalId: proposal3.id,
+        userId: adminUser.id,
+        amount: 22500,
+        method: 'deposit',
+        status: 'confirmed',
+        reference: 'DEP-2024-78901',
+      },
+    }),
+    db.payment.create({
+      data: {
+        userId: partnerUser.id,
+        amount: 12000,
+        method: 'mpesa',
+        status: 'failed',
+        reference: 'MPESA-2024-00345',
+      },
+    }),
+    db.payment.create({
+      data: {
+        proposalId: proposal4.id,
+        userId: demoUser.id,
+        amount: 20000,
+        method: 'transfer',
+        status: 'pending',
+        reference: 'BIM-2024-11223',
+      },
+    }),
+    db.payment.create({
+      data: {
+        userId: adminUser.id,
+        amount: 8000,
+        method: 'deposit',
+        status: 'confirmed',
+        reference: 'DEP-2024-33456',
+      },
+    }),
+  ])
+
+  // === 14. Invoices ===
+  console.log('Creating invoices...')
+  await Promise.all([
+    db.invoice.create({
+      data: {
+        proposalId: proposal2.id,
+        number: 'INV-2024-001',
+        totalAmount: 70000,
+        status: 'issued',
+        dueDate: new Date('2025-04-30'),
+        items: {
+          create: [
+            { description: 'Design UI/UX mobile', quantity: 1, unitPrice: 15000, total: 15000 },
+            { description: 'Desenvolvimento React Native', quantity: 1, unitPrice: 35000, total: 35000 },
+            { description: 'Backend API & GPS integration', quantity: 1, unitPrice: 20000, total: 20000 },
+          ],
+        },
+      },
+    }),
+    db.invoice.create({
+      data: {
+        proposalId: proposal1.id,
+        number: 'INV-2024-002',
+        totalAmount: 31000,
+        status: 'paid',
+        dueDate: new Date('2025-03-15'),
+        items: {
+          create: [
+            { description: 'Design UI/UX responsivo', quantity: 1, unitPrice: 8000, total: 8000 },
+            { description: 'Desenvolvimento Frontend (Next.js)', quantity: 1, unitPrice: 12000, total: 12000 },
+            { description: 'Integração M-Pesa', quantity: 1, unitPrice: 5000, total: 5000 },
+            { description: 'Sistema de reservas', quantity: 1, unitPrice: 6000, total: 6000 },
+          ],
+        },
+      },
+    }),
+    db.invoice.create({
+      data: {
+        proposalId: proposal3.id,
+        number: 'INV-2024-003',
+        totalAmount: 45000,
+        status: 'overdue',
+        dueDate: new Date('2025-02-28'),
+        items: {
+          create: [
+            { description: 'E-commerce platform (Next.js)', quantity: 1, unitPrice: 25000, total: 25000 },
+            { description: 'Payment integration (M-Pesa + e-Mola)', quantity: 1, unitPrice: 8000, total: 8000 },
+            { description: 'Admin dashboard & inventory', quantity: 1, unitPrice: 12000, total: 12000 },
+          ],
+        },
+      },
+    }),
+  ])
+
+  // === 15. Support Tickets ===
+  console.log('Creating support tickets...')
+  await Promise.all([
+    db.supportTicket.create({
+      data: {
+        userId: demoUser.id,
+        subject: 'Problema com pagamento M-Pesa',
+        status: 'open',
+        priority: 'high',
+      },
+    }),
+    db.supportTicket.create({
+      data: {
+        userId: partnerUser.id,
+        subject: 'Erro no dashboard de analytics',
+        status: 'in_progress',
+        priority: 'medium',
+      },
+    }),
+    db.supportTicket.create({
+      data: {
+        userId: demoUser.id,
+        subject: 'Pedido de funcionalidade: exportação PDF',
+        status: 'resolved',
+        priority: 'low',
+      },
+    }),
+    db.supportTicket.create({
+      data: {
+        userId: adminUser.id,
+        subject: 'Configuração de SSL para domínio custom',
+        status: 'closed',
+        priority: 'medium',
+      },
+    }),
+    db.supportTicket.create({
+      data: {
+        userId: partnerUser.id,
+        subject: 'Integração com API externa não funciona',
+        status: 'open',
+        priority: 'urgent',
+      },
+    }),
+    db.supportTicket.create({
+      data: {
+        userId: demoUser.id,
+        subject: 'Dúvida sobre pricing de serviços',
+        status: 'in_progress',
+        priority: 'low',
+      },
+    }),
+  ])
+
+  // === 16. Affiliate Clicks & Commissions ===
+  console.log('Creating affiliate data...')
+  await Promise.all([
+    db.affiliateClick.create({ data: { userId: partnerUser.id, linkCode: 'PARTNER-AF-001', ip: '192.168.1.100' } }),
+    db.affiliateClick.create({ data: { userId: partnerUser.id, linkCode: 'PARTNER-AF-002', ip: '10.0.0.50' } }),
+    db.affiliateClick.create({ data: { userId: partnerUser.id, linkCode: 'PARTNER-AF-003', ip: '172.16.0.25' } }),
+    db.affiliateClick.create({ data: { userId: adminUser.id, linkCode: 'ADMIN-AF-001', ip: '192.168.1.200' } }),
+    db.affiliateClick.create({ data: { userId: adminUser.id, linkCode: 'ADMIN-AF-002', ip: '10.0.0.75' } }),
+    db.affiliateClick.create({ data: { userId: demoUser.id, linkCode: 'USER-AF-001', ip: '192.168.1.150' } }),
+    db.affiliateClick.create({ data: { userId: demoUser.id, linkCode: 'USER-AF-002', ip: '172.16.0.100' } }),
+    db.affiliateClick.create({ data: { userId: partnerUser.id, linkCode: 'PARTNER-AF-004', ip: '10.0.0.120' } }),
+    db.affiliateClick.create({ data: { userId: partnerUser.id, linkCode: 'PARTNER-AF-005', ip: '192.168.1.180' } }),
+  ])
+  await Promise.all([
+    db.affiliateCommission.create({ data: { userId: partnerUser.id, amount: 1500, status: 'approved' } }),
+    db.affiliateCommission.create({ data: { userId: partnerUser.id, amount: 2000, status: 'pending' } }),
+    db.affiliateCommission.create({ data: { userId: partnerUser.id, amount: 800, status: 'paid' } }),
+    db.affiliateCommission.create({ data: { userId: adminUser.id, amount: 3000, status: 'approved' } }),
+    db.affiliateCommission.create({ data: { userId: adminUser.id, amount: 1200, status: 'pending' } }),
+    db.affiliateCommission.create({ data: { userId: demoUser.id, amount: 500, status: 'pending' } }),
+    db.affiliateCommission.create({ data: { userId: demoUser.id, amount: 750, status: 'paid' } }),
+    db.affiliateCommission.create({ data: { userId: partnerUser.id, amount: 1800, status: 'approved' } }),
+    db.affiliateCommission.create({ data: { userId: partnerUser.id, amount: 2500, status: 'pending' } }),
   ])
 
   // === 10. Settings ===
@@ -774,22 +1445,169 @@ A Carsai está a desenvolver soluções IA especificamente para o contexto moça
         isRead: true,
       },
     }),
+    db.notification.create({
+      data: {
+        userId: adminUser.id,
+        title: 'Nova proposta recebida',
+        message: 'Uma nova proposta para E-commerce Boutique foi submetida. Revise e responda no painel administrativo.',
+        type: 'info',
+        isRead: false,
+      },
+    }),
+    db.notification.create({
+      data: {
+        userId: partnerUser.id,
+        title: 'Commission aprovada',
+        message: 'A sua affiliate commission de MZN 1,500 foi aprovada. O pagamento será processado no próximo ciclo.',
+        type: 'success',
+        isRead: false,
+      },
+    }),
+    db.notification.create({
+      data: {
+        userId: adminUser.id,
+        title: 'Invoice overdue',
+        message: 'A invoice INV-2024-003 está overdue. Contacte o cliente para follow-up.',
+        type: 'warning',
+        isRead: false,
+      },
+    }),
+    db.notification.create({
+      data: {
+        userId: partnerUser.id,
+        title: 'Novo ticket de suporte',
+        message: 'Um ticket urgente sobre integração de API externa foi criado. Prioridade alta - necessita atenção imediata.',
+        type: 'error',
+        isRead: false,
+      },
+    }),
+    db.notification.create({
+      data: {
+        userId: demoUser.id,
+        title: 'Nova funcionalidade: Profile editing',
+        message: 'Agora pode editar o seu perfil - nome, telefone, empresa, bio e endereço. Actualize a sua informação!',
+        type: 'info',
+        isRead: false,
+      },
+    }),
+    db.notification.create({
+      data: {
+        userId: adminUser.id,
+        title: 'Relatório mensal disponível',
+        message: 'O relatório mensal de Março 2025 está disponível com analytics de vendas, proposals e customer insights.',
+        type: 'success',
+        isRead: true,
+      },
+    }),
+  ])
+
+  // === 12. File Attachments (base64 stored files) ===
+  console.log('Creating file attachments...')
+  const fileAttachments = await Promise.all([
+    db.fileAttachment.create({
+      data: {
+        name: 'carsai-logo.svg',
+        mimeType: 'image/svg+xml',
+        size: Buffer.from(LOGO_SVG).length,
+        data: LOGO_DATA_URI,
+        category: 'image',
+        userId: adminUser.id,
+      },
+    }),
+    db.fileAttachment.create({
+      data: {
+        name: 'admin-avatar.svg',
+        mimeType: 'image/svg+xml',
+        size: Buffer.from(AVATAR_SVG_TEMPLATE('CS', '#10b981')).length,
+        data: AVATAR_ADMIN,
+        category: 'avatar',
+        userId: adminUser.id,
+      },
+    }),
+    db.fileAttachment.create({
+      data: {
+        name: 'partner-avatar.svg',
+        mimeType: 'image/svg+xml',
+        size: Buffer.from(AVATAR_SVG_TEMPLATE('AF', '#8b5cf6')).length,
+        data: AVATAR_PARTNER,
+        category: 'avatar',
+        userId: partnerUser.id,
+      },
+    }),
+    db.fileAttachment.create({
+      data: {
+        name: 'user-avatar.svg',
+        mimeType: 'image/svg+xml',
+        size: Buffer.from(AVATAR_SVG_TEMPLATE('JM', '#f59e0b')).length,
+        data: AVATAR_USER,
+        category: 'avatar',
+        userId: demoUser.id,
+      },
+    }),
+    db.fileAttachment.create({
+      data: {
+        name: 'project-carsai-portal-home.svg',
+        mimeType: 'image/svg+xml',
+        size: Buffer.from(PROJECT_IMAGE_SVG('Carsai Portal - Home', '#10b981', '#0d9488')).length,
+        data: PROJECT_IMAGES_DATA['carsai-portal'][0],
+        category: 'image',
+        userId: adminUser.id,
+      },
+    }),
+    db.fileAttachment.create({
+      data: {
+        name: 'project-mpesa-dashboard.svg',
+        mimeType: 'image/svg+xml',
+        size: Buffer.from(PROJECT_IMAGE_SVG('M-Pesa Dashboard - Analytics', '#2563eb', '#1d4ed8')).length,
+        data: PROJECT_IMAGES_DATA['mpesa-dashboard'][0],
+        category: 'image',
+        userId: adminUser.id,
+      },
+    }),
+    db.fileAttachment.create({
+      data: {
+        name: 'post-featured-digital-transformation.svg',
+        mimeType: 'image/svg+xml',
+        size: Buffer.from(FEATURED_IMAGE_SVG('Transformação Digital', '#10b981', '#047857')).length,
+        data: POST_FEATURED_IMAGES[0],
+        category: 'image',
+        userId: adminUser.id,
+      },
+    }),
+    db.fileAttachment.create({
+      data: {
+        name: 'testimonial-ricardo-avatar.svg',
+        mimeType: 'image/svg+xml',
+        size: Buffer.from(AVATAR_SVG_TEMPLATE('RM', '#2563eb')).length,
+        data: TESTIMONIAL_AVATARS[0],
+        category: 'avatar',
+        userId: adminUser.id,
+      },
+    }),
   ])
 
   // === Summary ===
   console.log('🇲🇿 Carsai Mozambique seeding completed!')
   console.log(`  - Roles: 3 (admin, partner, user)`)
-  console.log(`  - Users: 3 (admin, partner, demo)`)
-  console.log(`  - Services: ${services.length}`)
-  console.log(`  - Projects: ${projects.length}`)
-  console.log(`  - Testimonials: ${testimonials.length}`)
+  console.log(`  - Users: 3 (admin, partner, demo) - with company, bio, address, base64 avatars`)
+  console.log(`  - Services: ${services.length} - with base64 icon SVGs`)
+  console.log(`  - Projects: ${projects.length} - with base64 images`)
+  console.log(`  - Testimonials: ${testimonials.length} - with base64 avatars`)
   console.log(`  - Categories: ${categories.length}`)
   console.log(`  - Tags: ${tags.length}`)
-  console.log(`  - Posts: 6`)
+  console.log(`  - Posts: 9 - with base64 featured images`)
   console.log(`  - Forum Categories: 4`)
-  console.log(`  - Forum Topics: 6`)
+  console.log(`  - Forum Topics: 9`)
+  console.log(`  - Quotes: 10`)
+  console.log(`  - Proposals: 4`)
+  console.log(`  - Payments: 7`)
+  console.log(`  - Invoices: 3`)
+  console.log(`  - Support Tickets: 6`)
+  console.log(`  - Affiliate Clicks: 9`)
+  console.log(`  - Affiliate Commissions: 9`)
   console.log(`  - Settings: 10`)
-  console.log(`  - Notifications: 6`)
+  console.log(`  - Notifications: 13`)
+  console.log(`  - File Attachments: ${fileAttachments.length} - base64 stored files`)
 
   return {
     roles: 3,
@@ -799,10 +1617,18 @@ A Carsai está a desenvolver soluções IA especificamente para o contexto moça
     testimonials: testimonials.length,
     categories: categories.length,
     tags: tags.length,
-    posts: 6,
+    posts: 9,
     forumCategories: 4,
-    forumTopics: 6,
+    forumTopics: 9,
+    quotes: 10,
+    proposals: 4,
+    payments: 7,
+    invoices: 3,
+    supportTickets: 6,
+    affiliateClicks: 9,
+    affiliateCommissions: 9,
     settings: 10,
-    notifications: 6,
+    notifications: 13,
+    fileAttachments: fileAttachments.length,
   }
 }

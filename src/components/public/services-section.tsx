@@ -38,68 +38,7 @@ interface ServiceData {
   order: number;
 }
 
-const fallbackServices: ServiceData[] = [
-  {
-    id: '1',
-    slug: 'web-development',
-    title: 'Web Development',
-    description: 'Modern and responsive websites and web applications built with Next.js, React, and TypeScript. Complete solutions for Mozambican businesses.',
-    icon: 'Globe',
-    basePrice: 15000,
-    isFeatured: true,
-    order: 1,
-  },
-  {
-    id: '2',
-    slug: 'mobile-apps',
-    title: 'Mobile Apps',
-    description: 'Native and hybrid mobile apps for Android and iOS. Integration with local APIs like M-Pesa and Mozambican government services.',
-    icon: 'Smartphone',
-    basePrice: 25000,
-    isFeatured: true,
-    order: 2,
-  },
-  {
-    id: '3',
-    slug: 'ui-ux-design',
-    title: 'UI/UX Design',
-    description: 'Intuitive interface design and user experience centered on the Mozambican context. Prototyping, usability testing, and complete design systems.',
-    icon: 'Palette',
-    basePrice: 8000,
-    isFeatured: true,
-    order: 3,
-  },
-  {
-    id: '4',
-    slug: 'cloud-solutions',
-    title: 'Cloud Solutions',
-    description: 'Cloud infrastructure and migration to AWS, Azure, and Google Cloud. Storage and computing solutions adapted for businesses in Maputo and beyond.',
-    icon: 'Cloud',
-    basePrice: 12000,
-    isFeatured: false,
-    order: 4,
-  },
-  {
-    id: '5',
-    slug: 'devops',
-    title: 'DevOps',
-    description: 'CI/CD pipeline automation, monitoring, and infrastructure management. Docker, Kubernetes, and Terraform for efficient operations in Mozambique.',
-    icon: 'Server',
-    basePrice: 10000,
-    isFeatured: false,
-    order: 5,
-  },
-  {
-    id: '6',
-    slug: 'ai-data-analytics',
-    title: 'AI & Data Analytics',
-    description: 'Artificial intelligence and data analysis for informed business decisions. Machine learning, analytics dashboards, and data processing tailored for the Mozambican market.',
-    icon: 'Brain',
-    basePrice: 20000,
-    isFeatured: true,
-    order: 6,
-  },
-];
+// No fallback data - all data comes from the database via API
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -126,12 +65,10 @@ export function ServicesSection() {
       .then((data) => {
         if (data.success && data.data?.length > 0) {
           setServices(data.data);
-        } else {
-          setServices(fallbackServices);
         }
       })
       .catch(() => {
-        setServices(fallbackServices);
+        // Error - show empty state, no fallback
       })
       .finally(() => setLoading(false));
   }, []);
@@ -186,6 +123,11 @@ export function ServicesSection() {
           viewport={{ once: true }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
+          {services.length === 0 && !loading ? (
+            <div className="text-center py-12 text-muted-foreground">
+              {t('common.noResults')}
+            </div>
+          ) : null}
           {services.map((service) => {
             const IconComponent = iconMap[service.icon || 'Globe'] || Globe;
 

@@ -53,10 +53,10 @@ export function HomeHero() {
           animate="visible"
           className="max-w-4xl mx-auto text-center"
         >
-          {/* Title */}
+          {/* Badge */}
           <motion.div variants={itemVariants} className="mb-4">
             <span className="inline-block px-4 py-1.5 rounded-full bg-emerald-700/50 text-emerald-200 text-sm font-medium border border-emerald-600/30">
-              🇲🇿 Moçambique
+              Soluções Digitais e Desenvolvimento Web Gratuita
             </span>
           </motion.div>
 

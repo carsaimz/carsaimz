@@ -33,80 +33,7 @@ interface ProjectData {
   isPublished: boolean;
 }
 
-const fallbackProjects: ProjectData[] = [
-  {
-    id: '1',
-    slug: 'carsai-portal',
-    title: 'Carsai Portal',
-    description: 'Complete web portal for Carsai Mozambique with content management, integrated blog, and client area. Built with Next.js and Prisma.',
-    client: 'Carsai Mozambique',
-    technologies: 'Next.js, React, TypeScript, Prisma, Tailwind CSS',
-    demoUrl: 'https://carsai.mz',
-    images: null,
-    isFeatured: true,
-    isPublished: true,
-  },
-  {
-    id: '2',
-    slug: 'mpesa-dashboard',
-    title: 'M-Pesa Dashboard',
-    description: 'Financial management dashboard integrated with Vodacom M-Pesa for transaction visualization, reports, and real-time analytics.',
-    client: 'Vodacom Mozambique',
-    technologies: 'React, Node.js, PostgreSQL, Chart.js, M-Pesa API',
-    demoUrl: 'https://mpesa-dashboard.carsai.mz',
-    images: null,
-    isFeatured: true,
-    isPublished: true,
-  },
-  {
-    id: '3',
-    slug: 'edumoz-learning',
-    title: 'EduMoz Learning',
-    description: 'E-learning platform for Mozambican schools with online courses, assessments, and digital certificates. Support for primary and secondary education.',
-    client: 'Ministério da Educação Mozambique',
-    technologies: 'Next.js, Supabase, Tailwind CSS, Framer Motion',
-    demoUrl: 'https://edumoz.carsai.mz',
-    images: null,
-    isFeatured: true,
-    isPublished: true,
-  },
-  {
-    id: '4',
-    slug: 'govmoz-digital',
-    title: 'GovMoz Digital',
-    description: 'Digital government services platform to simplify bureaucratic processes. Document issuance, fee payments, and civil registration online.',
-    client: 'Governo de Mozambique',
-    technologies: 'Angular, Java Spring, PostgreSQL, Docker, Kubernetes',
-    demoUrl: 'https://govmoz.carsai.mz',
-    images: null,
-    isFeatured: false,
-    isPublished: true,
-  },
-  {
-    id: '5',
-    slug: 'agritech-platform',
-    title: 'AgriTech Platform',
-    description: 'Agricultural management platform for Mozambican farmers with crop monitoring, weather forecasting, and product marketplace.',
-    client: 'AgriTech Mozambique',
-    technologies: 'React Native, Node.js, MongoDB, TensorFlow Lite',
-    demoUrl: 'https://agritech.carsai.mz',
-    images: null,
-    isFeatured: true,
-    isPublished: true,
-  },
-  {
-    id: '6',
-    slug: 'healthconnect',
-    title: 'HealthConnect',
-    description: 'Telemedicine system connecting Mozambican patients with doctors in Maputo, Beira, and Nampula. Online consultations, digital prescriptions, and medical history management.',
-    client: 'Hospital Central de Maputo',
-    technologies: 'Next.js, Socket.io, Prisma, WebRTC, Twilio',
-    demoUrl: 'https://healthconnect.carsai.mz',
-    images: null,
-    isFeatured: false,
-    isPublished: true,
-  },
-];
+// No fallback data - all data comes from the database via API
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -139,12 +66,10 @@ export function ProjectsSection() {
       .then((data) => {
         if (data.success && data.data?.length > 0) {
           setProjects(data.data);
-        } else {
-          setProjects(fallbackProjects);
         }
       })
       .catch(() => {
-        setProjects(fallbackProjects);
+        // Error - show empty state, no fallback
       })
       .finally(() => setLoading(false));
   }, []);

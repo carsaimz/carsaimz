@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   FileText,
@@ -21,6 +21,8 @@ import {
   Download,
   MessageSquare,
   Star,
+  Bell,
+  Inbox,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +38,7 @@ import {
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
 
@@ -53,48 +56,127 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
 };
 
-// ── Mock data ──
-const mockQuotes = [
-  { id: 'Q-001', service: 'Website Development', amount: 75000, status: 'approved', date: '2025-01-15' },
-  { id: 'Q-002', service: 'Mobile App', amount: 150000, status: 'pending', date: '2025-02-20' },
-  { id: 'Q-003', service: 'Cloud Infrastructure', amount: 45000, status: 'rejected', date: '2025-03-10' },
-  { id: 'Q-004', service: 'SEO Optimization', amount: 25000, status: 'approved', date: '2025-04-05' },
-  { id: 'Q-005', service: 'AI Integration', amount: 120000, status: 'pending', date: '2025-05-01' },
-];
+// ── Types for API data ──
+interface DashboardQuote {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  createdAt: string;
+  proposals?: { id: string; title: string; totalAmount: number | null; status: string }[];
+}
 
-const mockPayments = [
-  { id: 'P-001', description: 'Website Development - Phase 1', amount: 37500, method: 'mpesa', status: 'confirmed', date: '2025-01-20' },
-  { id: 'P-002', description: 'SEO Package - Monthly', amount: 25000, method: 'transfer', status: 'confirmed', date: '2025-04-10' },
-  { id: 'P-003', description: 'Mobile App - Deposit', amount: 50000, method: 'deposit', status: 'pending', date: '2025-02-25' },
-  { id: 'P-004', description: 'Cloud Services - Setup', amount: 22500, method: 'mpesa', status: 'confirmed', date: '2025-03-15' },
-];
+interface DashboardPayment {
+  id: string;
+  amount: number;
+  method: string;
+  status: string;
+  createdAt: string;
+  proposal?: { id: string; title: string; totalAmount: number | null; status: string };
+}
 
-const mockTickets = [
-  { id: 'ST-001', subject: 'Cannot access dashboard', status: 'resolved', priority: 'high', date: '2025-01-08' },
-  { id: 'ST-002', subject: 'Payment confirmation delay', status: 'open', priority: 'medium', date: '2025-04-12' },
-  { id: 'ST-003', subject: 'Quote pricing question', status: 'open', priority: 'low', date: '2025-05-05' },
-];
+interface DashboardTicket {
+  id: string;
+  subject: string;
+  status: string;
+  priority: string;
+  createdAt: string;
+  _count?: { replies: number };
+}
+
+interface DashboardNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+interface DashboardData {
+  role: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    avatar: string | null;
+    phone: string | null;
+  };
+  stats: {
+    totalQuotes: number;
+    totalPayments: number;
+    totalTickets: number;
+    unreadNotifications: number;
+  };
+  recentActivity: {
+    quotes: DashboardQuote[];
+    payments: DashboardPayment[];
+    tickets: DashboardTicket[];
+    notifications: DashboardNotification[];
+  };
+}
 
 export function UserDashboard() {
   const { t, formatCurrency, formatDate } = useLanguage();
   const user = useAuthStore((s) => s.user);
 
   const [activeTab, setActiveTab] = useState('overview');
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const totalQuotes = mockQuotes.length;
-  const totalPayments = mockPayments.reduce((sum, p) => sum + p.amount, 0);
-  const openTickets = mockTickets.filter((tk) => tk.status === 'open').length;
+  useEffect(() => {
+    if (!user?.id) return;
+
+    fetch(`/api/dashboard?role=user&userId=${user.id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((json) => {
+        if (json.success && json.data) {
+          setData(json.data as DashboardData);
+        } else {
+          setError(json.message || 'Failed to load dashboard data');
+        }
+      })
+      .catch((err) => {
+        setError(err.message || 'Network error');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [user?.id]);
+
+  const quotes = data?.recentActivity.quotes ?? [];
+  const payments = data?.recentActivity.payments ?? [];
+  const tickets = data?.recentActivity.tickets ?? [];
+  const notifications = data?.recentActivity.notifications ?? [];
+
+  const totalQuotes = data?.stats.totalQuotes ?? 0;
+  const totalPaymentsCount = data?.stats.totalPayments ?? 0;
+  const totalTicketsCount = data?.stats.totalTickets ?? 0;
+  const unreadNotifications = data?.stats.unreadNotifications ?? 0;
+
+  const approvedQuotes = quotes.filter((q) => q.status === 'accepted' || q.status === 'approved').length;
+  const confirmedPayments = payments.filter((p) => p.status === 'confirmed').length;
+  const openTickets = tickets.filter((tk) => tk.status === 'open' || tk.status === 'in_progress').length;
+  const totalPaymentsAmount = payments.reduce((sum, p) => sum + p.amount, 0);
 
   const statusBadge = (status: string) => {
     switch (status) {
+      case 'accepted':
       case 'approved':
       case 'confirmed':
       case 'resolved':
+      case 'closed':
         return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>;
       case 'pending':
       case 'open':
+      case 'in_progress':
         return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{t('common.pending')}</Badge>;
       case 'rejected':
+      case 'failed':
         return <Badge className="bg-red-100 text-red-700 border-red-200">{t('common.rejected')}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
@@ -104,6 +186,7 @@ export function UserDashboard() {
   const priorityBadge = (priority: string) => {
     switch (priority) {
       case 'high':
+      case 'urgent':
         return <Badge className="bg-red-100 text-red-700 border-red-200">{t('common.required')}</Badge>;
       case 'medium':
         return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{priority}</Badge>;
@@ -133,21 +216,21 @@ export function UserDashboard() {
       label: t('dashboard.quotes'),
       value: totalQuotes,
       accent: 'emerald',
-      description: `${mockQuotes.filter(q => q.status === 'approved').length} ${t('common.approved')}`,
+      description: `${approvedQuotes} ${t('common.approved')}`,
     },
     {
       icon: CreditCard,
       label: t('dashboard.payments'),
-      value: formatCurrency(totalPayments),
+      value: formatCurrency(totalPaymentsAmount),
       accent: 'green',
-      description: `${mockPayments.filter(p => p.status === 'confirmed').length} ${t('financial.paymentSuccess')}`,
+      description: `${confirmedPayments} ${t('financial.paymentSuccess')}`,
     },
     {
       icon: HeadphonesIcon,
       label: t('dashboard.support'),
       value: openTickets,
       accent: 'teal',
-      description: `${mockTickets.length} ${t('common.total')}`,
+      description: `${totalTicketsCount} ${t('common.total')}`,
     },
   ];
 
@@ -156,6 +239,105 @@ export function UserDashboard() {
     { icon: CreditCard, label: t('dashboard.paymentHistory'), color: 'bg-green-600 hover:bg-green-700' },
     { icon: HeadphonesIcon, label: t('dashboard.supportCreate'), color: 'bg-teal-600 hover:bg-teal-700' },
   ];
+
+  // ── Loading skeletons ──
+  if (loading) {
+    return (
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6"
+      >
+        <Card className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-green-600 border-0 text-white overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-14 w-14 rounded-full bg-white/20" />
+              <div className="flex-1">
+                <Skeleton className="h-8 w-48 bg-white/20" />
+                <Skeleton className="h-4 w-32 bg-white/20 mt-2" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="border-l-4 border-l-emerald-500">
+              <CardContent className="p-4 sm:p-6">
+                <Skeleton className="h-4 w-20 mb-2" />
+                <Skeleton className="h-8 w-24 mb-1" />
+                <Skeleton className="h-3 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <Card>
+          <CardContent className="p-6">
+            <Skeleton className="h-6 w-40 mb-4" />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-12 rounded-xl" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <Skeleton className="h-6 w-32 mb-4" />
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-16 rounded-lg" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  }
+
+  // ── Error state ──
+  if (error) {
+    return (
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6"
+      >
+        <Card className="border-l-4 border-l-red-500">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-6 w-6 text-red-500" />
+              <div>
+                <h3 className="font-semibold text-red-700">Failed to load dashboard</h3>
+                <p className="text-sm text-muted-foreground">{error}</p>
+              </div>
+            </div>
+            <Button
+              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={() => {
+                setError(null);
+                setLoading(true);
+                fetch(`/api/dashboard?role=user&userId=${user?.id}`)
+                  .then((res) => res.json())
+                  .then((json) => {
+                    if (json.success && json.data) setData(json.data as DashboardData);
+                    else setError(json.message || 'Failed to load');
+                  })
+                  .catch((err) => setError(err.message))
+                  .finally(() => setLoading(false));
+              }}
+            >
+              {t('common.retry') || 'Retry'}
+            </Button>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -171,12 +353,12 @@ export function UserDashboard() {
             <div className="flex items-center gap-4">
               <Avatar className="h-14 w-14 border-2 border-yellow-400 shadow-lg">
                 <AvatarFallback className="bg-emerald-600 text-white text-lg font-bold">
-                  {user?.name?.charAt(0) || 'U'}
+                  {data?.user?.name?.charAt(0) || user?.name?.charAt(0) || 'U'}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <h1 className="text-2xl sm:text-3xl font-bold">
-                  {t('dashboard.welcome', { name: user?.name || 'Utilizador' })}
+                  {t('dashboard.welcome', { name: data?.user?.name || user?.name || 'Utilizador' })}
                 </h1>
                 <p className="text-emerald-200 mt-1">
                   {t('dashboard.lastLogin', { date: formatDate(new Date()) })}
@@ -265,25 +447,34 @@ export function UserDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {mockQuotes.slice(0, 3).map((quote) => (
-                    <div key={quote.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
-                          <FileText className="h-4 w-4" />
+                {quotes.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Inbox className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-sm text-muted-foreground">{t('common.noData') || 'No quotes yet'}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {quotes.slice(0, 3).map((quote) => (
+                      <div key={quote.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+                            <FileText className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">{quote.title}</p>
+                            <p className="text-xs text-muted-foreground">{quote.id.slice(0, 8)} · {formatDate(quote.createdAt)}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-sm">{quote.service}</p>
-                          <p className="text-xs text-muted-foreground">{quote.id} · {formatDate(quote.date)}</p>
+                        <div className="text-right">
+                          {quote.proposals?.[0]?.totalAmount && (
+                            <p className="font-semibold text-sm">{formatCurrency(quote.proposals[0].totalAmount)}</p>
+                          )}
+                          {statusBadge(quote.status)}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-sm">{formatCurrency(quote.amount)}</p>
-                        {statusBadge(quote.status)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -296,25 +487,34 @@ export function UserDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {mockPayments.slice(0, 3).map((payment) => (
-                    <div key={payment.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
-                          <CreditCard className="h-4 w-4" />
+                {payments.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Inbox className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-sm text-muted-foreground">{t('common.noData') || 'No payments yet'}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {payments.slice(0, 3).map((payment) => (
+                      <div key={payment.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+                            <CreditCard className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">
+                              {payment.proposal?.title || `Payment ${payment.id.slice(0, 8)}`}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{methodLabel(payment.method)} · {formatDate(payment.createdAt)}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-sm">{payment.description}</p>
-                          <p className="text-xs text-muted-foreground">{methodLabel(payment.method)} · {formatDate(payment.date)}</p>
+                        <div className="text-right">
+                          <p className="font-semibold text-sm">{formatCurrency(payment.amount)}</p>
+                          {statusBadge(payment.status)}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-sm">{formatCurrency(payment.amount)}</p>
-                        {statusBadge(payment.status)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -330,39 +530,31 @@ export function UserDashboard() {
                 <div className="flex items-start gap-4">
                   <Avatar className="h-16 w-16 border-2 border-emerald-500">
                     <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xl font-bold">
-                      {user?.name?.charAt(0) || 'U'}
+                      {data?.user?.name?.charAt(0) || user?.name?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="flex items-center gap-2 text-sm">
                       <User className="h-4 w-4 text-emerald-500" />
                       <span className="text-muted-foreground">{t('auth.fullName')}:</span>
-                      <span className="font-medium">{user?.name || '—'}</span>
+                      <span className="font-medium">{data?.user?.name || user?.name || '—'}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <Mail className="h-4 w-4 text-emerald-500" />
                       <span className="text-muted-foreground">{t('auth.email')}:</span>
-                      <span className="font-medium">{user?.email || '—'}</span>
+                      <span className="font-medium">{data?.user?.email || user?.email || '—'}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <Phone className="h-4 w-4 text-emerald-500" />
                       <span className="text-muted-foreground">{t('auth.phone')}:</span>
-                      <span className="font-medium">+258 84 XXX XXX</span>
+                      <span className="font-medium">{data?.user?.phone || '—'}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4 text-emerald-500" />
-                      <span className="text-muted-foreground">{t('dashboard.location')}:</span>
-                      <span className="font-medium">Maputo, Moçambique</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Building2 className="h-4 w-4 text-emerald-500" />
-                      <span className="text-muted-foreground">{t('dashboard.company')}:</span>
-                      <span className="font-medium">Empresa XYZ</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Star className="h-4 w-4 text-emerald-500" />
-                      <span className="text-muted-foreground">{t('partner.tier')}:</span>
-                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('partner.tierSilver')}</Badge>
+                      <Bell className="h-4 w-4 text-emerald-500" />
+                      <span className="text-muted-foreground">{t('dashboard.notifications') || 'Notifications'}:</span>
+                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                        {unreadNotifications} unread
+                      </Badge>
                     </div>
                   </div>
                 </div>
@@ -386,34 +578,42 @@ export function UserDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>{t('financial.item')}</TableHead>
-                      <TableHead>{t('financial.amount')}</TableHead>
-                      <TableHead>{t('common.status')}</TableHead>
-                      <TableHead>{t('common.createdAt')}</TableHead>
-                      <TableHead>{t('common.actions')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockQuotes.map((quote) => (
-                      <TableRow key={quote.id}>
-                        <TableCell className="font-medium">{quote.id}</TableCell>
-                        <TableCell>{quote.service}</TableCell>
-                        <TableCell className="font-semibold">{formatCurrency(quote.amount)}</TableCell>
-                        <TableCell>{statusBadge(quote.status)}</TableCell>
-                        <TableCell>{formatDate(quote.date)}</TableCell>
-                        <TableCell>
-                          <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+                {quotes.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground">{t('common.noData') || 'No quotes found'}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t('dashboard.quoteRequest') || 'Request your first quote'}</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>{t('financial.item')}</TableHead>
+                        <TableHead>{t('financial.description')}</TableHead>
+                        <TableHead>{t('common.status')}</TableHead>
+                        <TableHead>{t('common.createdAt')}</TableHead>
+                        <TableHead>{t('common.actions')}</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {quotes.map((quote) => (
+                        <TableRow key={quote.id}>
+                          <TableCell className="font-medium">{quote.id.slice(0, 8)}</TableCell>
+                          <TableCell>{quote.title}</TableCell>
+                          <TableCell className="max-w-[200px] truncate">{quote.description || '—'}</TableCell>
+                          <TableCell>{statusBadge(quote.status)}</TableCell>
+                          <TableCell>{formatDate(quote.createdAt)}</TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -428,34 +628,41 @@ export function UserDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>{t('financial.description')}</TableHead>
-                      <TableHead>{t('financial.paymentMethod')}</TableHead>
-                      <TableHead>{t('financial.amount')}</TableHead>
-                      <TableHead>{t('common.status')}</TableHead>
-                      <TableHead>{t('common.createdAt')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockPayments.map((payment) => (
-                      <TableRow key={payment.id}>
-                        <TableCell className="font-medium">{payment.id}</TableCell>
-                        <TableCell>{payment.description}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="text-emerald-600 border-emerald-200">
-                            {methodLabel(payment.method)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-semibold">{formatCurrency(payment.amount)}</TableCell>
-                        <TableCell>{statusBadge(payment.status)}</TableCell>
-                        <TableCell>{formatDate(payment.date)}</TableCell>
+                {payments.length === 0 ? (
+                  <div className="text-center py-12">
+                    <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground">{t('common.noData') || 'No payments found'}</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>{t('financial.description')}</TableHead>
+                        <TableHead>{t('financial.paymentMethod')}</TableHead>
+                        <TableHead>{t('financial.amount')}</TableHead>
+                        <TableHead>{t('common.status')}</TableHead>
+                        <TableHead>{t('common.createdAt')}</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {payments.map((payment) => (
+                        <TableRow key={payment.id}>
+                          <TableCell className="font-medium">{payment.id.slice(0, 8)}</TableCell>
+                          <TableCell>{payment.proposal?.title || `Payment ${payment.id.slice(0, 8)}`}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-emerald-600 border-emerald-200">
+                              {methodLabel(payment.method)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-semibold">{formatCurrency(payment.amount)}</TableCell>
+                          <TableCell>{statusBadge(payment.status)}</TableCell>
+                          <TableCell>{formatDate(payment.createdAt)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -476,34 +683,42 @@ export function UserDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>{t('contact.subject')}</TableHead>
-                      <TableHead>{t('common.status')}</TableHead>
-                      <TableHead>Priority</TableHead>
-                      <TableHead>{t('common.createdAt')}</TableHead>
-                      <TableHead>{t('common.actions')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockTickets.map((ticket) => (
-                      <TableRow key={ticket.id}>
-                        <TableCell className="font-medium">{ticket.id}</TableCell>
-                        <TableCell>{ticket.subject}</TableCell>
-                        <TableCell>{statusBadge(ticket.status)}</TableCell>
-                        <TableCell>{priorityBadge(ticket.priority)}</TableCell>
-                        <TableCell>{formatDate(ticket.date)}</TableCell>
-                        <TableCell>
-                          <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+                {tickets.length === 0 ? (
+                  <div className="text-center py-12">
+                    <HeadphonesIcon className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground">{t('common.noData') || 'No support tickets found'}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t('dashboard.supportCreate') || 'Create your first ticket'}</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>{t('contact.subject')}</TableHead>
+                        <TableHead>{t('common.status')}</TableHead>
+                        <TableHead>Priority</TableHead>
+                        <TableHead>{t('common.createdAt')}</TableHead>
+                        <TableHead>{t('common.actions')}</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {tickets.map((ticket) => (
+                        <TableRow key={ticket.id}>
+                          <TableCell className="font-medium">{ticket.id.slice(0, 8)}</TableCell>
+                          <TableCell>{ticket.subject}</TableCell>
+                          <TableCell>{statusBadge(ticket.status)}</TableCell>
+                          <TableCell>{priorityBadge(ticket.priority)}</TableCell>
+                          <TableCell>{formatDate(ticket.createdAt)}</TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

@@ -16,8 +16,11 @@ model User {
   id            String   @id @default(cuid())
   email         String   @unique
   name          String?
-  avatar        String?
+  avatar        String?  // base64 data URI or URL
   phone         String?
+  company       String?
+  bio           String?
+  address       String?
   passwordHash  String?
   roleId        String?
   role          Role?    @relation(fields: [roleId], references: [id])
@@ -94,7 +97,7 @@ model Service {
   slug        String   @unique
   title       String
   description String?
-  icon        String?
+  icon        String?  // base64 data URI or icon name
   basePrice   Float?
   isFeatured  Boolean  @default(false)
   isPublished Boolean  @default(true)
@@ -113,7 +116,7 @@ model Project {
   client       String?
   technologies String?
   demoUrl      String?
-  images       String?  // JSON array of image URLs
+  images       String?  // JSON array of base64 data URIs
   isPublished  Boolean  @default(true)
   isFeatured   Boolean  @default(false)
   createdAt    DateTime @default(now())
@@ -128,7 +131,7 @@ model Testimonial {
   company   String?
   content   String
   rating    Int      @default(5)
-  avatar    String?
+  avatar    String?  // base64 data URI for avatar image
   isPublished Boolean @default(true)
   createdAt DateTime @default(now())
 
@@ -163,7 +166,7 @@ model Post {
   slug          String    @unique
   excerpt       String?
   content       String?
-  featuredImage String?
+  featuredImage String?  // base64 data URI for post featured image
   published     Boolean   @default(false)
   authorId      String
   author        User      @relation(fields: [authorId], references: [id])
@@ -275,7 +278,7 @@ model Quote {
   id          String   @id @default(cuid())
   title       String
   description String?
-  attachments String?  // JSON array of file URLs
+  attachments String?  // JSON array of base64 data URIs
   status      String   @default("pending") // pending, reviewed, proposed, accepted, rejected
   userId      String
   user        User     @relation(fields: [userId], references: [id])
@@ -316,7 +319,7 @@ model Payment {
   method        String    // mpesa, transfer, deposit
   status        String    @default("pending") // pending, confirmed, failed
   reference     String?
-  receiptUrl    String?
+  receiptUrl    String?  // base64 data URI for payment receipt
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -416,6 +419,21 @@ model TicketReply {
   createdAt DateTime       @default(now())
 
   @@map("ticket_replies")
+}
+
+// === File Storage (Base64) ===
+
+model FileAttachment {
+  id          String   @id @default(cuid())
+  name        String   // original filename
+  mimeType    String   // MIME type
+  size        Int      // file size in bytes
+  data        String   // base64 encoded content with data URI prefix
+  category    String   // image, document, avatar, receipt, etc.
+  userId      String?  // who uploaded it
+  createdAt   DateTime @default(now())
+
+  @@map("file_attachments")
 }
 
 // === Settings ===

@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useInView, useMotionValue, useSpring } from 'framer-motion';
 import { Briefcase, Users, Clock, Award, type LucideIcon } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/language-context';
 
 // ──────────────────────────────────────────────
@@ -27,25 +28,21 @@ export function StatsCounter({
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
-  // ── Use spring animation for smooth counting ──
   const motionValue = useMotionValue(0);
   const springValue = useSpring(motionValue, {
     duration: duration * 1000,
     bounce: 0,
   });
 
-  // ── Update motion value when in view ──
   useEffect(() => {
     if (isInView) {
       motionValue.set(value);
     }
   }, [isInView, motionValue, value]);
 
-  // ── Display animated value ──
   useEffect(() => {
     const unsubscribe = springValue.on('change', (latest) => {
       if (ref.current) {
-        // For decimal-like values (years), show 1 decimal place
         const displayValue = value <= 10
           ? latest.toFixed(1)
           : Math.floor(latest).toString();
@@ -74,15 +71,67 @@ interface StatItem {
   labelKey: string;
 }
 
-const STATS: StatItem[] = [
-  { icon: Briefcase, value: 50, suffix: '+', labelKey: 'stats.projects' },
-  { icon: Users, value: 120, suffix: '+', labelKey: 'stats.clients' },
-  { icon: Clock, value: 5, suffix: '+', labelKey: 'stats.years' },
-  { icon: Award, value: 24, suffix: '/7', labelKey: 'stats.support' },
-];
+interface StatsData {
+  overview: {
+    totalUsers: number;
+    totalPosts: number;
+    totalProjects: number;
+    totalServices: number;
+    totalForumTopics: number;
+    totalTestimonials: number;
+    totalRevenue: number;
+    confirmedRevenue: number;
+  };
+}
 
 export function StatsCounterSection() {
   const { t } = useLanguage();
+  const [stats, setStats] = useState<StatsData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/stats')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setStats(data.data);
+        }
+      })
+      .catch(() => {
+        // Silently fail - will show loading state
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const getStatsItems = (): StatItem[] => {
+    if (stats) {
+      return [
+        { icon: Briefcase, value: stats.overview.totalProjects, suffix: '+', labelKey: 'stats.projects' },
+        { icon: Users, value: stats.overview.totalUsers, suffix: '+', labelKey: 'stats.clients' },
+        { icon: Clock, value: 5, suffix: '+', labelKey: 'stats.years' },
+        { icon: Award, value: 24, suffix: '/7', labelKey: 'stats.support' },
+      ];
+    }
+    // Default values when no data available yet
+    return [
+      { icon: Briefcase, value: 0, suffix: '+', labelKey: 'stats.projects' },
+      { icon: Users, value: 0, suffix: '+', labelKey: 'stats.clients' },
+      { icon: Clock, value: 5, suffix: '+', labelKey: 'stats.years' },
+      { icon: Award, value: 24, suffix: '/7', labelKey: 'stats.support' },
+    ];
+  };
+
+  const STATS = getStatsItems();
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-20 rounded-xl" />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <motion.div

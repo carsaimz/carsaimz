@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Link2,
@@ -23,6 +23,8 @@ import {
   Award,
   ExternalLink,
   Share2,
+  Inbox,
+  AlertCircle,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +32,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -62,35 +65,101 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
 };
 
-// ── Mock data ──
-const mockCommissionHistory = [
-  { id: 'CM-001', client: 'Empresa Alpha', service: 'Website Dev', amount: 7500, rate: '10%', status: 'paid', date: '2025-01-20' },
-  { id: 'CM-002', client: 'Beta Solutions', service: 'Mobile App', amount: 15000, rate: '10%', status: 'paid', date: '2025-02-15' },
-  { id: 'CM-003', client: 'Gamma Corp', service: 'Cloud Setup', amount: 4500, rate: '10%', status: 'pending', date: '2025-03-10' },
-  { id: 'CM-004', client: 'Delta Services', service: 'SEO Package', amount: 2500, rate: '10%', status: 'pending', date: '2025-04-05' },
-  { id: 'CM-005', client: 'Omega Ltd', service: 'AI Integration', amount: 12000, rate: '10%', status: 'paid', date: '2025-05-01' },
-];
+// ── Types for API data ──
+interface Commission {
+  id: string;
+  userId: string;
+  amount: number;
+  status: string; // pending, approved, paid
+  createdAt: string;
+}
 
-const mockPortfolioProjects = [
-  { id: 'PR-001', name: 'E-commerce Platform', client: 'Empresa Alpha', status: 'completed', value: 75000 },
-  { id: 'PR-002', name: 'Mobile Banking App', client: 'Beta Solutions', status: 'inProgress', value: 150000 },
-  { id: 'PR-003', name: 'Cloud Migration', client: 'Gamma Corp', status: 'completed', value: 45000 },
-  { id: 'PR-004', name: 'SEO Campaign', client: 'Delta Services', status: 'planned', value: 25000 },
-];
+interface Click {
+  id: string;
+  userId: string;
+  linkCode: string;
+  ip: string | null;
+  createdAt: string;
+}
+
+interface PortfolioProject {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  client: string | null;
+  isPublished: boolean;
+  isFeatured: boolean;
+  createdAt: string;
+}
+
+interface PartnerData {
+  role: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    avatar: string | null;
+  };
+  stats: {
+    totalClicks: number;
+    totalCommissions: number;
+    pendingCommissions: number;
+    approvedCommissions: number;
+    paidCommissions: number;
+    totalCommissionAmount: number;
+  };
+  recentActivity: {
+    clicks: Click[];
+    commissions: Commission[];
+  };
+}
 
 export function PartnerDashboard() {
   const { t, formatCurrency, formatDate } = useLanguage();
   const user = useAuthStore((s) => s.user);
+
+  const [data, setData] = useState<PartnerData | null>(null);
+  const [projects, setProjects] = useState<PortfolioProject[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [affiliateLink] = useState(`https://carsai.mz/ref/${user?.id || 'demo-partner-001'}`);
   const [copied, setCopied] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawMethod, setWithdrawMethod] = useState('');
 
-  const totalClicks = 342;
-  const conversions = 18;
-  const commissionsEarned = 41500;
-  const pendingCommissions = 7000;
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Fetch dashboard data and projects in parallel
+    Promise.all([
+      fetch(`/api/dashboard?role=partner&userId=${user.id}`).then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      }),
+      fetch('/api/projects').then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      }),
+    ])
+      .then(([dashboardJson, projectsJson]) => {
+        if (dashboardJson.success && dashboardJson.data) {
+          setData(dashboardJson.data as PartnerData);
+        } else {
+          setError(dashboardJson.message || 'Failed to load dashboard');
+        }
+        if (projectsJson.success && projectsJson.data) {
+          setProjects(projectsJson.data as PortfolioProject[]);
+        }
+      })
+      .catch((err) => {
+        setError(err.message || 'Network error');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [user?.id]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(affiliateLink).then(() => {
@@ -99,34 +168,46 @@ export function PartnerDashboard() {
     });
   };
 
+  const totalClicks = data?.stats.totalClicks ?? 0;
+  const totalCommissions = data?.stats.totalCommissions ?? 0;
+  const commissionsEarned = data?.stats.totalCommissionAmount ?? 0;
+  const pendingCommissions = data?.stats.pendingCommissions ?? 0;
+  const approvedCommissions = data?.stats.approvedCommissions ?? 0;
+  const paidCommissions = data?.stats.paidCommissions ?? 0;
+  const commissions = data?.recentActivity.commissions ?? [];
+
+  const conversionRate = totalClicks > 0 ? ((totalCommissions / totalClicks) * 100).toFixed(1) : '0.0';
+
   const statsCards = [
     {
       icon: MousePointerClick,
       label: 'Total Clicks',
       value: totalClicks.toLocaleString(),
       color: 'emerald',
-      description: '+45 this week',
+      description: `${data?.recentActivity.clicks?.length ?? 0} recent`,
     },
     {
       icon: ArrowRightLeft,
       label: 'Conversions',
-      value: conversions,
+      value: totalCommissions,
       color: 'green',
-      description: '5.3% conversion rate',
+      description: `${conversionRate}% conversion rate`,
     },
     {
       icon: DollarSign,
       label: t('partner.commissionsEarned'),
       value: formatCurrency(commissionsEarned),
       color: 'teal',
-      description: `${t('partner.commissionsRate')}: 10%`,
+      description: `${approvedCommissions} approved, ${paidCommissions} paid`,
     },
     {
       icon: Clock,
       label: t('partner.commissionsPending'),
-      value: formatCurrency(pendingCommissions),
+      value: formatCurrency(
+        commissions.filter((c) => c.status === 'pending').reduce((s, c) => s + c.amount, 0)
+      ),
       color: 'yellow',
-      description: '2 pending conversions',
+      description: `${pendingCommissions} pending conversions`,
     },
   ];
 
@@ -135,17 +216,94 @@ export function PartnerDashboard() {
       case 'paid':
       case 'completed':
         return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>;
+      case 'approved':
+        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>;
       case 'pending':
+      case 'in_progress':
       case 'inProgress':
         return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{t('common.pending')}</Badge>;
       case 'planned':
         return <Badge className="bg-blue-100 text-blue-700 border-blue-200">{t('projects.planned')}</Badge>;
       case 'rejected':
+      case 'failed':
         return <Badge className="bg-red-100 text-red-700 border-red-200">{t('common.rejected')}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
+
+  // ── Loading skeletons ──
+  if (loading) {
+    return (
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6"
+      >
+        <Card className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-green-600 border-0 text-white overflow-hidden">
+          <CardContent className="p-6">
+            <Skeleton className="h-8 w-48 bg-white/20" />
+            <Skeleton className="h-4 w-32 bg-white/20 mt-2" />
+            <Skeleton className="h-20 w-full bg-white/20 mt-4 rounded-xl" />
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="border-l-4 border-l-emerald-500">
+              <CardContent className="p-4 sm:p-6">
+                <Skeleton className="h-4 w-20 mb-2" />
+                <Skeleton className="h-8 w-24 mb-1" />
+                <Skeleton className="h-3 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <Card>
+          <CardContent className="p-6">
+            <Skeleton className="h-6 w-32 mb-4" />
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-12 rounded-lg" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  }
+
+  // ── Error state ──
+  if (error) {
+    return (
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6"
+      >
+        <Card className="border-l-4 border-l-red-500">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-6 w-6 text-red-500" />
+              <div>
+                <h3 className="font-semibold text-red-700">Failed to load dashboard</h3>
+                <p className="text-sm text-muted-foreground">{error}</p>
+              </div>
+            </div>
+            <Button
+              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={() => window.location.reload()}
+            >
+              {t('common.retry') || 'Retry'}
+            </Button>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -161,7 +319,7 @@ export function PartnerDashboard() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
               <div className="flex-1">
                 <h1 className="text-2xl sm:text-3xl font-bold">
-                  {t('dashboard.welcome', { name: user?.name || 'Parceiro' })}
+                  {t('dashboard.welcome', { name: data?.user?.name || user?.name || 'Parceiro' })}
                 </h1>
                 <p className="text-emerald-200 mt-1">{t('partner.subtitle')}</p>
               </div>
@@ -238,37 +396,39 @@ export function PartnerDashboard() {
                 {t('partner.commissions')}
               </CardTitle>
               <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
-                {t('partner.commissionsRate')}: 10%
+                {totalCommissions} total
               </Badge>
             </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead>{t('financial.item')}</TableHead>
-                  <TableHead>{t('financial.amount')}</TableHead>
-                  <TableHead>{t('partner.commissionsRate')}</TableHead>
-                  <TableHead>{t('common.status')}</TableHead>
-                  <TableHead>{t('common.createdAt')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockCommissionHistory.map((commission) => (
-                  <TableRow key={commission.id}>
-                    <TableCell className="font-medium">{commission.id}</TableCell>
-                    <TableCell>{commission.client}</TableCell>
-                    <TableCell>{commission.service}</TableCell>
-                    <TableCell className="font-semibold">{formatCurrency(commission.amount)}</TableCell>
-                    <TableCell>{commission.rate}</TableCell>
-                    <TableCell>{statusBadge(commission.status)}</TableCell>
-                    <TableCell>{formatDate(commission.date)}</TableCell>
+            {commissions.length === 0 ? (
+              <div className="text-center py-12">
+                <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">{t('common.noData') || 'No commissions yet'}</p>
+                <p className="text-sm text-muted-foreground mt-1">Share your affiliate link to start earning</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>{t('financial.amount')}</TableHead>
+                    <TableHead>{t('common.status')}</TableHead>
+                    <TableHead>{t('common.createdAt')}</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {commissions.map((commission) => (
+                    <TableRow key={commission.id}>
+                      <TableCell className="font-medium">{commission.id.slice(0, 8)}</TableCell>
+                      <TableCell className="font-semibold">{formatCurrency(commission.amount)}</TableCell>
+                      <TableCell>{statusBadge(commission.status)}</TableCell>
+                      <TableCell>{formatDate(commission.createdAt)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </motion.div>
@@ -283,25 +443,40 @@ export function PartnerDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {mockPortfolioProjects.map((project) => (
-                <div key={project.id} className="p-4 rounded-xl bg-muted/50 hover:bg-muted/80 transition-colors border border-transparent hover:border-emerald-200">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h4 className="font-semibold">{project.name}</h4>
-                      <p className="text-sm text-muted-foreground">{project.client}</p>
+            {projects.length === 0 ? (
+              <div className="text-center py-12">
+                <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">{t('common.noData') || 'No portfolio projects'}</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {projects.map((project) => (
+                  <div key={project.id} className="p-4 rounded-xl bg-muted/50 hover:bg-muted/80 transition-colors border border-transparent hover:border-emerald-200">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h4 className="font-semibold">{project.title}</h4>
+                        <p className="text-sm text-muted-foreground">{project.client || '—'}</p>
+                      </div>
+                      <Badge className={project.isFeatured
+                        ? "bg-emerald-100 text-emerald-700 border-emerald-200"
+                        : "bg-yellow-100 text-yellow-700 border-yellow-200"
+                      }>
+                        {project.isFeatured ? 'Featured' : 'Published'}
+                      </Badge>
                     </div>
-                    {statusBadge(project.status)}
+                    {project.description && (
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{project.description}</p>
+                    )}
+                    <div className="flex items-center justify-between mt-3">
+                      <p className="text-xs text-emerald-600">{formatDate(project.createdAt)}</p>
+                      <Button variant="ghost" size="sm" className="text-emerald-600">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <p className="font-bold text-emerald-700">{formatCurrency(project.value)}</p>
-                    <Button variant="ghost" size="sm" className="text-emerald-600">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>
@@ -315,7 +490,7 @@ export function PartnerDashboard() {
               {t('partner.withdrawalsRequest')}
             </CardTitle>
             <CardDescription>
-              Available balance: {formatCurrency(commissionsEarned - 20000)}
+              Available balance: {formatCurrency(commissionsEarned)}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -392,32 +567,33 @@ export function PartnerDashboard() {
                 </p>
               </div>
 
-              {/* Recent withdrawals preview */}
+              {/* Recent withdrawals from paid commissions */}
               <Separator className="my-4" />
               <div>
                 <h4 className="font-medium text-sm mb-3">{t('partner.withdrawalsHistory')}</h4>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                      <span className="text-sm">MT 15,000 — M-Pesa</span>
-                    </div>
-                    <div className="text-right">
-                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>
-                      <p className="text-xs text-muted-foreground mt-1">Jan 15, 2025</p>
-                    </div>
+                {commissions.filter((c) => c.status === 'paid').length === 0 ? (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-muted-foreground">{t('common.noData') || 'No withdrawal history'}</p>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-yellow-600" />
-                      <span className="text-sm">MT 5,000 — Bank Transfer</span>
-                    </div>
-                    <div className="text-right">
-                      <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{t('common.pending')}</Badge>
-                      <p className="text-xs text-muted-foreground mt-1">May 10, 2025</p>
-                    </div>
+                ) : (
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {commissions
+                      .filter((c) => c.status === 'paid')
+                      .slice(0, 5)
+                      .map((commission) => (
+                        <div key={commission.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                            <span className="text-sm">{formatCurrency(commission.amount)} — Commission</span>
+                          </div>
+                          <div className="text-right">
+                            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>
+                            <p className="text-xs text-muted-foreground mt-1">{formatDate(commission.createdAt)}</p>
+                          </div>
+                        </div>
+                      ))}
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </CardContent>

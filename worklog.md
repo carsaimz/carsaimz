@@ -1,65 +1,35 @@
 ---
 Task ID: 1
-Agent: Main Agent
-Task: Build Carsai Mozambique platform based on README-REACT.md documentation
+Agent: Super Z (Main)
+Task: Implement all 6 user requirements for Carsai Mozambique platform
 
 Work Log:
-- Read and analyzed the README-REACT.md documentation for Carsai Mozambique
-- Initialized fullstack development environment
-- Designed and implemented comprehensive Prisma database schema with 20+ tables (users, roles, permissions, pages, services, projects, testimonials, categories, tags, posts, comments, subscribers, forum_categories, forum_topics, forum_posts, forum_likes, quotes, proposals, payments, invoices, invoice_items, affiliate_clicks, affiliate_commissions, notifications, support_tickets, ticket_replies, settings, logs)
-- Pushed schema to SQLite database
-- Created seed data script with Mozambique-focused demo data (6 services, 6 projects, 4 testimonials, 5 blog categories, 8 tags, 6 blog posts, 4 forum categories, 6 forum topics, settings, notifications)
-- Created 8 API routes (seed, services, projects, posts, forum, stats, settings, notifications)
-- Created i18n system with 540+ translation keys per language (Portuguese Mozambique, English US, Portuguese Brazil)
-- Created context providers: Auth, Language, Notification, App
-- Created Zustand stores: useAuthStore, useNotificationStore, useAppStore
-- Created layout components: Header, Footer, Sidebar, AppShell, Loader, LoginModal
-- Created public module components: HomeHero, ServicesSection, ProjectsSection, TestimonialsSection, AboutSection, ContactSection, FaqSection, HomePage
-- Created Blog module: BlogPage, PostDetail
-- Created Forum module: ForumPage, TopicDetail
-- Created Dashboard modules: UserDashboard, AdminDashboard, PartnerDashboard, FinancialSection
-- Created main page.tsx with view routing based on currentView state
-- Fixed hydration mismatch issues by separating client-side shell from server layout
-- Fixed PostDetail and TopicDetail runtime errors (missing comments/replies from API)
-- Verified all features with Agent Browser: Homepage, Blog, Forum, Services, Login, Admin Dashboard, Partner Dashboard, Theme Toggle, Language Switcher
+- Changed hero badge from "🇲🇿 Moçambique" to "Soluções Digitais e Desenvolvimento Web Gratuita"
+- Rewrote StatsCounterSection to fetch from /api/stats (real DB data, no hardcoded values)
+- Rewrote UserDashboard to fetch from /api/dashboard?role=user (removed all mock data)
+- Rewrote PartnerDashboard to fetch from /api/dashboard?role=partner (removed all mock data)
+- Rewrote FinancialSection to fetch from /api/quotes, /api/payments, /api/invoices (removed all mock data)
+- Rewrote AdminDashboard to fetch from /api/stats, /api/stats/history, /api/dashboard?role=admin (removed all mock chart data)
+- Removed fallback hardcoded data from services-section, projects-section, testimonials-section
+- Rewrote AI chat assistant with DB connection, site content reading, improved design, localStorage session memory
+- Rewrote /api/chat/route.ts to fetch all site content from DB and include in AI context
+- Created /api/upload/route.ts for base64 file upload endpoint
+- Created /src/lib/file-utils.ts for base64 utility functions
+- Created /api/stats/history/route.ts for admin dashboard historical chart data
+- Created /api/invoices/route.ts for financial data
+- Created /api/user/profile/route.ts for profile editing
+- Created /api/user/avatar/route.ts for avatar upload as base64
+- Updated Prisma schema with company, bio, address fields on User model
+- Added FileAttachment model for base64 file storage in DB
+- Updated seed data with more items (8 projects, 6 testimonials, 9 posts, 10 quotes, etc.)
+- Updated auth store User interface with phone, company, bio, address fields
+- Verified build compiles successfully with all new routes
 
 Stage Summary:
-- Fully functional Carsai Mozambique platform with all modules described in the documentation
-- SPA architecture using Zustand-based view routing
-- All 7 modules implemented: Public, Blog, Forum, User Dashboard, Admin, Partner, Financial
-- i18n with 3 languages and 540+ keys
-- Dark/Light theme toggle
-- Demo login system with 3 roles (admin, partner, user)
-- Emerald/green Mozambique branding theme
-- Responsive design (mobile-first)
-- All API endpoints working and returning seeded data
-
----
-Task ID: 2
-Agent: Main Agent
-Task: Update platform with real logo, real data from DB, and add new features
-
-Work Log:
-- Analyzed uploaded logo image (20250628_161336.png) - red "CarsaiMZ" text with arch shape, 1024x1024 PNG
-- Copied logo to /home/z/my-project/public/logo.png
-- Updated all components (Header, Footer, Sidebar, Loader, Hero) to use real logo image instead of Lucide Car icon placeholder
-- Updated layout.tsx metadata to use /logo.png as favicon
-- Created 7 new API routes for real data: testimonials, comments, quotes, payments, support, newsletter (POST), contact (POST)
-- Updated 3 existing API routes to include more data: posts (now includes comments), forum (now includes replies), dashboard (role-based)
-- Created 6 new feature components: GlobalSearch, AiChatAssistant, RealTimeNotifications, NewsletterForm, ContactFormApi, StatsCounter
-- Created AI Chat API endpoint using z-ai-web-dev-sdk with contextual fallback
-- Updated Header with Search button and GlobalSearch component
-- Updated Footer with real NewsletterForm component
-- Updated Hero with animated StatsCounter component
-- Updated page.tsx with AiChatAssistant and RealTimeNotifications
-- Added new AppView types and searchOpen state to store
-- Added 80+ new translation keys (search, chat, notif, newsletter, contact, stats)
-- Fixed z-ai-web-dev-sdk import (default export, not named ZAI)
-- Verified with Agent Browser: logo displayed, search works, chat assistant works, login works, all data from DB
-
-Stage Summary:
-- Real CarsaiMZ logo integrated across all components
-- All data comes from real database (no more mock data in API responses)
-- New features: Global Search (Ctrl+K), AI Chat Assistant, Real-time Notifications polling, Newsletter subscription API, Contact form submission API, Animated Stats Counter
-- AI Chat uses z-ai-web-dev-sdk for intelligent responses with contextual fallback
-- 17 total API endpoints providing real data from Prisma DB
+- All 6 user requirements implemented
+- No mock/hardcoded data remaining in any component
+- Chatbot connected to DB with site content reading and session memory
+- Base64 file storage implemented
+- Profile editing API created
+- Build verified: ✅ npm run build successful
+- API endpoints verified: ✅ /api/stats returns real DB data (3 users, 8 projects, 6 services, etc.)

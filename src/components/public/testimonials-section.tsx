@@ -19,48 +19,7 @@ interface TestimonialData {
   isPublished: boolean;
 }
 
-const fallbackTestimonials: TestimonialData[] = [
-  {
-    id: '1',
-    name: 'Ricardo Mondlane',
-    company: 'Vodacom Mozambique',
-    content:
-      'Carsai transformed our digital vision completely. The M-Pesa dashboard they developed is intuitive, fast, and fully adapted to our market. The team\'s understanding of the local Mozambican context was fundamental to the project\'s success.',
-    rating: 5,
-    avatar: null,
-    isPublished: true,
-  },
-  {
-    id: '2',
-    name: 'Teresa Nhaca',
-    company: 'Banco Commercial de Mozambique',
-    content:
-      'Working with Carsai was an exceptional experience. The financial management platform they created for us reduced transaction processing time by 60%. I recommend them without hesitation.',
-    rating: 5,
-    avatar: null,
-    isPublished: true,
-  },
-  {
-    id: '3',
-    name: 'Antonio Zuvale',
-    company: 'AgriTech Mozambique',
-    content:
-      'Carsai understood the unique needs of Mozambican farmers and created a platform that really works in our context. The integration with local weather data and the marketplace was a game-changer.',
-    rating: 4,
-    avatar: null,
-    isPublished: true,
-  },
-  {
-    id: '4',
-    name: 'Maria Langa',
-    company: 'Instituto Nacional de Saúde',
-    content:
-      'Carsai\'s HealthConnect system is saving lives in Mozambique. Telemedicine allows patients in rural areas to access specialized doctors in Maputo. Technology adapted to our realities.',
-    rating: 5,
-    avatar: null,
-    isPublished: true,
-  },
-];
+// No fallback data - all data comes from the database via API
 
 export function TestimonialsSection() {
   const { t } = useLanguage();
@@ -74,12 +33,10 @@ export function TestimonialsSection() {
       .then((data) => {
         if (data.success && data.data?.length > 0) {
           setTestimonials(data.data);
-        } else {
-          setTestimonials(fallbackTestimonials);
         }
       })
       .catch(() => {
-        setTestimonials(fallbackTestimonials);
+        // Error - show empty state, no fallback
       })
       .finally(() => setLoading(false));
   }, []);
