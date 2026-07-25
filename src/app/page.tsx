@@ -16,6 +16,9 @@ import { UserDashboard } from '@/components/user/user-dashboard';
 import { AdminDashboard } from '@/components/admin/admin-dashboard';
 import { PartnerDashboard } from '@/components/partner/partner-dashboard';
 import { FinancialSection } from '@/components/financial/financial-section';
+import { AiChatAssistant } from '@/components/features/ai-chat-assistant';
+import { RealTimeNotifications } from '@/components/features/real-time-notifications';
+import { ContactFormApi } from '@/components/features/contact-form-api';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
@@ -32,7 +35,7 @@ export default function Home() {
       case 'about':
         return <AboutSection />;
       case 'contact':
-        return <ContactSection />;
+        return <ContactFormApi />;
       case 'faq':
         return <FaqSection />;
       case 'testimonials':
@@ -71,17 +74,21 @@ export default function Home() {
   };
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={currentView}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.3 }}
-        className="w-full"
-      >
-        {renderView()}
-      </motion.div>
-    </AnimatePresence>
+    <>
+      <RealTimeNotifications />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentView}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="w-full"
+        >
+          {renderView()}
+        </motion.div>
+      </AnimatePresence>
+      <AiChatAssistant />
+    </>
   );
 }

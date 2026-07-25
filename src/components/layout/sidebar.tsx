@@ -19,7 +19,6 @@ import {
   Percent,
   Banknote,
   ClipboardList,
-  Car,
   Map,
   ScrollText,
 } from 'lucide-react';
@@ -135,7 +134,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
       <Sidebar collapsible="icon">
         <SidebarHeader>
           <div className="flex items-center gap-2 px-2 py-1">
-            <Car className="size-5 text-primary shrink-0" />
+            <img src="/logo.png" alt="CarsaiMZ" className="h-6 w-auto shrink-0" />
             <div className="group-data-[collapsible=icon]:hidden flex flex-col">
               <span className="font-bold text-sm">Carsai</span>
               <span className="text-xs text-muted-foreground">

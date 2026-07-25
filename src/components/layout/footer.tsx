@@ -1,8 +1,6 @@
 'use client';
 
-import { useState } from 'react';
 import {
-  Car,
   Mail,
   Phone,
   MapPin,
@@ -10,12 +8,11 @@ import {
   Instagram,
   Twitter,
   Linkedin,
-  Send,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { NewsletterForm } from '@/components/features/newsletter-form';
 
 import { useAppStore, type AppView } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
@@ -47,23 +44,12 @@ const LEGAL_LINKS: FooterLink[] = [
 // ──────────────────────────────────────────────
 
 export function Footer({ className }: { className?: string }) {
-  const { t, formatCurrency } = useLanguage();
+  const { t } = useLanguage();
   const { setCurrentView } = useAppStore();
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
 
   const handleNavClick = (view: AppView) => {
     setCurrentView(view);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleSubscribe = () => {
-    if (email && email.includes('@')) {
-      setSubscribed(true);
-      setEmail('');
-      // Reset after 3 seconds
-      setTimeout(() => setSubscribed(false), 3000);
-    }
   };
 
   return (
@@ -74,7 +60,7 @@ export function Footer({ className }: { className?: string }) {
           {/* Brand Column */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Car className="size-5 text-primary" />
+              <img src="/logo.png" alt="CarsaiMZ" className="h-10 w-auto" />
               <span className="font-bold text-lg">Carsai</span>
               <span className="text-muted-foreground">Moçambique</span>
             </div>
@@ -136,35 +122,7 @@ export function Footer({ className }: { className?: string }) {
           </div>
 
           {/* Newsletter */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-sm">{t('footer.newsletter')}</h3>
-            <p className="text-sm text-muted-foreground">
-              {t('home.heroSubtitle').slice(0, 80)}...
-            </p>
-            {subscribed ? (
-              <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                <Send className="size-4" />
-                <span>{t('footer.newsletterSuccess')}</span>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <Input
-                  type="email"
-                  placeholder={t('footer.newsletterPlaceholder')}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="text-sm h-9"
-                />
-                <Button
-                  size="sm"
-                  onClick={handleSubscribe}
-                  className="h-9"
-                >
-                  {t('footer.newsletterSubscribe')}
-                </Button>
-              </div>
-            )}
-          </div>
+          <NewsletterForm />
         </div>
 
         {/* ── Separator ── */}

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Car } from 'lucide-react';
 
 /**
  * Full-page loader overlay that shows during initial page load.
@@ -38,7 +37,7 @@ export function Loader() {
     >
       <div className="flex flex-col items-center gap-4">
         <div className="relative flex items-center justify-center">
-          <Car className="size-12 text-primary animate-pulse" />
+          <img src="/logo.png" alt="CarsaiMZ" className="h-16 w-auto animate-pulse" />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="size-16 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
           </div>

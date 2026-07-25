@@ -25,7 +25,7 @@ export interface Notification {
   createdAt: Date;
 }
 
-export type AppView = 'home' | 'services' | 'projects' | 'about' | 'faq' | 'blog' | 'forum' | 'blogPost' | 'forumTopic' | 'contact' | 'dashboard' | 'vehicles' | 'partners' | 'reports' | 'settings' | 'map' | 'analytics' | 'admin' | 'partner';
+export type AppView = 'home' | 'services' | 'projects' | 'about' | 'faq' | 'blog' | 'forum' | 'blogPost' | 'forumTopic' | 'contact' | 'dashboard' | 'vehicles' | 'partners' | 'reports' | 'settings' | 'map' | 'analytics' | 'admin' | 'partner' | 'chat';
 
 export type Language = 'en' | 'pt' | 'fr';
 
@@ -218,6 +218,7 @@ interface AppState {
   currentView: AppView;
   sidebarOpen: boolean;
   searchQuery: string;
+  searchOpen: boolean;
   language: Language;
   selectedPostSlug: string | null;
   selectedTopicSlug: string | null;
@@ -225,6 +226,7 @@ interface AppState {
   setSidebarOpen: (open: boolean) => void;
   toggleSidebar: () => void;
   setSearchQuery: (query: string) => void;
+  setSearchOpen: (open: boolean) => void;
   setLanguage: (language: Language) => void;
   setSelectedPostSlug: (slug: string | null) => void;
   setSelectedTopicSlug: (slug: string | null) => void;
@@ -234,6 +236,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   currentView: 'home',
   sidebarOpen: true,
   searchQuery: '',
+  searchOpen: false,
   language: 'pt', // Portuguese as default for Mozambique
   selectedPostSlug: null,
   selectedTopicSlug: null,
@@ -242,6 +245,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   setSidebarOpen: (open: boolean) => set({ sidebarOpen: open }),
   toggleSidebar: () => set({ sidebarOpen: !get().sidebarOpen }),
   setSearchQuery: (query: string) => set({ searchQuery: query }),
+  setSearchOpen: (open: boolean) => set({ searchOpen: open }),
   setLanguage: (language: Language) => set({ language }),
   setSelectedPostSlug: (slug: string | null) => set({ selectedPostSlug: slug }),
   setSelectedTopicSlug: (slug: string | null) => set({ selectedTopicSlug: slug }),

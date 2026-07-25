@@ -647,6 +647,93 @@ export const enUS: TranslationObject = {
     keyboardNav: 'Keyboard navigation',
   },
 
+  // ============================================================================
+  // Notification Section
+  // ============================================================================
+  notif: {
+    title: 'Notifications',
+    markAllRead: 'Mark all as read',
+    noNotifications: 'No notifications yet',
+    newNotification: 'New notification',
+    pollInterval: 'Checking for new notifications...',
+  },
+
+  // ============================================================================
+  // Global Search
+  // ============================================================================
+  search: {
+    title: 'Search',
+    placeholder: 'Search services, projects, articles...',
+    noResults: 'No results found',
+    shortcut: 'Ctrl+K',
+    services: 'Services',
+    projects: 'Projects',
+    blog: 'Blog Articles',
+    forum: 'Forum Topics',
+    openSearch: 'Open search',
+  },
+
+  // ============================================================================
+  // AI Chat Assistant
+  // ============================================================================
+  chat: {
+    title: 'Carsai Assistant',
+    subtitle: 'Ask me anything about our services',
+    placeholder: 'Type your message...',
+    sendMessage: 'Send',
+    greeting: 'Hello! I\'m the Carsai assistant. How can I help you today?',
+    quickQuestion1: 'What services does Carsai offer?',
+    quickQuestion2: 'How can I request a quote?',
+    quickQuestion3: 'What payment methods are available?',
+    quickQuestion4: 'How to become a partner?',
+    thinking: 'Thinking...',
+    error: 'Sorry, I couldn\'t process your request. Please try again.',
+    close: 'Close chat',
+    open: 'Open chat assistant',
+    newMessage: 'New message from assistant',
+  },
+
+  // ============================================================================
+  // Newsletter (Enhanced)
+  // ============================================================================
+  newsletter: {
+    title: 'Newsletter',
+    subtitle: 'Stay updated with the latest news from Carsai',
+    emailPlaceholder: 'Enter your email address',
+    subscribe: 'Subscribe',
+    subscribeSuccess: 'Thank you! You\'ve been subscribed successfully.',
+    subscribeError: 'Something went wrong. Please try again.',
+    emailInvalid: 'Please enter a valid email address.',
+    emailRequired: 'Email is required.',
+    alreadySubscribed: 'This email is already subscribed.',
+    privacyNote: 'We respect your privacy and will never share your email.',
+  },
+
+  // ============================================================================
+  // Contact Form (Enhanced)
+  // ============================================================================
+  contactForm: {
+    submitSuccess: 'Your message has been sent successfully! We\'ll get back to you soon.',
+    submitError: 'Failed to send your message. Please try again later.',
+    nameRequired: 'Name is required.',
+    emailRequired: 'Email is required.',
+    emailInvalid: 'Please enter a valid email address.',
+    subjectRequired: 'Subject is required.',
+    messageRequired: 'Message is required.',
+    messageMinLength: 'Message must be at least 10 characters.',
+    submitting: 'Sending...',
+  },
+
+  // ============================================================================
+  // Stats Counter
+  // ============================================================================
+  stats: {
+    projects: 'Projects Completed',
+    clients: 'Satisfied Clients',
+    years: 'Years of Experience',
+    support: 'Support Available',
+  },
+
   meta: {
     siteTitle: 'Carsai Mozambique',
     siteDescription: 'Tech platform for digital transformation in Mozambique',

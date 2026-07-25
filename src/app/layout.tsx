@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   keywords: ["Carsai", "Moçambique", "tecnologia", "transformação digital", "desenvolvimento web", "mobile", "cloud", "IA"],
   authors: [{ name: "Carsai Moçambique" }],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/logo.png",
   },
   openGraph: {
     title: "Carsai Moçambique - Transformação Digital",

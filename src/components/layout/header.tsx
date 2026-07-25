@@ -11,10 +11,10 @@ import {
   User,
   LogOut,
   LogIn,
-  Car,
   Shield,
   Briefcase,
   ChevronDown,
+  Search,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -40,6 +40,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAppStore, useAuthStore, useNotificationStore, type AppView } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
 import { LoginModal } from '@/components/common/login-modal';
+import { GlobalSearch } from '@/components/features/global-search';
 
 // ──────────────────────────────────────────────
 // Navigation items mapped to AppView
@@ -66,7 +67,7 @@ const NAV_ITEMS: NavItem[] = [
 export function Header() {
   const { t, language, setLanguage, languages } = useLanguage();
   const { theme, setTheme } = useTheme();
-  const { currentView, setCurrentView } = useAppStore();
+  const { currentView, setCurrentView, searchOpen, setSearchOpen } = useAppStore();
   const { user, isAuthenticated, isAdmin, isPartner, logout } = useAuthStore();
   const { unreadCount, notifications, markAllAsRead } = useNotificationStore();
 
@@ -103,7 +104,7 @@ export function Header() {
               className="flex items-center gap-2 font-bold text-lg hover:bg-transparent"
               onClick={() => handleNavClick('home')}
             >
-              <Car className="size-5 text-primary" />
+              <img src="/logo.png" alt="CarsaiMZ" className="h-8 w-auto" />
               <span className="hidden sm:inline">Carsai</span>
               <span className="hidden sm:inline text-muted-foreground font-normal">
                 Moçambique
@@ -128,6 +129,16 @@ export function Header() {
 
           {/* ── Right side actions ── */}
           <div className="flex items-center gap-2">
+            {/* Search Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSearchOpen(true)}
+              aria-label={t('search.openSearch')}
+              className="hover:text-emerald-600"
+            >
+              <Search className="size-4" />
+            </Button>
             {/* Language Switcher */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -307,7 +318,7 @@ export function Header() {
               <SheetContent side="right" className="w-72">
                 <SheetHeader>
                   <SheetTitle className="flex items-center gap-2">
-                    <Car className="size-5 text-primary" />
+                    <img src="/logo.png" alt="CarsaiMZ" className="h-8 w-auto" />
                     Carsai Moçambique
                   </SheetTitle>
                 </SheetHeader>
@@ -405,6 +416,9 @@ export function Header() {
 
       {/* Login Modal */}
       <LoginModal open={loginModalOpen} onOpenChange={setLoginModalOpen} />
+
+      {/* Global Search Dialog */}
+      <GlobalSearch />
     </>
   );
 }

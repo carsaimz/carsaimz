@@ -654,6 +654,93 @@ export const ptPT: TranslationObject = {
     keyboardNav: 'Navegação por teclado',
   },
 
+  // ============================================================================
+  // Notification Section
+  // ============================================================================
+  notif: {
+    title: 'Notificações',
+    markAllRead: 'Marcar todas como lidas',
+    noNotifications: 'Nenhuma notificação ainda',
+    newNotification: 'Nova notificação',
+    pollInterval: 'Verificando novas notificações...',
+  },
+
+  // ============================================================================
+  // Global Search
+  // ============================================================================
+  search: {
+    title: 'Pesquisar',
+    placeholder: 'Pesquisar serviços, projectos, artigos...',
+    noResults: 'Nenhum resultado encontrado',
+    shortcut: 'Ctrl+K',
+    services: 'Serviços',
+    projects: 'Projectos',
+    blog: 'Artigos do Blog',
+    forum: 'Tópicos do Fórum',
+    openSearch: 'Abrir pesquisa',
+  },
+
+  // ============================================================================
+  // AI Chat Assistant
+  // ============================================================================
+  chat: {
+    title: 'Assistente Carsai',
+    subtitle: 'Pergunte-me qualquer coisa sobre os nossos serviços',
+    placeholder: 'Escreva a sua mensagem...',
+    sendMessage: 'Enviar',
+    greeting: 'Olá! Sou o assistente Carsai. Como posso ajudar hoje?',
+    quickQuestion1: 'Que serviços oferece a Carsai?',
+    quickQuestion2: 'Como posso pedir uma cotação?',
+    quickQuestion3: 'Que métodos de pagamento estão disponíveis?',
+    quickQuestion4: 'Como tornar-se parceiro?',
+    thinking: 'A pensar...',
+    error: 'Lamento, não consegui processar o seu pedido. Por favor, tente novamente.',
+    close: 'Fechar chat',
+    open: 'Abrir assistente',
+    newMessage: 'Nova mensagem do assistente',
+  },
+
+  // ============================================================================
+  // Newsletter (Enhanced)
+  // ============================================================================
+  newsletter: {
+    title: 'Newsletter',
+    subtitle: 'Fique actualizado com as últimas notícias da Carsai',
+    emailPlaceholder: 'Introduza o seu endereço de e-mail',
+    subscribe: 'Subscrever',
+    subscribeSuccess: 'Obrigado! Subscrição realizada com sucesso.',
+    subscribeError: 'Algo correu mal. Por favor, tente novamente.',
+    emailInvalid: 'Por favor, introduza um e-mail válido.',
+    emailRequired: 'O e-mail é obrigatório.',
+    alreadySubscribed: 'Este e-mail já está subscrito.',
+    privacyNote: 'Respeitamos a sua privacidade e nunca partilharemos o seu e-mail.',
+  },
+
+  // ============================================================================
+  // Contact Form (Enhanced)
+  // ============================================================================
+  contactForm: {
+    submitSuccess: 'A sua mensagem foi enviada com sucesso! Responderemos em breve.',
+    submitError: 'Falha ao enviar a mensagem. Por favor, tente novamente.',
+    nameRequired: 'O nome é obrigatório.',
+    emailRequired: 'O e-mail é obrigatório.',
+    emailInvalid: 'Por favor, introduza um e-mail válido.',
+    subjectRequired: 'O assunto é obrigatório.',
+    messageRequired: 'A mensagem é obrigatória.',
+    messageMinLength: 'A mensagem deve ter pelo menos 10 caracteres.',
+    submitting: 'A enviar...',
+  },
+
+  // ============================================================================
+  // Stats Counter
+  // ============================================================================
+  stats: {
+    projects: 'Projectos Concluídos',
+    clients: 'Clientes Satisfeitos',
+    years: 'Anos de Experiência',
+    support: 'Suporte Disponível',
+  },
+
   meta: {
     siteTitle: 'Carsai Moçambique',
     siteDescription: 'Plataforma tecnológica para transformação digital em Moçambique',

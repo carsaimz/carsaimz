@@ -5,6 +5,15 @@ export async function GET() {
   try {
     const testimonials = await db.testimonial.findMany({
       where: { isPublished: true },
+      select: {
+        id: true,
+        name: true,
+        company: true,
+        content: true,
+        rating: true,
+        avatar: true,
+        createdAt: true,
+      },
       orderBy: { createdAt: 'desc' },
     })
 

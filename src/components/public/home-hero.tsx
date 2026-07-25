@@ -1,10 +1,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowRight, Briefcase, Users, Clock, Award } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/language-context';
 import { useAppStore } from '@/lib/store';
+import { StatsCounterSection } from '@/components/features/stats-counter';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -29,13 +30,6 @@ const itemVariants = {
 export function HomeHero() {
   const { t } = useLanguage();
   const setCurrentView = useAppStore((s) => s.setCurrentView);
-
-  const stats = [
-    { icon: Briefcase, value: '50+', label: t('home.statsProjects') },
-    { icon: Users, value: '120+', label: t('home.statsClients') },
-    { icon: Clock, value: '5+', label: t('home.statsYears') },
-    { icon: Award, value: '24/7', label: t('home.statsSupport') },
-  ];
 
   return (
     <section
@@ -64,6 +58,11 @@ export function HomeHero() {
             <span className="inline-block px-4 py-1.5 rounded-full bg-emerald-700/50 text-emerald-200 text-sm font-medium border border-emerald-600/30">
               🇲🇿 Moçambique
             </span>
+          </motion.div>
+
+          {/* Logo prominently displayed */}
+          <motion.div variants={itemVariants} className="mb-6">
+            <img src="/logo.png" alt="CarsaiMZ Logo" className="h-20 sm:h-24 md:h-28 w-auto mx-auto drop-shadow-lg" />
           </motion.div>
 
           <motion.h1
@@ -107,23 +106,8 @@ export function HomeHero() {
           {/* Stats Row */}
           <motion.div
             variants={itemVariants}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6"
           >
-            {stats.map((stat) => (
-              <motion.div
-                key={stat.label}
-                variants={itemVariants}
-                className="bg-white/10 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white/20 hover:bg-white/15 transition-colors"
-              >
-                <stat.icon className="h-6 w-6 text-yellow-400 mb-2 mx-auto" />
-                <div className="text-2xl sm:text-3xl font-bold text-white mb-1">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-emerald-200">
-                  {stat.label}
-                </div>
-              </motion.div>
-            ))}
+            <StatsCounterSection />
           </motion.div>
         </motion.div>
       </div>
