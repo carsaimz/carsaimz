@@ -1,0 +1,248 @@
+'use client';
+
+import { motion } from 'framer-motion';
+import {
+  Lightbulb,
+  ShieldCheck,
+  Trophy,
+  Heart,
+  MapPin,
+  Calendar,
+  Users,
+  Target,
+  Eye,
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import { useLanguage } from '@/contexts/language-context';
+
+const values = [
+  {
+    icon: Lightbulb,
+    titleKey: 'about.valueInnovation',
+    descKey: 'about.valueInnovationDesc',
+    color: 'bg-yellow-100 text-yellow-600',
+  },
+  {
+    icon: ShieldCheck,
+    titleKey: 'about.valueIntegrity',
+    descKey: 'about.valueIntegrityDesc',
+    color: 'bg-emerald-100 text-emerald-600',
+  },
+  {
+    icon: Trophy,
+    titleKey: 'about.valueExcellence',
+    descKey: 'about.valueExcellenceDesc',
+    color: 'bg-orange-100 text-orange-600',
+  },
+  {
+    icon: Heart,
+    titleKey: 'about.valueCommunity',
+    descKey: 'about.valueCommunityDesc',
+    color: 'bg-red-100 text-red-600',
+  },
+];
+
+const teamMembers = [
+  { name: 'Carlos Silva', role: 'CEO & Founder', initials: 'CS' },
+  { name: 'Ana Ferreira', role: 'CTO', initials: 'AF' },
+  { name: 'João Machado', role: 'Lead Developer', initials: 'JM' },
+  { name: 'Rosa Mondlane', role: 'UI/UX Designer', initials: 'RM' },
+  { name: 'Pedro Nhaca', role: 'DevOps Engineer', initials: 'PN' },
+  { name: 'Luísa Zuvale', role: 'AI Specialist', initials: 'LZ' },
+];
+
+const historyStats = [
+  { icon: Calendar, value: '2019', label: 'Founded' },
+  { icon: Users, value: '15+', label: 'Team Members' },
+  { icon: MapPin, value: 'Maputo', label: 'Headquarters' },
+  { icon: Target, value: '50+', label: 'Projects' },
+];
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.12 } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
+
+export function AboutSection() {
+  const { t } = useLanguage();
+
+  return (
+    <section id="about" className="py-16 sm:py-24 bg-muted/30">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+            {t('about.title')}
+          </h2>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            {t('about.subtitle')}
+          </p>
+        </motion.div>
+
+        {/* Mission & Vision */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12"
+        >
+          <motion.div variants={itemVariants}>
+            <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border-emerald-200 h-full">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-emerald-600 text-white">
+                    <Target className="h-5 w-5" />
+                  </div>
+                  <CardTitle>{t('about.mission')}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-foreground leading-relaxed">
+                  {t('about.missionText')}
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <Card className="bg-gradient-to-br from-teal-50 to-teal-100/50 border-teal-200 h-full">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-teal-600 text-white">
+                    <Eye className="h-5 w-5" />
+                  </div>
+                  <CardTitle>{t('about.vision')}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-foreground leading-relaxed">
+                  {t('about.visionText')}
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </motion.div>
+
+        {/* Values */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-8"
+        >
+          <h3 className="text-2xl font-bold mb-2">{t('about.values')}</h3>
+        </motion.div>
+
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12"
+        >
+          {values.map((v) => {
+            const IconComponent = v.icon;
+            return (
+              <motion.div key={v.titleKey} variants={itemVariants}>
+                <Card className="text-center hover:shadow-md transition-shadow h-full">
+                  <CardContent className="p-6">
+                    <div
+                      className={`inline-flex p-3 rounded-xl mb-4 ${v.color}`}
+                    >
+                      <IconComponent className="h-6 w-6" />
+                    </div>
+                    <h4 className="font-semibold text-lg mb-2">
+                      {t(v.titleKey)}
+                    </h4>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {t(v.descKey)}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+
+        <Separator className="mb-12" />
+
+        {/* Company History Stats */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12"
+        >
+          {historyStats.map((stat) => {
+            const IconComponent = stat.icon;
+            return (
+              <motion.div key={stat.label} variants={itemVariants}>
+                <div className="text-center p-4 rounded-xl bg-white border shadow-sm">
+                  <IconComponent className="h-5 w-5 text-emerald-600 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-emerald-700">
+                    {stat.value}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {stat.label}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+
+        <Separator className="mb-12" />
+
+        {/* Team */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-8"
+        >
+          <h3 className="text-2xl font-bold mb-2">{t('about.teamTitle')}</h3>
+          <p className="text-muted-foreground">
+            {t('about.teamSubtitle')}
+          </p>
+        </motion.div>
+
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4"
+        >
+          {teamMembers.map((member) => (
+            <motion.div key={member.name} variants={itemVariants}>
+              <div className="text-center p-4 rounded-xl bg-white border shadow-sm hover:shadow-md transition-shadow">
+                <Avatar className="h-16 w-16 mx-auto mb-3 border-2 border-emerald-200">
+                  <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold text-lg">
+                    {member.initials}
+                  </AvatarFallback>
+                </Avatar>
+                <p className="font-medium text-sm">{member.name}</p>
+                <p className="text-xs text-muted-foreground">{member.role}</p>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}

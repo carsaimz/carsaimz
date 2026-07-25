@@ -1,0 +1,441 @@
+// Carsai Mozambique - Database Schema
+// Prisma with SQLite
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// === Core User & Auth ===
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  avatar        String?
+  phone         String?
+  passwordHash  String?
+  roleId        String?
+  role          Role?    @relation(fields: [roleId], references: [id])
+  isActive      Boolean  @default(true)
+  emailVerified Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  posts         Post[]
+  comments      Comment[]
+  forumTopics   ForumTopic[]
+  forumPosts    ForumPost[]
+  quotes        Quote[]
+  payments      Payment[]
+  notifications Notification[]
+  supportTickets SupportTicket[]
+  ticketReplies  TicketReply[]
+  affiliateClicks AffiliateClick[]
+  affiliateCommissions AffiliateCommission[]
+
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique // admin, partner, user
+  description String?
+  users       User[]
+  permissions RolePermission[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  rolePermissions RolePermission[]
+  createdAt   DateTime @default(now())
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// === Public Content ===
+
+model Page {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  content     String?
+  isPublished Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("pages")
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String?
+  icon        String?
+  basePrice   Float?
+  isFeatured  Boolean  @default(false)
+  isPublished Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("services")
+}
+
+model Project {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  description  String?
+  client       String?
+  technologies String?
+  demoUrl      String?
+  images       String?  // JSON array of image URLs
+  isPublished  Boolean  @default(true)
+  isFeatured   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("projects")
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  company   String?
+  content   String
+  rating    Int      @default(5)
+  avatar    String?
+  isPublished Boolean @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("testimonials")
+}
+
+// === Blog ===
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  posts     Post[]
+  createdAt DateTime @default(now())
+
+  @@map("categories")
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  posts     PostTag[]
+  createdAt DateTime @default(now())
+
+  @@map("tags")
+}
+
+model Post {
+  id            String    @id @default(cuid())
+  title         String
+  slug          String    @unique
+  excerpt       String?
+  content       String?
+  featuredImage String?
+  published     Boolean   @default(false)
+  authorId      String
+  author        User      @relation(fields: [authorId], references: [id])
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  comments      Comment[]
+  tags          PostTag[]
+
+  @@map("posts")
+}
+
+model PostTag {
+  id     String @id @default(cuid())
+  postId String
+  tagId  String
+  post   Post   @relation(fields: [postId], references: [id])
+  tag    Tag    @relation(fields: [tagId], references: [id])
+
+  @@unique([postId, tagId])
+  @@map("post_tags")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  isApproved Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("comments")
+}
+
+model Subscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("subscribers")
+}
+
+// === Forum ===
+
+model ForumCategory {
+  id        String       @id @default(cuid())
+  name      String
+  slug      String       @unique
+  description String?
+  order     Int          @default(0)
+  topics    ForumTopic[]
+  createdAt DateTime     @default(now())
+
+  @@map("forum_categories")
+}
+
+model ForumTopic {
+  id          String         @id @default(cuid())
+  title       String
+  slug        String         @unique
+  content     String?
+  categoryId  String
+  category    ForumCategory  @relation(fields: [categoryId], references: [id])
+  authorId    String
+  author      User           @relation(fields: [authorId], references: [id])
+  isPinned    Boolean        @default(false)
+  isLocked    Boolean        @default(false)
+  isResolved  Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  replies     ForumPost[]
+  likes       ForumLike[]
+
+  @@map("forum_topics")
+}
+
+model ForumPost {
+  id        String      @id @default(cuid())
+  content   String
+  topicId   String
+  topic     ForumTopic  @relation(fields: [topicId], references: [id])
+  authorId  String
+  author    User        @relation(fields: [authorId], references: [id])
+  createdAt DateTime    @default(now())
+
+  @@map("forum_posts")
+}
+
+model ForumLike {
+  id      String     @id @default(cuid())
+  topicId String
+  topic   ForumTopic @relation(fields: [topicId], references: [id])
+  userId  String
+  createdAt DateTime @default(now())
+
+  @@unique([topicId, userId])
+  @@map("forum_likes")
+}
+
+// === Financial ===
+
+model Quote {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  attachments String?  // JSON array of file URLs
+  status      String   @default("pending") // pending, reviewed, proposed, accepted, rejected
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  proposals   Proposal[]
+
+  @@map("quotes")
+}
+
+model Proposal {
+  id          String   @id @default(cuid())
+  quoteId     String
+  quote       Quote    @relation(fields: [quoteId], references: [id])
+  title       String
+  description String?
+  items       String?  // JSON array of line items
+  totalAmount Float?
+  validUntil  DateTime?
+  status      String   @default("sent") // sent, accepted, rejected
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  payments    Payment[]
+  invoices    Invoice[]
+
+  @@map("proposals")
+}
+
+model Payment {
+  id            String    @id @default(cuid())
+  proposalId    String?
+  proposal      Proposal? @relation(fields: [proposalId], references: [id])
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  amount        Float
+  method        String    // mpesa, transfer, deposit
+  status        String    @default("pending") // pending, confirmed, failed
+  reference     String?
+  receiptUrl    String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("payments")
+}
+
+model Invoice {
+  id          String     @id @default(cuid())
+  proposalId  String
+  proposal    Proposal   @relation(fields: [proposalId], references: [id])
+  number      String     @unique
+  totalAmount Float
+  status      String     @default("issued") // issued, paid, overdue
+  dueDate     DateTime?
+  createdAt   DateTime   @default(now())
+
+  items       InvoiceItem[]
+
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+  description String
+  quantity    Int      @default(1)
+  unitPrice   Float
+  total       Float
+
+  @@map("invoice_items")
+}
+
+// === Affiliate / Partner ===
+
+model AffiliateClick {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  linkCode  String
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@map("affiliate_clicks")
+}
+
+model AffiliateCommission {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  amount    Float
+  status    String   @default("pending") // pending, approved, paid
+  createdAt DateTime @default(now())
+
+  @@map("affiliate_commissions")
+}
+
+// === Notifications ===
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      String   @default("info") // info, success, warning, error
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+// === Support ===
+
+model SupportTicket {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  subject   String
+  status    String        @default("open") // open, in_progress, resolved, closed
+  priority  String        @default("medium") // low, medium, high, urgent
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  replies   TicketReply[]
+
+  @@map("support_tickets")
+}
+
+model TicketReply {
+  id        String         @id @default(cuid())
+  ticketId  String
+  ticket    SupportTicket  @relation(fields: [ticketId], references: [id])
+  authorId  String
+  author    User           @relation(fields: [authorId], references: [id])
+  content   String
+  createdAt DateTime       @default(now())
+
+  @@map("ticket_replies")
+}
+
+// === Settings ===
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String?
+
+  @@map("settings")
+}
+
+// === Logs ===
+
+model Log {
+  id        String   @id @default(cuid())
+  action    String
+  details   String?
+  userId    String?
+  createdAt DateTime @default(now())
+
+  @@map("logs")
+}
