@@ -69,6 +69,12 @@ export const ptPT: TranslationObject = {
     welcomeBack: 'Bem-vindo de volta',
     createAccount: 'Criar conta',
     socialLogin: 'Entrar com {{provider}}',
+    phoneRequired: 'O número de telefone é obrigatório',
+    fullNameRequired: 'O nome completo é obrigatório',
+    optional: 'opcional',
+    backToHome: 'Voltar ao início',
+    passwordUpdateFailed: 'Falha ao actualizar a palavra-passe',
+    emailAlreadyExists: 'Já existe uma conta com este e-mail',
   },
 
   // ============================================================================
@@ -373,6 +379,13 @@ export const ptPT: TranslationObject = {
     lastLogin: 'Último acesso em {{date}}',
     overview: 'Visão geral',
     quickActions: 'Acções rápidas',
+    settingsDesc: 'Gerir o seu perfil e preferências',
+    profileInfo: 'Informações do perfil',
+    address: 'Endereço',
+    changePassword: 'Alterar palavra-passe',
+    saving: 'A guardar...',
+    saveChanges: 'Guardar alterações',
+    profileSaved: 'Perfil guardado com sucesso',
   },
 
   // ============================================================================
@@ -422,6 +435,42 @@ export const ptPT: TranslationObject = {
     monthlyRevenue: 'Receitas mensais',
     growthRate: 'Taxa de crescimento',
     conversionRate: 'Taxa de conversão',
+    services: 'Serviços',
+    projects: 'Projetos',
+    posts: 'Blog',
+    testimonials: 'Testemunhos',
+    contentManager: 'Gestão de Conteúdo',
+    createNew: 'Criar novo',
+    editItem: 'Editar',
+    deleteItem: 'Eliminar',
+    confirmDelete: 'Tem certeza que deseja eliminar este item?',
+    published: 'Publicado',
+    draft: 'Rascunho',
+    togglePublish: 'Alterar estado de publicação',
+    title: 'Título',
+    slug: 'Slug',
+    description: 'Descrição',
+    excerpt: 'Resumo',
+    content: 'Conteúdo',
+    icon: 'Ícone',
+    basePrice: 'Preço base',
+    order: 'Ordem',
+    featured: 'Destacado',
+    client: 'Cliente',
+    technologies: 'Tecnologias',
+    demoUrl: 'URL de demonstração',
+    name: 'Nome',
+    company: 'Empresa',
+    rating: 'Avaliação',
+    category: 'Categoria',
+    save: 'Guardar',
+    cancel: 'Cancelar',
+    noItems: 'Nenhum item encontrado',
+    actions: 'Ações',
+    date: 'Data',
+    status: 'Estado',
+    translations: 'Traduções',
+    defaultLanguage: 'Português (Moçambique) — idioma padrão',
   },
 
   // ============================================================================
@@ -739,6 +788,122 @@ export const ptPT: TranslationObject = {
     clients: 'Clientes Satisfeitos',
     years: 'Anos de Experiência',
     support: 'Suporte Disponível',
+  },
+
+  // ============================================================================
+  // Legal Pages
+  // ============================================================================
+  legal: {
+    terms: {
+      pageTitle: 'Termos e Condições',
+      pageSubtitle: 'Carsai Moçambique — Regulamento de utilização dos nossos serviços',
+      lastUpdate: 'Última actualização: Janeiro 2026',
+      seeAlso: 'Consulte também:',
+      seeAlsoPrivacy: 'Política de Privacidade',
+      seeAlsoCookies: 'Política de Cookies',
+      sections: {
+        general: {
+          title: 'Termos Gerais',
+          content: 'Estes Termos e Condições ("Termos") regulam a utilização dos serviços tecnológicos fornecidos pela Carsai Moçambique Lda., incluindo o nosso website, plataforma digital, aplicações mobile, soluções cloud e serviços de inteligência artificial. Ao aceder ou utilizar qualquer dos nossos serviços, você aceita estes Termos na sua totalidade. Se não concorda com qualquer parte dos Termos, não deverá utilizar os nossos serviços. A Carsai Moçambique está registada em Maputo, Moçambique, e opera conforme a legislação comercial e tecnológica moçambicana. Estes Termos constituem um contrato legal entre você ("Utilizador") e a Carsai Moçambique Lda. ("Empresa").',
+        },
+        services: {
+          title: 'Serviços Fornecidos',
+          content: 'A Carsai Moçambique fornece serviços de transformação digital incluindo: desenvolvimento de websites e aplicações web, desenvolvimento de aplicações mobile para iOS e Android, soluções de infraestrutura cloud e hosting, serviços de inteligência artificial e automação, consultoria tecnológica e estratégia digital, e manutenção e suporte técnico continuado. Os serviços específicos fornecidos a cada utilizador são definidos no contrato de serviço ou proposta comercial acordada. A empresa reserva-se o direito de modificar, suspender ou descontinuar qualquer serviço com notificação prévia de 30 dias, excepto em casos de força maior ou emergência técnica.',
+        },
+        obligations: {
+          title: 'Obrigações do Utilizador',
+          content: 'Como utilizador dos nossos serviços, você compromete-se a: fornecer informações verdadeiras e completas durante o registo e utilização da plataforma, utilizar os serviços apenas para fins legais e conforme a legislação moçambicana, não tentar acessar áreas restritas do sistema sem autorização, não realizar actividades que possam danificar, desabilitar ou sobrecarregar os servidores da Carsai, proteger as suas credenciais de acesso e não partilhá-las com terceiros, cumprir com todas as políticas de pagamento e cobrança acordadas, e comunicar imediatamente qualquer utilização não autorizada dos seus dados de acesso.',
+        },
+        intellectualProperty: {
+          title: 'Propriedade Intelectual',
+          content: 'Todos os conteúdos, design, código, gráficos, logos e materiais presentes nos serviços da Carsai Moçambique são propriedade da empresa ou dos seus licenciadores, protegidos pela legislação de propriedade intelectual moçambicana e internacional. O nome "Carsai", o logo da empresa, e os designs da plataforma são marcas registadas. O código-fonte desenvolvido pela Carsai para os seus serviços internos é propriedade exclusiva da empresa. Para trabalhos desenvolidos especificamente para clientes, os direitos de propriedade intelectual são definidos no contrato de serviço específico, sendo que a Carsai reserva-se o direito de utilizar técnicas e metodologias gerais desenvolidas durante o projecto.',
+        },
+        liability: {
+          title: 'Limitações de Responsabilidade',
+          content: 'A Carsai Moçambique não será responsável por: perdas indirectas, consequenciais ou incidentais resultantes da utilização dos serviços, interrupções de serviço causadas por factores externos (falhas de internet, problemas de fornecedores de infraestrutura), danos resultantes de utilização não autorizada da plataforma, perdas resultantes de falhas de pagamento do utilizador, ou qualquer impossibilidade de utilização dos serviços por causas fora do controle da empresa. A responsabilidade total da Carsai em qualquer circunstância não excederá o valor dos serviços pagos pelo utilizador nos 12 meses anteriores. Esta limitação aplica-se conforme a legislação comercial moçambicana.',
+        },
+        termination: {
+          title: 'Rescisão',
+          content: 'A Carsai Moçambique pode rescindir o contrato com qualquer utilizador que viole estes Termos, com notificação prévia de 15 dias para violações menores, ou imediatamente para violações graves incluindo actividades fraudulentas, acesso não autorizado, ou violação de propriedade intelectual. O utilizador pode rescindir o contrato a qualquer momento, com notificação prévia de 30 dias para serviços com contrato de duração. Após rescisão, a Carsai manterá os dados do utilizador por um período de 90 dias, após o qual serão eliminados permanentemente, excepto quando exigido por lei. Taxas já pagas não são reembolsáveis excepto conforme condições específicas do contrato de serviço.',
+        },
+        law: {
+          title: 'Lei Aplicável e Jurisdição',
+          content: 'Estes Termos são regidos e interpretados conforme a legislação da República de Moçambique, incluindo o Código Comercial, legislação de proteção de dados, e regulamentos tecnológicos aplicáveis. Quaisquer disputas relacionadas com estes Termos serão resolvidas preferencialmente através de negociação directa entre as partes. Se a negociação não for possível dentro de 60 dias, a disputa será submetida à arbitragem conforme as normas do Centro de Arbitragem de Moçambique, ou aos tribunais da cidade de Maputo, Moçambique, como jurisdição exclusiva. As partes reconhecem a competência exclusiva dos tribunais moçambicanos para resolver conflitos decorrentes destes Termos.',
+        },
+      },
+    },
+    privacy: {
+      pageTitle: 'Política de Privacidade',
+      pageSubtitle: 'Carsai Moçambique — Proteger os seus dados é nossa prioridade',
+      lastUpdate: 'Última actualização: Janeiro 2026',
+      seeAlso: 'Consulte também:',
+      seeAlsoTerms: 'Termos e Condições',
+      seeAlsoCookies: 'Política de Cookies',
+      sections: {
+        introduction: {
+          title: 'Introdução',
+          content: 'A Carsai Moçambique Lda. ("Carsai", "nós", "a empresa") respeita a privacidade de todos os utilizadores dos nossos serviços digitais. Esta Política de Privacidade descreve como recolhemos, utilizamos, armazenamos e protegemos os seus dados pessoais quando utiliza a nossa plataforma tecnológica, website e serviços relacionados. A nossa sede está localizada em Maputo, Moçambique, e estamos registados conforme a legislação moçambicana. Esta política aplica-se a todos os serviços fornecidos pela Carsai, incluindo desenvolvimento web, aplicações mobile, soluções cloud e serviços de inteligência artificial.',
+        },
+        dataCollection: {
+          title: 'Recolha de Dados',
+          content: 'Recolhemos dados pessoais que você nos fornecer directamente quando se regista na nossa plataforma, submete formulários de contacto, solicita serviços ou comunica com nossa equipa. Estes dados podem incluir: nome completo, endereço de email, número de telefone, endereço físico, informações da empresa, dados de pagamento e preferências de comunicação. Também recolhemos dados de utilização automaticamente quando visita nosso website, incluindo: endereço IP, tipo de browser, páginas visitadas, tempo de visita, dados de cookies e informações sobre o dispositivo utilizado. Não recolhemos dados sensíveis como informações de saúde, orientação política ou dados biométricos sem o seu consentimento explícito.',
+        },
+        dataUsage: {
+          title: 'Utilização dos Dados',
+          content: 'Utilizamos os seus dados pessoais para fornecer e melhorar os nossos serviços tecnológicos, processar transações e pagamentos, comunicar com você sobre serviços, actualizações e promoções, personalizar a sua experiência na plataforma, realizar análises de mercado e estatísticas internas, cumprir obrigações legais e regulatórias moçambicanas, e prevenir fraudes e actividades ilegais. Todos os dados são processados de forma legítima, com base no consentimento, execução de contrato ou interesse legítimo da empresa, conforme a legislação de proteção de dados aplicável em Moçambique.',
+        },
+        cookiesAndTracking: {
+          title: 'Cookies e Tecnologias de Rastreamento',
+          content: 'Utilizamos cookies e tecnologias similares para melhorar a funcionalidade do nosso website e personalizar a sua experiência. Os cookies que utilizamos incluem: cookies essenciais para o funcionamento básico do site, cookies de performance para analisar como os utilizadores interagem com o site, cookies de funcionalidade para recordar as suas preferências, e cookies de marketing para apresentar conteúdo relevante. Você pode gerir as suas preferências de cookies através das configurações do browser. Para mais detalhes, consulte nossa Política de Cookies separada disponível em /cookies.',
+        },
+        thirdPartySharing: {
+          title: 'Partilha com Terceiros',
+          content: 'Não vendemos, alugamos ou comercializamos os seus dados pessoais a terceiros. Podemos partilhar dados limitados com: prestadores de serviços que nos assistem na operação da plataforma (hosting, processamento de pagamentos via M-Pesa, análise de dados), parceiros de afiliados conforme o nosso programa de parcerias, autoridades governamentais quando exigido por lei ou ordem judicial moçambicana, e outros entidades com o seu consentimento explícito. Todos os prestadores de serviços estão vinculados por contratos de confidencialidade e proteção de dados.',
+        },
+        userRights: {
+          title: 'Direitos do Utilizador',
+          content: 'Conforme a legislação moçambicana de proteção de dados, você tem os seguintes direitos: direito de acesso aos seus dados pessoais, direito de rectificação de dados incorrectos, direito de eliminação dos seus dados ("direito ao oblivio"), direito de portabilidade dos seus dados, direito de oposição ao processamento, direito de retirar o consentimento a qualquer momento. Para exercer qualquer destes direitos, contacte-nos através de privacy@carsai.mz ou pelo endereço físico: Av. 24 de Julho, 1234, Maputo, Moçambique. Responderemos dentro de 30 dias conforme a legislação aplicável.',
+        },
+        contact: {
+          title: 'Contacto e Actualizações',
+          content: 'Esta Política de Privacidade foi actualizada pela última vez em Janeiro de 2026. Podemos actualizar esta política periodicamente para reflectir alterações nos nossos serviços ou na legislação. Notificaremos os utilizadores sobre alterações significativas via email ou através do nosso website. Para questões sobre privacidade, contacte: Email: privacy@carsai.mz | Telefone: +258 21 000 000 | Endereço: Av. 24 de Julho, 1234, Maputo, Moçambique. O responsável pela proteção de dados é Carlos Silva, Director Executivo da Carsai Moçambique.',
+        },
+      },
+    },
+    cookies: {
+      pageTitle: 'Política de Cookies',
+      pageSubtitle: 'Carsai Moçambique — Transparência sobre a utilização de cookies',
+      lastUpdate: 'Última actualização: Janeiro 2026',
+      seeAlso: 'Consulte também:',
+      seeAlsoPrivacy: 'Política de Privacidade',
+      seeAlsoTerms: 'Termos e Condições',
+      sections: {
+        whatAreCookies: {
+          title: 'O que são Cookies',
+          content: 'Cookies são pequenos arquivos de texto que são armazenados no seu dispositivo (computador, tablet ou smartphone) quando você visita um website. Eles permitem que o website reconheça o seu dispositivo e armazene informações sobre as suas preferências ou ações anteriores. Os cookies são uma tecnologia padrão utilizada por quase todos os websites modernos e são essenciais para o funcionamento de muitas funcionalidades web. Existem diferentes tipos de cookies: cookies de sessão (eliminados quando você fecha o browser), cookies persistentes (mantidos entre sessões), cookies primários (definidos pelo website que você está visitando), e cookies de terceiros (definidos por outros serviços integrados no website).',
+        },
+        types: {
+          title: 'Tipos de Cookies que Utilizamos',
+          content: 'Utilizamos vários tipos de cookies na plataforma Carsai Moçambique: Cookies Essenciais — necessários para o funcionamento básico do site, incluindo autenticação, segurança e preferências de idioma. Sem estes cookies, o site não funciona correctamente. Cookies de Performance — recolhem informações sobre como os utilizadores utilizam o site, como páginas mais visitadas e tempo de navegação. Utilizamos Google Analytics para estas análises, ajudando-nos a melhorar a experiência do utilizador. Cookies de Funcionalidade — permitem que o site recorde escolhas que você faz (como idioma seleccionado, região, ou configurações de tema) e proporcionam funcionalidades personalizadas. Cookies de Marketing — utilizados para apresentar conteúdo relevante e limitar a frequência de anúncios. Estes cookies podem ser definidos por nós ou por nossos parceiros de advertising.',
+        },
+        howWeUse: {
+          title: 'Como Utilizamos os Cookies',
+          content: 'Utilizamos cookies para: garantir que o website funciona correctamente e de forma segura, recordar as suas preferências de idioma e configurações de tema (claro/escuro), analisar o tráfego e comportamento dos utilizadores para melhorar os nossos serviços, personalizar o conteúdo e funcionalidades apresentados, processar transações de pagamento de forma segura via M-Pesa e outros métodos, manter a sua sessão de autenticação ativa durante a navegação, fornecer funcionalidades de chat e assistência AI com memória de sessão, e medir a eficácia das nossas campanhas de marketing e comunicações. Todos os dados recolhidos através de cookies são processados de forma anónima ou pseudonimizada, e nunca são utilizados para identificar directamente um indivíduo sem o seu consentimento.',
+        },
+        management: {
+          title: 'Gestão de Cookies',
+          content: 'Você pode gerir e controlar os cookies de várias formas: Configurações do Browser — maioria dos browsers permitem que você veja, elimine e bloque cookies nas configurações. Consulte a documentação do seu browser para instruções específicas. Opt-out de Google Analytics — pode instalar o plugin de opt-out do Google Analytics para impedir a recolha de dados. Consentimento na Platforma — quando visita o nosso site pela primeira vez, apresentamos um banner de consentimento de cookies onde pode aceitar ou rejeitar categorias específicas. Configurações de Conta — utilizadores registados podem ajustar as preferências de cookies nas configurações da sua conta. Note-se que a eliminação de cookies essenciais pode afectar o funcionamento do site. Cookies de funcionalidade e marketing podem ser rejeitados sem impacto significativo.',
+        },
+        thirdParty: {
+          title: 'Cookies de Terceiros',
+          content: 'O nosso website integra serviços de terceiros que podem definir os seus próprios cookies: Google Analytics — para análise de tráfego e comportamento dos utilizadores. Google define cookies _ga e _gid para estas finalidades. M-Pesa / Vodacom — para processamento de pagamentos seguros. Estes serviços podem definir cookies temporários durante o processo de pagamento. Cloudflare — para segurança e performance do website, incluindo protecção contra ataques DDoS e optimização de conteúdo. Social Media Plugins — Facebook, Twitter, LinkedIn e Instagram podem definir cookies quando você utiliza funcionalidades de partilha social presentes no nosso site. Chat AI Services — serviços de assistência AI podem manter cookies de sessão para preservar o contexto da conversa.',
+        },
+        updates: {
+          title: 'Actualizações da Política',
+          content: 'Esta Política de Cookies foi actualizada pela última vez em Janeiro de 2026. A Carsai Moçambique revisa periodicamente esta política para garantir que reflecte as práticas actuais e a legislação relevante. Alterações significativas serão comunicadas através do nosso website e por email quando aplicável. A utilização continuada dos nossos serviços após alterações na política constitui aceitação dos novos termos. Para questões sobre cookies, contacte: Email: privacy@carsai.mz | Telefone: +258 21 000 000 | Endereço: Av. 24 de Julho, 1234, Maputo, Moçambique. Para exercer os seus direitos relativos a dados recolhidos via cookies, consulte também nossa Política de Privacidade disponível em /privacy.',
+        },
+      },
+    },
   },
 
   meta: {

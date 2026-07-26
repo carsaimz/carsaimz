@@ -4,8 +4,6 @@ import React, { createContext, useContext, useCallback, useMemo, type ReactNode 
 import {
   useAuthStore,
   type User,
-  type UserRole,
-  DEMO_USERS,
 } from '@/lib/store';
 
 // ──────────────────────────────────────────────
@@ -18,10 +16,10 @@ interface AuthContextValue {
   isAdmin: boolean;
   isPartner: boolean;
   isUser: boolean;
-  login: (email: string, password: string) => boolean;
-  loginAsDemo: (role: UserRole) => void;
+  isLoading: boolean;
+  login: (login: string, password: string) => Promise<boolean>;
   logout: () => void;
-  register: (name: string, email: string, password: string) => boolean;
+  register: (name: string, email: string, password: string, phone?: string) => Promise<boolean>;
   updateAvatar: (avatar: string) => void;
 }
 
@@ -38,36 +36,6 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const store = useAuthStore();
 
-  const register = useCallback(
-    (name: string, email: string, password: string): boolean => {
-      // Simulated registration — creates a new user with the 'user' role
-      // In production this would call an API
-      if (!name || !email || !password) return false;
-
-      // Check if email already matches a demo user
-      const existingDemo = Object.values(DEMO_USERS).find(
-        (u) => u.email === email
-      );
-      if (existingDemo) {
-        // Already exists — just log them in
-        store.loginAsDemo(existingDemo.role);
-        return true;
-      }
-
-      // Create a brand-new user with 'user' role
-      const newUser: User = {
-        id: `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-        name,
-        email,
-        role: 'user',
-        avatar: null,
-      };
-      store.setUser(newUser);
-      return true;
-    },
-    [store]
-  );
-
   const value = useMemo<AuthContextValue>(
     () => ({
       user: store.user,
@@ -75,13 +43,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin: store.isAdmin,
       isPartner: store.isPartner,
       isUser: store.isUser,
+      isLoading: store.isLoading,
       login: store.login,
-      loginAsDemo: store.loginAsDemo,
       logout: store.logout,
-      register,
+      register: store.register,
       updateAvatar: store.updateAvatar,
     }),
-    [store, register]
+    [store]
   );
 
   return (

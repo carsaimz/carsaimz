@@ -40,7 +40,7 @@ import { Separator } from '@/components/ui/separator';
 
 import { useAuthStore, useAppStore, useNotificationStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
-import { LoginModal } from '@/components/common/login-modal';
+
 import { GlobalSearch } from '@/components/features/global-search';
 
 // ──────────────────────────────────────────────
@@ -86,7 +86,6 @@ export function PublicHeader() {
   const { setSearchOpen } = useAppStore();
   const { unreadCount, notifications, markAllAsRead } = useNotificationStore();
 
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
 
   const currentFlag = LANGUAGE_FLAGS[language] || '🌐';
@@ -293,22 +292,23 @@ export function PublicHeader() {
               </DropdownMenu>
             ) : (
               <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setLoginModalOpen(true)}
-                >
-                  <LogIn className="size-4 mr-1" />
-                  <span className="hidden sm:inline">{t('auth.login')}</span>
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => setLoginModalOpen(true)}
-                  className="hidden sm:inline-flex"
-                >
-                  {t('auth.register')}
-                </Button>
+                <Link href="/auth">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                  >
+                    <LogIn className="size-4 mr-1" />
+                    <span className="hidden sm:inline">{t('auth.login')}</span>
+                  </Button>
+                </Link>
+                <Link href="/auth" className="hidden sm:inline-flex">
+                  <Button
+                    variant="default"
+                    size="sm"
+                  >
+                    {t('auth.register')}
+                  </Button>
+                </Link>
               </div>
             )}
 
@@ -419,13 +419,17 @@ export function PublicHeader() {
 
                 {!isAuthenticated && (
                   <div className="mt-4 px-4 flex flex-col gap-2">
-                    <Button onClick={() => { setMobileSheetOpen(false); setLoginModalOpen(true); }}>
-                      <LogIn className="mr-2 size-4" />
-                      {t('auth.login')}
-                    </Button>
-                    <Button variant="outline" onClick={() => { setMobileSheetOpen(false); setLoginModalOpen(true); }}>
-                      {t('auth.register')}
-                    </Button>
+                    <Link href="/auth" onClick={() => setMobileSheetOpen(false)}>
+                      <Button className="w-full">
+                        <LogIn className="mr-2 size-4" />
+                        {t('auth.login')}
+                      </Button>
+                    </Link>
+                    <Link href="/auth" onClick={() => setMobileSheetOpen(false)}>
+                      <Button variant="outline" className="w-full">
+                        {t('auth.register')}
+                      </Button>
+                    </Link>
                   </div>
                 )}
               </SheetContent>
@@ -434,8 +438,7 @@ export function PublicHeader() {
         </div>
       </header>
 
-      {/* Login Modal */}
-      <LoginModal open={loginModalOpen} onOpenChange={setLoginModalOpen} />
+
 
       {/* Global Search Dialog */}
       <GlobalSearch />

@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { createHash } from 'crypto'
+
+// Simple password hashing - matches auth routes
+function hashPassword(password: string): string {
+  return createHash('sha256').update(password).digest('hex')
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -45,7 +51,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, name, phone, company, bio, address } = body
+    const { userId, name, phone, company, bio, address, newPassword } = body
 
     if (!userId) {
       return NextResponse.json(
@@ -73,6 +79,9 @@ export async function PUT(request: NextRequest) {
     if (company !== undefined) updateData.company = company
     if (bio !== undefined) updateData.bio = bio
     if (address !== undefined) updateData.address = address
+    if (newPassword && newPassword.length >= 8) {
+      updateData.passwordHash = hashPassword(newPassword)
+    }
 
     const updatedUser = await db.user.update({
       where: { id: userId },
@@ -83,6 +92,7 @@ export async function PUT(request: NextRequest) {
     })
 
     return NextResponse.json({
+      success: true,
       user: {
         id: updatedUser.id,
         name: updatedUser.name,

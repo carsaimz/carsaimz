@@ -8,12 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/language-context';
+import { resolveI18nContent } from '@/lib/i18n-content';
 
 interface TestimonialData {
   id: string;
   name: string;
   company: string | null;
   content: string;
+  contentI18n: string | null;
   rating: number;
   avatar: string | null;
   isPublished: boolean;
@@ -22,7 +24,7 @@ interface TestimonialData {
 // No fallback data - all data comes from the database via API
 
 export function TestimonialsSection() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [testimonials, setTestimonials] = useState<TestimonialData[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -70,6 +72,11 @@ export function TestimonialsSection() {
   if (testimonials.length === 0) return null;
 
   const currentTestimonial = testimonials[currentIndex];
+  const resolvedContent = resolveI18nContent(
+    currentTestimonial.contentI18n,
+    currentTestimonial.content,
+    language
+  );
 
   return (
     <section id="testimonials" className="py-16 sm:py-24 bg-background">
@@ -117,7 +124,7 @@ export function TestimonialsSection() {
 
                 {/* Quote */}
                 <p className="text-base sm:text-lg leading-relaxed text-foreground mb-6 italic">
-                  &ldquo;{currentTestimonial.content}&rdquo;
+                  &ldquo;{resolvedContent}&rdquo;
                 </p>
 
                 {/* Author */}

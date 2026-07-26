@@ -93,47 +93,52 @@ model Page {
 }
 
 model Service {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  title       String
-  description String?
-  icon        String?  // base64 data URI or icon name
-  basePrice   Float?
-  isFeatured  Boolean  @default(false)
-  isPublished Boolean  @default(true)
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  titleI18n       String?  // JSON object: {"pt-pt":"Serviços Web","en-us":"Web Services","fr-fr":"Services Web",...}
+  description     String?
+  descriptionI18n String?  // JSON object with translations per language code
+  icon            String?  // base64 data URI or icon name
+  basePrice       Float?
+  isFeatured      Boolean  @default(false)
+  isPublished     Boolean  @default(true)
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@map("services")
 }
 
 model Project {
-  id           String   @id @default(cuid())
-  slug         String   @unique
-  title        String
-  description  String?
-  client       String?
-  technologies String?
-  demoUrl      String?
-  images       String?  // JSON array of base64 data URIs
-  isPublished  Boolean  @default(true)
-  isFeatured   Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  titleI18n     String?  // JSON object with translations per language code
+  description   String?
+  descriptionI18n String?  // JSON object with translations per language code
+  client        String?
+  technologies  String?
+  demoUrl       String?
+  images        String?  // JSON array of base64 data URIs
+  isPublished   Boolean  @default(true)
+  isFeatured    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@map("projects")
 }
 
 model Testimonial {
-  id        String   @id @default(cuid())
-  name      String
-  company   String?
-  content   String
-  rating    Int      @default(5)
-  avatar    String?  // base64 data URI for avatar image
-  isPublished Boolean @default(true)
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  name        String
+  company     String?
+  content     String
+  contentI18n String?  // JSON object with translations per language code
+  rating      Int      @default(5)
+  avatar      String?  // base64 data URI for avatar image
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
 
   @@map("testimonials")
 }
@@ -163,9 +168,12 @@ model Tag {
 model Post {
   id            String    @id @default(cuid())
   title         String
+  titleI18n     String?   // JSON object with translations per language code
   slug          String    @unique
   excerpt       String?
+  excerptI18n   String?   // JSON object with translations per language code
   content       String?
+  contentI18n   String?   // JSON object with translations per language code
   featuredImage String?  // base64 data URI for post featured image
   published     Boolean   @default(false)
   authorId      String
@@ -217,34 +225,38 @@ model Subscriber {
 // === Forum ===
 
 model ForumCategory {
-  id        String       @id @default(cuid())
-  name      String
-  slug      String       @unique
-  description String?
-  order     Int          @default(0)
-  topics    ForumTopic[]
-  createdAt DateTime     @default(now())
+  id             String       @id @default(cuid())
+  name           String
+  nameI18n       String?      // JSON object with translations per language code
+  slug           String       @unique
+  description    String?
+  descriptionI18n String?     // JSON object with translations per language code
+  order          Int          @default(0)
+  topics         ForumTopic[]
+  createdAt      DateTime     @default(now())
 
   @@map("forum_categories")
 }
 
 model ForumTopic {
-  id          String         @id @default(cuid())
-  title       String
-  slug        String         @unique
-  content     String?
-  categoryId  String
-  category    ForumCategory  @relation(fields: [categoryId], references: [id])
-  authorId    String
-  author      User           @relation(fields: [authorId], references: [id])
-  isPinned    Boolean        @default(false)
-  isLocked    Boolean        @default(false)
-  isResolved  Boolean        @default(false)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id           String         @id @default(cuid())
+  title        String
+  titleI18n    String?        // JSON object with translations per language code
+  slug         String         @unique
+  content      String?
+  contentI18n  String?        // JSON object with translations per language code
+  categoryId   String
+  category     ForumCategory  @relation(fields: [categoryId], references: [id])
+  authorId     String
+  author       User           @relation(fields: [authorId], references: [id])
+  isPinned     Boolean        @default(false)
+  isLocked     Boolean        @default(false)
+  isResolved   Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 
-  replies     ForumPost[]
-  likes       ForumLike[]
+  replies      ForumPost[]
+  likes        ForumLike[]
 
   @@map("forum_topics")
 }

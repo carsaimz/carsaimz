@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/language-context';
+import { resolveI18nContent } from '@/lib/i18n-content';
 import { useRouter } from 'next/navigation';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -31,7 +32,9 @@ interface ServiceData {
   id: string;
   slug: string;
   title: string;
+  titleI18n: string | null;
   description: string | null;
+  descriptionI18n: string | null;
   icon: string | null;
   basePrice: number | null;
   isFeatured: boolean;
@@ -54,7 +57,7 @@ const cardVariants = {
 };
 
 export function ServicesSection() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const router = useRouter();
   const [services, setServices] = useState<ServiceData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -130,6 +133,8 @@ export function ServicesSection() {
           ) : null}
           {services.map((service) => {
             const IconComponent = iconMap[service.icon || 'Globe'] || Globe;
+            const resolvedTitle = resolveI18nContent(service.titleI18n, service.title, language);
+            const resolvedDescription = resolveI18nContent(service.descriptionI18n, service.description || '', language);
 
             return (
               <motion.div key={service.id} variants={cardVariants}>
@@ -142,7 +147,7 @@ export function ServicesSection() {
                         <IconComponent className="h-5 w-5" />
                       </div>
                       <CardTitle className="text-lg">
-                        {service.title}
+                        {resolvedTitle}
                       </CardTitle>
                     </div>
                     {service.isFeatured && (
@@ -156,7 +161,7 @@ export function ServicesSection() {
                   </CardHeader>
                   <CardContent className="pb-4">
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                      {service.description}
+                      {resolvedDescription}
                     </p>
                   </CardContent>
                   <CardFooter className="flex items-center justify-between pt-0">

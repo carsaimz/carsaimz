@@ -19,12 +19,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/language-context';
+import { resolveI18nContent } from '@/lib/i18n-content';
 
 interface ProjectData {
   id: string;
   slug: string;
   title: string;
+  titleI18n: string | null;
   description: string | null;
+  descriptionI18n: string | null;
   client: string | null;
   technologies: string | null;
   demoUrl: string | null;
@@ -55,7 +58,7 @@ const colorPalettes = [
 ];
 
 export function ProjectsSection() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -159,6 +162,8 @@ export function ProjectsSection() {
             const techs = project.technologies
               ? project.technologies.split(',').map((t) => t.trim())
               : [];
+            const resolvedTitle = resolveI18nContent(project.titleI18n, project.title, language);
+            const resolvedDescription = resolveI18nContent(project.descriptionI18n, project.description || '', language);
 
             return (
               <motion.div key={project.id} variants={cardVariants}>
@@ -177,7 +182,7 @@ export function ProjectsSection() {
 
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg leading-snug">
-                      {project.title}
+                      {resolvedTitle}
                     </CardTitle>
                     {project.client && (
                       <p className="text-sm text-muted-foreground">
@@ -188,7 +193,7 @@ export function ProjectsSection() {
 
                   <CardContent className="pb-3">
                     <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mb-3">
-                      {project.description}
+                      {resolvedDescription}
                     </p>
                     {techs.length > 0 && (
                       <div className="flex flex-wrap gap-1.5">

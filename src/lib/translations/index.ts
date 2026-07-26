@@ -7,7 +7,12 @@
 
 import type { LanguageCode, TranslationObject } from '@/lib/i18n';
 import { ptPT } from './pt-pt';
+import { ptBR } from './pt-br';
 import { enUS } from './en-us';
+import { frFR } from './fr-fr';
+import { esES } from './es-es';
+import { zhCN } from './zh-cn';
+import { deDE } from './de-de';
 
 /**
  * All translation objects mapped by language code.
@@ -16,9 +21,11 @@ import { enUS } from './en-us';
 export const translations: Record<LanguageCode, TranslationObject> = {
   'pt-pt': ptPT,
   'en-us': enUS,
-  // pt-br will be added when the Brazilian Portuguese translations file is created
-  // For now, pt-br falls back to pt-pt with minor differences
-  'pt-br': ptPT,
+  'pt-br': ptBR,
+  'fr-fr': frFR,
+  'es-es': esES,
+  'zh-cn': zhCN,
+  'de-de': deDE,
 };
 
 /**
@@ -39,4 +46,9 @@ export function getFallbackTranslations(): TranslationObject {
  * Re-export individual translation modules for direct access
  */
 export { ptPT } from './pt-pt';
+export { ptBR } from './pt-br';
 export { enUS } from './en-us';
+export { frFR } from './fr-fr';
+export { esES } from './es-es';
+export { zhCN } from './zh-cn';
+export { deDE } from './de-de';

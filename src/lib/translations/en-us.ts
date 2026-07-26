@@ -62,6 +62,12 @@ export const enUS: TranslationObject = {
     welcomeBack: 'Welcome back',
     createAccount: 'Create account',
     socialLogin: 'Sign in with {{provider}}',
+    phoneRequired: 'Phone number is required',
+    fullNameRequired: 'Full name is required',
+    optional: 'optional',
+    backToHome: 'Back to home',
+    passwordUpdateFailed: 'Failed to update password',
+    emailAlreadyExists: 'An account with this email already exists',
   },
 
   // ============================================================================
@@ -366,6 +372,13 @@ export const enUS: TranslationObject = {
     lastLogin: 'Last login on {{date}}',
     overview: 'Overview',
     quickActions: 'Quick actions',
+    settingsDesc: 'Manage your profile and preferences',
+    profileInfo: 'Profile Information',
+    address: 'Address',
+    changePassword: 'Change Password',
+    saving: 'Saving...',
+    saveChanges: 'Save Changes',
+    profileSaved: 'Profile saved successfully',
   },
 
   // ============================================================================
@@ -415,6 +428,42 @@ export const enUS: TranslationObject = {
     monthlyRevenue: 'Monthly revenue',
     growthRate: 'Growth rate',
     conversionRate: 'Conversion rate',
+    services: 'Services',
+    projects: 'Projects',
+    posts: 'Blog',
+    testimonials: 'Testimonials',
+    contentManager: 'Content Management',
+    createNew: 'Create new',
+    editItem: 'Edit',
+    deleteItem: 'Delete',
+    confirmDelete: 'Are you sure you want to delete this item?',
+    published: 'Published',
+    draft: 'Draft',
+    togglePublish: 'Toggle publish status',
+    title: 'Title',
+    slug: 'Slug',
+    description: 'Description',
+    excerpt: 'Excerpt',
+    content: 'Content',
+    icon: 'Icon',
+    basePrice: 'Base Price',
+    order: 'Order',
+    featured: 'Featured',
+    client: 'Client',
+    technologies: 'Technologies',
+    demoUrl: 'Demo URL',
+    name: 'Name',
+    company: 'Company',
+    rating: 'Rating',
+    category: 'Category',
+    save: 'Save',
+    cancel: 'Cancel',
+    noItems: 'No items found',
+    actions: 'Actions',
+    date: 'Date',
+    status: 'Status',
+    translations: 'Translations',
+    defaultLanguage: 'Portuguese (Mozambique) — default language',
   },
 
   // ============================================================================
@@ -732,6 +781,122 @@ export const enUS: TranslationObject = {
     clients: 'Satisfied Clients',
     years: 'Years of Experience',
     support: 'Support Available',
+  },
+
+  // ============================================================================
+  // Legal Pages
+  // ============================================================================
+  legal: {
+    terms: {
+      pageTitle: 'Terms and Conditions',
+      pageSubtitle: 'Carsai Mozambique — Rules governing the use of our services',
+      lastUpdate: 'Last updated: January 2026',
+      seeAlso: 'See also:',
+      seeAlsoPrivacy: 'Privacy Policy',
+      seeAlsoCookies: 'Cookie Policy',
+      sections: {
+        general: {
+          title: 'General Terms',
+          content: 'These Terms and Conditions ("Terms") govern the use of technology services provided by Carsai Mozambique Lda., including our website, digital platform, mobile applications, cloud solutions, and artificial intelligence services. By accessing or using any of our services, you accept these Terms in their entirety. If you do not agree with any part of the Terms, you should not use our services. Carsai Mozambique is registered in Maputo, Mozambique, and operates in accordance with Mozambican commercial and technology legislation. These Terms constitute a legal contract between you ("User") and Carsai Mozambique Lda. ("Company").',
+        },
+        services: {
+          title: 'Services Provided',
+          content: 'Carsai Mozambique provides digital transformation services including: website and web application development, mobile application development for iOS and Android, cloud infrastructure and hosting solutions, artificial intelligence and automation services, technology consulting and digital strategy, and ongoing maintenance and technical support. The specific services provided to each user are defined in the service contract or commercial proposal agreed upon. The company reserves the right to modify, suspend, or discontinue any service with 30 days prior notice, except in cases of force majeure or technical emergency.',
+        },
+        obligations: {
+          title: 'User Obligations',
+          content: 'As a user of our services, you agree to: provide truthful and complete information during registration and use of the platform, use the services only for lawful purposes and in accordance with Mozambican legislation, not attempt to access restricted areas of the system without authorization, not engage in activities that may damage, disable, or overload Carsai servers, protect your access credentials and not share them with third parties, comply with all agreed payment and billing policies, and immediately report any unauthorized use of your access data.',
+        },
+        intellectualProperty: {
+          title: 'Intellectual Property',
+          content: 'All content, design, code, graphics, logos, and materials present in Carsai Mozambique services are property of the company or its licensors, protected by Mozambican and international intellectual property legislation. The name "Carsai", the company logo, and platform designs are registered trademarks. The source code developed by Carsai for its internal services is the exclusive property of the company. For work developed specifically for clients, intellectual property rights are defined in the specific service contract, with Carsai reserving the right to use general techniques and methodologies developed during the project.',
+        },
+        liability: {
+          title: 'Limitations of Liability',
+          content: 'Carsai Mozambique shall not be liable for: indirect, consequential, or incidental losses resulting from the use of services, service interruptions caused by external factors (internet failures, infrastructure provider issues), damages resulting from unauthorized use of the platform, losses resulting from user payment failures, or any inability to use services due to causes beyond the company control. The total liability of Carsai in any circumstance shall not exceed the value of services paid by the user in the preceding 12 months. This limitation applies in accordance with Mozambican commercial legislation.',
+        },
+        termination: {
+          title: 'Termination',
+          content: 'Carsai Mozambique may terminate the contract with any user who violates these Terms, with 15 days prior notice for minor violations, or immediately for serious violations including fraudulent activities, unauthorized access, or intellectual property infringement. The user may terminate the contract at any time, with 30 days prior notice for services with a duration contract. Upon termination, Carsai will retain user data for a period of 90 days, after which it will be permanently deleted, except when required by law. Fees already paid are non-refundable except as specified in the specific service contract conditions.',
+        },
+        law: {
+          title: 'Applicable Law and Jurisdiction',
+          content: 'These Terms are governed and interpreted in accordance with the legislation of the Republic of Mozambique, including the Commercial Code, data protection legislation, and applicable technology regulations. Any disputes related to these Terms shall preferably be resolved through direct negotiation between the parties. If negotiation is not possible within 60 days, the dispute shall be submitted to arbitration in accordance with the rules of the Arbitration Center of Mozambique, or to the courts of the city of Maputo, Mozambique, as exclusive jurisdiction. The parties recognize the exclusive competence of Mozambican courts to resolve conflicts arising from these Terms.',
+        },
+      },
+    },
+    privacy: {
+      pageTitle: 'Privacy Policy',
+      pageSubtitle: 'Carsai Mozambique — Protecting your data is our priority',
+      lastUpdate: 'Last updated: January 2026',
+      seeAlso: 'See also:',
+      seeAlsoTerms: 'Terms and Conditions',
+      seeAlsoCookies: 'Cookie Policy',
+      sections: {
+        introduction: {
+          title: 'Introduction',
+          content: 'Carsai Mozambique Lda. ("Carsai", "we", "the company") respects the privacy of all users of our digital services. This Privacy Policy describes how we collect, use, store, and protect your personal data when you use our technology platform, website, and related services. Our headquarters is located in Maputo, Mozambique, and we are registered in accordance with Mozambican legislation. This policy applies to all services provided by Carsai, including web development, mobile applications, cloud solutions, and artificial intelligence services.',
+        },
+        dataCollection: {
+          title: 'Data Collection',
+          content: 'We collect personal data that you provide directly when registering on our platform, submitting contact forms, requesting services, or communicating with our team. This data may include: full name, email address, phone number, physical address, company information, payment data, and communication preferences. We also collect usage data automatically when you visit our website, including: IP address, browser type, pages visited, visit duration, cookie data, and information about the device used. We do not collect sensitive data such as health information, political orientation, or biometric data without your explicit consent.',
+        },
+        dataUsage: {
+          title: 'Data Usage',
+          content: 'We use your personal data to provide and improve our technology services, process transactions and payments, communicate with you about services, updates, and promotions, personalize your experience on the platform, conduct market analysis and internal statistics, comply with Mozambican legal and regulatory obligations, and prevent fraud and illegal activities. All data is processed legitimately, based on consent, contract execution, or legitimate interest of the company, in accordance with applicable data protection legislation in Mozambique.',
+        },
+        cookiesAndTracking: {
+          title: 'Cookies and Tracking Technologies',
+          content: 'We use cookies and similar technologies to improve the functionality of our website and personalize your experience. The cookies we use include: essential cookies for basic site operation, performance cookies to analyze how users interact with the site, functionality cookies to remember your preferences, and marketing cookies to present relevant content. You can manage your cookie preferences through your browser settings. For more details, please refer to our separate Cookie Policy available at /cookies.',
+        },
+        thirdPartySharing: {
+          title: 'Third-Party Sharing',
+          content: 'We do not sell, rent, or commercialize your personal data to third parties. We may share limited data with: service providers who assist us in operating the platform (hosting, payment processing via M-Pesa, data analysis), affiliate partners under our partnership program, governmental authorities when required by Mozambican law or court order, and other entities with your explicit consent. All service providers are bound by confidentiality and data protection contracts.',
+        },
+        userRights: {
+          title: 'User Rights',
+          content: 'In accordance with Mozambican data protection legislation, you have the following rights: right of access to your personal data, right of rectification of incorrect data, right of deletion of your data ("right to oblivion"), right of data portability, right of opposition to processing, right to withdraw consent at any time. To exercise any of these rights, contact us at privacy@carsai.mz or at the physical address: Av. 24 de Julho, 1234, Maputo, Mozambique. We will respond within 30 days in accordance with applicable legislation.',
+        },
+        contact: {
+          title: 'Contact and Updates',
+          content: 'This Privacy Policy was last updated in January 2026. We may update this policy periodically to reflect changes in our services or legislation. We will notify users about significant changes via email or through our website. For privacy questions, contact: Email: privacy@carsai.mz | Phone: +258 21 000 000 | Address: Av. 24 de Julho, 1234, Maputo, Mozambique. The data protection officer is Carlos Silva, Executive Director of Carsai Mozambique.',
+        },
+      },
+    },
+    cookies: {
+      pageTitle: 'Cookie Policy',
+      pageSubtitle: 'Carsai Mozambique — Transparency about our use of cookies',
+      lastUpdate: 'Last updated: January 2026',
+      seeAlso: 'See also:',
+      seeAlsoPrivacy: 'Privacy Policy',
+      seeAlsoTerms: 'Terms and Conditions',
+      sections: {
+        whatAreCookies: {
+          title: 'What Are Cookies',
+          content: 'Cookies are small text files that are stored on your device (computer, tablet, or smartphone) when you visit a website. They allow the website to recognize your device and store information about your preferences or previous actions. Cookies are a standard technology used by almost all modern websites and are essential for the operation of many web features. There are different types of cookies: session cookies (deleted when you close the browser), persistent cookies (maintained between sessions), primary cookies (set by the website you are visiting), and third-party cookies (set by other services integrated into the website).',
+        },
+        types: {
+          title: 'Types of Cookies We Use',
+          content: 'We use several types of cookies on the Carsai Mozambique platform: Essential Cookies — necessary for the basic operation of the site, including authentication, security, and language preferences. Without these cookies, the site does not function properly. Performance Cookies — collect information about how users use the site, such as most visited pages and browsing time. We use Google Analytics for these analyses, helping us improve the user experience. Functionality Cookies — allow the site to remember choices you make (such as selected language, region, or theme settings) and provide personalized features. Marketing Cookies — used to present relevant content and limit the frequency of advertisements. These cookies may be set by us or by our advertising partners.',
+        },
+        howWeUse: {
+          title: 'How We Use Cookies',
+          content: 'We use cookies to: ensure that the website functions correctly and securely, remember your language preferences and theme settings (light/dark), analyze traffic and user behavior to improve our services, personalize the content and features presented, securely process payment transactions via M-Pesa and other methods, keep your authentication session active during navigation, provide chat and AI assistance features with session memory, and measure the effectiveness of our marketing campaigns and communications. All data collected through cookies is processed anonymously or pseudonymized, and is never used to directly identify an individual without their consent.',
+        },
+        management: {
+          title: 'Cookie Management',
+          content: 'You can manage and control cookies in several ways: Browser Settings — most browsers allow you to view, delete, and block cookies in their settings. Check your browser documentation for specific instructions. Google Analytics Opt-out — you can install the Google Analytics opt-out plugin to prevent data collection. Platform Consent — when you visit our site for the first time, we present a cookie consent banner where you can accept or reject specific categories. Account Settings — registered users can adjust cookie preferences in their account settings. Note that deleting essential cookies may affect the functioning of the site. Functionality and marketing cookies can be rejected without significant impact.',
+        },
+        thirdParty: {
+          title: 'Third-Party Cookies',
+          content: 'Our website integrates third-party services that may set their own cookies: Google Analytics — for traffic and user behavior analysis. Google sets _ga and _gid cookies for these purposes. M-Pesa / Vodacom — for secure payment processing. These services may set temporary cookies during the payment process. Cloudflare — for website security and performance, including DDoS attack protection and content optimization. Social Media Plugins — Facebook, Twitter, LinkedIn, and Instagram may set cookies when you use social sharing features present on our site. Chat AI Services — AI assistance services may maintain session cookies to preserve conversation context.',
+        },
+        updates: {
+          title: 'Policy Updates',
+          content: 'This Cookie Policy was last updated in January 2026. Carsai Mozambique periodically reviews this policy to ensure it reflects current practices and relevant legislation. Significant changes will be communicated through our website and by email where applicable. Continued use of our services after policy changes constitutes acceptance of the new terms. For questions about cookies, contact: Email: privacy@carsai.mz | Phone: +258 21 000 000 | Address: Av. 24 de Julho, 1234, Maputo, Mozambique. To exercise your rights regarding data collected via cookies, please also refer to our Privacy Policy available at /privacy.',
+        },
+      },
+    },
   },
 
   meta: {

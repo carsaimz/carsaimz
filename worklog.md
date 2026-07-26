@@ -73,3 +73,51 @@ Stage Summary:
 - Legal links moved to sidebar in all dashboard areas
 - Login flow now fetches real user data from database (with fallback)
 - Build verified: ✅ npx next build successful with all routes
+
+---
+Task ID: 3
+Agent: Super Z (Main)
+Task: 5 new user requirements - clean DB, auth improvements, legal page translations, bilingual content, more languages
+
+Work Log:
+- Cleaned seed data: removed all demo content (1635 → 165 lines), only creates roles + permissions + 5 essential settings
+- Reset database to empty state (no services, projects, posts, testimonials, forum content, etc.)
+- Extended LanguageCode type: added 'fr-fr', 'es-es', 'zh-cn', 'de-de' alongside existing 'pt-pt', 'en-us', 'pt-br'
+- Created 5 new translation files: fr-fr.ts, es-es.ts, zh-cn.ts, de-de.ts, pt-br.ts (743+ lines each, full translations)
+- Updated LANGUAGE_CONFIGS with French 🇫🇷, Spanish 🇪🇸, Chinese 🇨🇳, German 🇩🇪 configs
+- Updated AVAILABLE_LANGUAGES array to include all 7 languages
+- Updated language detection function to detect fr, es, zh, de browser prefixes
+- Updated translations/index.ts to import all 7 language files properly
+- Created dedicated Auth page at /auth with logo, no demo accounts, show/hide password, email/phone login toggle
+- Created /api/auth/register endpoint - real DB user creation with password hashing (SHA256)
+- Created /api/auth/login endpoint - supports email OR phone login with password validation
+- Removed all DEMO_USERS and loginAsDemo from store.ts, auth-context.tsx, login-modal.tsx
+- Updated login-modal.tsx: removed demo buttons, added show/hide password toggles, phone field, confirm password
+- Updated user-settings.tsx: all labels use t(), save button calls real API, added password change with show/hide
+- Updated public-header.tsx: auth buttons link to /auth page instead of modal
+- Rewrote all 3 legal pages (terms, privacy, cookies) to use t() for all content
+- Added comprehensive legal translation keys to all 7 language files (terms.sections.*, privacy.sections.*, cookies.sections.*)
+- Updated Prisma schema with i18n JSON fields: titleI18n, descriptionI18n on Service, Project, Post; contentI18n on Testimonial; nameI18n/descriptionI18n on ForumCategory/ForumTopic
+- Created /src/lib/i18n-content.ts with resolveI18nContent, parseI18nJson, buildI18nJson, resolveI18nFields utilities
+- Created LanguageTabs component for multilingual form fields (flag + native name tabs)
+- Created AdminContentManager component - reusable CRUD interface for services, projects, posts, testimonials
+- Created admin routes: /admin/services, /admin/projects, /admin/blog, /admin/testimonials
+- Updated admin sidebar with 4 new navigation items (Services, Projects, Blog, Testimonials)
+- Created CRUD API routes: /api/services/[id], /api/projects/[id], /api/posts/[id], /api/testimonials/[id]
+- Created admin API routes: /api/admin/services, /api/admin/projects, /api/admin/posts, /api/admin/testimonials, /api/admin/categories
+- Updated public display components (services, projects, blog, testimonials) to use resolveI18nContent for language-specific content
+- Updated admin-settings.tsx to persist to DB via POST /api/settings
+- Updated /api/settings/route.ts with POST handler for batch settings updates
+- Added content management translation keys in all 7 language files
+- Created pt-br.ts as proper Brazilian Portuguese file (not fallback to pt-pt)
+- Verified build compiles successfully: ✅ bun run build and bun run lint pass
+
+Stage Summary:
+- Database is clean (0 content items) - only roles, permissions, and essential settings exist
+- Auth system fully rebuilt: dedicated /auth page, real DB registration/login, show/hide password, email+phone login
+- All 7 languages supported: pt-pt 🇲🇿, en-us 🇺🇸, pt-br 🇧🇷, fr-fr 🇫🇷, es-es 🇪🇸, zh-cn 🇨🇳, de-de 🇩🇪
+- Legal pages fully translated in all 7 languages
+- Admin content management system built with LanguageTabs for multilingual content
+- i18n content fields on Service, Project, Post, Testimonial, ForumCategory, ForumTopic models
+- Public display components resolve content in selected language
+- Build verified: ✅ bun run build successful, ✅ lint passes cleanly

@@ -31,47 +31,7 @@ export interface Notification {
 
 export type AppView = 'home' | 'services' | 'projects' | 'about' | 'faq' | 'blog' | 'forum' | 'blogPost' | 'forumTopic' | 'contact' | 'dashboard' | 'vehicles' | 'partners' | 'reports' | 'settings' | 'map' | 'analytics' | 'admin' | 'partner' | 'chat';
 
-export type Language = 'en' | 'pt' | 'fr';
-
-// ──────────────────────────────────────────────
-// Demo Users (for testing)
-// ──────────────────────────────────────────────
-
-export const DEMO_USERS: Record<UserRole, User> = {
-  admin: {
-    id: 'demo-admin-001',
-    name: 'Carlos Silva',
-    email: 'admin@carsai.mz',
-    role: 'admin',
-    avatar: null,
-    phone: '+258 84 123 4567',
-    company: 'Carsai Moçambique',
-    bio: 'Director Executivo da Carsai Moçambique',
-    address: 'Maputo, Moçambique',
-  },
-  partner: {
-    id: 'demo-partner-001',
-    name: 'Ana Ferreira',
-    email: 'partner@carsai.mz',
-    role: 'partner',
-    avatar: null,
-    phone: '+258 85 234 5678',
-    company: 'Digital Solutions MZ',
-    bio: 'Parceira estratégica com foco em marketing digital',
-    address: 'Beira, Moçambique',
-  },
-  user: {
-    id: 'demo-user-001',
-    name: 'João Machado',
-    email: 'user@carsai.mz',
-    role: 'user',
-    avatar: null,
-    phone: '+258 86 345 6789',
-    company: 'Tech Startup MZ',
-    bio: 'Empreendedor tech em Maputo',
-    address: 'Maputo, Moçambique',
-  },
-};
+export type Language = 'en' | 'pt' | 'fr' | 'es' | 'zh' | 'de';
 
 // ──────────────────────────────────────────────
 // Auth Store
@@ -84,9 +44,8 @@ interface AuthState {
   isPartner: boolean;
   isUser: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  loginAsDemo: (role: UserRole) => Promise<void>;
-  register: (name: string, email: string, password: string) => boolean;
+  login: (login: string, password: string) => Promise<boolean>;
+  register: (name: string, email: string, password: string, phone?: string) => Promise<boolean>;
   logout: () => void;
   setUser: (user: User) => void;
   updateAvatar: (avatar: string) => void;
@@ -100,38 +59,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isUser: false,
   isLoading: false,
 
-  login: async (email: string, password: string): Promise<boolean> => {
-    // Validate demo credentials first
-    const roleMap: Record<string, UserRole> = {
-      'admin@carsai.mz': 'admin',
-      'partner@carsai.mz': 'partner',
-      'user@carsai.mz': 'user',
-    };
-
-    const role = roleMap[email];
-    if (!role || password !== 'demo123') {
-      return false;
-    }
-
-    // Fetch real user data from database API
+  login: async (login: string, password: string): Promise<boolean> => {
     set({ isLoading: true });
     try {
-      const res = await fetch(`/api/user/profile?email=${encodeURIComponent(email)}`);
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login, password }),
+      });
+
       const data = await res.json();
+
       if (data.success && data.user) {
-        const dbUser = data.user;
-        const userRole = (dbUser.role as UserRole) || role;
+        const userRole = (data.user.role as UserRole) || 'user';
         set({
           user: {
-            id: dbUser.id,
-            name: dbUser.name,
-            email: dbUser.email,
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
             role: userRole,
-            avatar: dbUser.avatar || null,
-            phone: dbUser.phone || null,
-            company: dbUser.company || null,
-            bio: dbUser.bio || null,
-            address: dbUser.address || null,
+            avatar: data.user.avatar || null,
+            phone: data.user.phone || null,
+            company: data.user.company || null,
+            bio: data.user.bio || null,
+            address: data.user.address || null,
           },
           isAuthenticated: true,
           isAdmin: userRole === 'admin',
@@ -140,71 +91,58 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isLoading: false,
         });
         return true;
+      } else {
+        set({ isLoading: false });
+        return false;
       }
     } catch (err) {
-      console.error('Login API error:', err);
+      console.error('Login error:', err);
+      set({ isLoading: false });
+      return false;
     }
-
-    // Fallback to demo users if API fails
-    const demoUser = DEMO_USERS[role];
-    set({
-      user: demoUser,
-      isAuthenticated: true,
-      isAdmin: role === 'admin',
-      isPartner: role === 'partner',
-      isUser: role === 'user',
-      isLoading: false,
-    });
-    return true;
   },
 
-  loginAsDemo: async (role: UserRole) => {
-    const emailMap: Record<UserRole, string> = {
-      admin: 'admin@carsai.mz',
-      partner: 'partner@carsai.mz',
-      user: 'user@carsai.mz',
-    };
+  register: async (name: string, email: string, password: string, phone?: string): Promise<boolean> => {
     set({ isLoading: true });
     try {
-      const res = await fetch(`/api/user/profile?email=${encodeURIComponent(emailMap[role])}`);
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, phone: phone || undefined }),
+      });
+
       const data = await res.json();
+
       if (data.success && data.user) {
-        const dbUser = data.user;
-        const userRole = (dbUser.role as UserRole) || role;
+        const userRole = (data.user.role as UserRole) || 'user';
         set({
           user: {
-            id: dbUser.id,
-            name: dbUser.name,
-            email: dbUser.email,
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
             role: userRole,
-            avatar: dbUser.avatar || null,
-            phone: dbUser.phone || null,
-            company: dbUser.company || null,
-            bio: dbUser.bio || null,
-            address: dbUser.address || null,
+            avatar: null,
+            phone: data.user.phone || null,
+            company: null,
+            bio: null,
+            address: null,
           },
           isAuthenticated: true,
-          isAdmin: userRole === 'admin',
-          isPartner: userRole === 'partner',
-          isUser: userRole === 'user',
+          isAdmin: false,
+          isPartner: false,
+          isUser: true,
           isLoading: false,
         });
-        return;
+        return true;
+      } else {
+        set({ isLoading: false });
+        return false;
       }
     } catch (err) {
-      console.error('Demo login API error:', err);
+      console.error('Register error:', err);
+      set({ isLoading: false });
+      return false;
     }
-
-    // Fallback to demo users
-    const demoUser = DEMO_USERS[role];
-    set({
-      user: demoUser,
-      isAuthenticated: true,
-      isAdmin: role === 'admin',
-      isPartner: role === 'partner',
-      isUser: role === 'user',
-      isLoading: false,
-    });
   },
 
   logout: () => {
@@ -215,29 +153,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isPartner: false,
       isUser: false,
     });
-  },
-
-  register: (name: string, email: string, password: string): boolean => {
-    // Simple simulated registration - creates a user role
-    const newUser: User = {
-      id: `user-${Date.now()}`,
-      name,
-      email,
-      role: 'user',
-      avatar: null,
-      phone: null,
-      company: null,
-      bio: null,
-      address: null,
-    };
-    set({
-      user: newUser,
-      isAuthenticated: true,
-      isAdmin: false,
-      isPartner: false,
-      isUser: true,
-    });
-    return true;
   },
 
   setUser: (user: User) => {

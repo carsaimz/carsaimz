@@ -11,7 +11,7 @@
 // ============================================================================
 
 /** Supported language codes for the Carsai Mozambique platform */
-export type LanguageCode = 'pt-pt' | 'en-us' | 'pt-br';
+export type LanguageCode = 'pt-pt' | 'en-us' | 'pt-br' | 'fr-fr' | 'es-es' | 'zh-cn' | 'de-de';
 
 /** Configuration for each supported language */
 export interface LanguageConfig {
@@ -79,13 +79,57 @@ export const LANGUAGE_CONFIGS: Record<LanguageCode, LanguageConfig> = {
     currencyCode: 'BRL',
     locale: 'pt-BR',
   },
+  'fr-fr': {
+    code: 'fr-fr',
+    name: 'French (France)',
+    nativeName: 'Français (France)',
+    flag: '🇫🇷',
+    direction: 'ltr',
+    dateFormat: 'dd/MM/yyyy',
+    currencySymbol: '€',
+    currencyCode: 'EUR',
+    locale: 'fr-FR',
+  },
+  'es-es': {
+    code: 'es-es',
+    name: 'Spanish (Spain)',
+    nativeName: 'Español (España)',
+    flag: '🇪🇸',
+    direction: 'ltr',
+    dateFormat: 'dd/MM/yyyy',
+    currencySymbol: '€',
+    currencyCode: 'EUR',
+    locale: 'es-ES',
+  },
+  'zh-cn': {
+    code: 'zh-cn',
+    name: 'Chinese (Simplified)',
+    nativeName: '简体中文',
+    flag: '🇨🇳',
+    direction: 'ltr',
+    dateFormat: 'yyyy/MM/dd',
+    currencySymbol: '¥',
+    currencyCode: 'CNY',
+    locale: 'zh-CN',
+  },
+  'de-de': {
+    code: 'de-de',
+    name: 'German (Germany)',
+    nativeName: 'Deutsch (Deutschland)',
+    flag: '🇩🇪',
+    direction: 'ltr',
+    dateFormat: 'dd.MM.yyyy',
+    currencySymbol: '€',
+    currencyCode: 'EUR',
+    locale: 'de-DE',
+  },
 };
 
 /** Default language for the platform */
 export const DEFAULT_LANGUAGE: LanguageCode = 'pt-pt';
 
 /** All available language codes */
-export const AVAILABLE_LANGUAGES: LanguageCode[] = ['pt-pt', 'en-us', 'pt-br'];
+export const AVAILABLE_LANGUAGES: LanguageCode[] = ['pt-pt', 'en-us', 'pt-br', 'fr-fr', 'es-es', 'zh-cn', 'de-de'];
 
 /** Cookie key for persisting language preference */
 export const LANGUAGE_COOKIE_KEY = 'carsai-language';
@@ -135,14 +179,25 @@ export function detectLanguage(): LanguageCode {
       return browserLang as LanguageCode;
     }
 
-    // Prefix match (e.g., 'pt' matches 'pt-pt')
+    // Prefix match
     const prefix = browserLang.split('-')[0];
     if (prefix === 'pt') {
-      // Portuguese speakers in Mozambique get pt-pt, others get pt-br
       return 'pt-pt';
     }
     if (prefix === 'en') {
       return 'en-us';
+    }
+    if (prefix === 'fr') {
+      return 'fr-fr';
+    }
+    if (prefix === 'es') {
+      return 'es-es';
+    }
+    if (prefix === 'zh') {
+      return 'zh-cn';
+    }
+    if (prefix === 'de') {
+      return 'de-de';
     }
   }
 

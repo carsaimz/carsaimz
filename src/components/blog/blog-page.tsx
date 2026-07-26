@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/language-context';
+import { resolveI18nContent } from '@/lib/i18n-content';
 import { useRouter } from 'next/navigation';
 
 // ──────────────────────────────────────────────
@@ -48,9 +49,12 @@ interface PostTag {
 interface PostData {
   id: string;
   title: string;
+  titleI18n: string | null;
   slug: string;
   excerpt: string | null;
+  excerptI18n: string | null;
   content: string | null;
+  contentI18n: string | null;
   featuredImage: string | null;
   published: boolean;
   authorId: string;
@@ -84,7 +88,7 @@ const itemVariants = {
 // ──────────────────────────────────────────────
 
 export function BlogPage() {
-  const { t, formatDate } = useLanguage();
+  const { t, language, formatDate } = useLanguage();
   const router = useRouter();
 
   const [posts, setPosts] = useState<PostData[]>([]);
@@ -133,7 +137,13 @@ export function BlogPage() {
     return Array.from(tagMap.values());
   }, [posts]);
 
-  // Filter posts by search and category
+  // Resolve i18n content for a post
+  const resolvePostContent = (post: PostData) => ({
+    title: resolveI18nContent(post.titleI18n, post.title, language),
+    excerpt: resolveI18nContent(post.excerptI18n, post.excerpt || '', language),
+  });
+
+  // Filter posts by search and category (using resolved i18n content)
   const filteredPosts = useMemo(() => {
     let result = posts;
     if (selectedCategory) {
@@ -141,15 +151,17 @@ export function BlogPage() {
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.title.toLowerCase().includes(q) ||
-          (p.excerpt && p.excerpt.toLowerCase().includes(q)) ||
+      result = result.filter((p) => {
+        const resolved = resolvePostContent(p);
+        return (
+          resolved.title.toLowerCase().includes(q) ||
+          resolved.excerpt.toLowerCase().includes(q) ||
           p.tags.some((tag) => tag.name.toLowerCase().includes(q))
-      );
+        );
+      });
     }
     return result;
-  }, [posts, selectedCategory, searchQuery]);
+  }, [posts, selectedCategory, searchQuery, language]);
 
   // Featured post is the first one
   const featuredPost = filteredPosts[0];
@@ -296,46 +308,51 @@ export function BlogPage() {
               transition={{ duration: 0.5 }}
               className="mb-8"
             >
-              <Card
-                className="overflow-hidden cursor-pointer group hover:shadow-lg transition-shadow border-emerald-200/50"
-                onClick={() => handleViewPost(featuredPost.slug)}
-              >
-                <div className="relative h-48 md:h-64 bg-gradient-to-br from-emerald-600 to-emerald-800 overflow-hidden">
-                  <div className="absolute inset-0 bg-[url('/placeholder-blog.jpg')] bg-cover bg-center opacity-30" />
-                  <div className="absolute inset-0 flex items-end p-6 md:p-8">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-3">
-                        {featuredPost.category && (
-                          <Badge className="bg-emerald-500 text-white border-emerald-400">
-                            {featuredPost.category.name}
-                          </Badge>
-                        )}
-                        <Badge variant="outline" className="border-white/40 text-white bg-white/10">
-                          <Clock className="w-3 h-3 mr-1" />
-                          {getReadTime(featuredPost.content)}
-                        </Badge>
-                      </div>
-                      <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 line-clamp-2 group-hover:underline decoration-white/50">
-                        {featuredPost.title}
-                      </h2>
-                      <p className="text-white/80 text-sm md:text-base line-clamp-2 max-w-2xl">
-                        {featuredPost.excerpt}
-                      </p>
-                      <div className="flex items-center gap-4 mt-3 text-white/70 text-sm">
-                        <span className="flex items-center gap-1">
-                          <User className="w-3.5 h-3.5" />
-                          {featuredPost.author.name}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5" />
-                          {formatDate(featuredPost.createdAt)}
-                        </span>
+              {(() => {
+                const resolved = resolvePostContent(featuredPost);
+                return (
+                  <Card
+                    className="overflow-hidden cursor-pointer group hover:shadow-lg transition-shadow border-emerald-200/50"
+                    onClick={() => handleViewPost(featuredPost.slug)}
+                  >
+                    <div className="relative h-48 md:h-64 bg-gradient-to-br from-emerald-600 to-emerald-800 overflow-hidden">
+                      <div className="absolute inset-0 bg-[url('/placeholder-blog.jpg')] bg-cover bg-center opacity-30" />
+                      <div className="absolute inset-0 flex items-end p-6 md:p-8">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-3">
+                            {featuredPost.category && (
+                              <Badge className="bg-emerald-500 text-white border-emerald-400">
+                                {featuredPost.category.name}
+                              </Badge>
+                            )}
+                            <Badge variant="outline" className="border-white/40 text-white bg-white/10">
+                              <Clock className="w-3 h-3 mr-1" />
+                              {getReadTime(featuredPost.content)}
+                            </Badge>
+                          </div>
+                          <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 line-clamp-2 group-hover:underline decoration-white/50">
+                            {resolved.title}
+                          </h2>
+                          <p className="text-white/80 text-sm md:text-base line-clamp-2 max-w-2xl">
+                            {resolved.excerpt}
+                          </p>
+                          <div className="flex items-center gap-4 mt-3 text-white/70 text-sm">
+                            <span className="flex items-center gap-1">
+                              <User className="w-3.5 h-3.5" />
+                              {featuredPost.author.name}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-3.5 h-3.5" />
+                              {formatDate(featuredPost.createdAt)}
+                            </span>
+                          </div>
+                        </div>
+                        <ArrowRight className="w-6 h-6 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
                       </div>
                     </div>
-                    <ArrowRight className="w-6 h-6 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
-                  </div>
-                </div>
-              </Card>
+                  </Card>
+                );
+              })()}
             </motion.div>
           </AnimatePresence>
         )}
@@ -348,65 +365,68 @@ export function BlogPage() {
             animate="visible"
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {gridPosts.map((post) => (
-              <motion.div key={post.id} variants={itemVariants}>
-                <Card
-                  className="overflow-hidden cursor-pointer group hover:shadow-lg transition-all hover:-translate-y-1 h-full"
-                  onClick={() => handleViewPost(post.slug)}
-                >
-                  {/* Featured image placeholder */}
-                  <div className="relative h-40 bg-gradient-to-br from-emerald-100 to-emerald-200 overflow-hidden">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <BookOpen className="w-12 h-12 text-emerald-400" />
-                    </div>
-                    {post.category && (
-                      <Badge className="absolute top-3 left-3 bg-emerald-600 text-white border-emerald-500">
-                        {post.category.name}
-                      </Badge>
-                    )}
-                  </div>
-
-                  <CardHeader className="pb-2 pt-4 px-4">
-                    <h3 className="font-semibold text-foreground line-clamp-2 group-hover:text-emerald-700 transition-colors">
-                      {post.title}
-                    </h3>
-                  </CardHeader>
-
-                  <CardContent className="px-4 pb-2">
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {post.excerpt || ''}
-                    </p>
-                    {post.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-3">
-                        {post.tags.slice(0, 3).map((tag) => (
-                          <Badge
-                            key={tag.id}
-                            variant="outline"
-                            className="text-xs border-emerald-200 text-emerald-700"
-                          >
-                            <Tag className="w-2.5 h-2.5 mr-0.5" />
-                            {tag.name}
-                          </Badge>
-                        ))}
+            {gridPosts.map((post) => {
+              const resolved = resolvePostContent(post);
+              return (
+                <motion.div key={post.id} variants={itemVariants}>
+                  <Card
+                    className="overflow-hidden cursor-pointer group hover:shadow-lg transition-all hover:-translate-y-1 h-full"
+                    onClick={() => handleViewPost(post.slug)}
+                  >
+                    {/* Featured image placeholder */}
+                    <div className="relative h-40 bg-gradient-to-br from-emerald-100 to-emerald-200 overflow-hidden">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <BookOpen className="w-12 h-12 text-emerald-400" />
                       </div>
-                    )}
-                  </CardContent>
-
-                  <CardFooter className="px-4 pb-4 pt-2">
-                    <div className="flex items-center justify-between w-full text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <User className="w-3 h-3" />
-                        {post.author.name}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {formatDate(post.createdAt)}
-                      </span>
+                      {post.category && (
+                        <Badge className="absolute top-3 left-3 bg-emerald-600 text-white border-emerald-500">
+                          {post.category.name}
+                        </Badge>
+                      )}
                     </div>
-                  </CardFooter>
-                </Card>
-              </motion.div>
-            ))}
+
+                    <CardHeader className="pb-2 pt-4 px-4">
+                      <h3 className="font-semibold text-foreground line-clamp-2 group-hover:text-emerald-700 transition-colors">
+                        {resolved.title}
+                      </h3>
+                    </CardHeader>
+
+                    <CardContent className="px-4 pb-2">
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {resolved.excerpt}
+                      </p>
+                      {post.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-3">
+                          {post.tags.slice(0, 3).map((tag) => (
+                            <Badge
+                              key={tag.id}
+                              variant="outline"
+                              className="text-xs border-emerald-200 text-emerald-700"
+                            >
+                              <Tag className="w-2.5 h-2.5 mr-0.5" />
+                              {tag.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+
+                    <CardFooter className="px-4 pb-4 pt-2">
+                      <div className="flex items-center justify-between w-full text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <User className="w-3 h-3" />
+                          {post.author.name}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {formatDate(post.createdAt)}
+                        </span>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                </motion.div>
+              );
+            })}
           </motion.div>
         )}
 
@@ -446,18 +466,21 @@ export function BlogPage() {
                   {t('blog.recentPosts')}
                 </h3>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {posts.slice(0, 5).map((post) => (
-                    <div
-                      key={post.id}
-                      className="flex items-center gap-2 cursor-pointer group"
-                      onClick={() => handleViewPost(post.slug)}
-                    >
-                      <ChevronDown className="w-3 h-3 text-emerald-500 rotate-[-90deg]" />
-                      <span className="text-sm text-muted-foreground group-hover:text-emerald-700 transition-colors line-clamp-1">
-                        {post.title}
-                      </span>
-                    </div>
-                  ))}
+                  {posts.slice(0, 5).map((post) => {
+                    const resolved = resolvePostContent(post);
+                    return (
+                      <div
+                        key={post.id}
+                        className="flex items-center gap-2 cursor-pointer group"
+                        onClick={() => handleViewPost(post.slug)}
+                      >
+                        <ChevronDown className="w-3 h-3 text-emerald-500 rotate-[-90deg]" />
+                        <span className="text-sm text-muted-foreground group-hover:text-emerald-700 transition-colors line-clamp-1">
+                          {resolved.title}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
