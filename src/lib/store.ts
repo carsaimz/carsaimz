@@ -83,8 +83,10 @@ interface AuthState {
   isAdmin: boolean;
   isPartner: boolean;
   isUser: boolean;
-  login: (email: string, password: string) => boolean;
-  loginAsDemo: (role: UserRole) => void;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<boolean>;
+  loginAsDemo: (role: UserRole) => Promise<void>;
+  register: (name: string, email: string, password: string) => boolean;
   logout: () => void;
   setUser: (user: User) => void;
   updateAvatar: (avatar: string) => void;
@@ -96,10 +98,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAdmin: false,
   isPartner: false,
   isUser: false,
+  isLoading: false,
 
-  login: (email: string, password: string): boolean => {
-    // Simulated login — match demo credentials
-    // In production this would call an API
+  login: async (email: string, password: string): Promise<boolean> => {
+    // Validate demo credentials first
     const roleMap: Record<string, UserRole> = {
       'admin@carsai.mz': 'admin',
       'partner@carsai.mz': 'partner',
@@ -107,21 +109,43 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     };
 
     const role = roleMap[email];
-    if (role && password === 'demo123') {
-      const demoUser = DEMO_USERS[role];
-      set({
-        user: demoUser,
-        isAuthenticated: true,
-        isAdmin: role === 'admin',
-        isPartner: role === 'partner',
-        isUser: role === 'user',
-      });
-      return true;
+    if (!role || password !== 'demo123') {
+      return false;
     }
-    return false;
-  },
 
-  loginAsDemo: (role: UserRole) => {
+    // Fetch real user data from database API
+    set({ isLoading: true });
+    try {
+      const res = await fetch(`/api/user/profile?email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+      if (data.success && data.user) {
+        const dbUser = data.user;
+        const userRole = (dbUser.role as UserRole) || role;
+        set({
+          user: {
+            id: dbUser.id,
+            name: dbUser.name,
+            email: dbUser.email,
+            role: userRole,
+            avatar: dbUser.avatar || null,
+            phone: dbUser.phone || null,
+            company: dbUser.company || null,
+            bio: dbUser.bio || null,
+            address: dbUser.address || null,
+          },
+          isAuthenticated: true,
+          isAdmin: userRole === 'admin',
+          isPartner: userRole === 'partner',
+          isUser: userRole === 'user',
+          isLoading: false,
+        });
+        return true;
+      }
+    } catch (err) {
+      console.error('Login API error:', err);
+    }
+
+    // Fallback to demo users if API fails
     const demoUser = DEMO_USERS[role];
     set({
       user: demoUser,
@@ -129,6 +153,57 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isAdmin: role === 'admin',
       isPartner: role === 'partner',
       isUser: role === 'user',
+      isLoading: false,
+    });
+    return true;
+  },
+
+  loginAsDemo: async (role: UserRole) => {
+    const emailMap: Record<UserRole, string> = {
+      admin: 'admin@carsai.mz',
+      partner: 'partner@carsai.mz',
+      user: 'user@carsai.mz',
+    };
+    set({ isLoading: true });
+    try {
+      const res = await fetch(`/api/user/profile?email=${encodeURIComponent(emailMap[role])}`);
+      const data = await res.json();
+      if (data.success && data.user) {
+        const dbUser = data.user;
+        const userRole = (dbUser.role as UserRole) || role;
+        set({
+          user: {
+            id: dbUser.id,
+            name: dbUser.name,
+            email: dbUser.email,
+            role: userRole,
+            avatar: dbUser.avatar || null,
+            phone: dbUser.phone || null,
+            company: dbUser.company || null,
+            bio: dbUser.bio || null,
+            address: dbUser.address || null,
+          },
+          isAuthenticated: true,
+          isAdmin: userRole === 'admin',
+          isPartner: userRole === 'partner',
+          isUser: userRole === 'user',
+          isLoading: false,
+        });
+        return;
+      }
+    } catch (err) {
+      console.error('Demo login API error:', err);
+    }
+
+    // Fallback to demo users
+    const demoUser = DEMO_USERS[role];
+    set({
+      user: demoUser,
+      isAuthenticated: true,
+      isAdmin: role === 'admin',
+      isPartner: role === 'partner',
+      isUser: role === 'user',
+      isLoading: false,
     });
   },
 
@@ -140,6 +215,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isPartner: false,
       isUser: false,
     });
+  },
+
+  register: (name: string, email: string, password: string): boolean => {
+    // Simple simulated registration - creates a user role
+    const newUser: User = {
+      id: `user-${Date.now()}`,
+      name,
+      email,
+      role: 'user',
+      avatar: null,
+      phone: null,
+      company: null,
+      bio: null,
+      address: null,
+    };
+    set({
+      user: newUser,
+      isAuthenticated: true,
+      isAdmin: false,
+      isPartner: false,
+      isUser: true,
+    });
+    return true;
   },
 
   setUser: (user: User) => {

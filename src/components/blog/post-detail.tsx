@@ -27,7 +27,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/language-context';
-import { useAppStore } from '@/lib/store';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 
 // ──────────────────────────────────────────────
@@ -94,9 +94,9 @@ const fadeInVariants = {
 // Component
 // ──────────────────────────────────────────────
 
-export function PostDetail() {
+export function PostDetail({ slug: propSlug }: { slug?: string }) {
   const { t, formatDate, formatRelativeTime } = useLanguage();
-  const { currentView, selectedPostSlug, setCurrentView, setSelectedPostSlug } = useAppStore();
+  const router = useRouter();
   const { isAuthenticated, user } = useAuth();
 
   const [post, setPost] = useState<PostData | null>(null);
@@ -117,7 +117,7 @@ export function PostDetail() {
         const json = await res.json();
         if (json.success) {
           const allPosts: PostData[] = json.data;
-          const found = allPosts.find((p: PostData) => p.slug === selectedPostSlug);
+          const found = allPosts.find((p: PostData) => p.slug === propSlug);
           if (found) {
             // Ensure comments array exists (API may not include it)
             found.comments = found.comments || [];
@@ -144,23 +144,19 @@ export function PostDetail() {
         setLoading(false);
       }
     }
-    if (selectedPostSlug) {
+    if (propSlug) {
       fetchPosts();
     }
-  }, [selectedPostSlug]);
+  }, [propSlug]);
 
   // Navigate back to blog
   const handleBack = () => {
-    setSelectedPostSlug(null);
-    setCurrentView('blog');
+    router.push('/blog');
   };
 
   // Navigate to related post
   const handleViewPost = (slug: string) => {
-    setSelectedPostSlug(slug);
-    // Re-trigger fetch by keeping same view but changing slug
-    setLoading(true);
-    setPost(null);
+    router.push(`/blog/${slug}`);
   };
 
   // Submit comment (mock)

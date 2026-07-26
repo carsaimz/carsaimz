@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/language-context';
-import { useAppStore } from '@/lib/store';
+import { useRouter } from 'next/navigation';
 import { StatsCounterSection } from '@/components/features/stats-counter';
 
 const containerVariants = {
@@ -29,7 +29,7 @@ const itemVariants = {
 
 export function HomeHero() {
   const { t } = useLanguage();
-  const setCurrentView = useAppStore((s) => s.setCurrentView);
+  const router = useRouter();
 
   return (
     <section
@@ -88,7 +88,7 @@ export function HomeHero() {
             <Button
               size="lg"
               className="bg-yellow-400 hover:bg-yellow-300 text-emerald-900 font-semibold px-8 py-3 text-base rounded-xl shadow-lg shadow-yellow-400/25 transition-all hover:shadow-xl hover:shadow-yellow-400/30"
-              onClick={() => setCurrentView('services')}
+              onClick={() => router.push('/services')}
             >
               {t('home.heroCtaPrimary')}
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -97,7 +97,7 @@ export function HomeHero() {
               size="lg"
               variant="outline"
               className="border-emerald-400/50 text-emerald-100 hover:bg-emerald-700/50 hover:text-white font-semibold px-8 py-3 text-base rounded-xl backdrop-blur-sm transition-all"
-              onClick={() => setCurrentView('projects')}
+              onClick={() => router.push('/projects')}
             >
               {t('home.heroCtaSecondary')}
             </Button>

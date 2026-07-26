@@ -1,0 +1,62 @@
+'use client';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Link2, Copy, ExternalLink, Share2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { useAuthStore } from '@/lib/store';
+import { useLanguage } from '@/contexts/language-context';
+
+const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
+const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
+
+export function PartnerAffiliate() {
+  const { t } = useLanguage();
+  const user = useAuthStore((s) => s.user);
+  const [copied, setCopied] = useState(false);
+
+  const affiliateLink = `https://carsai.mz/ref/${user?.id || 'demo-partner-001'}`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(affiliateLink).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+  };
+
+  return (
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
+      <motion.div variants={itemVariants}>
+        <h2 className="text-2xl font-bold flex items-center gap-2"><Link2 className="h-6 w-6 text-emerald-600" />{t('partner.affiliate') || 'Affiliate Program'}</h2>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <Card className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-green-600 border-0 text-white">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-3"><Link2 className="h-5 w-5 text-yellow-400" /><h3 className="font-semibold text-white">{t('partner.affiliateLink')}</h3></div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex-1 bg-white/10 rounded-lg px-4 py-2 text-emerald-100 text-sm font-mono truncate">{affiliateLink}</div>
+              <Button onClick={handleCopy} className="bg-yellow-400 hover:bg-yellow-300 text-emerald-900 font-semibold rounded-lg"><Copy className="h-4 w-4 mr-2" />{copied ? 'Copied!' : t('common.copy')}</Button>
+            </div>
+            <div className="flex gap-3 mt-3">
+              <Button variant="ghost" size="sm" className="text-emerald-200 hover:text-white hover:bg-white/10"><Share2 className="h-4 w-4 mr-1" />Share</Button>
+              <Button variant="ghost" size="sm" className="text-emerald-200 hover:text-white hover:bg-white/10"><ExternalLink className="h-4 w-4 mr-1" />QR Code</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <Card>
+          <CardHeader><CardTitle>Affiliate Program Details</CardTitle></CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="text-center p-4 rounded-xl bg-emerald-50"><p className="text-2xl font-bold text-emerald-700">10%</p><p className="text-sm text-muted-foreground">Commission Rate</p></div>
+              <div className="text-center p-4 rounded-xl bg-emerald-50"><p className="text-2xl font-bold text-emerald-700">30 days</p><p className="text-sm text-muted-foreground">Cookie Duration</p></div>
+              <div className="text-center p-4 rounded-xl bg-emerald-50"><Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">Gold Tier</Badge><p className="text-sm text-muted-foreground mt-1">Your Current Level</p></div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </motion.div>
+  );
+}

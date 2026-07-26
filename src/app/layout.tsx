@@ -55,9 +55,7 @@ export default function RootLayout({
         >
           <LanguageProvider>
             <AppProvider>
-              <AppShell>
-                {children}
-              </AppShell>
+              {children}
             </AppProvider>
           </LanguageProvider>
         </ThemeProvider>
@@ -66,7 +64,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-// Client-side shell component to avoid hydration mismatches
-// from auth/theme/language state differences between server and client
-import { AppShell } from "@/components/layout/app-shell";

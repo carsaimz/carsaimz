@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/language-context';
-import { useAppStore } from '@/lib/store';
+import { useRouter } from 'next/navigation';
 
 // ──────────────────────────────────────────────
 // Types
@@ -85,7 +85,7 @@ const itemVariants = {
 
 export function BlogPage() {
   const { t, formatDate } = useLanguage();
-  const { setCurrentView, setSelectedPostSlug } = useAppStore();
+  const router = useRouter();
 
   const [posts, setPosts] = useState<PostData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -157,8 +157,7 @@ export function BlogPage() {
 
   // Navigate to a post detail
   const handleViewPost = (slug: string) => {
-    setSelectedPostSlug(slug);
-    setCurrentView('blogPost');
+    router.push(`/blog/${slug}`);
   };
 
   // Calculate estimated read time

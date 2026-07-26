@@ -22,7 +22,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/language-context';
-import { useAppStore } from '@/lib/store';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 
 // ──────────────────────────────────────────────
@@ -102,9 +102,9 @@ const replyVariants = {
 // Component
 // ──────────────────────────────────────────────
 
-export function TopicDetail() {
+export function TopicDetail({ slug: propSlug }: { slug?: string }) {
   const { t, formatDate, formatRelativeTime } = useLanguage();
-  const { selectedTopicSlug, setCurrentView, setSelectedTopicSlug } = useAppStore();
+  const router = useRouter();
   const { isAuthenticated, user } = useAuth();
 
   const [topic, setTopic] = useState<ForumTopicData | null>(null);
@@ -127,7 +127,7 @@ export function TopicDetail() {
           // Find the topic across all categories
           let found: ForumTopicData | null = null;
           for (const cat of allCategories) {
-            const topicMatch = cat.topics.find((t) => t.slug === selectedTopicSlug);
+            const topicMatch = cat.topics.find((t) => t.slug === propSlug);
             if (topicMatch) {
               found = topicMatch;
               break;
@@ -148,15 +148,14 @@ export function TopicDetail() {
         setLoading(false);
       }
     }
-    if (selectedTopicSlug) {
+    if (propSlug) {
       fetchForum();
     }
-  }, [selectedTopicSlug]);
+  }, [propSlug]);
 
   // Navigate back to forum
   const handleBack = () => {
-    setSelectedTopicSlug(null);
-    setCurrentView('forum');
+    router.push('/forum');
   };
 
   // Submit reply (mock)

@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/language-context';
-import { useAppStore } from '@/lib/store';
+import { useRouter } from 'next/navigation';
 
 const iconMap: Record<string, React.ElementType> = {
   Globe,
@@ -55,7 +55,7 @@ const cardVariants = {
 
 export function ServicesSection() {
   const { t } = useLanguage();
-  const setCurrentView = useAppStore((s) => s.setCurrentView);
+  const router = useRouter();
   const [services, setServices] = useState<ServiceData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -169,7 +169,7 @@ export function ServicesSection() {
                       variant="ghost"
                       size="sm"
                       className="text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 group-hover:bg-emerald-100"
-                      onClick={() => setCurrentView('services')}
+                      onClick={() => router.push('/services')}
                     >
                       {t('common.more')}
                       <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />

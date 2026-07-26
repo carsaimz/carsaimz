@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 
 import { useAppStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
+import { useRouter } from 'next/navigation';
 
 // ──────────────────────────────────────────────
 // Types
@@ -42,7 +43,8 @@ interface SearchResult {
 
 export function GlobalSearch() {
   const { t } = useLanguage();
-  const { searchOpen, setSearchOpen, setCurrentView, setSelectedPostSlug, setSelectedTopicSlug } = useAppStore();
+  const { searchOpen, setSearchOpen } = useAppStore();
+  const router = useRouter();
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -214,13 +216,11 @@ export function GlobalSearch() {
     setSearchOpen(false);
 
     if (result.type === 'blog' && result.slug) {
-      setSelectedPostSlug(result.slug);
-      setCurrentView('blogPost');
+      router.push(`/blog/${result.slug}`);
     } else if (result.type === 'forum' && result.slug) {
-      setSelectedTopicSlug(result.slug);
-      setCurrentView('forumTopic');
+      router.push(`/forum/${result.slug}`);
     } else {
-      setCurrentView(result.view as Parameters<typeof setCurrentView>[0]);
+      router.push(`/${result.view}`);
     }
   };
 

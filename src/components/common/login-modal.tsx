@@ -28,6 +28,7 @@ import {
 
 import { useAuthStore, useAppStore, type UserRole } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
+import { useRouter } from 'next/navigation';
 
 // ──────────────────────────────────────────────
 // Login Modal Component
@@ -41,7 +42,7 @@ interface LoginModalProps {
 export function LoginModal({ open, onOpenChange }: LoginModalProps) {
   const { t } = useLanguage();
   const { login, loginAsDemo, register } = useAuthStore();
-  const { setCurrentView } = useAppStore();
+  const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<string>('login');
   const [loginEmail, setLoginEmail] = useState('');
@@ -53,7 +54,10 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
   const [registerPassword, setRegisterPassword] = useState('');
   const [registerError, setRegisterError] = useState('');
 
-  const handleLogin = () => {
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState<string | null>(null);
+
+  const handleLogin = async () => {
     setLoginError('');
     if (!loginEmail) {
       setLoginError(t('auth.emailRequired'));
@@ -63,15 +67,25 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
       setLoginError(t('auth.passwordRequired'));
       return;
     }
-    const success = login(loginEmail, loginPassword);
-    if (success) {
-      setCurrentView('dashboard');
-      onOpenChange(false);
-      setLoginEmail('');
-      setLoginPassword('');
-    } else {
+    setLoginLoading(true);
+    try {
+      const success = await login(loginEmail, loginPassword);
+      if (success) {
+        // Navigate based on role
+        const role = useAuthStore.getState().user?.role;
+        if (role === 'admin') router.push('/admin');
+        else if (role === 'partner') router.push('/partner');
+        else router.push('/user');
+        onOpenChange(false);
+        setLoginEmail('');
+        setLoginPassword('');
+      } else {
+        setLoginError(t('auth.invalidCredentials'));
+      }
+    } catch {
       setLoginError(t('auth.invalidCredentials'));
     }
+    setLoginLoading(false);
   };
 
   const handleRegister = () => {
@@ -90,7 +104,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
     }
     const success = register(registerName, registerEmail, registerPassword);
     if (success) {
-      setCurrentView('dashboard');
+      router.push('/user');
       onOpenChange(false);
       setRegisterName('');
       setRegisterEmail('');
@@ -100,13 +114,15 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
     }
   };
 
-  const handleDemoLogin = (role: UserRole) => {
-    loginAsDemo(role);
-    // Navigate to appropriate view based on role
-    if (role === 'admin') setCurrentView('admin');
-    else if (role === 'partner') setCurrentView('partner');
-    else setCurrentView('dashboard');
+  const handleDemoLogin = async (role: UserRole) => {
+    setDemoLoading(role);
+    await loginAsDemo(role);
+    // Navigate to appropriate path based on role
+    if (role === 'admin') router.push('/admin');
+    else if (role === 'partner') router.push('/partner');
+    else router.push('/user');
     onOpenChange(false);
+    setDemoLoading(null);
   };
 
   return (

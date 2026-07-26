@@ -31,7 +31,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/language-context';
-import { useAppStore } from '@/lib/store';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 
 // ──────────────────────────────────────────────
@@ -100,7 +100,7 @@ const itemVariants = {
 
 export function ForumPage() {
   const { t, formatRelativeTime } = useLanguage();
-  const { setCurrentView, setSelectedTopicSlug } = useAppStore();
+  const router = useRouter();
   const { isAuthenticated } = useAuth();
 
   const [categories, setCategories] = useState<ForumCategoryData[]>([]);
@@ -162,8 +162,7 @@ export function ForumPage() {
 
   // Navigate to topic detail
   const handleViewTopic = (slug: string) => {
-    setSelectedTopicSlug(slug);
-    setCurrentView('forumTopic');
+    router.push(`/forum/${slug}`);
   };
 
   // Category color mapping
