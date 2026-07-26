@@ -63,6 +63,26 @@ const faqItems: FaqItem[] = [
   { id: 'faq-29', questionKey: 'faq.faq29Q', answerKey: 'faq.faq29A', category: 'general' },
   { id: 'faq-30', questionKey: 'faq.faq30Q', answerKey: 'faq.faq30A', category: 'general' },
   { id: 'faq-31', questionKey: 'faq.faq31Q', answerKey: 'faq.faq31A', category: 'general' },
+  // Privacy & Security
+  { id: 'faq-32', questionKey: 'faq.faq32Q', answerKey: 'faq.faq32A', category: 'general' },
+  // Refunds
+  { id: 'faq-33', questionKey: 'faq.faq33Q', answerKey: 'faq.faq33A', category: 'payment' },
+  // Delivery timeline
+  { id: 'faq-34', questionKey: 'faq.faq34Q', answerKey: 'faq.faq34A', category: 'services' },
+  // Custom quote
+  { id: 'faq-35', questionKey: 'faq.faq35Q', answerKey: 'faq.faq35A', category: 'services' },
+  // Accessibility
+  { id: 'faq-36', questionKey: 'faq.faq36Q', answerKey: 'faq.faq36A', category: 'general' },
+  // Mobile app
+  { id: 'faq-37', questionKey: 'faq.faq37Q', answerKey: 'faq.faq37A', category: 'general' },
+  // Account deletion
+  { id: 'faq-38', questionKey: 'faq.faq38Q', answerKey: 'faq.faq38A', category: 'support' },
+  // Cookie management
+  { id: 'faq-39', questionKey: 'faq.faq39Q', answerKey: 'faq.faq39A', category: 'general' },
+  // International clients
+  { id: 'faq-40', questionKey: 'faq.faq40Q', answerKey: 'faq.faq40A', category: 'general' },
+  // Partnership requirements
+  { id: 'faq-41', questionKey: 'faq.faq41Q', answerKey: 'faq.faq41A', category: 'partner' },
 ];
 
 const categoryLabels: Record<string, string> = {

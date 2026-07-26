@@ -54,7 +54,7 @@ const translations: Record<Language, Record<string, string>> = {
     'notif.clearAll': 'Limpar todas',
     'notif.noNotifications': 'Sem notificações',
     // App
-    'app.name': 'Carsai Moçambique',
+    'app.name': 'Carsai Mozambique',
     'app.tagline': 'Tecnologia inteligente para mobilidade',
   },
   en: {

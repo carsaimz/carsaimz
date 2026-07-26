@@ -204,3 +204,134 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: oklch(0.556 0 0 / 50%);
 }
+
+/* ─── SweetAlert2 Custom Styles ─── */
+
+.swal2-popup-carsai {
+  border-radius: var(--radius-lg);
+  font-family: inherit;
+}
+
+.swal2-confirm-btn {
+  background-color: oklch(0.596 0.145 163.225) !important;
+  color: oklch(0.985 0 0) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 0.5rem 1.5rem !important;
+  font-weight: 600 !important;
+  transition: all 0.15s ease !important;
+}
+
+.swal2-confirm-btn:hover {
+  opacity: 0.9;
+}
+
+.swal2-cancel-btn {
+  background-color: oklch(0.556 0 0) !important;
+  color: oklch(0.985 0 0) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 0.5rem 1.5rem !important;
+  font-weight: 600 !important;
+  transition: all 0.15s ease !important;
+}
+
+.swal2-cancel-btn:hover {
+  opacity: 0.9;
+}
+
+/* ─── Quill Editor Dark Mode Support ─── */
+
+.dark .ql-toolbar {
+  border-color: oklch(1 0 0 / 10%) !important;
+}
+
+.dark .ql-container {
+  border-color: oklch(1 0 0 / 10%) !important;
+  color: oklch(0.985 0 0) !important;
+}
+
+.dark .ql-editor {
+  color: oklch(0.985 0 0) !important;
+}
+
+.dark .ql-editor.ql-blank::before {
+  color: oklch(0.708 0 0) !important;
+}
+
+.dark .ql-snow .ql-stroke {
+  stroke: oklch(0.708 0 0) !important;
+}
+
+.dark .ql-snow .ql-fill,
+.dark .ql-snow .ql-stroke.ql-fill {
+  fill: oklch(0.708 0 0) !important;
+}
+
+.dark .ql-snow .ql-picker-label {
+  color: oklch(0.708 0 0) !important;
+}
+
+.dark .ql-snow .ql-picker-options {
+  background-color: oklch(0.205 0 0) !important;
+  border-color: oklch(1 0 0 / 10%) !important;
+}
+
+.dark .ql-snow .ql-picker-item {
+  color: oklch(0.985 0 0) !important;
+}
+
+.dark .ql-snow .ql-picker-item:hover {
+  color: oklch(0.596 0.145 163.225) !important;
+}
+
+.dark .ql-snow .ql-active .ql-picker-label {
+  color: oklch(0.596 0.145 163.225) !important;
+}
+
+/* ─── Quill Content Display ─── */
+
+.ql-editor-content {
+  line-height: 1.7;
+}
+
+.ql-editor-content p {
+  margin-bottom: 0.75em;
+}
+
+.ql-editor-content h1, .ql-editor-content h2, .ql-editor-content h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 700;
+}
+
+.ql-editor-content ul, .ql-editor-content ol {
+  margin-left: 1.5em;
+  margin-bottom: 0.75em;
+}
+
+.ql-editor-content a {
+  color: oklch(0.596 0.145 163.225);
+  text-decoration: underline;
+}
+
+.ql-editor-content blockquote {
+  border-left: 3px solid oklch(0.596 0.145 163.225);
+  padding-left: 1em;
+  margin: 1em 0;
+  color: oklch(0.556 0 0);
+}
+
+.ql-editor-content pre {
+  background: oklch(0.97 0 0);
+  padding: 0.75em 1em;
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+.dark .ql-editor-content pre {
+  background: oklch(0.205 0 0);
+}
+
+.ql-editor-content img {
+  max-width: 100%;
+  border-radius: var(--radius-md);
+}

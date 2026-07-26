@@ -163,8 +163,8 @@ export const ptPT: TranslationObject = {
   // Home / Hero Section
   // ============================================================================
   home: {
-    heroTitle: 'Transformação Digital para Moçambique',
-    heroSubtitle: 'Soluções tecnológicas inovadoras que impulsionam o crescimento empresarial e a inclusão digital em Moçambique',
+    heroTitle: 'Transformação Digital para Mozambique',
+    heroSubtitle: 'Soluções tecnológicas inovadoras que impulsionam o crescimento empresarial e a inclusão digital em Mozambique',
     heroBadge: 'Soluções Digitais e Desenvolvimento Web Gratuita',
     heroCtaPrimary: 'Começar Agora',
     heroCtaSecondary: 'Ver Serviços',
@@ -235,7 +235,7 @@ export const ptPT: TranslationObject = {
   // ============================================================================
   projects: {
     title: 'Nossos Projectos',
-    description: 'Projectos realizados com sucesso para clientes em Moçambique',
+    description: 'Projectos realizados com sucesso para clientes em Mozambique',
     subtitle: 'Portfólio de projectos concluídos',
     viewDemo: 'Ver Demonstração',
     viewDetails: 'Ver Detalhes',
@@ -301,7 +301,7 @@ export const ptPT: TranslationObject = {
   // ============================================================================
   forum: {
     title: 'Fórum',
-    description: 'Comunidade de discussão sobre tecnologia e negócios em Moçambique',
+    description: 'Comunidade de discussão sobre tecnologia e negócios em Mozambique',
     subtitle: 'Partilhe conhecimento e experiências',
     topics: 'Tópicos',
     replies: 'Respostas',
@@ -471,7 +471,7 @@ export const ptPT: TranslationObject = {
     date: 'Data',
     status: 'Estado',
     translations: 'Traduções',
-    defaultLanguage: 'Português (Moçambique) — idioma padrão',
+    defaultLanguage: 'Português (Mozambique) — idioma padrão',
   },
 
   // ============================================================================
@@ -579,7 +579,7 @@ export const ptPT: TranslationObject = {
   // Footer Section
   // ============================================================================
   footer: {
-    copyright: '© {{year}} Carsai Moçambique. Todos os direitos reservados.',
+    copyright: '© {{year}} Carsai Mozambique. Todos os direitos reservados.',
     privacy: 'Política de Privacidade',
     terms: 'Termos e Condições',
     social: 'Redes Sociais',
@@ -601,13 +601,13 @@ export const ptPT: TranslationObject = {
     newsletterSubscribe: 'Subscrever',
     newsletterPlaceholder: 'Introduza o seu e-mail',
     newsletterSuccess: 'Subscrição realizada com sucesso',
-    companyDescription: 'Carsai Moçambique - Transformação digital e soluções tecnológicas para empresas moçambicanas',
+    companyDescription: 'Carsai Mozambique - Transformação digital e soluções tecnológicas para empresas moçambicanas',
     links: 'Ligações',
     legal: 'Legal',
     cookies: 'Política de Cookies',
     sitemap: 'Mapa do Site',
     accessibility: 'Acessibilidade',
-    addressValue: 'Montepuez, Cabo Delgado, Moçambique',
+    addressValue: 'Montepuez, Cabo Delgado, Mozambique',
     phoneValue: '847545020 / 874512581 / 84246463 / 835020143',
     onlineOperation: 'Operação online — sem sede física',
   },
@@ -639,7 +639,7 @@ export const ptPT: TranslationObject = {
     map: 'Mapa',
     directions: 'Direcções',
     address: 'Localização',
-    addressValue: 'Montepuez, Cabo Delgado, Moçambique',
+    addressValue: 'Montepuez, Cabo Delgado, Mozambique',
     onlineNote: 'Operação online — sem sede física',
     socialMedia: 'Redes Sociais',
   },
@@ -684,7 +684,7 @@ export const ptPT: TranslationObject = {
     faq11Q: 'Oferecem manutenção e suporte após a entrega do projecto?',
     faq11A: 'Sim, oferecemos vários níveis de manutenção e suporte após a entrega: suporte básico (correcção de bugs, actualizações de segurança), manutenção mensal (actualizações de conteúdo, monitorização), e suporte premium (evolução do projecto, novas funcionalidades, consultoria). Todos os planos incluem resposta garantida dentro de 24 horas para questões críticas.',
     faq12Q: 'Que métodos de pagamento são aceites?',
-    faq12A: 'Aceitamos múltiplos métodos de pagamento para facilitar os nossos clientes: M-Pesa (o método mais popular em Moçambique), transferência bancária (BIM, Millennium BIM, Standard Bank), cartão de crédito/débito (Visa, Mastercard), e criptomoedas seleccionadas. Para projectos maiores, aceitamos pagamentos faseados em 2-4 tranches.',
+    faq12A: 'Aceitamos múltiplos métodos de pagamento para facilitar os nossos clientes: M-Pesa (o método mais popular em Mozambique), transferência bancária (BIM, Millennium BIM, Standard Bank), cartão de crédito/débito (Visa, Mastercard), e criptomoedas seleccionadas. Para projectos maiores, aceitamos pagamentos faseados em 2-4 tranches.',
     faq13Q: 'Posso pagar via M-Pesa?',
     faq13A: 'Sim, M-Pesa é o nosso método de pagamento primário e mais recomendado para clientes moçambicanos. Pode fazer pagamentos directamente para o número 847545020. Aceitamos pagamentos M-Pesa de qualquer operadora (Vodacom). O processo é simples: após confirmar o serviço, envia o pagamento via M-Pesa e recebe confirmação imediata.',
     faq14Q: 'Oferecem planos de pagamento?',
@@ -692,7 +692,7 @@ export const ptPT: TranslationObject = {
     faq15Q: 'Qual é a política de reembolso?',
     faq15A: 'A nossa política de reembolso é transparente e justa: se o projecto não for entregue conforme a proposta, oferecemos reembolso total ou parcial. Reembolsos parciais são possíveis durante as fases do projecto. Para serviços já concluídos e entregues, não oferecemos reembolso excepto em casos de defeitos graves. Todos os reembolsos são processados dentro de 7 dias úteis.',
     faq16Q: 'Como obter uma factura?',
-    faq16A: 'Após cada pagamento, emitimos automaticamente uma factura/recibo detalhada via e-mail. A factura inclui: dados da empresa (Carsai Moçambique, Montepuez, Cabo Delgado), descrição dos serviços, valor, método de pagamento e referência fiscal. Para facturas específicas ou recibo oficial, solicite via suporte.carsaimz@gmail.com.',
+    faq16A: 'Após cada pagamento, emitimos automaticamente uma factura/recibo detalhada via e-mail. A factura inclui: dados da empresa (Carsai Mozambique, Montepuez, Cabo Delgado), descrição dos serviços, valor, método de pagamento e referência fiscal. Para facturas específicas ou recibo oficial, solicite via suporte.carsaimz@gmail.com.',
     faq17Q: 'Como posso contactar o suporte técnico?',
     faq17A: 'Pode contactar o nosso suporte técnico através de múltiplos canais: e-mail (suporte.carsaimz@gmail.com), telefone/WhatsApp (847545020), formulário online na nossa plataforma, ou chat directo no website. Recomendamos o WhatsApp para questões urgentes e o e-mail para questões detalhadas que necessitam de documentação.',
     faq18Q: 'Qual é o horário de suporte?',
@@ -710,11 +710,11 @@ export const ptPT: TranslationObject = {
     faq24Q: 'Quando recebo os pagamentos de comissão?',
     faq24A: 'As comissões são processadas mensalmente. Os pagamentos são efectuados no último dia útil de cada mês, após validação de todas as referências. Comissões mínimas de MT 500 podem ser sacadas; valores menores acumulam-se até atingir o mínimo. Recebemos pagamentos via M-Pesa ou transferência bancária, conforme a preferência do parceiro.',
     faq25Q: 'A Carsai é realmente gratuita? Como funciona?',
-    faq25A: 'Sim, a Carsai oferece serviços digitais gratuitos para projectos básicos! Funciona assim: projectos simples (landing pages, websites informativos) são oferecidos gratuitamente como parte da nossa missão de democratizar a tecnologia em Moçambique. Serviços mais avançados (apps mobile, e-commerce, cloud) têm custos competitivos. Recebemos receita através de serviços premium, parcerias e o programa de afiliados.',
+    faq25A: 'Sim, a Carsai oferece serviços digitais gratuitos para projectos básicos! Funciona assim: projectos simples (landing pages, websites informativos) são oferecidos gratuitamente como parte da nossa missão de democratizar a tecnologia em Mozambique. Serviços mais avançados (apps mobile, e-commerce, cloud) têm custos competitivos. Recebemos receita através de serviços premium, parcerias e o programa de afiliados.',
     faq26Q: 'Onde está localizada a Carsai?',
-    faq26A: 'A Carsai Moçambique opera online desde Montepuez, Cabo Delgado, Moçambique. Não temos sede física — toda a nossa operação é digital, permitindo-nos servir clientes em qualquer parte de Moçambique e do mundo. Esta abordagem online permite maior eficiência, custos reduzidos e disponibilidade contínua para os nossos clientes.',
+    faq26A: 'A Carsai Mozambique opera online desde Montepuez, Cabo Delgado, Mozambique. Não temos sede física — toda a nossa operação é digital, permitindo-nos servir clientes em qualquer parte de Mozambique e do mundo. Esta abordagem online permite maior eficiência, custos reduzidos e disponibilidade contínua para os nossos clientes.',
     faq27Q: 'Quem está por detrás da Carsai?',
-    faq27A: 'A Carsai Moçambique foi fundada e é liderada por Carimo Saide Mpinda, CEO e fundador, que gere todas as áreas da empresa — desenvolvimento, design, suporte e estratégia. O desenvolvimento técnico é realizado por CarsaiDev (carsaideveloper@gmail.com). A nossa equipa é pequena mas altamente competente, focada em entregar qualidade e transformação digital real para Moçambique.',
+    faq27A: 'A Carsai Mozambique foi fundada e é liderada por Carimo Saide Mpinda, CEO e fundador, que gere todas as áreas da empresa — desenvolvimento, design, suporte e estratégia. O desenvolvimento técnico é realizado por CarsaiDev (carsaideveloper@gmail.com). A nossa equipa é pequena mas altamente competente, focada em entregar qualidade e transformação digital real para Mozambique.',
     faq28Q: 'Que tecnologias utilizam?',
     faq28A: 'Utilizamos tecnologias modernas e de referência internacional: Next.js, React, TypeScript para frontend e backend, Prisma ORM para gestão de dados, PostgreSQL e SQLite para bases de dados, Tailwind CSS para design, Docker e cloud providers (AWS, GCP) para infraestrutura, e integração com APIs de IA para funcionalidades inteligentes. Priorizamos segurança, performance e manutenibilidade.',
     faq29Q: 'Os meus dados estão seguros com a Carsai?',
@@ -723,6 +723,26 @@ export const ptPT: TranslationObject = {
     faq30A: 'Sim, a Carsai especializa-se em projectos customizados! Desde sistemas de gestão empresarial, plataformas educacionais, e-commerce, aplicações mobile, integrações com APIs, até soluções de IA. O processo começa com uma consulta gratuita onde discutimos as suas necessidades, seguida de uma proposta detalhada com cronograma, custos e metodologia.',
     faq31Q: 'Como posso acompanhar o progresso do meu projecto?',
     faq31A: 'Oferecemos múltiplas formas de acompanhar o progresso: dashboard do projecto na plataforma Carsai com actualizações em tempo real, reuniões de acompanhamento semanais via WhatsApp ou videochamada, relatórios de progresso detalhados enviados por e-mail, e acesso ao repositório do projecto (GitHub) para clientes técnicos. Garantimos transparência total em todas as fases.',
+    faq32Q: 'Como é que a Carsai protege os meus dados e privacidade?',
+    faq32A: 'A segurança dos dados é nossa prioridade máxima. Utilizamos criptografia SSL/TLS para todas as comunicações, armazenamento seguro com controle de acesso baseado em funções (RBAC), backups regulares e automáticos, e conformidade com as melhores práticas de protecção de dados. Nunca compartilhamos informações pessoais com terceiros sem consentimento explícito.',
+    faq33Q: 'Qual é a política de reembolso e cancelamento?',
+    faq33A: 'Oferecemos uma política transparente: cancelamentos antes do início do projecto são totalmente reembolsáveis. Durante o desenvolvimento, o reembolso é calculado proporcionalmente ao trabalho não realizado. Projetos concluídos não são reembolsáveis, mas garantimos satisfação com correcções gratuitas por 30 dias após entrega.',
+    faq34Q: 'Qual é o tempo típico de entrega de um projecto?',
+    faq34A: 'Os tempos de entrega variam por tipo de projecto: websites simples (1-2 semanas), websites com funcionalidades avançadas (3-6 semanas), aplicações mobile (4-8 semanas), sistemas empresariais (6-12 semanas). Cada projecto inclui um cronograma detalhado aprovado pelo cliente antes do início.',
+    faq35Q: 'Como posso solicitar um orçamento personalizado?',
+    faq35A: 'Pode solicitar um orçamento personalizado através do nosso formulário de contacto na plataforma, por e-mail (carsaimozambique@gmail.com), ou via WhatsApp (847545020). Descreva o seu projecto e receba uma proposta detalhada em 24-48 horas, incluindo preço, timeline e especificações técnicas.',
+    faq36Q: 'A plataforma Carsai tem funcionalidades de acessibilidade?',
+    faq36A: 'Sim, a nossa plataforma segue as directrizes WCAG 2.1 para acessibilidade: suporte a leitores de screen, navegação por teclado, contraste adequado, texto alternativo em imagens, e modo de alto contraste. Continuamos a melhorar a acessibilidade com base no feedback dos utilizadores.',
+    faq37Q: 'Existe uma aplicação mobile da Carsai?',
+    faq37A: 'Actualmente, a Carsai opera como plataforma web responsiva, optimizada para todos os dispositivos móveis. Uma aplicação mobile nativa está em desenvolvimento e será lançada em breve, oferecendo funcionalidades offline e notificações push.',
+    faq38Q: 'Como posso eliminar a minha conta?',
+    faq38A: 'Para eliminar a sua conta, aceda às Configurações do seu perfil e selecione "Eliminar Conta". Os seus dados serão removidos permanentemente dentro de 30 dias, incluindo projectos, mensagens e informações pessoais. Antes da eliminação, recomendamos exportar qualquer dados importante.',
+    faq39Q: 'Como posso gerir as cookies do site?',
+    faq39A: 'Pode gerir as cookies através das configurações do seu navegador ou da nossa Política de Cookies. Oferecemos controle granular: cookies essenciais (necessárias para funcionamento), cookies de preferências (idioma, tema), e cookies analíticos (opcionais, para melhorar o serviço).',
+    faq40Q: 'A Carsai serve clientes internacionais?',
+    faq40A: 'Sim! Embora a nossa base seja em Mozambique, servimos clientes em todo o mundo. Oferecemos comunicação em 7 idiomas (Português, English, Français, Español, 中文, Deutsch), suporte remoto via videoconferência, e adaptação cultural para mercados diferentes.',
+    faq41Q: 'Quais são os requisitos para se tornar parceiro?',
+    faq41A: 'Para se tornar parceiro da Carsai: deve ter experiência relevante em tecnologia ou negócios, completar o formulário de candidatura online, passar por uma entrevista de avaliação, e assinar o acordo de parceria. Parceiros beneficia-se de comissões por referências, acesso a ferramentas exclusivas, e suporte prioritário.',
   },
 
   // ============================================================================
@@ -730,12 +750,12 @@ export const ptPT: TranslationObject = {
   // ============================================================================
   about: {
     title: 'Sobre Nós',
-    description: 'Conheça a equipa Carsai Moçambique',
+    description: 'Conheça a equipa Carsai Mozambique',
     subtitle: 'A nossa história e missão',
     mission: 'Missão',
-    missionText: 'Democratizar a tecnologia em Moçambique, oferecendo soluções digitais acessíveis e de qualidade para empresas de todas as dimensões.',
+    missionText: 'Democratizar a tecnologia em Mozambique, oferecendo soluções digitais acessíveis e de qualidade para empresas de todas as dimensões.',
     vision: 'Visão',
-    visionText: 'Ser a principal plataforma tecnológica de Moçambique, impulsionando a transformação digital e a inclusão económica.',
+    visionText: 'Ser a principal plataforma tecnológica de Mozambique, impulsionando a transformação digital e a inclusão económica.',
     values: 'Valores',
     valueInnovation: 'Inovação',
     valueInnovationDesc: 'Busca constante de soluções criativas e tecnológicas',
@@ -757,7 +777,7 @@ export const ptPT: TranslationObject = {
     statLocationValue: 'Montepuez',
     statProjects: 'Projectos',
     history: 'História',
-    historyText: 'Fundada em Moçambique com o propósito de transformar o panorama tecnológico do país.',
+    historyText: 'Fundada em Mozambique com o propósito de transformar o panorama tecnológico do país.',
     partners: 'Parceiros',
     awards: 'Prémios',
     certifications: 'Certificações',
@@ -874,7 +894,7 @@ export const ptPT: TranslationObject = {
   legal: {
     terms: {
       pageTitle: 'Termos e Condições',
-      pageSubtitle: 'Carsai Moçambique — Regulamento de utilização dos nossos serviços',
+      pageSubtitle: 'Carsai Mozambique — Regulamento de utilização dos nossos serviços',
       lastUpdate: 'Última actualização: Janeiro 2026',
       seeAlso: 'Consulte também:',
       seeAlsoPrivacy: 'Política de Privacidade',
@@ -882,11 +902,11 @@ export const ptPT: TranslationObject = {
       sections: {
         general: {
           title: 'Termos Gerais',
-          content: 'Estes Termos e Condições ("Termos") regulam a utilização dos serviços tecnológicos fornecidos pela Carsai Moçambique Lda., incluindo o nosso website, plataforma digital, aplicações mobile, soluções cloud e serviços de inteligência artificial. Ao aceder ou utilizar qualquer dos nossos serviços, você aceita estes Termos na sua totalidade. Se não concorda com qualquer parte dos Termos, não deverá utilizar os nossos serviços. A Carsai Moçambique está registada em Maputo, Moçambique, e opera conforme a legislação comercial e tecnológica moçambicana. Estes Termos constituem um contrato legal entre você ("Utilizador") e a Carsai Moçambique Lda. ("Empresa").',
+          content: 'Estes Termos e Condições ("Termos") regulam a utilização dos serviços tecnológicos fornecidos pela Carsai Mozambique Lda., incluindo o nosso website, plataforma digital, aplicações mobile, soluções cloud e serviços de inteligência artificial. Ao aceder ou utilizar qualquer dos nossos serviços, você aceita estes Termos na sua totalidade. Se não concorda com qualquer parte dos Termos, não deverá utilizar os nossos serviços. A Carsai Mozambique está registada em Maputo, Mozambique, e opera conforme a legislação comercial e tecnológica moçambicana. Estes Termos constituem um contrato legal entre você ("Utilizador") e a Carsai Mozambique Lda. ("Empresa").',
         },
         services: {
           title: 'Serviços Fornecidos',
-          content: 'A Carsai Moçambique fornece serviços de transformação digital incluindo: desenvolvimento de websites e aplicações web, desenvolvimento de aplicações mobile para iOS e Android, soluções de infraestrutura cloud e hosting, serviços de inteligência artificial e automação, consultoria tecnológica e estratégia digital, e manutenção e suporte técnico continuado. Os serviços específicos fornecidos a cada utilizador são definidos no contrato de serviço ou proposta comercial acordada. A empresa reserva-se o direito de modificar, suspender ou descontinuar qualquer serviço com notificação prévia de 30 dias, excepto em casos de força maior ou emergência técnica.',
+          content: 'A Carsai Mozambique fornece serviços de transformação digital incluindo: desenvolvimento de websites e aplicações web, desenvolvimento de aplicações mobile para iOS e Android, soluções de infraestrutura cloud e hosting, serviços de inteligência artificial e automação, consultoria tecnológica e estratégia digital, e manutenção e suporte técnico continuado. Os serviços específicos fornecidos a cada utilizador são definidos no contrato de serviço ou proposta comercial acordada. A empresa reserva-se o direito de modificar, suspender ou descontinuar qualquer serviço com notificação prévia de 30 dias, excepto em casos de força maior ou emergência técnica.',
         },
         obligations: {
           title: 'Obrigações do Utilizador',
@@ -894,25 +914,25 @@ export const ptPT: TranslationObject = {
         },
         intellectualProperty: {
           title: 'Propriedade Intelectual',
-          content: 'Todos os conteúdos, design, código, gráficos, logos e materiais presentes nos serviços da Carsai Moçambique são propriedade da empresa ou dos seus licenciadores, protegidos pela legislação de propriedade intelectual moçambicana e internacional. O nome "Carsai", o logo da empresa, e os designs da plataforma são marcas registadas. O código-fonte desenvolvido pela Carsai para os seus serviços internos é propriedade exclusiva da empresa. Para trabalhos desenvolidos especificamente para clientes, os direitos de propriedade intelectual são definidos no contrato de serviço específico, sendo que a Carsai reserva-se o direito de utilizar técnicas e metodologias gerais desenvolidas durante o projecto.',
+          content: 'Todos os conteúdos, design, código, gráficos, logos e materiais presentes nos serviços da Carsai Mozambique são propriedade da empresa ou dos seus licenciadores, protegidos pela legislação de propriedade intelectual moçambicana e internacional. O nome "Carsai", o logo da empresa, e os designs da plataforma são marcas registadas. O código-fonte desenvolvido pela Carsai para os seus serviços internos é propriedade exclusiva da empresa. Para trabalhos desenvolidos especificamente para clientes, os direitos de propriedade intelectual são definidos no contrato de serviço específico, sendo que a Carsai reserva-se o direito de utilizar técnicas e metodologias gerais desenvolidas durante o projecto.',
         },
         liability: {
           title: 'Limitações de Responsabilidade',
-          content: 'A Carsai Moçambique não será responsável por: perdas indirectas, consequenciais ou incidentais resultantes da utilização dos serviços, interrupções de serviço causadas por factores externos (falhas de internet, problemas de fornecedores de infraestrutura), danos resultantes de utilização não autorizada da plataforma, perdas resultantes de falhas de pagamento do utilizador, ou qualquer impossibilidade de utilização dos serviços por causas fora do controle da empresa. A responsabilidade total da Carsai em qualquer circunstância não excederá o valor dos serviços pagos pelo utilizador nos 12 meses anteriores. Esta limitação aplica-se conforme a legislação comercial moçambicana.',
+          content: 'A Carsai Mozambique não será responsável por: perdas indirectas, consequenciais ou incidentais resultantes da utilização dos serviços, interrupções de serviço causadas por factores externos (falhas de internet, problemas de fornecedores de infraestrutura), danos resultantes de utilização não autorizada da plataforma, perdas resultantes de falhas de pagamento do utilizador, ou qualquer impossibilidade de utilização dos serviços por causas fora do controle da empresa. A responsabilidade total da Carsai em qualquer circunstância não excederá o valor dos serviços pagos pelo utilizador nos 12 meses anteriores. Esta limitação aplica-se conforme a legislação comercial moçambicana.',
         },
         termination: {
           title: 'Rescisão',
-          content: 'A Carsai Moçambique pode rescindir o contrato com qualquer utilizador que viole estes Termos, com notificação prévia de 15 dias para violações menores, ou imediatamente para violações graves incluindo actividades fraudulentas, acesso não autorizado, ou violação de propriedade intelectual. O utilizador pode rescindir o contrato a qualquer momento, com notificação prévia de 30 dias para serviços com contrato de duração. Após rescisão, a Carsai manterá os dados do utilizador por um período de 90 dias, após o qual serão eliminados permanentemente, excepto quando exigido por lei. Taxas já pagas não são reembolsáveis excepto conforme condições específicas do contrato de serviço.',
+          content: 'A Carsai Mozambique pode rescindir o contrato com qualquer utilizador que viole estes Termos, com notificação prévia de 15 dias para violações menores, ou imediatamente para violações graves incluindo actividades fraudulentas, acesso não autorizado, ou violação de propriedade intelectual. O utilizador pode rescindir o contrato a qualquer momento, com notificação prévia de 30 dias para serviços com contrato de duração. Após rescisão, a Carsai manterá os dados do utilizador por um período de 90 dias, após o qual serão eliminados permanentemente, excepto quando exigido por lei. Taxas já pagas não são reembolsáveis excepto conforme condições específicas do contrato de serviço.',
         },
         law: {
           title: 'Lei Aplicável e Jurisdição',
-          content: 'Estes Termos são regidos e interpretados conforme a legislação da República de Moçambique, incluindo o Código Comercial, legislação de proteção de dados, e regulamentos tecnológicos aplicáveis. Quaisquer disputas relacionadas com estes Termos serão resolvidas preferencialmente através de negociação directa entre as partes. Se a negociação não for possível dentro de 60 dias, a disputa será submetida à arbitragem conforme as normas do Centro de Arbitragem de Moçambique, ou aos tribunais da cidade de Maputo, Moçambique, como jurisdição exclusiva. As partes reconhecem a competência exclusiva dos tribunais moçambicanos para resolver conflitos decorrentes destes Termos.',
+          content: 'Estes Termos são regidos e interpretados conforme a legislação da República de Mozambique, incluindo o Código Comercial, legislação de proteção de dados, e regulamentos tecnológicos aplicáveis. Quaisquer disputas relacionadas com estes Termos serão resolvidas preferencialmente através de negociação directa entre as partes. Se a negociação não for possível dentro de 60 dias, a disputa será submetida à arbitragem conforme as normas do Centro de Arbitragem de Mozambique, ou aos tribunais da cidade de Maputo, Mozambique, como jurisdição exclusiva. As partes reconhecem a competência exclusiva dos tribunais moçambicanos para resolver conflitos decorrentes destes Termos.',
         },
       },
     },
     privacy: {
       pageTitle: 'Política de Privacidade',
-      pageSubtitle: 'Carsai Moçambique — Proteger os seus dados é nossa prioridade',
+      pageSubtitle: 'Carsai Mozambique — Proteger os seus dados é nossa prioridade',
       lastUpdate: 'Última actualização: Janeiro 2026',
       seeAlso: 'Consulte também:',
       seeAlsoTerms: 'Termos e Condições',
@@ -920,7 +940,7 @@ export const ptPT: TranslationObject = {
       sections: {
         introduction: {
           title: 'Introdução',
-          content: 'A Carsai Moçambique Lda. ("Carsai", "nós", "a empresa") respeita a privacidade de todos os utilizadores dos nossos serviços digitais. Esta Política de Privacidade descreve como recolhemos, utilizamos, armazenamos e protegemos os seus dados pessoais quando utiliza a nossa plataforma tecnológica, website e serviços relacionados. A nossa sede está localizada em Maputo, Moçambique, e estamos registados conforme a legislação moçambicana. Esta política aplica-se a todos os serviços fornecidos pela Carsai, incluindo desenvolvimento web, aplicações mobile, soluções cloud e serviços de inteligência artificial.',
+          content: 'A Carsai Mozambique Lda. ("Carsai", "nós", "a empresa") respeita a privacidade de todos os utilizadores dos nossos serviços digitais. Esta Política de Privacidade descreve como recolhemos, utilizamos, armazenamos e protegemos os seus dados pessoais quando utiliza a nossa plataforma tecnológica, website e serviços relacionados. A nossa sede está localizada em Maputo, Mozambique, e estamos registados conforme a legislação moçambicana. Esta política aplica-se a todos os serviços fornecidos pela Carsai, incluindo desenvolvimento web, aplicações mobile, soluções cloud e serviços de inteligência artificial.',
         },
         dataCollection: {
           title: 'Recolha de Dados',
@@ -928,7 +948,7 @@ export const ptPT: TranslationObject = {
         },
         dataUsage: {
           title: 'Utilização dos Dados',
-          content: 'Utilizamos os seus dados pessoais para fornecer e melhorar os nossos serviços tecnológicos, processar transações e pagamentos, comunicar com você sobre serviços, actualizações e promoções, personalizar a sua experiência na plataforma, realizar análises de mercado e estatísticas internas, cumprir obrigações legais e regulatórias moçambicanas, e prevenir fraudes e actividades ilegais. Todos os dados são processados de forma legítima, com base no consentimento, execução de contrato ou interesse legítimo da empresa, conforme a legislação de proteção de dados aplicável em Moçambique.',
+          content: 'Utilizamos os seus dados pessoais para fornecer e melhorar os nossos serviços tecnológicos, processar transações e pagamentos, comunicar com você sobre serviços, actualizações e promoções, personalizar a sua experiência na plataforma, realizar análises de mercado e estatísticas internas, cumprir obrigações legais e regulatórias moçambicanas, e prevenir fraudes e actividades ilegais. Todos os dados são processados de forma legítima, com base no consentimento, execução de contrato ou interesse legítimo da empresa, conforme a legislação de proteção de dados aplicável em Mozambique.',
         },
         cookiesAndTracking: {
           title: 'Cookies e Tecnologias de Rastreamento',
@@ -944,13 +964,13 @@ export const ptPT: TranslationObject = {
         },
         contact: {
           title: 'Contacto e Actualizações',
-          content: 'Esta Política de Privacidade foi actualizada pela última vez em Janeiro de 2026. Podemos actualizar esta política periodicamente para reflectir alterações nos nossos serviços ou na legislação. Notificaremos os utilizadores sobre alterações significativas via email ou através do nosso website. Para questões sobre privacidade, contacte: Email: suporte.carsaimz@gmail.com | Telefone: 847545020 / 874512581 / 84246463 / 835020143 | Localização: Montepuez, Cabo Delgado, Moçambique (operação online). O responsável pela proteção de dados é Carimo Saide Mpinda, CEO & Fundador da Carsai Moçambique.',
+          content: 'Esta Política de Privacidade foi actualizada pela última vez em Janeiro de 2026. Podemos actualizar esta política periodicamente para reflectir alterações nos nossos serviços ou na legislação. Notificaremos os utilizadores sobre alterações significativas via email ou através do nosso website. Para questões sobre privacidade, contacte: Email: suporte.carsaimz@gmail.com | Telefone: 847545020 / 874512581 / 84246463 / 835020143 | Localização: Montepuez, Cabo Delgado, Mozambique (operação online). O responsável pela proteção de dados é Carimo Saide Mpinda, CEO & Fundador da Carsai Mozambique.',
         },
       },
     },
     cookies: {
       pageTitle: 'Política de Cookies',
-      pageSubtitle: 'Carsai Moçambique — Transparência sobre a utilização de cookies',
+      pageSubtitle: 'Carsai Mozambique — Transparência sobre a utilização de cookies',
       lastUpdate: 'Última actualização: Janeiro 2026',
       seeAlso: 'Consulte também:',
       seeAlsoPrivacy: 'Política de Privacidade',
@@ -962,7 +982,7 @@ export const ptPT: TranslationObject = {
         },
         types: {
           title: 'Tipos de Cookies que Utilizamos',
-          content: 'Utilizamos vários tipos de cookies na plataforma Carsai Moçambique: Cookies Essenciais — necessários para o funcionamento básico do site, incluindo autenticação, segurança e preferências de idioma. Sem estes cookies, o site não funciona correctamente. Cookies de Performance — recolhem informações sobre como os utilizadores utilizam o site, como páginas mais visitadas e tempo de navegação. Utilizamos Google Analytics para estas análises, ajudando-nos a melhorar a experiência do utilizador. Cookies de Funcionalidade — permitem que o site recorde escolhas que você faz (como idioma seleccionado, região, ou configurações de tema) e proporcionam funcionalidades personalizadas. Cookies de Marketing — utilizados para apresentar conteúdo relevante e limitar a frequência de anúncios. Estes cookies podem ser definidos por nós ou por nossos parceiros de advertising.',
+          content: 'Utilizamos vários tipos de cookies na plataforma Carsai Mozambique: Cookies Essenciais — necessários para o funcionamento básico do site, incluindo autenticação, segurança e preferências de idioma. Sem estes cookies, o site não funciona correctamente. Cookies de Performance — recolhem informações sobre como os utilizadores utilizam o site, como páginas mais visitadas e tempo de navegação. Utilizamos Google Analytics para estas análises, ajudando-nos a melhorar a experiência do utilizador. Cookies de Funcionalidade — permitem que o site recorde escolhas que você faz (como idioma seleccionado, região, ou configurações de tema) e proporcionam funcionalidades personalizadas. Cookies de Marketing — utilizados para apresentar conteúdo relevante e limitar a frequência de anúncios. Estes cookies podem ser definidos por nós ou por nossos parceiros de advertising.',
         },
         howWeUse: {
           title: 'Como Utilizamos os Cookies',
@@ -978,16 +998,16 @@ export const ptPT: TranslationObject = {
         },
         updates: {
           title: 'Actualizações da Política',
-          content: 'Esta Política de Cookies foi actualizada pela última vez em Janeiro de 2026. A Carsai Moçambique revisa periodicamente esta política para garantir que reflecte as práticas actuais e a legislação relevante. Alterações significativas serão comunicadas através do nosso website e por email quando aplicável. A utilização continuada dos nossos serviços após alterações na política constitui aceitação dos novos termos. Para questões sobre cookies, contacte: Email: suporte.carsaimz@gmail.com | Telefone: 847545020 / 874512581 / 84246463 / 835020143 | Localização: Montepuez, Cabo Delgado, Moçambique (operação online). Para exercer os seus direitos relativos a dados recolhidos via cookies, consulte também nossa Política de Privacidade disponível em /privacy.',
+          content: 'Esta Política de Cookies foi actualizada pela última vez em Janeiro de 2026. A Carsai Mozambique revisa periodicamente esta política para garantir que reflecte as práticas actuais e a legislação relevante. Alterações significativas serão comunicadas através do nosso website e por email quando aplicável. A utilização continuada dos nossos serviços após alterações na política constitui aceitação dos novos termos. Para questões sobre cookies, contacte: Email: suporte.carsaimz@gmail.com | Telefone: 847545020 / 874512581 / 84246463 / 835020143 | Localização: Montepuez, Cabo Delgado, Mozambique (operação online). Para exercer os seus direitos relativos a dados recolhidos via cookies, consulte também nossa Política de Privacidade disponível em /privacy.',
         },
       },
     },
   },
 
   meta: {
-    siteTitle: 'Carsai Moçambique',
-    siteDescription: 'Plataforma tecnológica para transformação digital em Moçambique',
-    ogTitle: 'Carsai Moçambique - Transformação Digital',
+    siteTitle: 'Carsai Mozambique',
+    siteDescription: 'Plataforma tecnológica para transformação digital em Mozambique',
+    ogTitle: 'Carsai Mozambique - Transformação Digital',
     ogDescription: 'Soluções tecnológicas inovadoras para empresas moçambicanas',
   },
 };

@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
       `- ${p.title} (${p.slug}): ${(p.content || '').substring(0, 200)}...`
     ).join('\n')
 
-    const carsaiContext = `You are the Carsai Mozambique assistant — a knowledgeable, friendly, and concise AI chatbot. Carsai Moçambique offers Soluções Digitais e Desenvolvimento Web Gratuita — including FREE shared hosting (Apache) provided by ifastnet/byet.
+    const carsaiContext = `You are the Carsai Mozambique assistant — a knowledgeable, friendly, and concise AI chatbot. Carsai Mozambique offers Soluções Digitais e Desenvolvimento Web Gratuita — including FREE shared hosting (Apache) provided by ifastnet/byet.
 
 === CURRENT SITE CONTENT (from database) ===
 
@@ -123,10 +123,10 @@ PAGES:
 ${pagesList}
 
 SITE SETTINGS:
-- Company: ${settingsMap['company_name'] || 'Carsai Moçambique'}
+- Company: ${settingsMap['company_name'] || 'Carsai Mozambique'}
 - Email: ${settingsMap['contact_email'] || 'info@carsai.mz'}
 - Phone: ${settingsMap['contact_phone'] || '+258 21 000 000'}
-- Address: ${settingsMap['contact_address'] || 'Maputo, Moçambique'}
+- Address: ${settingsMap['contact_address'] || 'Maputo, Mozambique'}
 - Website: ${settingsMap['website_url'] || 'https://carsai.mz'}
 - Free Hosting: Yes, provided by ifastnet/byet (Apache shared hosting)
 
@@ -223,12 +223,12 @@ function generateContextualFallback(
     // Services question
     if (/serviço|service|offer|oferece|solução/.test(lowerMsg)) {
       const servicesList = services.map(s => `• ${s.title}: ${s.description || 'Soluções digitais'} (MT ${(s.basePrice || 0).toLocaleString()})`).join('\n')
-      return `A Carsai Moçambique oferece Soluções Digitais e Desenvolvimento Web Gratuita! Nossos serviços:\n\n${servicesList}\n\n Também oferecemos hospedagem gratuita compartilhada (Apache) fornecida pela ifastnet/byet. Contacte-nos para mais detalhes!`
+      return `A Carsai Mozambique oferece Soluções Digitais e Desenvolvimento Web Gratuita! Nossos serviços:\n\n${servicesList}\n\n Também oferecemos hospedagem gratuita compartilhada (Apache) fornecida pela ifastnet/byet. Contacte-nos para mais detalhes!`
     }
 
     // Hosting question
     if (/hospedagem|hosting|gratis|gratuita|free/.test(lowerMsg)) {
-      return `Sim! A Carsai Moçambique oferece hospedagem gratuita compartilhada (Apache) fornecida pela ifastnet/byet. Esta hospedagem é ideal para sites pessoais, blogs e pequenos projetos. Para planos mais avançados, contacte-nos directamente em ${settingsMap['contact_email'] || 'info@carsai.mz'}.`
+      return `Sim! A Carsai Mozambique oferece hospedagem gratuita compartilhada (Apache) fornecida pela ifastnet/byet. Esta hospedagem é ideal para sites pessoais, blogs e pequenos projetos. Para planos mais avançados, contacte-nos directamente em ${settingsMap['contact_email'] || 'info@carsai.mz'}.`
     }
 
     // Projects question
@@ -266,7 +266,7 @@ function generateContextualFallback(
       return `O programa de parceiros Carsai permite ganhar comissões sobre cada referência! Registe-se no nosso site para se juntar ao programa e começar a ganhar.`
     }
 
-    return `Olá! Sou o assistente virtual da Carsai Moçambique — Soluções Digitais e Desenvolvimento Web Gratuita. Posso ajudar com informações sobre nossos serviços (${services.length} disponíveis), projectos (${projects.length} completados), hospedagem gratuita, cotações, métodos de pagamento e programa de parceiros. Como posso ajudar?`
+    return `Olá! Sou o assistente virtual da Carsai Mozambique — Soluções Digitais e Desenvolvimento Web Gratuita. Posso ajudar com informações sobre nossos serviços (${services.length} disponíveis), projectos (${projects.length} completados), hospedagem gratuita, cotações, métodos de pagamento e programa de parceiros. Como posso ajudar?`
   }
 
   // English responses

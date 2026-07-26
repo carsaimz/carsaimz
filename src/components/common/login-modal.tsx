@@ -149,7 +149,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Car className="size-5 text-primary" />
-            Carsai Moçambique
+            Carsai Mozambique
           </DialogTitle>
           <DialogDescription>
             {activeTab === 'login' ? t('auth.welcomeBack') : t('auth.createAccount')}

@@ -17,22 +17,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Carsai Moçambique - Transformação Digital",
-  description: "Plataforma tecnológica para transformação digital em Moçambique. Soluções inovadoras que impulsionam o crescimento empresarial.",
-  keywords: ["Carsai", "Moçambique", "tecnologia", "transformação digital", "desenvolvimento web", "mobile", "cloud", "IA"],
-  authors: [{ name: "Carsai Moçambique" }],
+  title: "Carsai Mozambique - Transformação Digital",
+  description: "Plataforma tecnológica para transformação digital em Mozambique. Soluções inovadoras que impulsionam o crescimento empresarial.",
+  keywords: ["Carsai", "Mozambique", "tecnologia", "transformação digital", "desenvolvimento web", "mobile", "cloud", "IA"],
+  authors: [{ name: "Carsai Mozambique" }],
   icons: {
     icon: "/logo.png",
   },
   openGraph: {
-    title: "Carsai Moçambique - Transformação Digital",
+    title: "Carsai Mozambique - Transformação Digital",
     description: "Soluções tecnológicas inovadoras para empresas moçambicanas",
-    siteName: "Carsai Moçambique",
+    siteName: "Carsai Mozambique",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Carsai Moçambique",
+    title: "Carsai Mozambique",
     description: "Soluções tecnológicas inovadoras para empresas moçambicanas",
   },
 };

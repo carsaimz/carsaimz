@@ -351,7 +351,7 @@ export function ContactFormApi() {
                       Av. 24 de Julho, 1234
                     </p>
                     <p className="text-muted-foreground text-sm">
-                      Maputo, Moçambique
+                      Maputo, Mozambique
                     </p>
                   </div>
                 </div>
@@ -416,7 +416,7 @@ export function ContactFormApi() {
                   <div className="text-center z-10">
                     <MapPin className="h-8 w-8 text-emerald-600 mb-2" />
                     <p className="font-semibold text-emerald-800">
-                      Maputo, Moçambique
+                      Maputo, Mozambique
                     </p>
                     <p className="text-sm text-emerald-600">
                       Av. 24 de Julho, 1234

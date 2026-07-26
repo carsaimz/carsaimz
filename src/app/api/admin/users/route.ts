@@ -7,10 +7,15 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
     const search = searchParams.get('search') || ''
+    const excludeSuperAdmin = searchParams.get('excludeSuperAdmin') === 'true'
 
-    // Build where clause: exclude super_admin from the list
-    const whereClause: Record<string, unknown> = {
-      role: { name: { not: 'super_admin' } },
+    // Build where clause
+    const whereClause: Record<string, unknown> = {}
+
+    // Always exclude super_admin from the list unless explicitly requested otherwise
+    // super_admin users are hidden from admin UI for security
+    if (excludeSuperAdmin || !searchParams.has('excludeSuperAdmin')) {
+      whereClause.role = { name: { not: 'super_admin' } }
     }
 
     if (search) {
@@ -37,26 +42,29 @@ export async function GET(request: NextRequest) {
     ])
 
     // Map users to a clean format (exclude passwordHash)
-    const mappedUsers = users.map((u) => ({
-      id: u.id,
-      name: u.name || '',
-      email: u.email,
-      phone: u.phone,
-      role: u.role?.name || 'user',
-      roleId: u.roleId,
-      avatar: u.avatar,
-      isActive: u.isActive,
-      createdAt: u.createdAt.toISOString(),
-    }))
+    // Also filter out super_admin users defensively in case the where clause didn't work
+    const mappedUsers = users
+      .filter((u: any) => u.role?.name !== 'super_admin')
+      .map((u: any) => ({
+        id: u.id,
+        name: u.name || '',
+        email: u.email,
+        phone: u.phone,
+        role: u.role?.name || 'user',
+        roleId: u.roleId,
+        avatar: u.avatar,
+        isActive: u.isActive,
+        createdAt: typeof u.createdAt === 'string' ? u.createdAt : u.createdAt?.toISOString?.() || new Date().toISOString(),
+      }))
 
     return NextResponse.json({
       success: true,
       data: mappedUsers,
       meta: {
-        total,
+        total: mappedUsers.length,
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(mappedUsers.length / limit),
       },
     })
   } catch (error) {

@@ -63,9 +63,9 @@ export function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Brand */}
           <div>
-            <h3 className="text-xl font-bold text-white mb-3">
-              Carsai <span className="text-yellow-400">Moçambique</span>
-            </h3>
+            <div className="mb-3">
+              <img src="/logo.png" alt="CarsaiMZ" className="h-10 w-auto brightness-200" />
+            </div>
             <p className="text-emerald-200 text-sm leading-relaxed mb-3">
               {t('footer.companyDescription')}
             </p>

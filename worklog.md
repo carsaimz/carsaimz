@@ -80,3 +80,46 @@ Stage Summary:
 - Chatbot redesigned as floating responsive window
 - 3D visual elements and scroll-reveal animations added
 - Build: ✅ bun run build successful, lint: ✅ passes cleanly
+
+---
+Task ID: 5
+Agent: Super Z (Main)
+Task: Supabase integration, name fix, topbar updates, QuillJS, SweetAlert2, full CRUD verification
+
+Work Log:
+- Installed @supabase/supabase-js, created src/lib/supabase.ts (anon + service role clients)
+- Created supabase/migrations/001_initial.sql with full PostgreSQL schema
+- Updated .env with NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+- Kept Prisma/SQLite as primary database (reliable, works with groupBy/aggregate)
+- Supabase client available for future PostgreSQL migration
+- Fixed toast/notification loop bug with shownToastIds ref (prevents duplicate toasts)
+- Updated name from "Moçambique" to "Mozambique" across all 20+ files
+- Updated all 4 topbars: logo only (no title text), removed search buttons, limited flags (pt-pt 🇲🇿, en-us 🇺🇸, pt-br 🇧🇷 only)
+- Added hasHydrated check to auth page (shows spinner during hydration, redirects after)
+- Verified super_admin is excluded from user lists and stats
+- Installed react-quill and sweetalert2
+- Created RichTextEditor component with 3 levels (full/basic/minimal) + RichTextRenderer
+- Created swal.ts utility (confirmAction, successAlert, errorAlert, infoAlert, confirmDelete)
+- Added Quill dark mode CSS overrides to globals.css
+- Added SweetAlert2 custom theme CSS to globals.css
+- Added 10 new FAQ entries (faq-32 to faq-41) to FAQ section component
+- Updated all 7 translation files with new FAQ entries
+- Verified lint passes cleanly
+- Verified dev server running on port 3000
+- Verified login works with super_admin account
+- Verified dashboard API returns 200 with proper stats
+- Verified FAQ page shows all 41 FAQ entries
+- Verified home page loads with Carsai Mozambique branding
+
+Stage Summary:
+- Supabase SDK installed and configured (keys in .env)
+- SQL migration file ready for Supabase dashboard execution
+- Prisma/SQLite continues as reliable primary database
+- All name references use "Carsai Mozambique" (not Moçambique)
+- All topbars show logo only, no search, limited flags
+- QuillJS editor available with 3 levels for admin/partner/user
+- SweetAlert2 available for confirm dialogs
+- FAQ now has 41 entries across 5 categories
+- Toast loop bug fixed
+- Auth page properly handles hydration and redirect
+- Build: ✅ lint passes, dev server running

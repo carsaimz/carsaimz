@@ -2,14 +2,13 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { useAuthStore, useAppStore, useNotificationStore } from '@/lib/store';
+import { useAuthStore, useNotificationStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
 import { AiChatAssistant } from '@/components/features/ai-chat-assistant';
 import { RealTimeNotifications } from '@/components/features/real-time-notifications';
-import { GlobalSearch } from '@/components/features/global-search';
 import { useState } from 'react';
 import {
-  Sun, Moon, Bell, LogOut, Search, ChevronDown,
+  Sun, Moon, Bell, LogOut, ChevronDown,
   FolderOpen, Link2, Percent, Banknote, Wallet,
   Shield, Scale, Cookie, HelpCircle,
 } from 'lucide-react';
@@ -28,7 +27,7 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 
 const LANGUAGE_FLAGS: Record<string, string> = {
-  'pt-pt': '🇲🇿', 'en-us': '🇺🇸', 'pt-br': '🇧🇷', 'pt': '🇲🇿', 'en': '🇺🇸',
+  'pt-pt': '🇲🇿', 'en-us': '🇺🇸', 'pt-br': '🇧🇷',
 };
 
 interface SidebarLink { path: string; labelKey: string; icon: React.ComponentType<{ className?: string }> }
@@ -54,7 +53,6 @@ export function PartnerShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
-  const { setSearchOpen } = useAppStore();
   const { unreadCount, notifications, markAllAsRead } = useNotificationStore();
 
   const currentFlag = LANGUAGE_FLAGS[language] || '🌐';
@@ -68,7 +66,6 @@ export function PartnerShell({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2 px-2 py-1">
               <img src="/logo.png" alt="CarsaiMZ" className="h-6 w-auto shrink-0" />
               <div className="group-data-[collapsible=icon]:hidden flex flex-col">
-                <span className="font-bold text-sm">Carsai</span>
                 <span className="text-xs text-muted-foreground">{t('nav.partner')}</span>
               </div>
             </div>
@@ -126,15 +123,13 @@ export function PartnerShell({ children }: { children: React.ReactNode }) {
           <header className="sticky top-0 z-30 flex h-12 items-center gap-2 border-b bg-background/95 backdrop-blur px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mx-2 h-4" />
-            <span className="font-semibold text-sm">Carsai · Partner Portal</span>
             <div className="flex-1" />
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="size-7" onClick={() => setSearchOpen(true)}><Search className="size-3.5" /></Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" className="gap-1 h-7"><span className="text-base leading-none">{currentFlag}</span><ChevronDown className="size-3 opacity-50" /></Button></DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>{t('nav.language')}</DropdownMenuLabel><DropdownMenuSeparator />
-                  {languages.map((lang) => (<DropdownMenuItem key={lang.code} onClick={() => setLanguage(lang.code)} className={language === lang.code ? 'bg-accent' : ''}><span className="mr-2 text-lg">{LANGUAGE_FLAGS[lang.code] || lang.flag}</span><span>{lang.nativeName}</span></DropdownMenuItem>))}
+                  {languages.map((lang) => (<DropdownMenuItem key={lang.code} onClick={() => setLanguage(lang.code)} className={language === lang.code ? 'bg-accent' : ''}><span className="mr-2 text-lg">{LANGUAGE_FLAGS[lang.code] || '🌐'}</span><span>{lang.nativeName}</span></DropdownMenuItem>))}
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button variant="ghost" size="icon" className="size-7" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}</Button>
@@ -156,13 +151,12 @@ export function PartnerShell({ children }: { children: React.ReactNode }) {
           <main className="flex-1 p-4 md:p-6">{children}</main>
 
           <footer className="border-t px-4 py-3 text-center text-xs text-muted-foreground">
-            © 2026 Carsai Moçambique · <Link href="/privacy" className="hover:text-foreground">Privacy</Link> · <Link href="/terms" className="hover:text-foreground">Terms</Link> · <Link href="/cookies" className="hover:text-foreground">Cookies</Link>
+            © 2026 Carsai Mozambique · <Link href="/privacy" className="hover:text-foreground">Privacy</Link> · <Link href="/terms" className="hover:text-foreground">Terms</Link> · <Link href="/cookies" className="hover:text-foreground">Cookies</Link>
           </footer>
         </SidebarInset>
       </SidebarProvider>
       <AiChatAssistant />
       <RealTimeNotifications />
-      <GlobalSearch />
     </>
   );
 }

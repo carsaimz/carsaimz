@@ -117,8 +117,7 @@ export function HomeHero() {
               variants={itemVariants}
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight"
             >
-              Carsai{' '}
-              <span className="text-yellow-400">Moçambique</span>
+              {t('home.heroTitle')}
             </motion.h1>
           </ScrollReveal>
 

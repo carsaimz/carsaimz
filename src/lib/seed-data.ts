@@ -83,47 +83,29 @@ export async function seedDatabase() {
   // === 2. Permissions ===
   console.log('Creating permissions...')
 
-  // Define all system permissions
   const permissionDefs = [
-    // Content management
     { name: 'manage_posts', description: 'Create, edit, delete blog posts' },
     { name: 'manage_pages', description: 'Create, edit, delete site pages' },
     { name: 'manage_services', description: 'Create, edit, delete services' },
     { name: 'manage_projects', description: 'Create, edit, delete projects' },
     { name: 'manage_testimonials', description: 'Create, edit, delete testimonials' },
-
-    // User management
     { name: 'manage_users', description: 'Create, edit, delete users and assign roles' },
     { name: 'view_users', description: 'View user profiles and lists' },
-
-    // Financial
     { name: 'manage_quotes', description: 'Create, review, and manage quotes' },
     { name: 'manage_proposals', description: 'Create, edit, send proposals' },
     { name: 'manage_payments', description: 'Record, confirm, and manage payments' },
     { name: 'manage_invoices', description: 'Create, edit, and manage invoices' },
-
-    // Forum
     { name: 'manage_forum', description: 'Create, edit, delete forum categories and moderate topics' },
     { name: 'post_in_forum', description: 'Create forum topics and reply to posts' },
-
-    // Settings & System
     { name: 'manage_settings', description: 'Edit site settings and configuration' },
     { name: 'view_logs', description: 'View system audit logs' },
     { name: 'manage_roles', description: 'Create, edit roles and assign permissions' },
     { name: 'manage_permissions', description: 'Create, edit, delete permissions' },
-
-    // Support
     { name: 'manage_support', description: 'Manage support tickets and replies' },
     { name: 'create_tickets', description: 'Create support tickets' },
-
-    // Affiliate
     { name: 'manage_affiliates', description: 'Manage affiliate clicks and commissions' },
     { name: 'view_affiliates', description: 'View affiliate statistics' },
-
-    // File management
     { name: 'manage_files', description: 'Upload, edit, delete file attachments' },
-
-    // Newsletter
     { name: 'manage_subscribers', description: 'Manage newsletter subscribers' },
   ]
 
@@ -136,49 +118,30 @@ export async function seedDatabase() {
   // === 3. Role-Permission mappings ===
   console.log('Assigning permissions to roles...')
 
-  // Helper to find permission by name
-  const findPerm = (name: string) => permissions.find((p) => p.name === name)!
+  const findPerm = (name: string) => permissions.find((p: any) => p.name === name)!
 
-  // Super_admin gets ALL permissions (same as admin)
-  const superAdminPerms = permissions.map((p) => ({
+  const superAdminPerms = permissions.map((p: any) => ({
     roleId: superAdminRole.id,
     permissionId: p.id,
   }))
 
-  // Admin gets ALL permissions
-  const adminPerms = permissions.map((p) => ({
+  const adminPerms = permissions.map((p: any) => ({
     roleId: adminRole.id,
     permissionId: p.id,
   }))
 
-  // Partner gets management permissions for content, forum posting, financial viewing, support, and affiliate viewing
   const partnerPermNames = [
-    'manage_posts',
-    'manage_pages',
-    'manage_services',
-    'manage_projects',
-    'manage_testimonials',
-    'view_users',
-    'manage_quotes',
-    'manage_proposals',
-    'manage_payments',
-    'manage_invoices',
-    'post_in_forum',
-    'create_tickets',
-    'view_affiliates',
-    'manage_files',
+    'manage_posts', 'manage_pages', 'manage_services', 'manage_projects',
+    'manage_testimonials', 'view_users', 'manage_quotes', 'manage_proposals',
+    'manage_payments', 'manage_invoices', 'post_in_forum', 'create_tickets',
+    'view_affiliates', 'manage_files',
   ]
   const partnerPerms = partnerPermNames.map((name) => ({
     roleId: partnerRole.id,
     permissionId: findPerm(name).id,
   }))
 
-  // User gets basic permissions: forum posting, ticket creation, file upload
-  const userPermNames = [
-    'post_in_forum',
-    'create_tickets',
-    'manage_files',
-  ]
+  const userPermNames = ['post_in_forum', 'create_tickets', 'manage_files']
   const userPerms = userPermNames.map((name) => ({
     roleId: userRole.id,
     permissionId: findPerm(name).id,
@@ -215,12 +178,12 @@ export async function seedDatabase() {
   // === 6. Essential Settings ===
   console.log('Creating essential settings...')
   const settingDefs = [
-    { key: 'company_name', value: 'Carsai Moçambique' },
+    { key: 'company_name', value: 'Carsai Mozambique' },
     { key: 'contact_email', value: 'carsaimozambique@gmail.com' },
     { key: 'support_email', value: 'suporte.carsaimz@gmail.com' },
     { key: 'developer_email', value: 'carsaideveloper@gmail.com' },
     { key: 'contact_phone', value: '847545020 / 874512581 / 84246463 / 835020143' },
-    { key: 'contact_address', value: 'Montepuez, Cabo Delgado, Moçambique (operação online)' },
+    { key: 'contact_address', value: 'Montepuez, Cabo Delgado, Mozambique (operação online)' },
     { key: 'website_url', value: 'https://carsai.mz' },
     { key: 'ceo_name', value: 'Carimo Saide Mpinda' },
     { key: 'developer_name', value: 'CarsaiDev' },

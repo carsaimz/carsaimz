@@ -25,13 +25,13 @@ export function AdminUsers() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Use the current user's actual ID and fetch from proper users endpoint
-    const userId = currentUser?.id || '';
-    fetch(`/api/admin/users?limit=100`)
+    fetch(`/api/admin/users?limit=100&excludeSuperAdmin=true`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          setUsers(data.data || []);
+          // Filter out super_admin users — they should not be visible in admin UI
+          const filteredUsers = (data.data || []).filter((u: UserData) => u.role !== 'super_admin');
+          setUsers(filteredUsers);
         } else {
           setError(data.message || 'Failed to load users');
         }
@@ -45,8 +45,6 @@ export function AdminUsers() {
       case 'admin': return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Admin</Badge>;
       case 'partner': return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">Partner</Badge>;
       case 'user': return <Badge className="bg-blue-100 text-blue-700 border-blue-200">User</Badge>;
-      // super_admin should never appear in the list, but handle it defensively
-      case 'super_admin': return <Badge className="bg-red-100 text-red-700 border-red-200">Super Admin</Badge>;
       default: return <Badge variant="outline">{role}</Badge>;
     }
   };

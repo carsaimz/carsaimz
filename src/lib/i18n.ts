@@ -49,7 +49,7 @@ export const LANGUAGE_CONFIGS: Record<LanguageCode, LanguageConfig> = {
   'pt-pt': {
     code: 'pt-pt',
     name: 'Portuguese (Mozambique)',
-    nativeName: 'Português (Moçambique)',
+    nativeName: 'Português (Mozambique)',
     flag: '🇲🇿',
     direction: 'ltr',
     dateFormat: 'dd/MM/yyyy',

@@ -21,6 +21,10 @@ export function RealTimeNotifications() {
   const hasFetchedOnMount = useRef(false);
   const lastFetchRef = useRef<number>(0);
 
+  // ── Set to track notification IDs that have already been shown as toast ──
+  // This prevents duplicate toasts on subsequent poll cycles
+  const shownToastIds = useRef<Set<string>>(new Set());
+
   // ── Notification type icon mapping ──
   const typeIcons: Record<NotificationType, typeof Bell> = {
     info: Info,
@@ -63,12 +67,17 @@ export function RealTimeNotifications() {
             notif.message || ''
           );
 
-          // ── Show toast only for truly NEW notifications ──
-          toast({
-            title: notif.title || t('notif.newNotification'),
-            description: notif.message || '',
-            variant: notif.type === 'error' ? 'destructive' : 'default',
-          });
+          // ── Show toast only for notifications that haven't been shown as toast yet ──
+          // This prevents the loop: only the first time a notification ID triggers a toast
+          if (!shownToastIds.current.has(notif.id)) {
+            shownToastIds.current.add(notif.id);
+
+            toast({
+              title: notif.title || t('notif.newNotification'),
+              description: notif.message || '',
+              variant: notif.type === 'error' ? 'destructive' : 'default',
+            });
+          }
         }
       }
     } catch (error) {

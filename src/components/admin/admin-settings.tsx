@@ -20,7 +20,7 @@ export function AdminSettings() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
-    siteName: 'Carsai Moçambique',
+    siteName: 'Carsai Mozambique',
     siteEmail: 'admin@carsai.mz',
     sitePhone: '+258 21 000 000',
     maintenanceMode: false,
@@ -35,7 +35,7 @@ export function AdminSettings() {
         if (data.success && data.data?.map) {
           const map = data.data.map;
           setFormData({
-            siteName: map.siteName || 'Carsai Moçambique',
+            siteName: map.siteName || 'Carsai Mozambique',
             siteEmail: map.siteEmail || 'admin@carsai.mz',
             sitePhone: map.sitePhone || '+258 21 000 000',
             maintenanceMode: map.maintenanceMode === 'true',

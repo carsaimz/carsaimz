@@ -40,7 +40,6 @@ import { Separator } from '@/components/ui/separator';
 import { useAppStore, useAuthStore, useNotificationStore, type AppView } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
 import { LoginModal } from '@/components/common/login-modal';
-import { GlobalSearch } from '@/components/features/global-search';
 
 // ──────────────────────────────────────────────
 // Navigation items mapped to AppView
@@ -105,10 +104,6 @@ export function Header() {
               onClick={() => handleNavClick('home')}
             >
               <img src="/logo.png" alt="CarsaiMZ" className="h-8 w-auto" />
-              <span className="hidden sm:inline">Carsai</span>
-              <span className="hidden sm:inline text-muted-foreground font-normal">
-                Moçambique
-              </span>
             </Button>
           </div>
 
@@ -129,16 +124,6 @@ export function Header() {
 
           {/* ── Right side actions ── */}
           <div className="flex items-center gap-2">
-            {/* Search Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSearchOpen(true)}
-              aria-label={t('search.openSearch')}
-              className="hover:text-emerald-600"
-            >
-              <Search className="size-4" />
-            </Button>
             {/* Language Switcher */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -319,7 +304,6 @@ export function Header() {
                 <SheetHeader>
                   <SheetTitle className="flex items-center gap-2">
                     <img src="/logo.png" alt="CarsaiMZ" className="h-8 w-auto" />
-                    Carsai Moçambique
                   </SheetTitle>
                 </SheetHeader>
 
@@ -417,8 +401,7 @@ export function Header() {
       {/* Login Modal */}
       <LoginModal open={loginModalOpen} onOpenChange={setLoginModalOpen} />
 
-      {/* Global Search Dialog */}
-      <GlobalSearch />
+
     </>
   );
 }

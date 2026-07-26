@@ -43,7 +43,7 @@ export function Loader() {
           </div>
         </div>
         <div className="flex flex-col items-center gap-1">
-          <span className="text-lg font-semibold">Carsai Moçambique</span>
+          <span className="text-lg font-semibold">Carsai Mozambique</span>
           <span className="text-sm text-muted-foreground">Carregando...</span>
         </div>
       </div>

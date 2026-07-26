@@ -2,12 +2,11 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { useAuthStore, useAppStore, useNotificationStore } from '@/lib/store';
+import { useAuthStore, useNotificationStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
 import { AiChatAssistant } from '@/components/features/ai-chat-assistant';
 import { RealTimeNotifications } from '@/components/features/real-time-notifications';
 import { LoginModal } from '@/components/common/login-modal';
-import { GlobalSearch } from '@/components/features/global-search';
 import { useState } from 'react';
 import {
   Sun,
@@ -15,7 +14,6 @@ import {
   Bell,
   LogOut,
   User,
-  Search,
   ChevronDown,
 } from 'lucide-react';
 import {
@@ -62,15 +60,13 @@ import {
 } from 'lucide-react';
 
 // ──────────────────────────────────────────────
-// Language flag emoji mapping
+// Language flag emoji mapping — only pt-pt, en-us, pt-br get flags
 // ──────────────────────────────────────────────
 
 const LANGUAGE_FLAGS: Record<string, string> = {
   'pt-pt': '🇲🇿',
   'en-us': '🇺🇸',
   'pt-br': '🇧🇷',
-  'pt': '🇲🇿',
-  'en': '🇺🇸',
 };
 
 // ──────────────────────────────────────────────
@@ -110,7 +106,6 @@ export function UserShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
-  const { setSearchOpen } = useAppStore();
   const { unreadCount, notifications, markAllAsRead } = useNotificationStore();
   const [loginModalOpen, setLoginModalOpen] = useState(false);
 
@@ -129,7 +124,6 @@ export function UserShell({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2 px-2 py-1">
               <img src="/logo.png" alt="CarsaiMZ" className="h-6 w-auto shrink-0" />
               <div className="group-data-[collapsible=icon]:hidden flex flex-col">
-                <span className="font-bold text-sm">Carsai</span>
                 <span className="text-xs text-muted-foreground">{t('nav.dashboard')}</span>
               </div>
             </div>
@@ -204,16 +198,10 @@ export function UserShell({ children }: { children: React.ReactNode }) {
           <header className="sticky top-0 z-30 flex h-12 items-center gap-2 border-b bg-background/95 backdrop-blur px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mx-2 h-4" />
-            <span className="font-semibold text-sm">Carsai · {t('nav.dashboard')}</span>
 
             <div className="flex-1" />
 
             <div className="flex items-center gap-2">
-              {/* Search */}
-              <Button variant="ghost" size="icon" className="size-7" onClick={() => setSearchOpen(true)}>
-                <Search className="size-3.5" />
-              </Button>
-
               {/* Language flag */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -231,7 +219,7 @@ export function UserShell({ children }: { children: React.ReactNode }) {
                       onClick={() => setLanguage(lang.code)}
                       className={language === lang.code ? 'bg-accent' : ''}
                     >
-                      <span className="mr-2 text-lg">{LANGUAGE_FLAGS[lang.code] || lang.flag}</span>
+                      <span className="mr-2 text-lg">{LANGUAGE_FLAGS[lang.code] || '🌐'}</span>
                       <span>{lang.nativeName}</span>
                     </DropdownMenuItem>
                   ))}
@@ -294,7 +282,7 @@ export function UserShell({ children }: { children: React.ReactNode }) {
 
           {/* ── Footer ── */}
           <footer className="border-t px-4 py-3 text-center text-xs text-muted-foreground">
-            © 2026 Carsai Moçambique ·{' '}
+            © 2026 Carsai Mozambique ·{' '}
             <Link href="/privacy" className="hover:text-foreground">Privacy</Link> ·{' '}
             <Link href="/terms" className="hover:text-foreground">Terms</Link> ·{' '}
             <Link href="/cookies" className="hover:text-foreground">Cookies</Link>
@@ -304,7 +292,7 @@ export function UserShell({ children }: { children: React.ReactNode }) {
 
       <AiChatAssistant />
       <RealTimeNotifications />
-      <GlobalSearch />
+      {loginModalOpen && <LoginModal open={loginModalOpen} onClose={() => setLoginModalOpen(false)} />}
     </>
   );
 }

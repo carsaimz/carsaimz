@@ -37,7 +37,7 @@ type LoginMode = 'email' | 'phone';
 
 export default function AuthPage() {
   const { t } = useLanguage();
-  const { login, register, isAuthenticated, user } = useAuthStore();
+  const { login, register, isAuthenticated, user, hasHydrated } = useAuthStore();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<string>('login');
@@ -61,8 +61,9 @@ export default function AuthPage() {
   const [registerError, setRegisterError] = useState('');
   const [registerLoading, setRegisterLoading] = useState(false);
 
-  // ── Redirect if already logged in ──
+  // ── Redirect if already logged in (after hydration) ──
   useEffect(() => {
+    if (!hasHydrated) return; // Wait for Zustand persist to hydrate
     if (isAuthenticated && user) {
       const role = user.role;
       if (role === 'super_admin' || role === 'admin') {
@@ -73,7 +74,19 @@ export default function AuthPage() {
         router.replace('/user');
       }
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, hasHydrated]);
+
+  // ── Show loading spinner while hydration hasn't completed ──
+  if (!hasHydrated) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   // ── Show redirect message while navigating ──
   if (isAuthenticated && user) {
@@ -157,7 +170,7 @@ export default function AuthPage() {
       <div className="w-full max-w-md space-y-6">
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center">
             <Image
               src="/logo.png"
               alt="Carsai Mozambique"
@@ -166,10 +179,6 @@ export default function AuthPage() {
               className="h-12 w-auto"
               priority
             />
-            <div className="flex flex-col">
-              <span className="font-bold text-xl leading-tight">Carsai</span>
-              <span className="text-sm text-muted-foreground leading-tight">Moçambique</span>
-            </div>
           </div>
           <p className="text-muted-foreground text-sm text-center">
             {activeTab === 'login' ? t('auth.welcomeBack') : t('auth.createAccount')}

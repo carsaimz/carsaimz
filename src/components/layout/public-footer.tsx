@@ -57,8 +57,6 @@ export function PublicFooter({ className }: { className?: string }) {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <img src="/logo.png" alt="CarsaiMZ" className="h-10 w-auto" />
-              <span className="font-bold text-lg">Carsai</span>
-              <span className="text-muted-foreground">Moçambique</span>
             </div>
             <p className="text-sm text-muted-foreground max-w-xs">
               {t('footer.companyDescription')}
