@@ -82,7 +82,7 @@ export function PublicHeader() {
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isAuthenticated, isAdmin, isPartner, logout } = useAuthStore();
+  const { user, isAuthenticated, isAdmin, isPartner, isSuperAdmin, logout } = useAuthStore();
   const { setSearchOpen } = useAppStore();
   const { unreadCount, notifications, markAllAsRead } = useNotificationStore();
 

@@ -1,10 +1,11 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 // ──────────────────────────────────────────────
 // Types
 // ──────────────────────────────────────────────
 
-export type UserRole = 'admin' | 'partner' | 'user';
+export type UserRole = 'admin' | 'partner' | 'user' | 'super_admin';
 
 export interface User {
   id: string;
@@ -34,7 +35,7 @@ export type AppView = 'home' | 'services' | 'projects' | 'about' | 'faq' | 'blog
 export type Language = 'en' | 'pt' | 'fr' | 'es' | 'zh' | 'de';
 
 // ──────────────────────────────────────────────
-// Auth Store
+// Auth Store (with persist middleware)
 // ──────────────────────────────────────────────
 
 interface AuthState {
@@ -43,7 +44,9 @@ interface AuthState {
   isAdmin: boolean;
   isPartner: boolean;
   isUser: boolean;
+  isSuperAdmin: boolean;
   isLoading: boolean;
+  hasHydrated: boolean;
   login: (login: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string, phone?: string) => Promise<boolean>;
   logout: () => void;
@@ -51,127 +54,155 @@ interface AuthState {
   updateAvatar: (avatar: string) => void;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
-  isAuthenticated: false,
-  isAdmin: false,
-  isPartner: false,
-  isUser: false,
-  isLoading: false,
-
-  login: async (login: string, password: string): Promise<boolean> => {
-    set({ isLoading: true });
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ login, password }),
-      });
-
-      const data = await res.json();
-
-      if (data.success && data.user) {
-        const userRole = (data.user.role as UserRole) || 'user';
-        set({
-          user: {
-            id: data.user.id,
-            name: data.user.name,
-            email: data.user.email,
-            role: userRole,
-            avatar: data.user.avatar || null,
-            phone: data.user.phone || null,
-            company: data.user.company || null,
-            bio: data.user.bio || null,
-            address: data.user.address || null,
-          },
-          isAuthenticated: true,
-          isAdmin: userRole === 'admin',
-          isPartner: userRole === 'partner',
-          isUser: userRole === 'user',
-          isLoading: false,
-        });
-        return true;
-      } else {
-        set({ isLoading: false });
-        return false;
-      }
-    } catch (err) {
-      console.error('Login error:', err);
-      set({ isLoading: false });
-      return false;
-    }
-  },
-
-  register: async (name: string, email: string, password: string, phone?: string): Promise<boolean> => {
-    set({ isLoading: true });
-    try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, phone: phone || undefined }),
-      });
-
-      const data = await res.json();
-
-      if (data.success && data.user) {
-        const userRole = (data.user.role as UserRole) || 'user';
-        set({
-          user: {
-            id: data.user.id,
-            name: data.user.name,
-            email: data.user.email,
-            role: userRole,
-            avatar: null,
-            phone: data.user.phone || null,
-            company: null,
-            bio: null,
-            address: null,
-          },
-          isAuthenticated: true,
-          isAdmin: false,
-          isPartner: false,
-          isUser: true,
-          isLoading: false,
-        });
-        return true;
-      } else {
-        set({ isLoading: false });
-        return false;
-      }
-    } catch (err) {
-      console.error('Register error:', err);
-      set({ isLoading: false });
-      return false;
-    }
-  },
-
-  logout: () => {
-    set({
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
       user: null,
       isAuthenticated: false,
       isAdmin: false,
       isPartner: false,
       isUser: false,
-    });
-  },
+      isSuperAdmin: false,
+      isLoading: false,
+      hasHydrated: false,
 
-  setUser: (user: User) => {
-    set({
-      user,
-      isAuthenticated: true,
-      isAdmin: user.role === 'admin',
-      isPartner: user.role === 'partner',
-      isUser: user.role === 'user',
-    });
-  },
+      login: async (login: string, password: string): Promise<boolean> => {
+        set({ isLoading: true });
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ login, password }),
+          });
 
-  updateAvatar: (avatar: string) => {
-    const currentUser = get().user;
-    if (currentUser) {
-      set({ user: { ...currentUser, avatar } });
+          const data = await res.json();
+
+          if (data.success && data.user) {
+            const userRole = (data.user.role as UserRole) || 'user';
+            set({
+              user: {
+                id: data.user.id,
+                name: data.user.name,
+                email: data.user.email,
+                role: userRole,
+                avatar: data.user.avatar || null,
+                phone: data.user.phone || null,
+                company: data.user.company || null,
+                bio: data.user.bio || null,
+                address: data.user.address || null,
+              },
+              isAuthenticated: true,
+              isAdmin: userRole === 'admin' || userRole === 'super_admin',
+              isPartner: userRole === 'partner',
+              isUser: userRole === 'user',
+              isSuperAdmin: userRole === 'super_admin',
+              isLoading: false,
+            });
+            return true;
+          } else {
+            set({ isLoading: false });
+            return false;
+          }
+        } catch (err) {
+          console.error('Login error:', err);
+          set({ isLoading: false });
+          return false;
+        }
+      },
+
+      register: async (name: string, email: string, password: string, phone?: string): Promise<boolean> => {
+        set({ isLoading: true });
+        try {
+          const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password, phone: phone || undefined }),
+          });
+
+          const data = await res.json();
+
+          if (data.success && data.user) {
+            const userRole = (data.user.role as UserRole) || 'user';
+            set({
+              user: {
+                id: data.user.id,
+                name: data.user.name,
+                email: data.user.email,
+                role: userRole,
+                avatar: null,
+                phone: data.user.phone || null,
+                company: null,
+                bio: null,
+                address: null,
+              },
+              isAuthenticated: true,
+              isAdmin: userRole === 'admin' || userRole === 'super_admin',
+              isPartner: userRole === 'partner',
+              isUser: userRole === 'user',
+              isSuperAdmin: userRole === 'super_admin',
+              isLoading: false,
+            });
+            return true;
+          } else {
+            set({ isLoading: false });
+            return false;
+          }
+        } catch (err) {
+          console.error('Register error:', err);
+          set({ isLoading: false });
+          return false;
+        }
+      },
+
+      logout: () => {
+        set({
+          user: null,
+          isAuthenticated: false,
+          isAdmin: false,
+          isPartner: false,
+          isUser: false,
+          isSuperAdmin: false,
+        });
+      },
+
+      setUser: (user: User) => {
+        set({
+          user,
+          isAuthenticated: true,
+          isAdmin: user.role === 'admin' || user.role === 'super_admin',
+          isPartner: user.role === 'partner',
+          isUser: user.role === 'user',
+          isSuperAdmin: user.role === 'super_admin',
+        });
+      },
+
+      updateAvatar: (avatar: string) => {
+        const currentUser = get().user;
+        if (currentUser) {
+          set({ user: { ...currentUser, avatar } });
+        }
+      },
+    }),
+    {
+      name: 'carsai-auth', // localStorage key
+      partialize: (state) => ({
+        // Only persist state fields, not functions or hasHydrated
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+        isAdmin: state.isAdmin,
+        isPartner: state.isPartner,
+        isUser: state.isUser,
+        isSuperAdmin: state.isSuperAdmin,
+      }),
+      onRehydrateStorage: () => (state) => {
+        // Mark hydration as complete after rehydration
+        if (state) {
+          state.hasHydrated = true;
+        }
+      },
     }
-  },
-}));
+  )
+);
 
 // ──────────────────────────────────────────────
 // Notification Store

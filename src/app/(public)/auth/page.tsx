@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -12,10 +12,9 @@ import {
   Phone,
   Mail,
   ArrowLeft,
-  Car,
 } from 'lucide-react';
 
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Tabs,
   TabsContent,
@@ -25,7 +24,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
@@ -39,7 +37,7 @@ type LoginMode = 'email' | 'phone';
 
 export default function AuthPage() {
   const { t } = useLanguage();
-  const { login, register } = useAuthStore();
+  const { login, register, isAuthenticated, user } = useAuthStore();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<string>('login');
@@ -63,6 +61,32 @@ export default function AuthPage() {
   const [registerError, setRegisterError] = useState('');
   const [registerLoading, setRegisterLoading] = useState(false);
 
+  // ── Redirect if already logged in ──
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const role = user.role;
+      if (role === 'super_admin' || role === 'admin') {
+        router.replace('/admin');
+      } else if (role === 'partner') {
+        router.replace('/partner');
+      } else {
+        router.replace('/user');
+      }
+    }
+  }, [isAuthenticated, user, router]);
+
+  // ── Show redirect message while navigating ──
+  if (isAuthenticated && user) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+          <p className="text-muted-foreground">{t('auth.redirecting') || 'Redirecting...'}</p>
+        </div>
+      </div>
+    );
+  }
+
   const handleLogin = async () => {
     setLoginError('');
     if (!loginIdentifier) {
@@ -79,7 +103,7 @@ export default function AuthPage() {
       if (success) {
         const role = useAuthStore.getState().user?.role;
         toast.success(t('auth.loginSuccess'));
-        if (role === 'admin') router.push('/admin');
+        if (role === 'super_admin' || role === 'admin') router.push('/admin');
         else if (role === 'partner') router.push('/partner');
         else router.push('/user');
       } else {

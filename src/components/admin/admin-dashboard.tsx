@@ -191,7 +191,7 @@ export function AdminDashboard() {
         if (!res.ok) throw new Error(`History: HTTP ${res.status}`);
         return res.json();
       }),
-      fetch(`/api/dashboard?role=admin&userId=${user.id}`).then((res) => {
+      fetch(`/api/dashboard?role=${user?.role || 'admin'}&userId=${user.id}`).then((res) => {
         if (!res.ok) throw new Error(`Dashboard: HTTP ${res.status}`);
         return res.json();
       }),

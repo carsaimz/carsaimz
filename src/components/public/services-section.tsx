@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 import { motion } from 'framer-motion';
 import {
   Globe,
@@ -18,6 +20,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveI18nContent } from '@/lib/i18n-content';
 import { useRouter } from 'next/navigation';
+
+const TechPatternSVG = dynamic(
+  () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
+  { ssr: false }
+);
 
 const iconMap: Record<string, React.ElementType> = {
   Globe,
@@ -100,7 +107,11 @@ export function ServicesSection() {
   }
 
   return (
-    <section id="services" className="py-16 sm:py-24 bg-background">
+    <section id="services" className="relative py-16 sm:py-24 bg-background overflow-hidden">
+      {/* Decorative background */}
+      <Suspense fallback={null}>
+        <TechPatternSVG className="top-0 right-0 w-[300px] h-[300px]" opacity={0.04} />
+      </Suspense>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div

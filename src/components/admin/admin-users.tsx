@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/language-context';
+import { useAuthStore } from '@/lib/store';
 
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
 const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
@@ -18,23 +19,34 @@ interface UserData { id: string; name: string; email: string; role: string; crea
 
 export function AdminUsers() {
   const { t, formatDate } = useLanguage();
+  const { user: currentUser } = useAuthStore();
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/dashboard?role=admin&userId=demo-admin-001')
+    // Use the current user's actual ID and fetch from proper users endpoint
+    const userId = currentUser?.id || '';
+    fetch(`/api/admin/users?limit=100`)
       .then((res) => res.json())
-      .then((data) => { if (data.success) setUsers(data.data?.users || []); else setError(data.message); })
+      .then((data) => {
+        if (data.success) {
+          setUsers(data.data || []);
+        } else {
+          setError(data.message || 'Failed to load users');
+        }
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [currentUser?.id]);
 
   const roleBadge = (role: string) => {
     switch (role) {
       case 'admin': return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Admin</Badge>;
       case 'partner': return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">Partner</Badge>;
       case 'user': return <Badge className="bg-blue-100 text-blue-700 border-blue-200">User</Badge>;
+      // super_admin should never appear in the list, but handle it defensively
+      case 'super_admin': return <Badge className="bg-red-100 text-red-700 border-red-200">Super Admin</Badge>;
       default: return <Badge variant="outline">{role}</Badge>;
     }
   };

@@ -89,6 +89,8 @@ const PARTNER_MENU_ITEMS: SidebarMenuItemConfig[] = [
 
 function getMenuItems(role: UserRole): SidebarMenuItemConfig[] {
   switch (role) {
+    case 'super_admin':
+      return ADMIN_MENU_ITEMS;
     case 'admin':
       return ADMIN_MENU_ITEMS;
     case 'partner':
@@ -107,7 +109,7 @@ function getMenuItems(role: UserRole): SidebarMenuItemConfig[] {
 export function DashboardSidebar({ children }: { children: React.ReactNode }) {
   const { t } = useLanguage();
   const { currentView, setCurrentView, sidebarOpen, setSidebarOpen } = useAppStore();
-  const { user, isAuthenticated, isAdmin, isPartner } = useAuthStore();
+  const { user, isAuthenticated, isAdmin, isPartner, isSuperAdmin } = useAuthStore();
 
   // Only render sidebar when user is logged in and in dashboard views
   const isDashboardView = ['dashboard', 'admin', 'partner', 'vehicles', 'partners', 'reports', 'settings', 'map', 'analytics'].includes(currentView);
@@ -117,7 +119,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  const role: UserRole = isAdmin ? 'admin' : isPartner ? 'partner' : 'user';
+  const role: UserRole = isSuperAdmin ? 'super_admin' : isAdmin ? 'admin' : isPartner ? 'partner' : 'user';
   const menuItems = getMenuItems(role);
 
   const initials = user?.name
@@ -138,7 +140,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
             <div className="group-data-[collapsible=icon]:hidden flex flex-col">
               <span className="font-bold text-sm">Carsai</span>
               <span className="text-xs text-muted-foreground">
-                {role === 'admin' ? t('nav.admin') : role === 'partner' ? t('nav.partner') : t('nav.dashboard')}
+                {role === 'super_admin' ? 'Super Admin' : role === 'admin' ? t('nav.admin') : role === 'partner' ? t('nav.partner') : t('nav.dashboard')}
               </span>
             </div>
           </div>
@@ -149,7 +151,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupLabel>
-              {role === 'admin' ? t('admin.title') : role === 'partner' ? t('partner.title') : t('dashboard.title')}
+              {role === 'super_admin' ? 'Super Admin' : role === 'admin' ? t('admin.title') : role === 'partner' ? t('partner.title') : t('dashboard.title')}
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>

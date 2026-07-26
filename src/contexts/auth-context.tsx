@@ -16,6 +16,7 @@ interface AuthContextValue {
   isAdmin: boolean;
   isPartner: boolean;
   isUser: boolean;
+  isSuperAdmin: boolean;
   isLoading: boolean;
   login: (login: string, password: string) => Promise<boolean>;
   logout: () => void;
@@ -43,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin: store.isAdmin,
       isPartner: store.isPartner,
       isUser: store.isUser,
+      isSuperAdmin: store.isSuperAdmin,
       isLoading: store.isLoading,
       login: store.login,
       logout: store.logout,

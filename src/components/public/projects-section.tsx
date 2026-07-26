@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 import { motion } from 'framer-motion';
 import {
   ExternalLink,
@@ -20,6 +22,11 @@ import {
 } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveI18nContent } from '@/lib/i18n-content';
+
+const ParticleNetwork = dynamic(
+  () => import('@/components/common/3d-elements').then((mod) => mod.ParticleNetwork),
+  { ssr: false }
+);
 
 interface ProjectData {
   id: string;
@@ -107,7 +114,11 @@ export function ProjectsSection() {
   }
 
   return (
-    <section id="projects" className="py-16 sm:py-24 bg-muted/30">
+    <section id="projects" className="relative py-16 sm:py-24 bg-muted/30 overflow-hidden">
+      {/* Decorative background */}
+      <Suspense fallback={null}>
+        <ParticleNetwork className="bottom-[10%] left-[5%] w-[300px] h-[300px]" particleCount={15} color="#10b981" />
+      </Suspense>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div

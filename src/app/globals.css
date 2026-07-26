@@ -120,3 +120,87 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ─── Scroll-reveal & 3D Element Animations ─── */
+
+@keyframes float-orb {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(30px, -20px) scale(1.05);
+  }
+  50% {
+    transform: translate(-15px, 25px) scale(0.95);
+  }
+  75% {
+    transform: translate(20px, 15px) scale(1.02);
+  }
+}
+
+.animate-float-orb {
+  animation: float-orb 10s ease-in-out infinite;
+}
+
+@keyframes morph-shape {
+  0%, 100% {
+    d: path("M40,100 C40,60 80,40 100,40 C120,40 160,60 160,100 C160,140 120,160 100,160 C80,160 40,140 40,100 Z");
+    transform: rotate(0deg);
+  }
+  50% {
+    d: path("M50,80 C50,50 90,30 110,50 C130,70 150,90 130,120 C110,150 70,150 50,120 C30,90 30,70 50,80 Z");
+    transform: rotate(15deg);
+  }
+}
+
+.animate-morph-shape {
+  animation: morph-shape 8s ease-in-out infinite;
+}
+
+@keyframes particle-float {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: var(--particle-opacity, 0.3);
+  }
+  50% {
+    transform: translateY(-3px);
+    opacity: calc(var(--particle-opacity, 0.3) + 0.1);
+  }
+}
+
+.animate-particle-float {
+  animation: particle-float 4s ease-in-out infinite;
+}
+
+@keyframes rotate-cube {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg);
+  }
+  100% {
+    transform: rotateX(360deg) rotateY(360deg);
+  }
+}
+
+.animate-rotate-cube {
+  animation: rotate-cube 15s linear infinite;
+}
+
+/* ─── Custom Scrollbar ─── */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: oklch(0.556 0 0 / 30%);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.556 0 0 / 50%);
+}

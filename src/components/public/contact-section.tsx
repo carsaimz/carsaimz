@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 import { motion } from 'framer-motion';
 import {
   Send,
@@ -8,7 +10,8 @@ import {
   Phone,
   Mail,
   Clock,
-  Building2,
+  MessageCircle,
+  Globe,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,6 +19,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/contexts/language-context';
+
+const TechPatternSVG = dynamic(
+  () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
+  { ssr: false }
+);
 
 export function ContactSection() {
   const { t } = useLanguage();
@@ -49,8 +57,22 @@ export function ContactSection() {
     setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
 
+  const socialLinks = [
+    { icon: MessageCircle, label: t('footer.socialWhatsapp'), href: 'https://wa.me/258847545020', color: 'text-green-600 hover:text-green-700' },
+    { icon: Globe, label: t('footer.socialFacebook'), href: 'https://facebook.com/carsaimz', color: 'text-blue-600 hover:text-blue-700' },
+    { icon: Globe, label: t('footer.socialInstagram'), href: 'https://instagram.com/carsaimz', color: 'text-pink-600 hover:text-pink-700' },
+    { icon: Globe, label: t('footer.socialTiktok'), href: 'https://tiktok.com/@carsaimz', color: 'text-red-600 hover:text-red-700' },
+    { icon: Globe, label: t('footer.socialYoutube'), href: 'https://youtube.com/@carsaimz', color: 'text-red-700 hover:text-red-800' },
+    { icon: MessageCircle, label: t('footer.socialDiscord'), href: 'https://discord.gg/carsaimz', color: 'text-indigo-600 hover:text-indigo-700' },
+    { icon: Globe, label: t('footer.socialGithub'), href: 'https://github.com/carsaimz', color: 'text-gray-700 hover:text-gray-800' },
+  ];
+
   return (
-    <section id="contact" className="py-16 sm:py-24 bg-background">
+    <section id="contact" className="relative py-16 sm:py-24 bg-background overflow-hidden">
+      {/* Decorative background */}
+      <Suspense fallback={null}>
+        <TechPatternSVG className="bottom-[5%] right-[2%] w-[250px] h-[250px]" opacity={0.03} />
+      </Suspense>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
@@ -117,7 +139,7 @@ export function ContactSection() {
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        placeholder="exemplo@email.com"
+                        placeholder={t('contact.emailPlaceholder')}
                         className="focus-visible:ring-emerald-500"
                       />
                     </div>
@@ -170,7 +192,7 @@ export function ContactSection() {
             </Card>
           </motion.div>
 
-          {/* Office Info & Map */}
+          {/* Contact Info */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -178,11 +200,11 @@ export function ContactSection() {
             transition={{ duration: 0.5 }}
             className="space-y-6"
           >
-            {/* Office Information */}
+            {/* Contact Information */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-emerald-600" />
+                  <MapPin className="h-5 w-5 text-emerald-600" />
                   {t('contact.office')}
                 </CardTitle>
               </CardHeader>
@@ -192,10 +214,10 @@ export function ContactSection() {
                   <div>
                     <p className="font-medium">{t('contact.address')}</p>
                     <p className="text-muted-foreground text-sm">
-                      Av. 24 de Julho, 1234
+                      {t('contact.addressValue')}
                     </p>
-                    <p className="text-muted-foreground text-sm">
-                      Maputo, Moçambique
+                    <p className="text-emerald-600 text-xs font-medium mt-1">
+                      {t('contact.onlineNote')}
                     </p>
                   </div>
                 </div>
@@ -205,7 +227,7 @@ export function ContactSection() {
                   <div>
                     <p className="font-medium">{t('contact.phone')}</p>
                     <p className="text-muted-foreground text-sm">
-                      +258 84 123 4567
+                      847545020 / 874512581 / 84246463 / 835020143
                     </p>
                   </div>
                 </div>
@@ -215,7 +237,10 @@ export function ContactSection() {
                   <div>
                     <p className="font-medium">{t('contact.email')}</p>
                     <p className="text-muted-foreground text-sm">
-                      info@carsai.mz
+                      <a href="mailto:carsaimozambique@gmail.com" className="hover:text-emerald-600 transition-colors">carsaimozambique@gmail.com</a>
+                    </p>
+                    <p className="text-muted-foreground text-sm">
+                      <a href="mailto:suporte.carsaimz@gmail.com" className="hover:text-emerald-600 transition-colors">suporte.carsaimz@gmail.com</a>
                     </p>
                   </div>
                 </div>
@@ -238,35 +263,28 @@ export function ContactSection() {
               </CardContent>
             </Card>
 
-            {/* Map Placeholder */}
-            <Card className="h-48 overflow-hidden">
-              <CardContent className="p-0 h-full relative">
-                <div
-                  className="h-full bg-gradient-to-br from-emerald-200 via-emerald-100 to-teal-200 flex items-center justify-center relative"
-                >
-                  {/* Map visual elements */}
-                  <div className="absolute inset-0 opacity-20">
-                    <svg className="w-full h-full" viewBox="0 0 400 200">
-                      <path
-                        d="M0,100 Q100,50 200,100 T400,100"
-                        fill="none"
-                        stroke="emerald"
-                        strokeWidth="2"
-                      />
-                      <circle cx="200" cy="100" r="8" fill="#059669" />
-                      <circle cx="100" cy="80" r="3" fill="#059669" />
-                      <circle cx="300" cy="120" r="3" fill="#059669" />
-                    </svg>
-                  </div>
-                  <div className="text-center z-10">
-                    <MapPin className="h-8 w-8 text-emerald-600 mb-2" />
-                    <p className="font-semibold text-emerald-800">
-                      Maputo, Moçambique
-                    </p>
-                    <p className="text-sm text-emerald-600">
-                      Av. 24 de Julho, 1234
-                    </p>
-                  </div>
+            {/* Social Media */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Globe className="h-5 w-5 text-emerald-600" />
+                  {t('contact.socialMedia')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {socialLinks.map((social) => (
+                    <a
+                      key={social.label}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-2 rounded-lg border border-emerald-100 hover:border-emerald-300 transition-colors text-sm"
+                    >
+                      <social.icon className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <span className="text-muted-foreground">{social.label}</span>
+                    </a>
+                  ))}
                 </div>
               </CardContent>
             </Card>

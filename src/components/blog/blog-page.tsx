@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
@@ -22,6 +24,11 @@ import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveI18nContent } from '@/lib/i18n-content';
 import { useRouter } from 'next/navigation';
+
+const TechPatternSVG = dynamic(
+  () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
+  { ssr: false }
+);
 
 // ──────────────────────────────────────────────
 // Types
@@ -181,7 +188,11 @@ export function BlogPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative min-h-screen bg-background overflow-hidden">
+      {/* Decorative background */}
+      <Suspense fallback={null}>
+        <TechPatternSVG className="top-[5%] right-[2%] w-[200px] h-[200px]" opacity={0.03} />
+      </Suspense>
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}

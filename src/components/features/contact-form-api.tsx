@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send,
@@ -20,6 +22,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
 import { useLanguage } from '@/contexts/language-context';
+
+const TechPatternSVG = dynamic(
+  () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
+  { ssr: false }
+);
 
 // ──────────────────────────────────────────────
 // Contact Form with API Integration
@@ -124,7 +131,11 @@ export function ContactFormApi() {
   };
 
   return (
-    <section id="contact" className="py-16 sm:py-24 bg-background">
+    <section id="contact" className="relative py-16 sm:py-24 bg-background overflow-hidden">
+      {/* Decorative background */}
+      <Suspense fallback={null}>
+        <TechPatternSVG className="bottom-[5%] right-[2%] w-[250px] h-[250px]" opacity={0.03} />
+      </Suspense>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div

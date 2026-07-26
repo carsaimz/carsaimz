@@ -1,0 +1,810 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect } from 'react';
+     4→import { motion } from 'framer-motion';
+     5→import {
+     6→  Users,
+     7→  FileText,
+     8→  Briefcase,
+     9→  DollarSign,
+    10→  Activity,
+    11→  TrendingUp,
+    12→  BarChart3,
+    13→  PieChart as PieChartIcon,
+    14→  ArrowUpRight,
+    15→  ArrowDownRight,
+    16→  Eye,
+    17→  Settings,
+    18→  Shield,
+    19→  BookOpen,
+    20→  Layers,
+    21→  Clock,
+    22→  CheckCircle2,
+    23→  AlertTriangle,
+    24→  Server,
+    25→  AlertCircle,
+    26→  Inbox,
+    27→  CreditCard,
+    28→} from 'lucide-react';
+    29→import {
+    30→  LineChart,
+    31→  Line,
+    32→  BarChart,
+    33→  Bar,
+    34→  PieChart,
+    35→  Pie,
+    36→  Cell,
+    37→  XAxis,
+    38→  YAxis,
+    39→  CartesianGrid,
+    40→  Tooltip,
+    41→  Legend,
+    42→  ResponsiveContainer,
+    43→} from 'recharts';
+    44→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+    45→import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+    46→import { Badge } from '@/components/ui/badge';
+    47→import { Button } from '@/components/ui/button';
+    48→import { Separator } from '@/components/ui/separator';
+    49→import { Skeleton } from '@/components/ui/skeleton';
+    50→import { useAuthStore } from '@/lib/store';
+    51→import { useLanguage } from '@/contexts/language-context';
+    52→
+    53→// ── Animation variants ──
+    54→const containerVariants = {
+    55→  hidden: { opacity: 0 },
+    56→  visible: {
+    57→    opacity: 1,
+    58→    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
+    59→  },
+    60→};
+    61→
+    62→const itemVariants = {
+    63→  hidden: { opacity: 0, y: 20 },
+    64→  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+    65→};
+    66→
+    67→// ── Chart Colors (Emerald theme) ──
+    68→const CHART_COLORS = ['#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d1fae5'];
+    69→
+    70→// ── Types ──
+    71→interface StatsData {
+    72→  overview: {
+    73→    totalUsers: number;
+    74→    totalPosts: number;
+    75→    totalProjects: number;
+    76→    totalServices: number;
+    77→    totalForumTopics: number;
+    78→    totalRevenue: number;
+    79→    confirmedRevenue: number;
+    80→  };
+    81→  users: {
+    82→    total: number;
+    83→    active: number;
+    84→    admins: number;
+    85→    partners: number;
+    86→    regular: number;
+    87→  };
+    88→  payments: {
+    89→    total: number;
+    90→    totalRevenue: number;
+    91→    confirmedRevenue: number;
+    92→    mpesa: number;
+    93→    transfer: number;
+    94→    deposit: number;
+    95→  };
+    96→}
+    97→
+    98→interface HistoryData {
+    99→  revenue: { month: string; revenue: number; target: number }[];
+   100→  usersGrowth: { month: string; newUsers: number; totalUsers: number }[];
+   101→  postsByCategory: { name: string; value: number }[];
+   102→}
+   103→
+   104→interface RecentUser {
+   105→  id: string;
+   106→  name: string;
+   107→  email: string;
+   108→  createdAt: string;
+   109→  isActive: boolean;
+   110→}
+   111→
+   112→interface RecentQuote {
+   113→  id: string;
+   114→  title: string;
+   115→  status: string;
+   116→  createdAt: string;
+   117→  user: { id: string; name: string; email: string };
+   118→}
+   119→
+   120→interface RecentPayment {
+   121→  id: string;
+   122→  amount: number;
+   123→  method: string;
+   124→  status: string;
+   125→  createdAt: string;
+   126→  user: { id: string; name: string; email: string };
+   127→  proposal: { id: string; title: string } | null;
+   128→}
+   129→
+   130→interface RecentTicket {
+   131→  id: string;
+   132→  subject: string;
+   133→  status: string;
+   134→  createdAt: string;
+   135→  user: { id: string; name: string; email: string };
+   136→}
+   137→
+   138→interface RecentPost {
+   139→  id: string;
+   140→  title: string;
+   141→  createdAt: string;
+   142→  author: { id: string; name: string };
+   143→  _count: { comments: number };
+   144→}
+   145→
+   146→interface DashboardData {
+   147→  role: string;
+   148→  stats: {
+   149→    totalUsers: number;
+   150→    totalPosts: number;
+   151→    totalQuotes: number;
+   152→    totalPayments: number;
+   153→    totalTickets: number;
+   154→    totalForumTopics: number;
+   155→    totalRevenue: number;
+   156→  };
+   157→  breakdowns: {
+   158→    quotes: { status: string; count: number }[];
+   159→    payments: { status: string; count: number; total: number }[];
+   160→    tickets: { status: string; count: number }[];
+   161→  };
+   162→  recentActivity: {
+   163→    users: RecentUser[];
+   164→    quotes: RecentQuote[];
+   165→    payments: RecentPayment[];
+   166→    tickets: RecentTicket[];
+   167→    posts: RecentPost[];
+   168→  };
+   169→}
+   170→
+   171→export function AdminDashboard() {
+   172→  const { t, formatCurrency, formatDate } = useLanguage();
+   173→  const user = useAuthStore((s) => s.user);
+   174→
+   175→  const [stats, setStats] = useState<StatsData | null>(null);
+   176→  const [history, setHistory] = useState<HistoryData | null>(null);
+   177→  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+   178→  const [activeTab, setActiveTab] = useState('overview');
+   179→  const [loading, setLoading] = useState(true);
+   180→  const [error, setError] = useState<string | null>(null);
+   181→
+   182→  useEffect(() => {
+   183→    if (!user?.id) return;
+   184→
+   185→    Promise.all([
+   186→      fetch('/api/stats').then((res) => {
+   187→        if (!res.ok) throw new Error(`Stats: HTTP ${res.status}`);
+   188→        return res.json();
+   189→      }),
+   190→      fetch('/api/stats/history').then((res) => {
+   191→        if (!res.ok) throw new Error(`History: HTTP ${res.status}`);
+   192→        return res.json();
+   193→      }),
+   194→      fetch(`/api/dashboard?role=admin&userId=${user.id}`).then((res) => {
+   195→        if (!res.ok) throw new Error(`Dashboard: HTTP ${res.status}`);
+   196→        return res.json();
+   197→      }),
+   198→    ])
+   199→      .then(([statsJson, historyJson, dashboardJson]) => {
+   200→        if (statsJson.success && statsJson.data) {
+   201→          setStats(statsJson.data as StatsData);
+   202→        }
+   203→        if (historyJson.success && historyJson.data) {
+   204→          setHistory(historyJson.data as HistoryData);
+   205→        }
+   206→        if (dashboardJson.success && dashboardJson.data) {
+   207→          setDashboardData(dashboardJson.data as DashboardData);
+   208→        }
+   209→      })
+   210→      .catch((err) => {
+   211→        setError(err.message || 'Network error');
+   212→      })
+   213→      .finally(() => {
+   214→        setLoading(false);
+   215→      });
+   216→  }, [user?.id]);
+   217→
+   218→  const totalUsers = stats?.users.total ?? 0;
+   219→  const totalPosts = stats?.overview.totalPosts ?? 0;
+   220→  const totalProjects = stats?.overview.totalProjects ?? 0;
+   221→  const totalRevenue = stats?.overview.totalRevenue ?? 0;
+   222→  const totalServices = stats?.overview.totalServices ?? 0;
+   223→  const confirmedRevenue = stats?.overview.confirmedRevenue ?? 0;
+   224→
+   225→  const revenueData = history?.revenue ?? [];
+   226→  const usersGrowthData = history?.usersGrowth ?? [];
+   227→  const postsByCategoryData = history?.postsByCategory ?? [];
+   228→
+   229→  // Build recent activity items from dashboard data
+   230→  const recentActivityItems: {
+   231→    id: string;
+   232→    type: string;
+   233→    message: string;
+   234→    time: string;
+   235→    icon: typeof Users;
+   236→  }[] = [];
+   237→
+   238→  if (dashboardData?.recentActivity) {
+   239→    const { users: recentUsers, quotes: recentQuotes, payments: recentPayments, tickets: recentTickets, posts: recentPosts } = dashboardData.recentActivity;
+   240→
+   241→    recentUsers?.forEach((u) => {
+   242→      recentActivityItems.push({
+   243→        id: u.id,
+   244→        type: 'user',
+   245→        message: `New user registered: ${u.name}`,
+   246→        time: formatDate(u.createdAt),
+   247→        icon: Users,
+   248→      });
+   249→    });
+   250→
+   251→    recentQuotes?.forEach((q) => {
+   252→      recentActivityItems.push({
+   253→        id: q.id,
+   254→        type: 'quote',
+   255→        message: `Quote "${q.title}" — ${q.status}`,
+   256→        time: formatDate(q.createdAt),
+   257→        icon: FileText,
+   258→      });
+   259→    });
+   260→
+   261→    recentPayments?.forEach((p) => {
+   262→      recentActivityItems.push({
+   263→        id: p.id,
+   264→        type: 'payment',
+   265→        message: `Payment ${formatCurrency(p.amount)} via ${p.method} — ${p.status}`,
+   266→        time: formatDate(p.createdAt),
+   267→        icon: DollarSign,
+   268→      });
+   269→    });
+   270→
+   271→    recentTickets?.forEach((tk) => {
+   272→      recentActivityItems.push({
+   273→        id: tk.id,
+   274→        type: 'ticket',
+   275→        message: `Support ticket: "${tk.subject}" — ${tk.status}`,
+   276→        time: formatDate(tk.createdAt),
+   277→        icon: CheckCircle2,
+   278→      });
+   279→    });
+   280→
+   281→    recentPosts?.forEach((p) => {
+   282→      recentActivityItems.push({
+   283→        id: p.id,
+   284→        type: 'post',
+   285→        message: `Blog post published: "${p.title}"`,
+   286→        time: formatDate(p.createdAt),
+   287→        icon: BookOpen,
+   288→      });
+   289→    });
+   290→
+   291→    // Sort by most recent
+   292→    recentActivityItems.sort((a, b) => {
+   293→      // Simple string comparison on date strings
+   294→      return a.time.localeCompare(b.time) * -1;
+   295→    });
+   296→  }
+   297→
+   298→  const overviewCards = [
+   299→    {
+   300→      icon: Users,
+   301→      label: t('admin.usersTotal'),
+   302→      value: totalUsers.toLocaleString(),
+   303→      change: `${stats?.users.active ?? 0} active`,
+   304→      up: true,
+   305→      color: 'emerald',
+   306→    },
+   307→    {
+   308→      icon: FileText,
+   309→      label: 'Posts',
+   310→      value: totalPosts.toLocaleString(),
+   311→      change: `${stats?.content?.publishedPosts ?? 0} published`,
+   312→      up: true,
+   313→      color: 'green',
+   314→    },
+   315→    {
+   316→      icon: Briefcase,
+   317→      label: t('projects.title'),
+   318→      value: totalProjects.toLocaleString(),
+   319→      change: `${stats?.projects?.featured ?? 0} featured`,
+   320→      up: true,
+   321→      color: 'teal',
+   322→    },
+   323→    {
+   324→      icon: DollarSign,
+   325→      label: t('admin.totalRevenue'),
+   326→      value: formatCurrency(totalRevenue),
+   327→      change: `${formatCurrency(confirmedRevenue)} confirmed`,
+   328→      up: true,
+   329→      color: 'yellow',
+   330→    },
+   331→  ];
+   332→
+   333→  const managementSections = [
+   334→    {
+   335→      icon: Users,
+   336→      title: t('admin.users'),
+   337→      description: t('admin.usersList'),
+   338→      count: totalUsers,
+   339→      color: 'emerald',
+   340→    },
+   341→    {
+   342→      icon: Layers,
+   343→      title: t('services.title'),
+   344→      description: t('admin.moderationContent'),
+   345→      count: totalServices,
+   346→      color: 'green',
+   347→    },
+   348→    {
+   349→      icon: Briefcase,
+   350→      title: t('projects.title'),
+   351→      description: 'Manage platform projects',
+   352→      count: totalProjects,
+   353→      color: 'teal',
+   354→    },
+   355→    {
+   356→      icon: BookOpen,
+   357→      title: t('blog.title'),
+   358→      description: t('admin.moderationContent'),
+   359→      count: totalPosts,
+   360→      color: 'yellow',
+   361→    },
+   362→  ];
+   363→
+   364→  // ── Loading skeletons ──
+   365→  if (loading) {
+   366→    return (
+   367→      <motion.div
+   368→        variants={containerVariants}
+   369→        initial="hidden"
+   370→        animate="visible"
+   371→        className="space-y-6"
+   372→      >
+   373→        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   374→          {[1, 2, 3, 4].map((i) => (
+   375→            <Card key={i} className="border-l-4 border-l-emerald-500">
+   376→              <CardContent className="p-4 sm:p-6">
+   377→                <Skeleton className="h-4 w-20 mb-2" />
+   378→                <Skeleton className="h-8 w-24 mb-2" />
+   379→                <Skeleton className="h-3 w-16" />
+   380→              </CardContent>
+   381→            </Card>
+   382→          ))}
+   383→        </div>
+   384→
+   385→        <Card>
+   386→          <CardContent className="p-6">
+   387→            <Skeleton className="h-6 w-32 mb-4" />
+   388→            <Skeleton className="h-[300px] w-full rounded-lg" />
+   389→          </CardContent>
+   390→        </Card>
+   391→
+   392→        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+   393→          <Card>
+   394→            <CardContent className="p-6">
+   395→              <Skeleton className="h-6 w-32 mb-4" />
+   396→              <Skeleton className="h-[250px] w-full rounded-lg" />
+   397→            </CardContent>
+   398→          </Card>
+   399→          <Card>
+   400→            <CardContent className="p-6">
+   401→              <Skeleton className="h-6 w-32 mb-4" />
+   402→              <Skeleton className="h-[250px] w-full rounded-lg" />
+   403→            </CardContent>
+   404→          </Card>
+   405→        </div>
+   406→      </motion.div>
+   407→    );
+   408→  }
+   409→
+   410→  // ── Error state ──
+   411→  if (error) {
+   412→    return (
+   413→      <motion.div
+   414→        variants={containerVariants}
+   415→        initial="hidden"
+   416→        animate="visible"
+   417→        className="space-y-6"
+   418→      >
+   419→        <Card className="border-l-4 border-l-red-500">
+   420→          <CardContent className="p-6">
+   421→            <div className="flex items-center gap-3">
+   422→              <AlertCircle className="h-6 w-6 text-red-500" />
+   423→              <div>
+   424→                <h3 className="font-semibold text-red-700">Failed to load admin dashboard</h3>
+   425→                <p className="text-sm text-muted-foreground">{error}</p>
+   426→              </div>
+   427→            </div>
+   428→            <Button
+   429→              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white"
+   430→              onClick={() => window.location.reload()}
+   431→            >
+   432→              {t('common.retry') || 'Retry'}
+   433→            </Button>
+   434→          </CardContent>
+   435→        </Card>
+   436→      </motion.div>
+   437→    );
+   438→  }
+   439→
+   440→  return (
+   441→    <motion.div
+   442→      variants={containerVariants}
+   443→      initial="hidden"
+   444→      animate="visible"
+   445→      className="space-y-6"
+   446→    >
+   447→      {/* ── Stats Overview Cards ── */}
+   448→      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   449→        {overviewCards.map((card) => (
+   450→          <motion.div key={card.label} variants={itemVariants}>
+   451→            <Card className="hover:shadow-md transition-all border-l-4 border-l-emerald-500">
+   452→              <CardContent className="p-4 sm:p-6">
+   453→                <div className="flex items-start justify-between">
+   454→                  <div className="space-y-2">
+   455→                    <p className="text-sm text-muted-foreground">{card.label}</p>
+   456→                    <p className="text-2xl font-bold">{card.value}</p>
+   457→                    <div className="flex items-center gap-1">
+   458→                      {card.up ? (
+   459→                        <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600" />
+   460→                      ) : (
+   461→                        <ArrowDownRight className="h-3.5 w-3.5 text-red-500" />
+   462→                      )}
+   463→                      <span className={`text-xs font-medium ${card.up ? 'text-emerald-600' : 'text-red-500'}`}>
+   464→                        {card.change}
+   465→                      </span>
+   466→                    </div>
+   467→                  </div>
+   468→                  <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+   469→                    <card.icon className="h-5 w-5" />
+   470→                  </div>
+   471→                </div>
+   472→              </CardContent>
+   473→            </Card>
+   474→          </motion.div>
+   475→        ))}
+   476→      </motion.div>
+   477→
+   478→      {/* ── Charts Section ── */}
+   479→      <Tabs value={activeTab} onValueChange={setActiveTab}>
+   480→        <TabsList className="bg-emerald-50">
+   481→          <TabsTrigger value="overview" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+   482→            {t('common.overview')}
+   483→          </TabsTrigger>
+   484→          <TabsTrigger value="analytics" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+   485→            {t('admin.analytics')}
+   486→          </TabsTrigger>
+   487→          <TabsTrigger value="management" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+   488→            {t('admin.moderation')}
+   489→          </TabsTrigger>
+   490→        </TabsList>
+   491→
+   492→        {/* ── Overview Tab ── */}
+   493→        <TabsContent value="overview" className="space-y-6 mt-4">
+   494→          {/* Revenue Chart */}
+   495→          <motion.div variants={itemVariants}>
+   496→            <Card>
+   497→              <CardHeader>
+   498→                <CardTitle className="text-lg flex items-center gap-2">
+   499→                  <TrendingUp className="h-5 w-5 text-emerald-600" />
+   500→                  {t('admin.analyticsRevenue')}
+   501→                </CardTitle>
+   502→                <CardDescription>{t('admin.monthlyRevenue')}</CardDescription>
+   503→              </CardHeader>
+   504→              <CardContent>
+   505→                {revenueData.length === 0 ? (
+   506→                  <div className="text-center py-12">
+   507→                    <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+   508→                    <p className="text-muted-foreground">{t('common.noData') || 'No revenue data available'}</p>
+   509→                  </div>
+   510→                ) : (
+   511→                  <ResponsiveContainer width="100%" height={300}>
+   512→                    <LineChart data={revenueData}>
+   513→                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+   514→                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+   515→                      <YAxis tick={{ fontSize: 12 }} />
+   516→                      <Tooltip
+   517→                        contentStyle={{ borderRadius: '8px', border: '1px solid #d1fae5' }}
+   518→                        formatter={(value: number) => formatCurrency(value)}
+   519→                      />
+   520→                      <Legend />
+   521→                      <Line
+   522→                        type="monotone"
+   523→                        dataKey="revenue"
+   524→                        name="Revenue"
+   525→                        stroke="#059669"
+   526→                        strokeWidth={3}
+   527→                        dot={{ fill: '#059669', strokeWidth: 2 }}
+   528→                        activeDot={{ r: 6 }}
+   529→                      />
+   530→                      <Line
+   531→                        type="monotone"
+   532→                        dataKey="target"
+   533→                        name="Target"
+   534→                        stroke="#6ee7b7"
+   535→                        strokeWidth={2}
+   536→                        strokeDasharray="5 5"
+   537→                      />
+   538→                    </LineChart>
+   539→                  </ResponsiveContainer>
+   540→                )}
+   541→              </CardContent>
+   542→            </Card>
+   543→          </motion.div>
+   544→
+   545→          {/* Two-column charts */}
+   546→          <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+   547→            {/* Users Growth */}
+   548→            <Card>
+   549→              <CardHeader>
+   550→                <CardTitle className="text-lg flex items-center gap-2">
+   551→                  <BarChart3 className="h-5 w-5 text-emerald-600" />
+   552→                  {t('admin.analyticsUsers')}
+   553→                </CardTitle>
+   554→              </CardHeader>
+   555→              <CardContent>
+   556→                {usersGrowthData.length === 0 ? (
+   557→                  <div className="text-center py-12">
+   558→                    <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+   559→                    <p className="text-muted-foreground">{t('common.noData') || 'No user data available'}</p>
+   560→                  </div>
+   561→                ) : (
+   562→                  <ResponsiveContainer width="100%" height={250}>
+   563→                    <BarChart data={usersGrowthData}>
+   564→                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+   565→                      <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+   566→                      <YAxis tick={{ fontSize: 11 }} />
+   567→                      <Tooltip
+   568→                        contentStyle={{ borderRadius: '8px', border: '1px solid #d1fae5' }}
+   569→                      />
+   570→                      <Legend />
+   571→                      <Bar dataKey="newUsers" name="New Users" fill="#059669" radius={[4, 4, 0, 0]} />
+   572→                      <Bar dataKey="totalUsers" name="Total Users" fill="#6ee7b7" radius={[4, 4, 0, 0]} />
+   573→                    </BarChart>
+   574→                  </ResponsiveContainer>
+   575→                )}
+   576→              </CardContent>
+   577→            </Card>
+   578→
+   579→            {/* Posts by Category */}
+   580→            <Card>
+   581→              <CardHeader>
+   582→                <CardTitle className="text-lg flex items-center gap-2">
+   583→                  <PieChartIcon className="h-5 w-5 text-emerald-600" />
+   584→                  Posts by Category
+   585→                </CardTitle>
+   586→              </CardHeader>
+   587→              <CardContent>
+   588→                {postsByCategoryData.length === 0 ? (
+   589→                  <div className="text-center py-12">
+   590→                    <PieChartIcon className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+   591→                    <p className="text-muted-foreground">{t('common.noData') || 'No category data available'}</p>
+   592→                  </div>
+   593→                ) : (
+   594→                  <ResponsiveContainer width="100%" height={250}>
+   595→                    <PieChart>
+   596→                      <Pie
+   597→                        data={postsByCategoryData}
+   598→                        cx="50%"
+   599→                        cy="50%"
+   600→                        innerRadius={60}
+   601→                        outerRadius={90}
+   602→                        paddingAngle={3}
+   603→                        dataKey="value"
+   604→                        label={({ name, value }) => `${name}: ${value}`}
+   605→                      >
+   606→                        {postsByCategoryData.map((_, index) => (
+   607→                          <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+   608→                        ))}
+   609→                      </Pie>
+   610→                      <Tooltip
+   611→                        contentStyle={{ borderRadius: '8px', border: '1px solid #d1fae5' }}
+   612→                      />
+   613→                      <Legend />
+   614→                    </PieChart>
+   615→                  </ResponsiveContainer>
+   616→                )}
+   617→              </CardContent>
+   618→            </Card>
+   619→          </motion.div>
+   620→
+   621→          {/* Recent Activity */}
+   622→          <motion.div variants={itemVariants}>
+   623→            <Card>
+   624→              <CardHeader>
+   625→                <CardTitle className="text-lg flex items-center gap-2">
+   626→                  <Activity className="h-5 w-5 text-emerald-600" />
+   627→                  {t('dashboard.activityRecent')}
+   628→                </CardTitle>
+   629→              </CardHeader>
+   630→              <CardContent>
+   631→                {recentActivityItems.length === 0 ? (
+   632→                  <div className="text-center py-12">
+   633→                    <Inbox className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+   634→                    <p className="text-muted-foreground">{t('common.noData') || 'No recent activity'}</p>
+   635→                  </div>
+   636→                ) : (
+   637→                  <div className="space-y-3 max-h-80 overflow-y-auto">
+   638→                    {recentActivityItems.slice(0, 10).map((item) => (
+   639→                      <div key={item.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors">
+   640→                        <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+   641→                          <item.icon className="h-4 w-4" />
+   642→                        </div>
+   643→                        <div className="flex-1">
+   644→                          <p className="text-sm font-medium">{item.message}</p>
+   645→                          <p className="text-xs text-muted-foreground">{item.time}</p>
+   646→                        </div>
+   647→                        <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+   648→                          <Eye className="h-4 w-4" />
+   649→                        </Button>
+   650→                      </div>
+   651→                    ))}
+   652→                  </div>
+   653→                )}
+   654→              </CardContent>
+   655→            </Card>
+   656→          </motion.div>
+   657→        </TabsContent>
+   658→
+   659→        {/* ── Analytics Tab ── */}
+   660→        <TabsContent value="analytics" className="space-y-6 mt-4">
+   661→          {/* Revenue Chart (larger) */}
+   662→          <Card>
+   663→            <CardHeader>
+   664→              <CardTitle className="text-lg">{t('admin.analyticsRevenue')}</CardTitle>
+   665→            </CardHeader>
+   666→            <CardContent>
+   667→              {revenueData.length === 0 ? (
+   668→                <div className="text-center py-12">
+   669→                  <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+   670→                  <p className="text-muted-foreground">{t('common.noData') || 'No revenue data available'}</p>
+   671→                </div>
+   672→              ) : (
+   673→                <ResponsiveContainer width="100%" height={350}>
+   674→                  <LineChart data={revenueData}>
+   675→                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+   676→                    <XAxis dataKey="month" />
+   677→                    <YAxis />
+   678→                    <Tooltip
+   679→                      contentStyle={{ borderRadius: '8px', border: '1px solid #d1fae5' }}
+   680→                      formatter={(value: number) => formatCurrency(value)}
+   681→                    />
+   682→                    <Legend />
+   683→                    <Line type="monotone" dataKey="revenue" stroke="#059669" strokeWidth={3} />
+   684→                    <Line type="monotone" dataKey="target" stroke="#6ee7b7" strokeDasharray="5 5" />
+   685→                  </LineChart>
+   686→                </ResponsiveContainer>
+   687→              )}
+   688→            </CardContent>
+   689→          </Card>
+   690→
+   691→          {/* Payment methods breakdown */}
+   692→          <Card>
+   693→            <CardHeader>
+   694→              <CardTitle className="text-lg">Payment Methods Breakdown</CardTitle>
+   695→            </CardHeader>
+   696→            <CardContent>
+   697→              {stats?.payments?.total === 0 ? (
+   698→                <div className="text-center py-12">
+   699→                  <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+   700→                  <p className="text-muted-foreground">{t('common.noData') || 'No payment data available'}</p>
+   701→                </div>
+   702→              ) : (
+   703→                <ResponsiveContainer width="100%" height={250}>
+   704→                  <PieChart>
+   705→                    <Pie
+   706→                      data={[
+   707→                        { name: 'M-Pesa', value: stats?.payments.mpesa ?? 0 },
+   708→                        { name: 'Transfer', value: stats?.payments.transfer ?? 0 },
+   709→                        { name: 'Deposit', value: stats?.payments.deposit ?? 0 },
+   710→                      ]}
+   711→                      cx="50%"
+   712→                      cy="50%"
+   713→                      innerRadius={50}
+   714→                      outerRadius={80}
+   715→                      paddingAngle={5}
+   716→                      dataKey="value"
+   717→                      label={({ name, value }) => `${name}: ${value}`}
+   718→                    >
+   719→                      <Cell fill="#059669" />
+   720→                      <Cell fill="#10b981" />
+   721→                      <Cell fill="#34d399" />
+   722→                    </Pie>
+   723→                    <Tooltip />
+   724→                    <Legend />
+   725→                  </PieChart>
+   726→                </ResponsiveContainer>
+   727→              )}
+   728→            </CardContent>
+   729→          </Card>
+   730→        </TabsContent>
+   731→
+   732→        {/* ── Management Tab ── */}
+   733→        <TabsContent value="management" className="space-y-6 mt-4">
+   734→          <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+   735→            {managementSections.map((section) => (
+   736→              <Card key={section.title} className="hover:shadow-md transition-shadow">
+   737→                <CardContent className="p-6">
+   738→                  <div className="flex items-start gap-4">
+   739→                    <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+   740→                      <section.icon className="h-6 w-6" />
+   741→                    </div>
+   742→                    <div className="flex-1">
+   743→                      <h3 className="font-semibold text-lg">{section.title}</h3>
+   744→                      <p className="text-sm text-muted-foreground mt-1">{section.description}</p>
+   745→                      <div className="flex items-center gap-2 mt-3">
+   746→                        <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+   747→                          {section.count} {t('common.total')}
+   748→                        </Badge>
+   749→                      </div>
+   750→                      <div className="flex gap-2 mt-4">
+   751→                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+   752→                          <Eye className="h-4 w-4 mr-1" />
+   753→                          {t('common.details')}
+   754→                        </Button>
+   755→                        <Button size="sm" variant="outline" className="border-emerald-200 text-emerald-600">
+   756→                          <Settings className="h-4 w-4 mr-1" />
+   757→                          {t('common.settings')}
+   758→                        </Button>
+   759→                      </div>
+   760→                    </div>
+   761→                  </div>
+   762→                </CardContent>
+   763→              </Card>
+   764→            ))}
+   765→          </motion.div>
+   766→
+   767→          {/* System Health */}
+   768→          <Card className="border-l-4 border-l-emerald-500">
+   769→            <CardHeader>
+   770→              <CardTitle className="text-lg flex items-center gap-2">
+   771→                <Server className="h-5 w-5 text-emerald-600" />
+   772→                {t('admin.systemHealth')}
+   773→              </CardTitle>
+   774→            </CardHeader>
+   775→            <CardContent>
+   776→              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+   777→                <div className="p-4 rounded-lg bg-emerald-50/80">
+   778→                  <div className="flex items-center gap-2 mb-2">
+   779→                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+   780→                    <span className="font-medium">Server Status</span>
+   781→                  </div>
+   782→                  <p className="text-sm text-emerald-700">All systems operational</p>
+   783→                </div>
+   784→                <div className="p-4 rounded-lg bg-emerald-50/80">
+   785→                  <div className="flex items-center gap-2 mb-2">
+   786→                    <Clock className="h-5 w-5 text-emerald-600" />
+   787→                    <span className="font-medium">Uptime</span>
+   788→                  </div>
+   789→                  <p className="text-sm text-emerald-700">
+   790→                    {stats?.overview ? `${stats.overview.totalUsers} users active` : 'N/A'}
+   791→                  </p>
+   792→                </div>
+   793→                <div className="p-4 rounded-lg bg-emerald-50/80">
+   794→                  <div className="flex items-center gap-2 mb-2">
+   795→                    <AlertTriangle className="h-5 w-5 text-yellow-600" />
+   796→                    <span className="font-medium">Support</span>
+   797→                  </div>
+   798→                  <p className="text-sm text-yellow-700">
+   799→                    {stats?.support ? `${stats.support.openTickets} open tickets` : '0 open tickets'}
+   800→                  </p>
+   801→                </div>
+   802→              </div>
+   803→            </CardContent>
+   804→          </Card>
+   805→        </TabsContent>
+   806→      </Tabs>
+   807→    </motion.div>
+   808→  );
+   809→}
+   810→

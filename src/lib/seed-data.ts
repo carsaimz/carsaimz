@@ -1,16 +1,17 @@
 import { db } from '@/lib/db'
+import { createHash } from 'crypto'
 
 /**
- * Default password hash for admin registration.
- * This corresponds to the bcrypt hash of a default admin password.
- * When an admin registers, they should override this with their own password.
+ * Hash a password using SHA-256 (matching the auth routes' hashing method).
  */
-export const DEFAULT_ADMIN_PASSWORD_HASH = ''
+function hashPassword(password: string): string {
+  return createHash('sha256').update(password).digest('hex')
+}
 
 /**
  * Seeds the Carsai Mozambique database with minimal essential infrastructure.
  * No demo content is created — the database starts clean.
- * Only roles, permissions, and essential settings are populated.
+ * Only roles, permissions, essential settings, and a super_admin user are populated.
  */
 export async function seedDatabase() {
   console.log('🇲🇿 Starting Carsai Mozambique database seeding (clean mode)...')
@@ -51,6 +52,13 @@ export async function seedDatabase() {
 
   // === 1. Roles ===
   console.log('Creating roles...')
+  const superAdminRole = await db.role.create({
+    data: {
+      name: 'super_admin',
+      description: 'Super administrador com acesso total e irrestrito ao sistema',
+    },
+  })
+
   const adminRole = await db.role.create({
     data: {
       name: 'admin',
@@ -131,6 +139,12 @@ export async function seedDatabase() {
   // Helper to find permission by name
   const findPerm = (name: string) => permissions.find((p) => p.name === name)!
 
+  // Super_admin gets ALL permissions (same as admin)
+  const superAdminPerms = permissions.map((p) => ({
+    roleId: superAdminRole.id,
+    permissionId: p.id,
+  }))
+
   // Admin gets ALL permissions
   const adminPerms = permissions.map((p) => ({
     roleId: adminRole.id,
@@ -171,58 +185,77 @@ export async function seedDatabase() {
   }))
 
   await db.rolePermission.createMany({
-    data: [...adminPerms, ...partnerPerms, ...userPerms],
+    data: [...superAdminPerms, ...adminPerms, ...partnerPerms, ...userPerms],
   })
 
-  // === 4. Essential Settings ===
+  // === 4. Create super_admin user ===
+  console.log('Creating super_admin user...')
+  const superAdminUser = await db.user.create({
+    data: {
+      name: 'Carsai Admin',
+      email: 'carsaimozambique@gmail.com',
+      passwordHash: hashPassword('Carnanda23'),
+      roleId: superAdminRole.id,
+      isActive: true,
+    },
+  })
+
+  // === 5. Create a regular admin user for testing ===
+  console.log('Creating admin user for testing...')
+  const adminUser = await db.user.create({
+    data: {
+      name: 'Admin Test',
+      email: 'admin@carsai.mz',
+      passwordHash: hashPassword('Admin12345'),
+      roleId: adminRole.id,
+      isActive: true,
+    },
+  })
+
+  // === 6. Essential Settings ===
   console.log('Creating essential settings...')
-  await Promise.all([
-    db.setting.create({
-      data: {
-        key: 'company_name',
-        value: 'Carsai Mozambique',
-      },
-    }),
-    db.setting.create({
-      data: {
-        key: 'contact_email',
-        value: 'info@carsai.mz',
-      },
-    }),
-    db.setting.create({
-      data: {
-        key: 'contact_phone',
-        value: '+258 21 123 456',
-      },
-    }),
-    db.setting.create({
-      data: {
-        key: 'contact_address',
-        value: 'Av. Julius Nyerere, 123, Maputo, Mozambique',
-      },
-    }),
-    db.setting.create({
-      data: {
-        key: 'website_url',
-        value: 'https://carsai.mz',
-      },
-    }),
-  ])
+  const settingDefs = [
+    { key: 'company_name', value: 'Carsai Moçambique' },
+    { key: 'contact_email', value: 'carsaimozambique@gmail.com' },
+    { key: 'support_email', value: 'suporte.carsaimz@gmail.com' },
+    { key: 'developer_email', value: 'carsaideveloper@gmail.com' },
+    { key: 'contact_phone', value: '847545020 / 874512581 / 84246463 / 835020143' },
+    { key: 'contact_address', value: 'Montepuez, Cabo Delgado, Moçambique (operação online)' },
+    { key: 'website_url', value: 'https://carsai.mz' },
+    { key: 'ceo_name', value: 'Carimo Saide Mpinda' },
+    { key: 'developer_name', value: 'CarsaiDev' },
+    { key: 'social_whatsapp', value: '847545020' },
+    { key: 'social_facebook', value: 'carsaimz' },
+    { key: 'social_instagram', value: 'carsaimz' },
+    { key: 'social_tiktok', value: 'carsaimz' },
+    { key: 'social_youtube', value: 'carsaimz' },
+    { key: 'social_discord', value: 'carsaimz' },
+    { key: 'social_github', value: 'carsaimz' },
+  ]
+
+  await Promise.all(
+    settingDefs.map((def) => db.setting.create({ data: def }))
+  )
 
   // === Summary ===
   console.log('🇲🇿 Carsai Mozambique seeding completed (clean mode)!')
-  console.log(`  - Roles: 3 (admin, partner, user)`)
+  console.log(`  - Roles: 4 (super_admin, admin, partner, user)`)
   console.log(`  - Permissions: ${permissions.length}`)
+  console.log(`  - Super_admin permissions: ${superAdminPerms.length}`)
   console.log(`  - Admin permissions: ${adminPerms.length}`)
   console.log(`  - Partner permissions: ${partnerPerms.length}`)
   console.log(`  - User permissions: ${userPerms.length}`)
-  console.log(`  - Settings: 5 (company_name, contact_email, contact_phone, contact_address, website_url)`)
+  console.log(`  - Super_admin user: ${superAdminUser.email}`)
+  console.log(`  - Admin user: ${adminUser.email}`)
+  console.log(`  - Settings: ${settingDefs.length} (company, contact, social media)`)
   console.log(`  - No demo content created — database starts clean`)
 
   return {
-    roles: 3,
+    roles: 4,
     permissions: permissions.length,
-    rolePermissions: adminPerms.length + partnerPerms.length + userPerms.length,
-    settings: 5,
+    rolePermissions: superAdminPerms.length + adminPerms.length + partnerPerms.length + userPerms.length,
+    settings: settingDefs.length,
+    superAdminUser: superAdminUser.email,
+    adminUser: adminUser.email,
   }
 }

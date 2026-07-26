@@ -1,0 +1,1087 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect, useCallback } from 'react';
+     4→import { motion } from 'framer-motion';
+     5→import { useLanguage } from '@/contexts/language-context';
+     6→import { type LanguageCode, AVAILABLE_LANGUAGES, DEFAULT_LANGUAGE } from '@/lib/i18n';
+     7→import { LanguageTabs } from '@/components/common/language-tabs';
+     8→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+     9→import { Button } from '@/components/ui/button';
+    10→import { Input } from '@/components/ui/input';
+    11→import { Label } from '@/components/ui/label';
+    12→import { Textarea } from '@/components/ui/textarea';
+    13→import { Switch } from '@/components/ui/switch';
+    14→import { Badge } from '@/components/ui/badge';
+    15→import { Separator } from '@/components/ui/separator';
+    16→import {
+    17→  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+    18→} from '@/components/ui/table';
+    19→import {
+    20→  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+    21→} from '@/components/ui/dialog';
+    22→import {
+    23→  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+    24→  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+    25→} from '@/components/ui/alert-dialog';
+    26→import {
+    27→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    28→} from '@/components/ui/select';
+    29→import { useToast } from '@/hooks/use-toast';
+    30→import {
+    31→  Plus, Pencil, Trash2, Star, Globe, Eye, EyeOff,
+    32→} from 'lucide-react';
+    33→
+    34→// ============================================================================
+    35→// Animation
+    36→// ============================================================================
+    37→
+    38→const containerVariants = {
+    39→  hidden: { opacity: 0 },
+    40→  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+    41→};
+    42→const itemVariants = {
+    43→  hidden: { opacity: 0, y: 20 },
+    44→  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+    45→};
+    46→
+    47→// ============================================================================
+    48→// Types
+    49→// ============================================================================
+    50→
+    51→type ContentType = 'services' | 'projects' | 'posts' | 'testimonials';
+    52→
+    53→interface ContentItem {
+    54→  id: string;
+    55→  title?: string;
+    56→  name?: string;
+    57→  slug?: string;
+    58→  description?: string;
+    59→  excerpt?: string;
+    60→  content?: string;
+    61→  titleI18n?: string | null;
+    62→  descriptionI18n?: string | null;
+    63→  excerptI18n?: string | null;
+    64→  contentI18n?: string | null;
+    65→  contentI18nField?: string | null;
+    66→  icon?: string | null;
+    67→  basePrice?: number | null;
+    68→  order?: number;
+    69→  isFeatured?: boolean;
+    70→  isPublished?: boolean;
+    71→  published?: boolean;
+    72→  client?: string | null;
+    73→  technologies?: string | null;
+    74→  demoUrl?: string | null;
+    75→  company?: string | null;
+    76→  rating?: number;
+    77→  categoryId?: string | null;
+    78→  createdAt?: string;
+    79→}
+    80→
+    81→interface Category {
+    82→  id: string;
+    83→  name: string;
+    84→  slug: string;
+    85→}
+    86→
+    87→const SERVICE_ICONS = [
+    88→  'Globe', 'Smartphone', 'ShoppingCart', 'BarChart3', 'Shield',
+    89→  'Cloud', 'Database', 'Cpu', 'Palette', 'Camera',
+    90→  'Search', 'Code2', 'Layout', 'Server', 'Headphones',
+    91→];
+    92→
+    93→// ============================================================================
+    94→// Helper Functions
+    95→// ============================================================================
+    96→
+    97→function slugify(text: string): string {
+    98→  return text
+    99→    .toLowerCase()
+   100→    .normalize('NFD')
+   101→    .replace(/[\u0300-\u036f]/g, '')
+   102→    .replace(/[^\w\s-]/g, '')
+   103→    .replace(/\s+/g, '-')
+   104→    .replace(/-+/g, '-')
+   105→    .trim();
+   106→}
+   107→
+   108→function parseI18n(jsonStr: string | null | undefined): Record<string, string> {
+   109→  if (!jsonStr) return {};
+   110→  try {
+   111→    return JSON.parse(jsonStr);
+   112→  } catch {
+   113→    return {};
+   114→  }
+   115→}
+   116→
+   117→function stringifyI18n(obj: Record<string, string>): string | null {
+   118→  const filtered = Object.fromEntries(
+   119→    Object.entries(obj).filter(([_, v]) => v && v.trim())
+   120→  );
+   121→  if (Object.keys(filtered).length === 0) return null;
+   122→  return JSON.stringify(filtered);
+   123→}
+   124→
+   125→function getApiEndpoint(type: ContentType): string {
+   126→  return `/api/admin/${type}`;
+   127→}
+   128→
+   129→// ============================================================================
+   130→// Component
+   131→// ============================================================================
+   132→
+   133→export function AdminContentManager({ contentType }: { contentType: ContentType }) {
+   134→  const { t } = useLanguage();
+   135→  const { toast } = useToast();
+   136→
+   137→  // State
+   138→  const [items, setItems] = useState<ContentItem[]>([]);
+   139→  const [categories, setCategories] = useState<Category[]>([]);
+   140→  const [loading, setLoading] = useState(true);
+   141→  const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
+   142→  const [isCreate, setIsCreate] = useState(false);
+   143→  const [dialogOpen, setDialogOpen] = useState(false);
+   144→  const [deleteTarget, setDeleteTarget] = useState<ContentItem | null>(null);
+   145→  const [saving, setSaving] = useState(false);
+   146→
+   147→  // Form state - default language values
+   148→  const [formTitle, setFormTitle] = useState('');
+   149→  const [formSlug, setFormSlug] = useState('');
+   150→  const [formDescription, setFormDescription] = useState('');
+   151→  const [formExcerpt, setFormExcerpt] = useState('');
+   152→  const [formContent, setFormContent] = useState('');
+   153→  const [formIcon, setFormIcon] = useState('');
+   154→  const [formBasePrice, setFormBasePrice] = useState('');
+   155→  const [formOrder, setFormOrder] = useState('0');
+   156→  const [formFeatured, setFormFeatured] = useState(false);
+   157→  const [formPublished, setFormPublished] = useState(false);
+   158→  const [formClient, setFormClient] = useState('');
+   159→  const [formTechnologies, setFormTechnologies] = useState('');
+   160→  const [formDemoUrl, setFormDemoUrl] = useState('');
+   161→  const [formName, setFormName] = useState('');
+   162→  const [formCompany, setFormCompany] = useState('');
+   163→  const [formRating, setFormRating] = useState(5);
+   164→  const [formCategoryId, setFormCategoryId] = useState('');
+   165→
+   166→  // Form state - i18n values per language
+   167→  const [formTitleI18n, setFormTitleI18n] = useState<Record<string, string>>({});
+   168→  const [formDescI18n, setFormDescI18n] = useState<Record<string, string>>({});
+   169→  const [formExcerptI18n, setFormExcerptI18n] = useState<Record<string, string>>({});
+   170→  const [formContentI18n, setFormContentI18n] = useState<Record<string, string>>({});
+   171→
+   172→  // Auto-generate slug from title
+   173→  const handleTitleChange = (value: string) => {
+   174→    setFormTitle(value);
+   175→    if (isCreate && !formSlug) {
+   176→      setFormSlug(slugify(value));
+   177→    }
+   178→  };
+   179→
+   180→  // Fetch data
+   181→  const fetchItems = useCallback(async () => {
+   182→    setLoading(true);
+   183→    try {
+   184→      const res = await fetch(getApiEndpoint(contentType));
+   185→      const data = await res.json();
+   186→      if (data.success) {
+   187→        setItems(data.data);
+   188→      }
+   189→    } catch (err) {
+   190→      console.error('Fetch error:', err);
+   191→    } finally {
+   192→      setLoading(false);
+   193→    }
+   194→  }, [contentType]);
+   195→
+   196→  const fetchCategories = useCallback(async () => {
+   197→    if (contentType !== 'posts') return;
+   198→    try {
+   199→      const res = await fetch('/api/admin/categories');
+   200→      const data = await res.json();
+   201→      if (data.success) {
+   202→        setCategories(data.data);
+   203→      }
+   204→    } catch (err) {
+   205→      console.error('Categories fetch error:', err);
+   206→    }
+   207→  }, [contentType]);
+   208→
+   209→  useEffect(() => {
+   210→    fetchItems();
+   211→    fetchCategories();
+   212→  }, [fetchItems, fetchCategories]);
+   213→
+   214→  // Open create dialog
+   215→  const openCreate = () => {
+   216→    setIsCreate(true);
+   217→    setEditingItem(null);
+   218→    resetForm();
+   219→    setDialogOpen(true);
+   220→  };
+   221→
+   222→  // Open edit dialog
+   223→  const openEdit = (item: ContentItem) => {
+   224→    setIsCreate(false);
+   225→    setEditingItem(item);
+   226→    populateForm(item);
+   227→    setDialogOpen(true);
+   228→  };
+   229→
+   230→  // Reset form fields
+   231→  const resetForm = () => {
+   232→    setFormTitle('');
+   233→    setFormSlug('');
+   234→    setFormDescription('');
+   235→    setFormExcerpt('');
+   236→    setFormContent('');
+   237→    setFormIcon('');
+   238→    setFormBasePrice('');
+   239→    setFormOrder('0');
+   240→    setFormFeatured(false);
+   241→    setFormPublished(false);
+   242→    setFormClient('');
+   243→    setFormTechnologies('');
+   244→    setFormDemoUrl('');
+   245→    setFormName('');
+   246→    setFormCompany('');
+   247→    setFormRating(5);
+   248→    setFormCategoryId('');
+   249→    setFormTitleI18n({});
+   250→    setFormDescI18n({});
+   251→    setFormExcerptI18n({});
+   252→    setFormContentI18n({});
+   253→  };
+   254→
+   255→  // Populate form from item
+   256→  const populateForm = (item: ContentItem) => {
+   257→    setFormTitle(item.title || item.name || '');
+   258→    setFormSlug(item.slug || '');
+   259→    setFormDescription(item.description || '');
+   260→    setFormExcerpt(item.excerpt || '');
+   261→    setFormContent(item.content || '');
+   262→    setFormIcon(item.icon || '');
+   263→    setFormBasePrice(item.basePrice ? String(item.basePrice) : '');
+   264→    setFormOrder(String(item.order || 0));
+   265→    setFormFeatured(item.isFeatured || false);
+   266→    setFormPublished(item.isPublished || item.published || false);
+   267→    setFormClient(item.client || '');
+   268→    setFormTechnologies(item.technologies || '');
+   269→    setFormDemoUrl(item.demoUrl || '');
+   270→    setFormName(item.name || '');
+   271→    setFormCompany(item.company || '');
+   272→    setFormRating(item.rating || 5);
+   273→    setFormCategoryId(item.categoryId || '');
+   274→    setFormTitleI18n(parseI18n(item.titleI18n));
+   275→    setFormDescI18n(parseI18n(item.descriptionI18n));
+   276→    setFormExcerptI18n(parseI18n(item.excerptI18n));
+   277→    setFormContentI18n(parseI18n(item.contentI18n || item.contentI18nField));
+   278→  };
+   279→
+   280→  // Save (create or update)
+   281→  const handleSave = async () => {
+   282→    setSaving(true);
+   283→    try {
+   284→      const endpoint = getApiEndpoint(contentType);
+   285→      const method = isCreate ? 'POST' : 'PUT';
+   286→      const body = buildRequestBody();
+   287→
+   288→      const res = await fetch(endpoint, {
+   289→        method,
+   290→        headers: { 'Content-Type': 'application/json' },
+   291→        body: JSON.stringify(body),
+   292→      });
+   293→
+   294→      const data = await res.json();
+   295→      if (data.success) {
+   296→        toast({ title: isCreate ? t('admin.createNew') : t('admin.editItem'), description: 'Saved successfully' });
+   297→        setDialogOpen(false);
+   298→        fetchItems();
+   299→      } else {
+   300→        toast({ title: 'Error', description: data.message || 'Failed to save', variant: 'destructive' });
+   301→      }
+   302→    } catch (err) {
+   303→      console.error('Save error:', err);
+   304→      toast({ title: 'Error', description: 'Failed to save', variant: 'destructive' });
+   305→    } finally {
+   306→      setSaving(false);
+   307→    }
+   308→  };
+   309→
+   310→  // Build request body based on content type
+   311→  const buildRequestBody = () => {
+   312→    const titleI18nStr = stringifyI18n(formTitleI18n);
+   313→    const descI18nStr = stringifyI18n(formDescI18n);
+   314→    const excerptI18nStr = stringifyI18n(formExcerptI18n);
+   315→    const contentI18nStr = stringifyI18n(formContentI18n);
+   316→
+   317→    const base = isCreate ? {} : { id: editingItem?.id };
+   318→
+   319→    switch (contentType) {
+   320→      case 'services':
+   321→        return {
+   322→          ...base,
+   323→          title: formTitle,
+   324→          titleI18n: titleI18nStr,
+   325→          slug: formSlug,
+   326→          description: formDescription,
+   327→          descriptionI18n: descI18nStr,
+   328→          icon: formIcon,
+   329→          basePrice: formBasePrice ? parseFloat(formBasePrice) : null,
+   330→          order: parseInt(formOrder) || 0,
+   331→          isFeatured: formFeatured,
+   332→          isPublished: formPublished,
+   333→        };
+   334→      case 'projects':
+   335→        return {
+   336→          ...base,
+   337→          title: formTitle,
+   338→          titleI18n: titleI18nStr,
+   339→          slug: formSlug,
+   340→          description: formDescription,
+   341→          descriptionI18n: descI18nStr,
+   342→          client: formClient,
+   343→          technologies: formTechnologies,
+   344→          demoUrl: formDemoUrl,
+   345→          isFeatured: formFeatured,
+   346→          isPublished: formPublished,
+   347→        };
+   348→      case 'posts':
+   349→        return {
+   350→          ...base,
+   351→          title: formTitle,
+   352→          titleI18n: titleI18nStr,
+   353→          slug: formSlug,
+   354→          excerpt: formExcerpt,
+   355→          excerptI18n: excerptI18nStr,
+   356→          content: formContent,
+   357→          contentI18n: contentI18nStr,
+   358→          categoryId: formCategoryId || null,
+   359→          published: formPublished,
+   360→          authorId: editingItem?.authorId || 'default-author',
+   361→        };
+   362→      case 'testimonials':
+   363→        return {
+   364→          ...base,
+   365→          name: formName,
+   366→          company: formCompany,
+   367→          content: formContent,
+   368→          contentI18n: contentI18nStr,
+   369→          rating: formRating,
+   370→          isPublished: formPublished,
+   371→        };
+   372→      default:
+   373→        return base;
+   374→    }
+   375→  };
+   376→
+   377→  // Delete item
+   378→  const handleDelete = async () => {
+   379→    if (!deleteTarget) return;
+   380→    try {
+   381→      const res = await fetch(`${getApiEndpoint(contentType)}?id=${deleteTarget.id}`, {
+   382→        method: 'DELETE',
+   383→      });
+   384→      const data = await res.json();
+   385→      if (data.success) {
+   386→        toast({ title: t('admin.deleteItem'), description: 'Deleted successfully' });
+   387→        fetchItems();
+   388→      } else {
+   389→        toast({ title: 'Error', description: data.message || 'Failed to delete', variant: 'destructive' });
+   390→      }
+   391→    } catch (err) {
+   392→      console.error('Delete error:', err);
+   393→      toast({ title: 'Error', description: 'Failed to delete', variant: 'destructive' });
+   394→    } finally {
+   395→      setDeleteTarget(null);
+   396→    }
+   397→  };
+   398→
+   399→  // Toggle publish
+   400→  const togglePublish = async (item: ContentItem) => {
+   401→    try {
+   402→      const currentPublished = item.isPublished ?? item.published ?? false;
+   403→      const body = {
+   404→        id: item.id,
+   405→        isPublished: !currentPublished,
+   406→        published: !currentPublished,
+   407→      };
+   408→
+   409→      // For services/projects/testimonials use isPublished; for posts use published
+   410→      const updateBody = contentType === 'posts'
+   411→        ? { id: item.id, published: !currentPublished }
+   412→        : { id: item.id, isPublished: !currentPublished };
+   413→
+   414→      const res = await fetch(getApiEndpoint(contentType), {
+   415→        method: 'PUT',
+   416→        headers: { 'Content-Type': 'application/json' },
+   417→        body: JSON.stringify(updateBody),
+   418→      });
+   419→
+   420→      const data = await res.json();
+   421→      if (data.success) {
+   422→        toast({ title: t('admin.togglePublish'), description: 'Status updated' });
+   423→        fetchItems();
+   424→      }
+   425→    } catch (err) {
+   426→      console.error('Toggle error:', err);
+   427→    }
+   428→  };
+   429→
+   430→  // i18n field handlers
+   431→  const i18nLangs = AVAILABLE_LANGUAGES.filter((code) => code !== DEFAULT_LANGUAGE);
+   432→
+   433→  const setI18nValue = (
+   434→    setter: React.Dispatch<React.SetStateAction<Record<string, string>>>,
+   435→    lang: LanguageCode,
+   436→    value: string
+   437→  ) => {
+   438→    setter((prev) => ({ ...prev, [lang]: value }));
+   439→  };
+   440→
+   441→  // ============================================================================
+   442→  // Render form fields per content type
+   443→  // ============================================================================
+   444→
+   445→  const renderServiceForm = () => (
+   446→    <div className="space-y-4">
+   447→      {/* Title with language tabs */}
+   448→      <LanguageTabs
+   449→        defaultLanguageFields={
+   450→          <div className="space-y-2">
+   451→            <Label className="text-sm font-medium">{t('admin.title')}</Label>
+   452→            <Input
+   453→              value={formTitle}
+   454→              onChange={(e) => handleTitleChange(e.target.value)}
+   455→              placeholder="Nome do serviço"
+   456→              className="focus-visible:ring-emerald-500"
+   457→            />
+   458→          </div>
+   459→        }
+   460→        i18nLanguageFields={Object.fromEntries(
+   461→          i18nLangs.map((lang) => [
+   462→            lang,
+   463→            <div className="space-y-2" key={lang}>
+   464→              <Label className="text-sm font-medium">{t('admin.title')} ({lang})</Label>
+   465→              <Input
+   466→                value={formTitleI18n[lang] || ''}
+   467→                onChange={(e) => setI18nValue(setFormTitleI18n, lang, e.target.value)}
+   468→                placeholder={`Title in ${lang}`}
+   469→                className="focus-visible:ring-emerald-500"
+   470→              />
+   471→            </div>,
+   472→          ])
+   473→        )}
+   474→      />
+   475→
+   476→      {/* Slug */}
+   477→      <div className="space-y-2">
+   478→        <Label className="text-sm font-medium">{t('admin.slug')}</Label>
+   479→        <Input
+   480→          value={formSlug}
+   481→          onChange={(e) => setFormSlug(e.target.value)}
+   482→          placeholder="service-slug"
+   483→          className="focus-visible:ring-emerald-500"
+   484→        />
+   485→      </div>
+   486→
+   487→      {/* Description with language tabs */}
+   488→      <LanguageTabs
+   489→        defaultLanguageFields={
+   490→          <div className="space-y-2">
+   491→            <Label className="text-sm font-medium">{t('admin.description')}</Label>
+   492→            <Textarea
+   493→              value={formDescription}
+   494→              onChange={(e) => setFormDescription(e.target.value)}
+   495→              placeholder="Descrição do serviço"
+   496→              rows={3}
+   497→              className="focus-visible:ring-emerald-500"
+   498→            />
+   499→          </div>
+   500→        }
+   501→        i18nLanguageFields={Object.fromEntries(
+   502→          i18nLangs.map((lang) => [
+   503→            lang,
+   504→            <div className="space-y-2" key={lang}>
+   505→              <Label className="text-sm font-medium">{t('admin.description')} ({lang})</Label>
+   506→              <Textarea
+   507→                value={formDescI18n[lang] || ''}
+   508→                onChange={(e) => setI18nValue(setFormDescI18n, lang, e.target.value)}
+   509→                placeholder={`Description in ${lang}`}
+   510→                rows={3}
+   511→                className="focus-visible:ring-emerald-500"
+   512→              />
+   513→            </div>,
+   514→          ])
+   515→        )}
+   516→      />
+   517→
+   518→      {/* Icon */}
+   519→      <div className="space-y-2">
+   520→        <Label className="text-sm font-medium">{t('admin.icon')}</Label>
+   521→        <Select value={formIcon} onValueChange={setFormIcon}>
+   522→          <SelectTrigger className="w-full focus-visible:ring-emerald-500">
+   523→            <SelectValue placeholder="Select icon" />
+   524→          </SelectTrigger>
+   525→          <SelectContent>
+   526→            {SERVICE_ICONS.map((icon) => (
+   527→              <SelectItem key={icon} value={icon}>{icon}</SelectItem>
+   528→            ))}
+   529→          </SelectContent>
+   530→        </Select>
+   531→      </div>
+   532→
+   533→      {/* Base Price & Order */}
+   534→      <div className="grid grid-cols-2 gap-4">
+   535→        <div className="space-y-2">
+   536→          <Label className="text-sm font-medium">{t('admin.basePrice')} (MT)</Label>
+   537→          <Input
+   538→            type="number"
+   539→            value={formBasePrice}
+   540→            onChange={(e) => setFormBasePrice(e.target.value)}
+   541→            placeholder="0"
+   542→            className="focus-visible:ring-emerald-500"
+   543→          />
+   544→        </div>
+   545→        <div className="space-y-2">
+   546→          <Label className="text-sm font-medium">{t('admin.order')}</Label>
+   547→          <Input
+   548→            type="number"
+   549→            value={formOrder}
+   550→            onChange={(e) => setFormOrder(e.target.value)}
+   551→            placeholder="0"
+   552→            className="focus-visible:ring-emerald-500"
+   553→          />
+   554→        </div>
+   555→      </div>
+   556→
+   557→      {/* Featured & Published toggles */}
+   558→      <div className="flex items-center gap-6">
+   559→        <div className="flex items-center gap-2">
+   560→          <Switch checked={formFeatured} onCheckedChange={setFormFeatured} />
+   561→          <Label className="text-sm">{t('admin.featured')}</Label>
+   562→        </div>
+   563→        <div className="flex items-center gap-2">
+   564→          <Switch checked={formPublished} onCheckedChange={setFormPublished} />
+   565→          <Label className="text-sm">{t('admin.published')}</Label>
+   566→        </div>
+   567→      </div>
+   568→    </div>
+   569→  );
+   570→
+   571→  const renderProjectForm = () => (
+   572→    <div className="space-y-4">
+   573→      {/* Title with language tabs */}
+   574→      <LanguageTabs
+   575→        defaultLanguageFields={
+   576→          <div className="space-y-2">
+   577→            <Label className="text-sm font-medium">{t('admin.title')}</Label>
+   578→            <Input
+   579→              value={formTitle}
+   580→              onChange={(e) => handleTitleChange(e.target.value)}
+   581→              placeholder="Nome do projeto"
+   582→              className="focus-visible:ring-emerald-500"
+   583→            />
+   584→          </div>
+   585→        }
+   586→        i18nLanguageFields={Object.fromEntries(
+   587→          i18nLangs.map((lang) => [
+   588→            lang,
+   589→            <div className="space-y-2" key={lang}>
+   590→              <Label className="text-sm font-medium">{t('admin.title')} ({lang})</Label>
+   591→              <Input
+   592→                value={formTitleI18n[lang] || ''}
+   593→                onChange={(e) => setI18nValue(setFormTitleI18n, lang, e.target.value)}
+   594→                placeholder={`Title in ${lang}`}
+   595→                className="focus-visible:ring-emerald-500"
+   596→              />
+   597→            </div>,
+   598→          ])
+   599→        )}
+   600→      />
+   601→
+   602→      {/* Slug */}
+   603→      <div className="space-y-2">
+   604→        <Label className="text-sm font-medium">{t('admin.slug')}</Label>
+   605→        <Input
+   606→          value={formSlug}
+   607→          onChange={(e) => setFormSlug(e.target.value)}
+   608→          placeholder="project-slug"
+   609→          className="focus-visible:ring-emerald-500"
+   610→        />
+   611→      </div>
+   612→
+   613→      {/* Description with language tabs */}
+   614→      <LanguageTabs
+   615→        defaultLanguageFields={
+   616→          <div className="space-y-2">
+   617→            <Label className="text-sm font-medium">{t('admin.description')}</Label>
+   618→            <Textarea
+   619→              value={formDescription}
+   620→              onChange={(e) => setFormDescription(e.target.value)}
+   621→              placeholder="Descrição do projeto"
+   622→              rows={3}
+   623→              className="focus-visible:ring-emerald-500"
+   624→            />
+   625→          </div>
+   626→        }
+   627→        i18nLanguageFields={Object.fromEntries(
+   628→          i18nLangs.map((lang) => [
+   629→            lang,
+   630→            <div className="space-y-2" key={lang}>
+   631→              <Label className="text-sm font-medium">{t('admin.description')} ({lang})</Label>
+   632→              <Textarea
+   633→                value={formDescI18n[lang] || ''}
+   634→                onChange={(e) => setI18nValue(setFormDescI18n, lang, e.target.value)}
+   635→                placeholder={`Description in ${lang}`}
+   636→                rows={3}
+   637→                className="focus-visible:ring-emerald-500"
+   638→              />
+   639→            </div>,
+   640→          ])
+   641→        )}
+   642→      />
+   643→
+   644→      {/* Client, Technologies, Demo URL */}
+   645→      <div className="space-y-4">
+   646→        <div className="space-y-2">
+   647→          <Label className="text-sm font-medium">{t('admin.client')}</Label>
+   648→          <Input
+   649→            value={formClient}
+   650→            onChange={(e) => setFormClient(e.target.value)}
+   651→            placeholder="Nome do cliente"
+   652→            className="focus-visible:ring-emerald-500"
+   653→          />
+   654→        </div>
+   655→        <div className="space-y-2">
+   656→          <Label className="text-sm font-medium">{t('admin.technologies')}</Label>
+   657→          <Input
+   658→            value={formTechnologies}
+   659→            onChange={(e) => setFormTechnologies(e.target.value)}
+   660→            placeholder="React, Node.js, TypeScript (separado por vírgulas)"
+   661→            className="focus-visible:ring-emerald-500"
+   662→          />
+   663→        </div>
+   664→        <div className="space-y-2">
+   665→          <Label className="text-sm font-medium">{t('admin.demoUrl')}</Label>
+   666→          <Input
+   667→            value={formDemoUrl}
+   668→            onChange={(e) => setFormDemoUrl(e.target.value)}
+   669→            placeholder="https://demo.example.com"
+   670→            className="focus-visible:ring-emerald-500"
+   671→          />
+   672→        </div>
+   673→      </div>
+   674→
+   675→      {/* Featured & Published toggles */}
+   676→      <div className="flex items-center gap-6">
+   677→        <div className="flex items-center gap-2">
+   678→          <Switch checked={formFeatured} onCheckedChange={setFormFeatured} />
+   679→          <Label className="text-sm">{t('admin.featured')}</Label>
+   680→        </div>
+   681→        <div className="flex items-center gap-2">
+   682→          <Switch checked={formPublished} onCheckedChange={setFormPublished} />
+   683→          <Label className="text-sm">{t('admin.published')}</Label>
+   684→        </div>
+   685→      </div>
+   686→    </div>
+   687→  );
+   688→
+   689→  const renderPostForm = () => (
+   690→    <div className="space-y-4">
+   691→      {/* Title with language tabs */}
+   692→      <LanguageTabs
+   693→        defaultLanguageFields={
+   694→          <div className="space-y-2">
+   695→            <Label className="text-sm font-medium">{t('admin.title')}</Label>
+   696→            <Input
+   697→              value={formTitle}
+   698→              onChange={(e) => handleTitleChange(e.target.value)}
+   699→              placeholder="Título do artigo"
+   700→              className="focus-visible:ring-emerald-500"
+   701→            />
+   702→          </div>
+   703→        }
+   704→        i18nLanguageFields={Object.fromEntries(
+   705→          i18nLangs.map((lang) => [
+   706→            lang,
+   707→            <div className="space-y-2" key={lang}>
+   708→              <Label className="text-sm font-medium">{t('admin.title')} ({lang})</Label>
+   709→              <Input
+   710→                value={formTitleI18n[lang] || ''}
+   711→                onChange={(e) => setI18nValue(setFormTitleI18n, lang, e.target.value)}
+   712→                placeholder={`Title in ${lang}`}
+   713→                className="focus-visible:ring-emerald-500"
+   714→              />
+   715→            </div>,
+   716→          ])
+   717→        )}
+   718→      />
+   719→
+   720→      {/* Slug */}
+   721→      <div className="space-y-2">
+   722→        <Label className="text-sm font-medium">{t('admin.slug')}</Label>
+   723→        <Input
+   724→          value={formSlug}
+   725→          onChange={(e) => setFormSlug(e.target.value)}
+   726→          placeholder="post-slug"
+   727→          className="focus-visible:ring-emerald-500"
+   728→        />
+   729→      </div>
+   730→
+   731→      {/* Excerpt with language tabs */}
+   732→      <LanguageTabs
+   733→        defaultLanguageFields={
+   734→          <div className="space-y-2">
+   735→            <Label className="text-sm font-medium">{t('admin.excerpt')}</Label>
+   736→            <Textarea
+   737→              value={formExcerpt}
+   738→              onChange={(e) => setFormExcerpt(e.target.value)}
+   739→              placeholder="Resumo do artigo"
+   740→              rows={2}
+   741→              className="focus-visible:ring-emerald-500"
+   742→            />
+   743→          </div>
+   744→        }
+   745→        i18nLanguageFields={Object.fromEntries(
+   746→          i18nLangs.map((lang) => [
+   747→            lang,
+   748→            <div className="space-y-2" key={lang}>
+   749→              <Label className="text-sm font-medium">{t('admin.excerpt')} ({lang})</Label>
+   750→              <Textarea
+   751→                value={formExcerptI18n[lang] || ''}
+   752→                onChange={(e) => setI18nValue(setFormExcerptI18n, lang, e.target.value)}
+   753→                placeholder={`Excerpt in ${lang}`}
+   754→                rows={2}
+   755→                className="focus-visible:ring-emerald-500"
+   756→              />
+   757→            </div>,
+   758→          ])
+   759→        )}
+   760→      />
+   761→
+   762→      {/* Content with language tabs */}
+   763→      <LanguageTabs
+   764→        defaultLanguageFields={
+   765→          <div className="space-y-2">
+   766→            <Label className="text-sm font-medium">{t('admin.content')}</Label>
+   767→            <Textarea
+   768→              value={formContent}
+   769→              onChange={(e) => setFormContent(e.target.value)}
+   770→              placeholder="Conteúdo do artigo..."
+   771→              rows={8}
+   772→              className="focus-visible:ring-emerald-500"
+   773→            />
+   774→          </div>
+   775→        }
+   776→        i18nLanguageFields={Object.fromEntries(
+   777→          i18nLangs.map((lang) => [
+   778→            lang,
+   779→            <div className="space-y-2" key={lang}>
+   780→              <Label className="text-sm font-medium">{t('admin.content')} ({lang})</Label>
+   781→              <Textarea
+   782→                value={formContentI18n[lang] || ''}
+   783→                onChange={(e) => setI18nValue(setFormContentI18n, lang, e.target.value)}
+   784→                placeholder={`Content in ${lang}`}
+   785→                rows={8}
+   786→                className="focus-visible:ring-emerald-500"
+   787→              />
+   788→            </div>,
+   789→          ])
+   790→        )}
+   791→      />
+   792→
+   793→      {/* Category */}
+   794→      <div className="space-y-2">
+   795→        <Label className="text-sm font-medium">{t('admin.category')}</Label>
+   796→        <Select value={formCategoryId} onValueChange={setFormCategoryId}>
+   797→          <SelectTrigger className="w-full focus-visible:ring-emerald-500">
+   798→            <SelectValue placeholder="Select category" />
+   799→          </SelectTrigger>
+   800→          <SelectContent>
+   801→            {categories.map((cat) => (
+   802→              <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+   803→            ))}
+   804→          </SelectContent>
+   805→        </Select>
+   806→      </div>
+   807→
+   808→      {/* Published toggle */}
+   809→      <div className="flex items-center gap-2">
+   810→        <Switch checked={formPublished} onCheckedChange={setFormPublished} />
+   811→        <Label className="text-sm">{t('admin.published')}</Label>
+   812→      </div>
+   813→    </div>
+   814→  );
+   815→
+   816→  const renderTestimonialForm = () => (
+   817→    <div className="space-y-4">
+   818→      {/* Name & Company */}
+   819→      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   820→        <div className="space-y-2">
+   821→          <Label className="text-sm font-medium">{t('admin.name')}</Label>
+   822→          <Input
+   823→            value={formName}
+   824→            onChange={(e) => setFormName(e.target.value)}
+   825→            placeholder="Nome do cliente"
+   826→            className="focus-visible:ring-emerald-500"
+   827→          />
+   828→        </div>
+   829→        <div className="space-y-2">
+   830→          <Label className="text-sm font-medium">{t('admin.company')}</Label>
+   831→          <Input
+   832→            value={formCompany}
+   833→            onChange={(e) => setFormCompany(e.target.value)}
+   834→            placeholder="Empresa"
+   835→            className="focus-visible:ring-emerald-500"
+   836→          />
+   837→        </div>
+   838→      </div>
+   839→
+   840→      {/* Content with language tabs */}
+   841→      <LanguageTabs
+   842→        defaultLanguageFields={
+   843→          <div className="space-y-2">
+   844→            <Label className="text-sm font-medium">{t('admin.content')}</Label>
+   845→            <Textarea
+   846→              value={formContent}
+   847→              onChange={(e) => setFormContent(e.target.value)}
+   848→              placeholder="Testemunho do cliente"
+   849→              rows={3}
+   850→              className="focus-visible:ring-emerald-500"
+   851→            />
+   852→          </div>
+   853→        }
+   854→        i18nLanguageFields={Object.fromEntries(
+   855→          i18nLangs.map((lang) => [
+   856→            lang,
+   857→            <div className="space-y-2" key={lang}>
+   858→              <Label className="text-sm font-medium">{t('admin.content')} ({lang})</Label>
+   859→              <Textarea
+   860→                value={formContentI18n[lang] || ''}
+   861→                onChange={(e) => setI18nValue(setFormContentI18n, lang, e.target.value)}
+   862→                placeholder={`Testimonial in ${lang}`}
+   863→                rows={3}
+   864→                className="focus-visible:ring-emerald-500"
+   865→              />
+   866→            </div>,
+   867→          ])
+   868→        )}
+   869→      />
+   870→
+   871→      {/* Rating */}
+   872→      <div className="space-y-2">
+   873→        <Label className="text-sm font-medium">{t('admin.rating')}</Label>
+   874→        <div className="flex gap-1">
+   875→          {[1, 2, 3, 4, 5].map((star) => (
+   876→            <Button
+   877→              key={star}
+   878→              variant="ghost"
+   879→              size="sm"
+   880→              className={`p-1 ${star <= formRating ? 'text-emerald-500' : 'text-muted-foreground'}`}
+   881→              onClick={() => setFormRating(star)}
+   882→            >
+   883→              <Star className={`size-5 ${star <= formRating ? 'fill-emerald-500' : ''}`} />
+   884→            </Button>
+   885→          ))}
+   886→        </div>
+   887→      </div>
+   888→
+   889→      {/* Published toggle */}
+   890→      <div className="flex items-center gap-2">
+   891→        <Switch checked={formPublished} onCheckedChange={setFormPublished} />
+   892→        <Label className="text-sm">{t('admin.published')}</Label>
+   893→      </div>
+   894→    </div>
+   895→  );
+   896→
+   897→  const renderForm = () => {
+   898→    switch (contentType) {
+   899→      case 'services': return renderServiceForm();
+   900→      case 'projects': return renderProjectForm();
+   901→      case 'posts': return renderPostForm();
+   902→      case 'testimonials': return renderTestimonialForm();
+   903→    }
+   904→  };
+   905→
+   906→  // ============================================================================
+   907→  // Table columns per content type
+   908→  // ============================================================================
+   909→
+   910→  const getItemTitle = (item: ContentItem): string => {
+   911→    return item.title || item.name || '—';
+   912→  };
+   913→
+   914→  const getItemStatus = (item: ContentItem): boolean => {
+   915→    return item.isPublished ?? item.published ?? false;
+   916→  };
+   917→
+   918→  const getContentLabel = (): string => {
+   919→    switch (contentType) {
+   920→      case 'services': return t('admin.services');
+   921→      case 'projects': return t('admin.projects');
+   922→      case 'posts': return t('admin.posts');
+   923→      case 'testimonials': return t('admin.testimonials');
+   924→    }
+   925→  };
+   926→
+   927→  // ============================================================================
+   928→  // Render
+   929→  // ============================================================================
+   930→
+   931→  return (
+   932→    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
+   933→      {/* Header */}
+   934→      <motion.div variants={itemVariants}>
+   935→        <div className="flex items-center justify-between">
+   936→          <h2 className="text-2xl font-bold flex items-center gap-2">
+   937→            <Globe className="h-6 w-6 text-emerald-600" />
+   938→            {getContentLabel()}
+   939→          </h2>
+   940→          <Button
+   941→            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+   942→            onClick={openCreate}
+   943→          >
+   944→            <Plus className="h-4 w-4 mr-2" />
+   945→            {t('admin.createNew')}
+   946→          </Button>
+   947→        </div>
+   948→      </motion.div>
+   949→
+   950→      {/* Content Table */}
+   951→      <motion.div variants={itemVariants}>
+   952→        <Card>
+   953→          <CardContent className="p-0">
+   954→            {loading ? (
+   955→              <div className="p-8 text-center text-muted-foreground">Loading...</div>
+   956→            ) : items.length === 0 ? (
+   957→              <div className="p-8 text-center text-muted-foreground">{t('admin.noItems')}</div>
+   958→            ) : (
+   959→              <Table>
+   960→                <TableHeader>
+   961→                  <TableRow>
+   962→                    <TableHead>{t('admin.title')}</TableHead>
+   963→                    {contentType !== 'testimonials' && (
+   964→                      <TableHead>{t('admin.slug')}</TableHead>
+   965→                    )}
+   966→                    <TableHead>{t('admin.status')}</TableHead>
+   967→                    <TableHead>{t('admin.date')}</TableHead>
+   968→                    <TableHead>{t('admin.actions')}</TableHead>
+   969→                  </TableRow>
+   970→                </TableHeader>
+   971→                <TableBody>
+   972→                  {items.map((item) => (
+   973→                    <TableRow key={item.id}>
+   974→                      <TableCell className="font-medium max-w-[200px] truncate">
+   975→                        {getItemTitle(item)}
+   976→                      </TableCell>
+   977→                      {contentType !== 'testimonials' && (
+   978→                        <TableCell className="text-muted-foreground text-xs">
+   979→                          {item.slug || '—'}
+   980→                        </TableCell>
+   981→                      )}
+   982→                      <TableCell>
+   983→                        <Badge
+   984→                          variant={getItemStatus(item) ? 'default' : 'secondary'}
+   985→                          className={getItemStatus(item) ? 'bg-emerald-600 text-white' : ''}
+   986→                        >
+   987→                          {getItemStatus(item) ? t('admin.published') : t('admin.draft')}
+   988→                        </Badge>
+   989→                      </TableCell>
+   990→                      <TableCell className="text-muted-foreground text-xs">
+   991→                        {item.createdAt ? new Date(item.createdAt).toLocaleDateString('pt-MZ') : '—'}
+   992→                      </TableCell>
+   993→                      <TableCell>
+   994→                        <div className="flex items-center gap-1">
+   995→                          <Button
+   996→                            variant="ghost"
+   997→                            size="sm"
+   998→                            className="size-8"
+   999→                            onClick={() => togglePublish(item)}
+  1000→                            title={t('admin.togglePublish')}
+  1001→                          >
+  1002→                            {getItemStatus(item) ? (
+  1003→                              <Eye className="size-4 text-emerald-600" />
+  1004→                            ) : (
+  1005→                              <EyeOff className="size-4 text-muted-foreground" />
+  1006→                            )}
+  1007→                          </Button>
+  1008→                          <Button
+  1009→                            variant="ghost"
+  1010→                            size="sm"
+  1011→                            className="size-8"
+  1012→                            onClick={() => openEdit(item)}
+  1013→                          >
+  1014→                            <Pencil className="size-4" />
+  1015→                          </Button>
+  1016→                          <Button
+  1017→                            variant="ghost"
+  1018→                            size="sm"
+  1019→                            className="size-8 text-destructive hover:text-destructive"
+  1020→                            onClick={() => setDeleteTarget(item)}
+  1021→                          >
+  1022→                            <Trash2 className="size-4" />
+  1023→                          </Button>
+  1024→                        </div>
+  1025→                      </TableCell>
+  1026→                    </TableRow>
+  1027→                  ))}
+  1028→                </TableBody>
+  1029→              </Table>
+  1030→            )}
+  1031→          </CardContent>
+  1032→        </Card>
+  1033→      </motion.div>
+  1034→
+  1035→      {/* Create/Edit Dialog */}
+  1036→      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+  1037→        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+  1038→          <DialogHeader>
+  1039→            <DialogTitle>
+  1040→              {isCreate ? `${t('admin.createNew')} — ${getContentLabel()}` : `${t('admin.editItem')} — ${getContentLabel()}`}
+  1041→            </DialogTitle>
+  1042→            <DialogDescription>
+  1043→              {t('admin.contentManager')}
+  1044→            </DialogDescription>
+  1045→          </DialogHeader>
+  1046→
+  1047→          <Separator />
+  1048→
+  1049→          {renderForm()}
+  1050→
+  1051→          <DialogFooter className="mt-4">
+  1052→            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+  1053→              {t('admin.cancel')}
+  1054→            </Button>
+  1055→            <Button
+  1056→              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+  1057→              onClick={handleSave}
+  1058→              disabled={saving}
+  1059→            >
+  1060→              {saving ? 'Saving...' : t('admin.save')}
+  1061→            </Button>
+  1062→          </DialogFooter>
+  1063→        </DialogContent>
+  1064→      </Dialog>
+  1065→
+  1066→      {/* Delete Confirmation */}
+  1067→      <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+  1068→        <AlertDialogContent>
+  1069→          <AlertDialogHeader>
+  1070→            <AlertDialogTitle>{t('admin.deleteItem')}</AlertDialogTitle>
+  1071→            <AlertDialogDescription>{t('admin.confirmDelete')}</AlertDialogDescription>
+  1072→          </AlertDialogHeader>
+  1073→          <AlertDialogFooter>
+  1074→            <AlertDialogCancel>{t('admin.cancel')}</AlertDialogCancel>
+  1075→            <AlertDialogAction
+  1076→              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+  1077→              onClick={handleDelete}
+  1078→            >
+  1079→              {t('admin.deleteItem')}
+  1080→            </AlertDialogAction>
+  1081→          </AlertDialogFooter>
+  1082→        </AlertDialogContent>
+  1083→      </AlertDialog>
+  1084→    </motion.div>
+  1085→  );
+  1086→}
+  1087→

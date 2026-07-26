@@ -14,8 +14,11 @@ import { useLanguage } from '@/contexts/language-context';
 
 export function RealTimeNotifications() {
   const { t } = useLanguage();
-  const { addNotification, notifications } = useNotificationStore();
-  const { isAuthenticated } = useAuthStore();
+  const addNotification = useNotificationStore((s) => s.addNotification);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  // ── Ref to track initial fetch and prevent re-running mount effect ──
+  const hasFetchedOnMount = useRef(false);
   const lastFetchRef = useRef<number>(0);
 
   // ── Notification type icon mapping ──
@@ -34,6 +37,8 @@ export function RealTimeNotifications() {
   };
 
   // ── Fetch notifications from API ──
+  // Use getState() to read current notifications for deduplication without
+  // subscribing to changes, which avoids the infinite loop bug.
   const fetchNotifications = useCallback(async () => {
     if (!isAuthenticated) return;
 
@@ -42,7 +47,8 @@ export function RealTimeNotifications() {
       const data = await response.json();
 
       if (data.success && data.data) {
-        const currentNotifs = notifications;
+        // ── Read current notifications via getState() (no subscription) ──
+        const currentNotifs = useNotificationStore.getState().notifications;
         const existingIds = new Set(currentNotifs.map((n) => n.id));
 
         // ── Add new notifications that aren't already in the store ──
@@ -57,10 +63,7 @@ export function RealTimeNotifications() {
             notif.message || ''
           );
 
-          // ── Show toast for new notifications ──
-          const Icon = typeIcons[notif.type as NotificationType] || Bell;
-          const colorClass = typeColors[notif.type as NotificationType] || 'text-muted-foreground';
-
+          // ── Show toast only for truly NEW notifications ──
           toast({
             title: notif.title || t('notif.newNotification'),
             description: notif.message || '',
@@ -73,14 +76,17 @@ export function RealTimeNotifications() {
     }
 
     lastFetchRef.current = Date.now();
-  }, [isAuthenticated, addNotification, notifications, t]);
+  }, [isAuthenticated, addNotification, t]);
 
-  // ── Initial fetch on mount ──
+  // ── Initial fetch on mount (only once, via ref guard) ──
   useEffect(() => {
+    if (hasFetchedOnMount.current) return;
+    hasFetchedOnMount.current = true;
     fetchNotifications();
   }, [fetchNotifications]);
 
   // ── Poll every 30 seconds for new notifications ──
+  // Use a ref-based interval setup so it doesn't depend on fetchNotifications recreation
   useEffect(() => {
     if (!isAuthenticated) return;
 

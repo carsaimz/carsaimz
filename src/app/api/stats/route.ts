@@ -3,8 +3,8 @@ import { db } from '@/lib/db'
 
 export async function GET() {
   try {
-    // Total counts
-    const totalUsers = await db.user.count()
+    // Total counts (exclude super_admin from user count)
+    const totalUsers = await db.user.count({ where: { role: { name: { not: 'super_admin' } } } })
     const totalPosts = await db.post.count({ where: { published: true } })
     const totalProjects = await db.project.count({ where: { isPublished: true } })
     const totalServices = await db.service.count({ where: { isPublished: true } })
@@ -30,8 +30,8 @@ export async function GET() {
     const partnerCount = await db.user.count({ where: { role: { name: 'partner' } } })
     const regularUserCount = await db.user.count({ where: { role: { name: 'user' } } })
 
-    // Active users
-    const activeUsers = await db.user.count({ where: { isActive: true } })
+    // Active users (exclude super_admin)
+    const activeUsers = await db.user.count({ where: { isActive: true, role: { name: { not: 'super_admin' } } } })
 
     // Unread notifications
     const unreadNotifications = await db.notification.count({ where: { isRead: false } })

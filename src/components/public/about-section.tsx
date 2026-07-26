@@ -1,5 +1,7 @@
 'use client';
 
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 import { motion } from 'framer-motion';
 import {
   Lightbulb,
@@ -16,6 +18,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/language-context';
+
+const AfricanPatternSVG = dynamic(
+  () => import('@/components/common/decorative-svg').then((mod) => mod.AfricanPatternSVG),
+  { ssr: false }
+);
+const MozambiqueMapSVG = dynamic(
+  () => import('@/components/common/decorative-svg').then((mod) => mod.MozambiqueMapSVG),
+  { ssr: false }
+);
 
 const values = [
   {
@@ -45,19 +56,14 @@ const values = [
 ];
 
 const teamMembers = [
-  { name: 'Carlos Silva', role: 'CEO & Founder', initials: 'CS' },
-  { name: 'Ana Ferreira', role: 'CTO', initials: 'AF' },
-  { name: 'João Machado', role: 'Lead Developer', initials: 'JM' },
-  { name: 'Rosa Mondlane', role: 'UI/UX Designer', initials: 'RM' },
-  { name: 'Pedro Nhaca', role: 'DevOps Engineer', initials: 'PN' },
-  { name: 'Luísa Zuvale', role: 'AI Specialist', initials: 'LZ' },
+  { nameKey: 'about.teamMemberCeo', roleKey: 'about.teamMemberCeoRole', initials: 'CS' },
 ];
 
 const historyStats = [
-  { icon: Calendar, value: '2019', label: 'Founded' },
-  { icon: Users, value: '15+', label: 'Team Members' },
-  { icon: MapPin, value: 'Maputo', label: 'Headquarters' },
-  { icon: Target, value: '50+', label: 'Projects' },
+  { icon: Calendar, value: '2019', labelKey: 'about.statFounded' },
+  { icon: Users, value: '1', labelKey: 'about.statTeamSize' },
+  { icon: MapPin, valueKey: 'about.statLocationValue', labelKey: 'about.statLocation' },
+  { icon: Target, value: '50+', labelKey: 'about.statProjects' },
 ];
 
 const containerVariants = {
@@ -74,7 +80,12 @@ export function AboutSection() {
   const { t } = useLanguage();
 
   return (
-    <section id="about" className="py-16 sm:py-24 bg-muted/30">
+    <section id="about" className="relative py-16 sm:py-24 bg-muted/30 overflow-hidden">
+      {/* Decorative backgrounds */}
+      <Suspense fallback={null}>
+        <AfricanPatternSVG className="top-[5%] right-[2%] w-[200px] h-[200px]" opacity={0.04} />
+        <MozambiqueMapSVG className="bottom-[5%] left-[2%] w-[400px] h-[200px]" opacity={0.04} />
+      </Suspense>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
@@ -190,15 +201,17 @@ export function AboutSection() {
         >
           {historyStats.map((stat) => {
             const IconComponent = stat.icon;
+            const displayValue = stat.valueKey ? t(stat.valueKey) : stat.value;
+            const displayLabel = stat.labelKey ? t(stat.labelKey) : '';
             return (
-              <motion.div key={stat.label} variants={itemVariants}>
+              <motion.div key={stat.labelKey || stat.value} variants={itemVariants}>
                 <div className="text-center p-4 rounded-xl bg-white border shadow-sm">
                   <IconComponent className="h-5 w-5 text-emerald-600 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-emerald-700">
-                    {stat.value}
+                    {displayValue}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {stat.label}
+                    {displayLabel}
                   </div>
                 </div>
               </motion.div>
@@ -226,18 +239,19 @@ export function AboutSection() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-md mx-auto"
         >
           {teamMembers.map((member) => (
-            <motion.div key={member.name} variants={itemVariants}>
-              <div className="text-center p-4 rounded-xl bg-white border shadow-sm hover:shadow-md transition-shadow">
-                <Avatar className="h-16 w-16 mx-auto mb-3 border-2 border-emerald-200">
-                  <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold text-lg">
+            <motion.div key={member.nameKey} variants={itemVariants}>
+              <div className="text-center p-6 rounded-xl bg-white border shadow-sm hover:shadow-md transition-shadow">
+                <Avatar className="h-20 w-20 mx-auto mb-3 border-2 border-emerald-200">
+                  <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold text-xl">
                     {member.initials}
                   </AvatarFallback>
                 </Avatar>
-                <p className="font-medium text-sm">{member.name}</p>
-                <p className="text-xs text-muted-foreground">{member.role}</p>
+                <p className="font-medium text-sm">{t(member.nameKey)}</p>
+                <p className="text-xs text-muted-foreground">{t(member.roleKey)}</p>
+                <p className="text-xs text-emerald-600 mt-1">{t('about.teamMemberCeoNote')}</p>
               </div>
             </motion.div>
           ))}

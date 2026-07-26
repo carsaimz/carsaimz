@@ -37,8 +37,8 @@ export async function GET(request: NextRequest) {
     // Use the provided role or fall back to the user's actual role
     const effectiveRole = role || (user.role?.name || 'user')
 
-    // === ADMIN DASHBOARD ===
-    if (effectiveRole === 'admin') {
+    // === ADMIN / SUPER_ADMIN DASHBOARD ===
+    if (effectiveRole === 'admin' || effectiveRole === 'super_admin') {
       const [
         totalUsers,
         totalPosts,
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
         recentPosts,
       ] = await Promise.all([
         // Total counts
-        db.user.count(),
+        db.user.count({ where: { role: { name: { not: 'super_admin' } } } }),
         db.post.count({ where: { published: true } }),
         db.quote.count(),
         db.payment.count(),
@@ -68,6 +68,7 @@ export async function GET(request: NextRequest) {
         db.user.findMany({
           take: 5,
           orderBy: { createdAt: 'desc' },
+          where: { role: { name: { not: 'super_admin' } } },
           select: { id: true, name: true, email: true, createdAt: true, isActive: true },
         }),
         db.quote.findMany({

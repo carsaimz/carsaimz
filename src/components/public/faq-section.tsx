@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -12,6 +14,11 @@ import {
 } from '@/components/ui/accordion';
 import { useLanguage } from '@/contexts/language-context';
 
+const TechPatternSVG = dynamic(
+  () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
+  { ssr: false }
+);
+
 interface FaqItem {
   id: string;
   questionKey: string;
@@ -20,36 +27,42 @@ interface FaqItem {
 }
 
 const faqItems: FaqItem[] = [
-  {
-    id: 'faq-1',
-    questionKey: 'faq.faq1Q',
-    answerKey: 'faq.faq1A',
-    category: 'services',
-  },
-  {
-    id: 'faq-2',
-    questionKey: 'faq.faq2Q',
-    answerKey: 'faq.faq2A',
-    category: 'payment',
-  },
-  {
-    id: 'faq-3',
-    questionKey: 'faq.faq3Q',
-    answerKey: 'faq.faq3A',
-    category: 'services',
-  },
-  {
-    id: 'faq-4',
-    questionKey: 'faq.faq4Q',
-    answerKey: 'faq.faq4A',
-    category: 'support',
-  },
-  {
-    id: 'faq-5',
-    questionKey: 'faq.faq5Q',
-    answerKey: 'faq.faq5A',
-    category: 'partner',
-  },
+  // Services
+  { id: 'faq-1', questionKey: 'faq.faq1Q', answerKey: 'faq.faq1A', category: 'services' },
+  { id: 'faq-3', questionKey: 'faq.faq3Q', answerKey: 'faq.faq3A', category: 'services' },
+  { id: 'faq-6', questionKey: 'faq.faq6Q', answerKey: 'faq.faq6A', category: 'services' },
+  { id: 'faq-7', questionKey: 'faq.faq7Q', answerKey: 'faq.faq7A', category: 'services' },
+  { id: 'faq-8', questionKey: 'faq.faq8Q', answerKey: 'faq.faq8A', category: 'services' },
+  { id: 'faq-9', questionKey: 'faq.faq9Q', answerKey: 'faq.faq9A', category: 'services' },
+  { id: 'faq-10', questionKey: 'faq.faq10Q', answerKey: 'faq.faq10A', category: 'services' },
+  { id: 'faq-11', questionKey: 'faq.faq11Q', answerKey: 'faq.faq11A', category: 'services' },
+  // Payment
+  { id: 'faq-2', questionKey: 'faq.faq2Q', answerKey: 'faq.faq2A', category: 'payment' },
+  { id: 'faq-12', questionKey: 'faq.faq12Q', answerKey: 'faq.faq12A', category: 'payment' },
+  { id: 'faq-13', questionKey: 'faq.faq13Q', answerKey: 'faq.faq13A', category: 'payment' },
+  { id: 'faq-14', questionKey: 'faq.faq14Q', answerKey: 'faq.faq14A', category: 'payment' },
+  { id: 'faq-15', questionKey: 'faq.faq15Q', answerKey: 'faq.faq15A', category: 'payment' },
+  { id: 'faq-16', questionKey: 'faq.faq16Q', answerKey: 'faq.faq16A', category: 'payment' },
+  // Support
+  { id: 'faq-4', questionKey: 'faq.faq4Q', answerKey: 'faq.faq4A', category: 'support' },
+  { id: 'faq-17', questionKey: 'faq.faq17Q', answerKey: 'faq.faq17A', category: 'support' },
+  { id: 'faq-18', questionKey: 'faq.faq18Q', answerKey: 'faq.faq18A', category: 'support' },
+  { id: 'faq-19', questionKey: 'faq.faq19Q', answerKey: 'faq.faq19A', category: 'support' },
+  { id: 'faq-20', questionKey: 'faq.faq20Q', answerKey: 'faq.faq20A', category: 'support' },
+  // Partner
+  { id: 'faq-5', questionKey: 'faq.faq5Q', answerKey: 'faq.faq5A', category: 'partner' },
+  { id: 'faq-21', questionKey: 'faq.faq21Q', answerKey: 'faq.faq21A', category: 'partner' },
+  { id: 'faq-22', questionKey: 'faq.faq22Q', answerKey: 'faq.faq22A', category: 'partner' },
+  { id: 'faq-23', questionKey: 'faq.faq23Q', answerKey: 'faq.faq23A', category: 'partner' },
+  { id: 'faq-24', questionKey: 'faq.faq24Q', answerKey: 'faq.faq24A', category: 'partner' },
+  // General
+  { id: 'faq-25', questionKey: 'faq.faq25Q', answerKey: 'faq.faq25A', category: 'general' },
+  { id: 'faq-26', questionKey: 'faq.faq26Q', answerKey: 'faq.faq26A', category: 'general' },
+  { id: 'faq-27', questionKey: 'faq.faq27Q', answerKey: 'faq.faq27A', category: 'general' },
+  { id: 'faq-28', questionKey: 'faq.faq28Q', answerKey: 'faq.faq28A', category: 'general' },
+  { id: 'faq-29', questionKey: 'faq.faq29Q', answerKey: 'faq.faq29A', category: 'general' },
+  { id: 'faq-30', questionKey: 'faq.faq30Q', answerKey: 'faq.faq30A', category: 'general' },
+  { id: 'faq-31', questionKey: 'faq.faq31Q', answerKey: 'faq.faq31A', category: 'general' },
 ];
 
 const categoryLabels: Record<string, string> = {
@@ -57,25 +70,50 @@ const categoryLabels: Record<string, string> = {
   payment: 'faq.categoryPayment',
   support: 'faq.categorySupport',
   partner: 'faq.categoryPartner',
+  general: 'faq.categoryGeneral',
 };
+
+const categoryOrder = ['services', 'payment', 'support', 'partner', 'general'];
 
 export function FaqSection() {
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string>('all');
 
   const filteredItems = useMemo(() => {
-    if (!searchQuery.trim()) return faqItems;
+    let items = faqItems;
 
-    const query = searchQuery.toLowerCase();
-    return faqItems.filter((item) => {
-      const question = t(item.questionKey).toLowerCase();
-      const answer = t(item.answerKey).toLowerCase();
-      return question.includes(query) || answer.includes(query);
+    // Filter by category
+    if (activeCategory !== 'all') {
+      items = items.filter((item) => item.category === activeCategory);
+    }
+
+    // Filter by search
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      items = items.filter((item) => {
+        const question = t(item.questionKey).toLowerCase();
+        const answer = t(item.answerKey).toLowerCase();
+        return question.includes(query) || answer.includes(query);
+      });
+    }
+
+    // Sort by category order
+    items.sort((a, b) => {
+      const aIdx = categoryOrder.indexOf(a.category);
+      const bIdx = categoryOrder.indexOf(b.category);
+      return aIdx - bIdx;
     });
-  }, [searchQuery, t]);
+
+    return items;
+  }, [searchQuery, activeCategory, t]);
 
   return (
-    <section id="faq" className="py-16 sm:py-24 bg-muted/30">
+    <section id="faq" className="relative py-16 sm:py-24 bg-muted/30 overflow-hidden">
+      {/* Decorative background */}
+      <Suspense fallback={null}>
+        <TechPatternSVG className="bottom-[5%] left-[2%] w-[250px] h-[250px]" opacity={0.03} />
+      </Suspense>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
@@ -98,7 +136,7 @@ export function FaqSection() {
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="max-w-xl mx-auto mb-8"
+          className="max-w-xl mx-auto mb-6"
         >
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -109,6 +147,38 @@ export function FaqSection() {
               className="pl-10 focus-visible:ring-emerald-500"
             />
           </div>
+        </motion.div>
+
+        {/* Category Filter */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="flex flex-wrap gap-2 justify-center mb-8"
+        >
+          <button
+            onClick={() => setActiveCategory('all')}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              activeCategory === 'all'
+                ? 'bg-emerald-600 text-white'
+                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+            }`}
+          >
+            {t('faq.categoryAll')}
+          </button>
+          {categoryOrder.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                activeCategory === cat
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+              }`}
+            >
+              {t(categoryLabels[cat])}
+            </button>
+          ))}
         </motion.div>
 
         {/* FAQ Accordion */}
@@ -128,10 +198,10 @@ export function FaqSection() {
                 >
                   <AccordionTrigger className="hover:text-emerald-700 hover:no-underline">
                     <div className="flex items-center gap-3 text-left">
-                      <span className="text-sm font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
-                        {t(categoryLabels[item.category] || 'faq.categoryGeneral')}
+                      <span className="text-sm font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded shrink-0">
+                        {t(categoryLabels[item.category])}
                       </span>
-                      <span>{t(item.questionKey)}</span>
+                      <span className="text-sm">{t(item.questionKey)}</span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground leading-relaxed">

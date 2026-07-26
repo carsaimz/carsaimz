@@ -1,11 +1,61 @@
 'use client';
 
+import { useState } from 'react';
 import { useLanguage } from '@/contexts/language-context';
 import { Separator } from '@/components/ui/separator';
+import {
+  MessageCircle,
+  Facebook,
+  Instagram,
+  Youtube,
+  Github,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
+} from 'lucide-react';
 
 export function Footer() {
   const { t } = useLanguage();
   const year = new Date().getFullYear();
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim()) return;
+
+    setNewsletterStatus('loading');
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: newsletterEmail.trim() }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setNewsletterStatus('success');
+        setNewsletterEmail('');
+        setTimeout(() => setNewsletterStatus('idle'), 3000);
+      } else {
+        setNewsletterStatus('error');
+        setTimeout(() => setNewsletterStatus('idle'), 3000);
+      }
+    } catch {
+      setNewsletterStatus('error');
+      setTimeout(() => setNewsletterStatus('idle'), 3000);
+    }
+  };
+
+  const socialLinks = [
+    { icon: MessageCircle, label: t('footer.socialWhatsapp'), href: 'https://wa.me/258847545020', color: 'hover:text-green-400' },
+    { icon: Facebook, label: t('footer.socialFacebook'), href: 'https://facebook.com/carsaimz', color: 'hover:text-blue-400' },
+    { icon: Instagram, label: t('footer.socialInstagram'), href: 'https://instagram.com/carsaimz', color: 'hover:text-pink-400' },
+    { icon: Globe, label: t('footer.socialTiktok'), href: 'https://tiktok.com/@carsaimz', color: 'hover:text-red-400' },
+    { icon: Youtube, label: t('footer.socialYoutube'), href: 'https://youtube.com/@carsaimz', color: 'hover:text-red-500' },
+    { icon: MessageCircle, label: t('footer.socialDiscord'), href: 'https://discord.gg/carsaimz', color: 'hover:text-indigo-400' },
+    { icon: Github, label: t('footer.socialGithub'), href: 'https://github.com/carsaimz', color: 'hover:text-gray-300' },
+  ];
 
   return (
     <footer className="bg-emerald-900 text-emerald-100 mt-auto">
@@ -16,8 +66,11 @@ export function Footer() {
             <h3 className="text-xl font-bold text-white mb-3">
               Carsai <span className="text-yellow-400">Moçambique</span>
             </h3>
-            <p className="text-emerald-200 text-sm leading-relaxed">
+            <p className="text-emerald-200 text-sm leading-relaxed mb-3">
               {t('footer.companyDescription')}
+            </p>
+            <p className="text-emerald-300 text-xs italic">
+              {t('footer.onlineOperation')}
             </p>
           </div>
 
@@ -60,14 +113,31 @@ export function Footer() {
             <h4 className="font-semibold text-white mb-3">
               {t('footer.contactInfo')}
             </h4>
-            <ul className="space-y-2 text-sm">
-              <li>Av. 24 de Julho, Maputo</li>
-              <li>+258 84 123 4567</li>
-              <li>info@carsai.mz</li>
+            <ul className="space-y-3 text-sm">
+              <li className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>{t('footer.addressValue')}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Phone className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>{t('footer.phoneValue')}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Mail className="h-4 w-4 shrink-0 mt-0.5" />
+                <a href="mailto:carsaimozambique@gmail.com" className="hover:text-yellow-400 transition-colors">
+                  carsaimozambique@gmail.com
+                </a>
+              </li>
+              <li className="flex items-start gap-2">
+                <Mail className="h-4 w-4 shrink-0 mt-0.5" />
+                <a href="mailto:suporte.carsaimz@gmail.com" className="hover:text-yellow-400 transition-colors">
+                  suporte.carsaimz@gmail.com
+                </a>
+              </li>
             </ul>
           </div>
 
-          {/* Newsletter */}
+          {/* Newsletter & Social */}
           <div>
             <h4 className="font-semibold text-white mb-3">
               {t('footer.newsletter')}
@@ -75,15 +145,48 @@ export function Footer() {
             <p className="text-emerald-200 text-sm mb-3">
               {t('footer.followUs')}
             </p>
-            <div className="flex gap-2">
+            <form onSubmit={handleNewsletterSubmit} className="flex gap-2 mb-4">
               <input
                 type="email"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
                 placeholder={t('footer.newsletterPlaceholder')}
-                className="flex-1 px-3 py-2 rounded-lg bg-emerald-800 border border-emerald-600 text-emerald-100 text-sm placeholder:text-emerald-400 focus:outline-none focus:border-yellow-400"
+                required
+                disabled={newsletterStatus === 'loading'}
+                className="flex-1 px-3 py-2 rounded-lg bg-emerald-800 border border-emerald-600 text-emerald-100 text-sm placeholder:text-emerald-400 focus:outline-none focus:border-yellow-400 disabled:opacity-50"
               />
-              <button className="px-4 py-2 rounded-lg bg-yellow-400 text-emerald-900 font-semibold text-sm hover:bg-yellow-300 transition-colors">
-                {t('footer.newsletterSubscribe')}
+              <button
+                type="submit"
+                disabled={newsletterStatus === 'loading'}
+                className="px-4 py-2 rounded-lg bg-yellow-400 text-emerald-900 font-semibold text-sm hover:bg-yellow-300 transition-colors disabled:opacity-50"
+              >
+                {newsletterStatus === 'loading' ? '...' : t('footer.newsletterSubscribe')}
               </button>
+            </form>
+            {newsletterStatus === 'success' && (
+              <p className="text-yellow-400 text-xs mb-3">{t('footer.newsletterSuccess')}</p>
+            )}
+            {newsletterStatus === 'error' && (
+              <p className="text-red-400 text-xs mb-3">{t('newsletter.subscribeError')}</p>
+            )}
+
+            {/* Social Media Icons */}
+            <h4 className="font-semibold text-white mb-2 text-sm">
+              {t('footer.social')}
+            </h4>
+            <div className="flex gap-3">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  className={`text-emerald-300 transition-colors ${social.color}`}
+                >
+                  <social.icon className="h-5 w-5" />
+                </a>
+              ))}
             </div>
           </div>
         </div>
@@ -94,11 +197,14 @@ export function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-emerald-300">
           <p>{t('footer.copyright', { year: String(year) })}</p>
           <div className="flex items-center gap-4">
-            <a href="#" className="hover:text-yellow-400 transition-colors">
+            <a href="/privacy" className="hover:text-yellow-400 transition-colors">
               {t('footer.privacy')}
             </a>
-            <a href="#" className="hover:text-yellow-400 transition-colors">
+            <a href="/terms" className="hover:text-yellow-400 transition-colors">
               {t('footer.terms')}
+            </a>
+            <a href="/cookies" className="hover:text-yellow-400 transition-colors">
+              {t('footer.cookies')}
             </a>
           </div>
         </div>

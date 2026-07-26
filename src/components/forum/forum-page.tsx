@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
@@ -33,6 +35,11 @@ import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/language-context';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
+
+const TechPatternSVG = dynamic(
+  () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
+  { ssr: false }
+);
 
 // ──────────────────────────────────────────────
 // Types
@@ -182,7 +189,11 @@ export function ForumPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative min-h-screen bg-background overflow-hidden">
+      {/* Decorative background */}
+      <Suspense fallback={null}>
+        <TechPatternSVG className="bottom-[5%] left-[2%] w-[200px] h-[200px]" opacity={0.03} />
+      </Suspense>
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}

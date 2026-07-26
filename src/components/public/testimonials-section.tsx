@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,6 +11,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveI18nContent } from '@/lib/i18n-content';
+
+const FloatingOrbs = dynamic(
+  () => import('@/components/common/3d-elements').then((mod) => mod.FloatingOrbs),
+  { ssr: false }
+);
 
 interface TestimonialData {
   id: string;
@@ -79,7 +86,11 @@ export function TestimonialsSection() {
   );
 
   return (
-    <section id="testimonials" className="py-16 sm:py-24 bg-background">
+    <section id="testimonials" className="relative py-16 sm:py-24 bg-background overflow-hidden">
+      {/* Decorative background */}
+      <Suspense fallback={null}>
+        <FloatingOrbs count={2} opacity={0.06} />
+      </Suspense>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
