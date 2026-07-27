@@ -5,6 +5,7 @@ import {
   useRef,
   useEffect,
   useCallback,
+  memo,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
 import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
@@ -317,6 +318,58 @@ const messageVariants = {
     transition: { duration: 0.3 },
   },
 };
+
+// ──────────────────────────────────────────────
+// Memoized Chat Input Bar (prevents keyboard focus loss on mobile)
+// ──────────────────────────────────────────────
+
+interface ChatInputBarProps {
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  input: string;
+  onInputChange: (value: string) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  isLoading: boolean;
+  placeholder: string;
+  poweredBy: string;
+}
+
+const ChatInputBar = memo(function ChatInputBar({
+  inputRef,
+  input,
+  onInputChange,
+  onSubmit,
+  isLoading,
+  placeholder,
+  poweredBy,
+}: ChatInputBarProps) {
+  return (
+    <div
+      className="border-t border-emerald-200/40 dark:border-emerald-800/40 p-3 bg-gradient-to-r from-emerald-50/60 to-green-50/60 dark:from-emerald-950/40 dark:to-green-950/40"
+    >
+      <form onSubmit={onSubmit} className="flex gap-2">
+        <Input
+          ref={inputRef}
+          value={input}
+          onChange={(e) => onInputChange(e.target.value)}
+          placeholder={placeholder}
+          disabled={isLoading}
+          className="text-sm border-emerald-300/60 dark:border-emerald-700/60 focus-visible:ring-emerald-500 bg-white dark:bg-background rounded-lg"
+        />
+        <Button
+          type="submit"
+          size="icon"
+          disabled={!input.trim() || isLoading}
+          className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shrink-0 rounded-lg shadow-md shadow-emerald-600/20 transition-all"
+        >
+          <Send className="size-4" />
+        </Button>
+      </form>
+      <p className="text-[10px] text-muted-foreground/50 mt-1 text-center">
+        {poweredBy}
+      </p>
+    </div>
+  );
+});
 
 // ──────────────────────────────────────────────
 // Pulse Animation Keyframes
@@ -913,34 +966,7 @@ export function AiChatAssistant() {
     );
   };
 
-  // ── Render Input Area ──
-  const renderInput = () => (
-    <div
-      className="border-t border-emerald-200/40 dark:border-emerald-800/40 p-3 bg-gradient-to-r from-emerald-50/60 to-green-50/60 dark:from-emerald-950/40 dark:to-green-950/40"
-    >
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <Input
-          ref={inputRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder={t('chat.placeholder')}
-          disabled={isLoading}
-          className="text-sm border-emerald-300/60 dark:border-emerald-700/60 focus-visible:ring-emerald-500 bg-white dark:bg-background rounded-lg"
-        />
-        <Button
-          type="submit"
-          size="icon"
-          disabled={!input.trim() || isLoading}
-          className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shrink-0 rounded-lg shadow-md shadow-emerald-600/20 transition-all"
-        >
-          <Send className="size-4" />
-        </Button>
-      </form>
-      <p className="text-[10px] text-muted-foreground/50 mt-1 text-center">
-        {t('chat.poweredBy')}
-      </p>
-    </div>
-  );
+  // ── Render Input Area (memoized to prevent keyboard focus loss on mobile) ──
 
   return (
     <>
@@ -1049,7 +1075,15 @@ export function AiChatAssistant() {
             >
               {renderHeader(false)}
               {renderMessages()}
-              {renderInput()}
+              <ChatInputBar
+                inputRef={inputRef}
+                input={input}
+                onInputChange={setInput}
+                onSubmit={handleSubmit}
+                isLoading={isLoading}
+                placeholder={t('chat.placeholder')}
+                poweredBy={t('chat.poweredBy')}
+              />
             </Card>
           </motion.div>
         )}
@@ -1070,7 +1104,15 @@ export function AiChatAssistant() {
             >
               {renderHeader(false)}
               {renderMessages()}
-              {renderInput()}
+              <ChatInputBar
+                inputRef={inputRef}
+                input={input}
+                onInputChange={setInput}
+                onSubmit={handleSubmit}
+                isLoading={isLoading}
+                placeholder={t('chat.placeholder')}
+                poweredBy={t('chat.poweredBy')}
+              />
             </Card>
           </motion.div>
         )}

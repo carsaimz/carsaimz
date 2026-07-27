@@ -38,6 +38,11 @@ export type Language = 'en' | 'pt' | 'fr' | 'es' | 'zh' | 'de';
 // Auth Store (with persist middleware)
 // ──────────────────────────────────────────────
 
+interface AuthResult {
+  success: boolean;
+  error?: string;
+}
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -47,8 +52,10 @@ interface AuthState {
   isSuperAdmin: boolean;
   isLoading: boolean;
   hasHydrated: boolean;
-  login: (login: string, password: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string, phone?: string) => Promise<boolean>;
+  lastLoginError: string | null;
+  lastRegisterError: string | null;
+  login: (login: string, password: string) => Promise<AuthResult>;
+  register: (name: string, email: string, password: string, phone?: string) => Promise<AuthResult>;
   logout: () => void;
   setUser: (user: User) => void;
   updateAvatar: (avatar: string) => void;
@@ -66,8 +73,8 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       hasHydrated: false,
 
-      login: async (login: string, password: string): Promise<boolean> => {
-        set({ isLoading: true });
+      login: async (login: string, password: string): Promise<AuthResult> => {
+        set({ isLoading: true, lastLoginError: null });
         try {
           const res = await fetch('/api/auth/login', {
             method: 'POST',
@@ -98,20 +105,22 @@ export const useAuthStore = create<AuthState>()(
               isSuperAdmin: userRole === 'super_admin',
               isLoading: false,
             });
-            return true;
+            return { success: true };
           } else {
-            set({ isLoading: false });
-            return false;
+            const errorMsg = data.error || 'Credenciais inválidas';
+            set({ isLoading: false, lastLoginError: errorMsg });
+            return { success: false, error: errorMsg };
           }
         } catch (err) {
           console.error('Login error:', err);
-          set({ isLoading: false });
-          return false;
+          const errorMsg = 'Erro de ligação. Verifique a sua rede e tente novamente.';
+          set({ isLoading: false, lastLoginError: errorMsg });
+          return { success: false, error: errorMsg };
         }
       },
 
-      register: async (name: string, email: string, password: string, phone?: string): Promise<boolean> => {
-        set({ isLoading: true });
+      register: async (name: string, email: string, password: string, phone?: string): Promise<AuthResult> => {
+        set({ isLoading: true, lastRegisterError: null });
         try {
           const res = await fetch('/api/auth/register', {
             method: 'POST',
@@ -141,16 +150,19 @@ export const useAuthStore = create<AuthState>()(
               isUser: userRole === 'user',
               isSuperAdmin: userRole === 'super_admin',
               isLoading: false,
+              lastRegisterError: null,
             });
-            return true;
+            return { success: true };
           } else {
-            set({ isLoading: false });
-            return false;
+            const errorMsg = data.error || 'Falha ao criar conta. Por favor, tente novamente.';
+            set({ isLoading: false, lastRegisterError: errorMsg });
+            return { success: false, error: errorMsg };
           }
         } catch (err) {
           console.error('Register error:', err);
-          set({ isLoading: false });
-          return false;
+          const errorMsg = 'Erro de ligação. Verifique a sua rede e tente novamente.';
+          set({ isLoading: false, lastRegisterError: errorMsg });
+          return { success: false, error: errorMsg };
         }
       },
 
@@ -162,6 +174,8 @@ export const useAuthStore = create<AuthState>()(
           isPartner: false,
           isUser: false,
           isSuperAdmin: false,
+          lastLoginError: null,
+          lastRegisterError: null,
         });
       },
 

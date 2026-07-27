@@ -123,3 +123,41 @@ Stage Summary:
 - Toast loop bug fixed
 - Auth page properly handles hydration and redirect
 - Build: ✅ lint passes, dev server running
+
+---
+Task ID: 6
+Agent: Super Z (Main)
+Task: Fix registration, chatbot multi-provider failover, theme colors, hero badge, Capacitor, cleanup
+
+Work Log:
+- Fixed registration: Auto-seed roles (super_admin, admin, partner, user) on every register/login attempt
+- Updated register/login API routes with Portuguese error messages
+- Updated auth store: register/login now return AuthResult { success, error } with server error messages
+- Updated auth page to display actual server error messages (not generic t('common.error'))
+- Rewrote chat API route: removed ALL fallback/hardcoded responses
+- Added multi-provider failover system: Z.ai (built-in) → configured external providers by priority
+- Created AiProvider Prisma model and /api/admin/ai-providers CRUD route
+- Created AdminAiProviders component with preset providers (Groq, DeepSeek, Gemini, OpenRouter, OpenAI)
+- Added "Provedores de IA" tab to admin settings page
+- Fixed chatbot keyboard focus bug: extracted ChatInputBar as React.memo component
+- Changed primary color from black to red (oklch 0.505 0.221 24.228)
+- Changed secondary color from gray to blue (oklch 0.541 0.181 260)
+- Updated hero section colors: emerald → red/blue gradient
+- Updated hero badge text across all 6 languages: "Desenvolvimento Web" → "Hospedagem Web"
+- Created Capacitor config (capacitor.config.ts) with package com.carsaimz
+- Updated package.json name to com.carsaimz
+- Added Capacitor scripts (cap:init, cap:add:android, cap:sync, export:clean)
+- Created app-config.ts for centralized version/config
+- Deleted unused directories: download, tool-results, examples, tests, agent-ctx
+- Cleaned stale files from upload directory
+
+Stage Summary:
+- Registration now auto-seeds roles, no "role not found" errors
+- Chatbot uses real AI only, with failover across multiple providers
+- Admin can configure AI providers with API keys, priorities, and presets
+- Keyboard focus bug fixed (memoized input component)
+- Primary color: red, secondary: blue across all UI
+- Hero badge corrected to "Hospedagem Web Gratuita" in all languages
+- Capacitor setup ready (com.carsaimz package, version from package.json)
+- Unused directories cleaned up
+- Build: ✅ successful

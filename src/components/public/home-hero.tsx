@@ -56,7 +56,7 @@ export function HomeHero() {
   return (
     <section
       id="hero"
-      className="relative overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-green-700 min-h-[90vh] flex items-center"
+      className="relative overflow-hidden bg-gradient-to-br from-red-900 via-red-800 to-red-700 min-h-[90vh] flex items-center"
     >
       {/* Floating Orbs - background decoration */}
       <Suspense fallback={null}>
@@ -68,9 +68,9 @@ export function HomeHero() {
         <ParallaxBackground intensity={15}>
           <div className="absolute inset-0">
             {/* Decorative blurred orbs (existing, enhanced by parallax) */}
-            <div className="absolute top-[5%] left-[5%] w-72 h-72 bg-yellow-400 rounded-full blur-3xl opacity-10" />
-            <div className="absolute bottom-[10%] right-[8%] w-96 h-96 bg-emerald-400 rounded-full blur-3xl opacity-10" />
-            <div className="absolute top-[45%] left-[45%] w-64 h-64 bg-green-300 rounded-full blur-3xl opacity-10" />
+            <div className="absolute top-[5%] left-[5%] w-72 h-72 bg-blue-400 rounded-full blur-3xl opacity-10" />
+            <div className="absolute bottom-[10%] right-[8%] w-96 h-96 bg-red-400 rounded-full blur-3xl opacity-10" />
+            <div className="absolute top-[45%] left-[45%] w-64 h-64 bg-blue-300 rounded-full blur-3xl opacity-10" />
           </div>
         </ParallaxBackground>
       </Suspense>
@@ -82,11 +82,11 @@ export function HomeHero() {
 
       {/* Particle Network - subtle tech overlay */}
       <Suspense fallback={null}>
-        <ParticleNetwork className="bottom-[15%] left-[5%] w-[400px] h-[400px]" particleCount={20} color="#10b981" />
+        <ParticleNetwork className="bottom-[15%] left-[5%] w-[400px] h-[400px]" particleCount={20} color="#D32F2F" />
       </Suspense>
 
       {/* Mozambique flag stripe accent */}
-      <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-green-600 via-yellow-400 to-red-500" />
+      <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-red-600 via-yellow-400 to-green-500" />
 
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <motion.div
@@ -98,7 +98,7 @@ export function HomeHero() {
           {/* Badge - ScrollReveal */}
           <ScrollReveal animation="fadeUp" delay={0}>
             <motion.div variants={itemVariants} className="mb-4">
-              <span className="inline-block px-4 py-1.5 rounded-full bg-emerald-700/50 text-emerald-200 text-sm font-medium border border-emerald-600/30">
+              <span className="inline-block px-4 py-1.5 rounded-full bg-red-700/50 text-red-200 text-sm font-medium border border-red-600/30">
                 {t('home.heroBadge')}
               </span>
             </motion.div>
@@ -125,7 +125,7 @@ export function HomeHero() {
           <ScrollReveal animation="fadeUp" delay={300}>
             <motion.p
               variants={itemVariants}
-              className="text-lg sm:text-xl md:text-2xl text-emerald-100 mb-8 max-w-2xl mx-auto leading-relaxed"
+              className="text-lg sm:text-xl md:text-2xl text-red-100 mb-8 max-w-2xl mx-auto leading-relaxed"
             >
               {t('home.heroSubtitle')}
             </motion.p>
@@ -139,7 +139,7 @@ export function HomeHero() {
             >
               <Button
                 size="lg"
-                className="bg-yellow-400 hover:bg-yellow-300 text-emerald-900 font-semibold px-8 py-3 text-base rounded-xl shadow-lg shadow-yellow-400/25 transition-all hover:shadow-xl hover:shadow-yellow-400/30"
+                className="bg-yellow-400 hover:bg-yellow-300 text-red-900 font-semibold px-8 py-3 text-base rounded-xl shadow-lg shadow-yellow-400/25 transition-all hover:shadow-xl hover:shadow-yellow-400/30"
                 onClick={() => router.push('/services')}
               >
                 {t('home.heroCtaPrimary')}
@@ -148,7 +148,7 @@ export function HomeHero() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-emerald-400/50 text-emerald-100 hover:bg-emerald-700/50 hover:text-white font-semibold px-8 py-3 text-base rounded-xl backdrop-blur-sm transition-all"
+                className="border-red-400/50 text-red-100 hover:bg-red-700/50 hover:text-white font-semibold px-8 py-3 text-base rounded-xl backdrop-blur-sm transition-all"
                 onClick={() => router.push('/projects')}
               >
                 {t('home.heroCtaSecondary')}

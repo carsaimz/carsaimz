@@ -7,29 +7,45 @@ function hashPassword(password: string): string {
   return createHash('sha256').update(password).digest('hex')
 }
 
+// ── Ensure essential roles exist (auto-seed) ──
+async function ensureRolesExist() {
+  const requiredRoles = ['super_admin', 'admin', 'partner', 'user']
+  for (const roleName of requiredRoles) {
+    const existing = await db.role.findFirst({ where: { name: roleName } })
+    if (!existing) {
+      await db.role.create({
+        data: { name: roleName, description: `${roleName} role` },
+      })
+    }
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
+    // ── Auto-seed roles on every registration attempt ──
+    await ensureRolesExist()
+
     const body = await request.json()
     const { name, email, password, phone } = body
 
-    // Validate required fields
+    // Validate required fields (Portuguese error messages)
     if (!name || !name.trim()) {
       return NextResponse.json(
-        { error: 'Name is required' },
+        { error: 'Nome é obrigatório' },
         { status: 400 }
       )
     }
 
     if (!email || !email.trim()) {
       return NextResponse.json(
-        { error: 'Email is required' },
+        { error: 'E-mail é obrigatório' },
         { status: 400 }
       )
     }
 
     if (!password || password.length < 8) {
       return NextResponse.json(
-        { error: 'Password must be at least 8 characters' },
+        { error: 'Palavra-passe deve ter pelo menos 8 caracteres' },
         { status: 400 }
       )
     }
@@ -38,7 +54,7 @@ export async function POST(request: NextRequest) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { error: 'Please enter a valid email address' },
+        { error: 'Introduza um e-mail válido' },
         { status: 400 }
       )
     }
@@ -50,19 +66,21 @@ export async function POST(request: NextRequest) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: 'An account with this email already exists' },
+        { error: 'Já existe uma conta com este e-mail' },
         { status: 409 }
       )
     }
 
-    // Find the 'user' role to assign
+    // Find the 'user' role to assign (guaranteed to exist now)
     const userRole = await db.role.findFirst({
       where: { name: 'user' },
     })
 
     if (!userRole) {
+      // This should never happen after ensureRolesExist, but just in case
+      console.error('CRITICAL: user role still missing after auto-seed')
       return NextResponse.json(
-        { error: 'Default user role not found. Please seed the database first.' },
+        { error: 'Erro interno do servidor. Tente novamente mais tarde.' },
         { status: 500 }
       )
     }
@@ -93,7 +111,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Registration error:', error)
     return NextResponse.json(
-      { error: 'Failed to create account. Please try again.' },
+      { error: 'Falha ao criar conta. Por favor, tente novamente.' },
       { status: 500 }
     )
   }

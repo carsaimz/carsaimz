@@ -1,5 +1,5 @@
 {
-  "name": "nextjs_tailwind_shadcn_ts",
+  "name": "com.carsaimz",
   "version": "0.2.1",
   "private": true,
   "scripts": {
@@ -10,9 +10,16 @@
     "db:push": "prisma db push --accept-data-loss",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset",
+    "cap:init": "bunx cap init com.carsaimz CarsaiMZ --web-dir out",
+    "cap:add:android": "bunx cap add android",
+    "cap:sync": "bunx cap sync",
+    "cap:open:android": "bunx cap open android",
+    "export:clean": "bash scripts/export.sh"
   },
   "dependencies": {
+    "@capacitor/cli": "^8.4.2",
+    "@capacitor/core": "^8.4.2",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",

@@ -458,6 +458,24 @@ model Setting {
   @@map("settings")
 }
 
+// === AI Providers (Multi-provider failover) ===
+
+model AiProvider {
+  id          String   @id @default(cuid())
+  name        String   @unique  // z_ai, groq, deepseek, gemini, openrouter
+  displayName String?            // Display name for admin UI
+  apiKey      String?            // Encrypted API key
+  baseUrl     String?            // Provider API base URL
+  model       String?            // Default model for this provider
+  priority    Int      @default(0)  // Lower = tried first
+  isActive    Boolean  @default(true)
+  config      String?            // JSON config (max_tokens, temperature, etc.)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("ai_providers")
+}
+
 // === Logs ===
 
 model Log {

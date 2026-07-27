@@ -37,7 +37,7 @@ type LoginMode = 'email' | 'phone';
 
 export default function AuthPage() {
   const { t } = useLanguage();
-  const { login, register, isAuthenticated, user, hasHydrated } = useAuthStore();
+  const { login, register, isAuthenticated, user, hasHydrated, lastLoginError, lastRegisterError } = useAuthStore();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<string>('login');
@@ -112,19 +112,19 @@ export default function AuthPage() {
     }
     setLoginLoading(true);
     try {
-      const success = await login(loginIdentifier, loginPassword);
-      if (success) {
+      const result = await login(loginIdentifier, loginPassword);
+      if (result.success) {
         const role = useAuthStore.getState().user?.role;
         toast.success(t('auth.loginSuccess'));
         if (role === 'super_admin' || role === 'admin') router.push('/admin');
         else if (role === 'partner') router.push('/partner');
         else router.push('/user');
       } else {
-        setLoginError(t('auth.invalidCredentials'));
-        toast.error(t('auth.invalidCredentials'));
+        setLoginError(result.error || t('auth.invalidCredentials') || 'Credenciais inválidas');
+        toast.error(result.error || t('auth.invalidCredentials'));
       }
     } catch {
-      setLoginError(t('auth.invalidCredentials'));
+      setLoginError(t('auth.invalidCredentials') || 'Credenciais inválidas');
       toast.error(t('auth.invalidCredentials'));
     }
     setLoginLoading(false);
@@ -150,17 +150,17 @@ export default function AuthPage() {
     }
     setRegisterLoading(true);
     try {
-      const success = await register(registerName, registerEmail, registerPassword, registerPhone || undefined);
-      if (success) {
+      const result = await register(registerName, registerEmail, registerPassword, registerPhone || undefined);
+      if (result.success) {
         toast.success(t('auth.registerSuccess'));
         router.push('/user');
       } else {
-        setRegisterError(t('common.error') || 'Registration failed. Please try again.');
-        toast.error(t('common.error') || 'Registration failed');
+        setRegisterError(result.error || t('common.error') || 'Falha ao criar conta. Por favor, tente novamente.');
+        toast.error(result.error || t('common.error'));
       }
     } catch {
-      setRegisterError(t('common.error') || 'Registration failed. Please try again.');
-      toast.error(t('common.error') || 'Registration failed');
+      setRegisterError('Erro de ligação. Verifique a sua rede e tente novamente.');
+      toast.error('Erro de ligação');
     }
     setRegisterLoading(false);
   };
