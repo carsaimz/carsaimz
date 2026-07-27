@@ -1,0 +1,455 @@
+# =============================================================================
+# Carsai Mozambique - Release Workflow
+# =============================================================================
+# Triggers on tag push (v*) and builds all platforms in parallel,
+# then creates a GitHub Release with changelog, download links, and assets.
+# =============================================================================
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+permissions:
+  contents: write
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Extract version from tag
+  # ---------------------------------------------------------------------------
+  prepare:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      previous_tag: ${{ steps.prev_tag.outputs.previous_tag }}
+      changelog: ${{ steps.changelog.outputs.changelog }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Extracted version: ${VERSION} from tag: ${TAG}"
+
+      - name: Get previous tag
+        id: prev_tag
+        run: |
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          echo "previous_tag=${PREVIOUS_TAG}" >> "$GITHUB_OUTPUT"
+          echo "Previous tag: ${PREVIOUS_TAG}"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          if [ -n "${{ steps.prev_tag.outputs.previous_tag }}" ]; then
+            LOG=$(git log ${{ steps.prev_tag.outputs.previous_tag }}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          else
+            LOG=$(git log --pretty=format:"- %s (%h)" --no-merges -20)
+          fi
+
+          # Save changelog to file for multi-line output
+          echo "${LOG}" > /tmp/changelog.txt
+
+          # Multi-line output via file
+          echo "changelog<<EOF" >> "$GITHUB_OUTPUT"
+          cat /tmp/changelog.txt >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+  # ---------------------------------------------------------------------------
+  # Build: Web (standalone Next.js)
+  # ---------------------------------------------------------------------------
+  build-web:
+    name: Build Web
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Setup database
+        env:
+          DATABASE_URL: "file:./db/custom.db"
+        run: |
+          mkdir -p db
+          bun run db:generate
+          bun run db:push
+
+      - name: Build Next.js standalone
+        run: bun run build
+
+      - name: Package web artifact
+        run: |
+          cd .next/standalone
+          tar -czf ../../carsaimz-web-${{ needs.prepare.outputs.version }}.tar.gz .
+          cd ../..
+
+      - name: Upload web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-standalone
+          path: carsaimz-web-${{ needs.prepare.outputs.version }}.tar.gz
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Build: Android APK + AAB
+  # ---------------------------------------------------------------------------
+  build-android:
+    name: Build Android
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Setup database
+        env:
+          DATABASE_URL: "file:./db/custom.db"
+        run: |
+          mkdir -p db
+          bun run db:generate
+          bun run db:push
+
+      - name: Create export script
+        run: |
+          mkdir -p scripts
+          cat > scripts/export.sh << 'SCRIPT'
+          #!/bin/bash
+          set -e
+          CONFIG_FILE="next.config.ts"
+          # Backup original config
+          cp "$CONFIG_FILE" "$CONFIG_FILE.bak"
+          # Trap to restore on exit
+          trap 'mv "$CONFIG_FILE.bak" "$CONFIG_FILE"' EXIT
+          # Remove API routes (they don't work with static export)
+          if [ -d "src/app/api" ]; then
+            mv src/app/api src/app/api.bak
+            trap 'mv "$CONFIG_FILE.bak" "$CONFIG_FILE"; mv src/app/api.bak src/app/api' EXIT
+          fi
+          # Remove [slug] dynamic routes
+          find src/app -type d -name '\[*\]' | while read dir; do
+            mv "$dir" "${dir}.bak"
+          done
+          # Change output to "export"
+          sed -i 's/output: "standalone"/output: "export"/' "$CONFIG_FILE"
+          # Build
+          bun run build
+          # Restore everything
+          mv "$CONFIG_FILE.bak" "$CONFIG_FILE"
+          if [ -d "src/app/api.bak" ]; then
+            mv src/app/api.bak src/app/api
+          fi
+          find src/app -type d -name '*.bak' | while read dir; do
+            newdir="${dir%.bak}"
+            mv "$dir" "$newdir"
+          done
+          SCRIPT
+          chmod +x scripts/export.sh
+
+      - name: Static export for Android
+        run: bash scripts/export.sh
+
+      - name: Initialize Capacitor
+        run: bunx cap init com.carsaimz CarsaiMZ --web-dir out || true
+
+      - name: Add Android platform
+        run: bunx cap add android || true
+
+      - name: Sync Capacitor
+        run: bunx cap sync android
+
+      - name: Copy web assets
+        run: bunx cap copy android
+
+      - name: Configure AndroidManifest.xml
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          
+          if [ ! -f "$MANIFEST" ]; then
+            echo "Creating AndroidManifest.xml..."
+            mkdir -p android/app/src/main
+            cat > "$MANIFEST" << 'MANIFEST_EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools">
+          MANIFEST_EOF
+          fi
+          
+          # Add all required permissions before the <application> tag
+          sed -i '/<application/i\    <!-- Network -->\n    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />\n    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />\n\n    <!-- Camera & Storage -->\n    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />\n    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />\n\n    <!-- Hardware & Sensors -->\n    <uses-permission android:name="android.permission.VIBRATE" />\n    <uses-permission android:name="android.permission.USE_BIOMETRIC" />\n    <uses-permission android:name="android.permission.WAKE_LOCK" />\n\n    <!-- Boot & Services -->\n    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />\n\n    <!-- Notifications -->\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n\n    <!-- Shortcuts -->\n    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />\n    <uses-permission android:name="com.android.launcher.permission.UNINSTALL_SHORTCUT" />\n\n    <!-- Location -->\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n\n    <!-- Google / Firebase -->\n    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />\n    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />\n    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />\n\n    <!-- NFC -->\n    <uses-permission android:name="android.permission.NFC" />\n\n    <!-- Bluetooth -->\n    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />\n    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />\n' "$MANIFEST"
+          
+          # Add uses-features before the <application> tag
+          sed -i '/<application/i\    <!-- Hardware Features -->\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <uses-feature android:name="android.hardware.internet" android:required="false" />\n    <uses-feature android:name="android.hardware.location.gps" android:required="false" />\n    <uses-feature android:name="android.hardware.nfc" android:required="false" />\n    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />\n' "$MANIFEST"
+          
+          echo "=== AndroidManifest.xml contents ==="
+          cat "$MANIFEST"
+
+      - name: Setup keystore
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          mkdir -p android/app/upload
+          if [ -f upload/release.jks ]; then
+            cp upload/release.jks android/app/upload/release.jks
+          fi
+          
+          # Create keystore properties file
+          cat > android/keystore.properties << EOF
+          storeFile=upload/release.jks
+          storePassword=${KEYSTORE_PASSWORD}
+          keyAlias=${KEYSTORE_ALIAS}
+          keyPassword=${KEY_PASSWORD}
+          EOF
+
+      - name: Build APK with Gradle
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      - name: Build AAB with Gradle
+        working-directory: android
+        run: ./gradlew bundleRelease
+
+      - name: Rename artifacts
+        run: |
+          VERSION="${{ needs.prepare.outputs.version }}"
+          
+          # Find and rename APK
+          APK_PATH=$(find android/app/build/outputs/apk/release/ -name "*.apk" -type f | head -1)
+          if [ -n "$APK_PATH" ]; then
+            cp "$APK_PATH" "CarsaiMozambique-${VERSION}.apk"
+            echo "APK: CarsaiMozambique-${VERSION}.apk"
+          fi
+          
+          # Find and rename AAB
+          AAB_PATH=$(find android/app/build/outputs/bundle/release/ -name "*.aab" -type f | head -1)
+          if [ -n "$AAB_PATH" ]; then
+            cp "$AAB_PATH" "CarsaiMozambique-${VERSION}.aab"
+            echo "AAB: CarsaiMozambique-${VERSION}.aab"
+          fi
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: CarsaiMozambique-${{ needs.prepare.outputs.version }}.apk
+          retention-days: 30
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aab
+          path: CarsaiMozambique-${{ needs.prepare.outputs.version }}.aab
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Build: Windows Portable EXE
+  # ---------------------------------------------------------------------------
+  build-windows:
+    name: Build Windows
+    needs: prepare
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Setup database
+        env:
+          DATABASE_URL: "file:./db/custom.db"
+        run: |
+          if (-not (Test-Path "db")) { New-Item -ItemType Directory -Path "db" }
+          bun run db:generate
+          bun run db:push
+        shell: pwsh
+
+      - name: Build Next.js standalone
+        run: bun run build
+
+      - name: Build Electron portable EXE
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bunx electron-builder --win portable
+
+      - name: Rename EXE artifact
+        shell: pwsh
+        run: |
+          $VERSION = "${{ needs.prepare.outputs.version }}"
+          $exePath = Get-ChildItem -Path "dist" -Filter "*.exe" -Recurse | Select-Object -First 1
+          if ($exePath) {
+            Copy-Item $exePath.FullName "CarsaiMozambique-$VERSION-Portable.exe"
+            Write-Host "EXE: CarsaiMozambique-$VERSION-Portable.exe"
+          }
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-portable
+          path: CarsaiMozambique-${{ needs.prepare.outputs.version }}-Portable.exe
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Create GitHub Release
+  # ---------------------------------------------------------------------------
+  create-release:
+    name: Create Release
+    needs: [prepare, build-web, build-android, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List downloaded artifacts
+        run: find artifacts -type f | sort
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          # Copy all build artifacts
+          find artifacts -name "*.tar.gz" -exec cp {} release-assets/ \;
+          find artifacts -name "*.apk" -exec cp {} release-assets/ \;
+          find artifacts -name "*.aab" -exec cp {} release-assets/ \;
+          find artifacts -name "*.exe" -exec cp {} release-assets/ \;
+          ls -la release-assets/
+
+      - name: Generate release body
+        id: body
+        run: |
+          VERSION="${{ needs.prepare.outputs.version }}"
+          TAG="${GITHUB_REF#refs/tags/}"
+          REPO="${{ github.repository }}"
+          
+          cat > /tmp/release-body.md << 'HEADER'
+          ## 🚗 Carsai Mozambique — Release
+          HEADER
+          
+          echo "" >> /tmp/release-body.md
+          echo "**Version:** \`${VERSION}\`" >> /tmp/release-body.md
+          echo "**Date:** $(date -u '+%Y-%m-%d %H:%M UTC')" >> /tmp/release-body.md
+          echo "" >> /tmp/release-body.md
+          
+          # --- Download Links Section ---
+          cat >> /tmp/release-body.md << 'DOWNLOADS'
+          ---
+          
+          ### 📦 Downloads
+          
+          DOWNLOADS
+          
+          echo "| Platform | File | Size |" >> /tmp/release-body.md
+          echo "|:---------|:-----|-----:|" >> /tmp/release-body.md
+          
+          # Calculate sizes and add download links
+          for file in release-assets/*; do
+            fname=$(basename "$file")
+            fsize=$(du -h "$file" | cut -f1 | tr -d ' ')
+            ext="${fname##*.}"
+            
+            case "$ext" in
+              apk) icon="📱" ;;
+              aab) icon="📦" ;;
+              exe) icon="🖥️" ;;
+              gz)  icon="🌐" ;;
+              *)   icon="📁" ;;
+            esac
+            
+            echo "| ${icon} ${ext^^} | [\`${fname}\`](https://github.com/${REPO}/releases/download/${TAG}/${fname}) | ${fsize} |" >> /tmp/release-body.md
+          done
+          
+          echo "" >> /tmp/release-body.md
+          
+          # --- Changelog Section ---
+          cat >> /tmp/release-body.md << 'CHANGELOG'
+          ---
+          
+          ### 📋 Changelog
+          
+          CHANGELOG
+          
+          echo '```' >> /tmp/release-body.md
+          echo "${{ needs.prepare.outputs.changelog }}" >> /tmp/release-body.md
+          echo '```' >> /tmp/release-body.md
+          
+          # --- Platform Notes ---
+          cat >> /tmp/release-body.md << 'NOTES'
+          
+          ---
+          
+          ### 📝 Platform Notes
+          
+          | Platform | Details |
+          |:---------|:--------|
+          | 🌐 **Web** | Standalone Next.js server — extract and run `node server.js` |
+          | 📱 **Android APK** | Direct install — enable "Install from unknown sources" |
+          | 📦 **Android AAB** | App Bundle for Google Play Store upload |
+          | 🖥️ **Windows EXE** | Portable — no installation required, just run |
+          
+          NOTES
+          
+          # Output the body for GitHub release
+          echo "body_file=/tmp/release-body.md" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "Carsai Mozambique v${{ needs.prepare.outputs.version }}"
+          body_path: /tmp/release-body.md
+          draft: false
+          prerelease: ${{ contains(needs.prepare.outputs.version, '-') }}
+          files: release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

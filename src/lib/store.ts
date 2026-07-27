@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { buildApiUrl } from '@/lib/api-base';
 
 // ──────────────────────────────────────────────
 // Types
@@ -76,7 +77,7 @@ export const useAuthStore = create<AuthState>()(
       login: async (login: string, password: string): Promise<AuthResult> => {
         set({ isLoading: true, lastLoginError: null });
         try {
-          const res = await fetch('/api/auth/login', {
+          const res = await fetch(buildApiUrl('/api/auth/login'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ login, password }),
@@ -122,7 +123,7 @@ export const useAuthStore = create<AuthState>()(
       register: async (name: string, email: string, password: string, phone?: string): Promise<AuthResult> => {
         set({ isLoading: true, lastRegisterError: null });
         try {
-          const res = await fetch('/api/auth/register', {
+          const res = await fetch(buildApiUrl('/api/auth/register'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, email, password, phone: phone || undefined }),

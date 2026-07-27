@@ -30,6 +30,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/language-context';
+import { buildApiUrl } from '@/lib/api-base';
 
 // ──────────────────────────────────────────────
 // Types
@@ -344,7 +345,7 @@ const ChatInputBar = memo(function ChatInputBar({
 }: ChatInputBarProps) {
   return (
     <div
-      className="border-t border-emerald-200/40 dark:border-emerald-800/40 p-3 bg-gradient-to-r from-emerald-50/60 to-green-50/60 dark:from-emerald-950/40 dark:to-green-950/40"
+      className="border-t border-red-200/40 dark:border-red-800/40 p-3 bg-gradient-to-r from-red-50/60 to-blue-50/60 dark:from-red-950/40 dark:to-blue-950/40"
     >
       <form onSubmit={onSubmit} className="flex gap-2">
         <Input
@@ -353,13 +354,13 @@ const ChatInputBar = memo(function ChatInputBar({
           onChange={(e) => onInputChange(e.target.value)}
           placeholder={placeholder}
           disabled={isLoading}
-          className="text-sm border-emerald-300/60 dark:border-emerald-700/60 focus-visible:ring-emerald-500 bg-white dark:bg-background rounded-lg"
+          className="text-sm border-red-300/60 dark:border-red-700/60 focus-visible:ring-red-500 bg-white dark:bg-background rounded-lg"
         />
         <Button
           type="submit"
           size="icon"
           disabled={!input.trim() || isLoading}
-          className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shrink-0 rounded-lg shadow-md shadow-emerald-600/20 transition-all"
+          className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shrink-0 rounded-lg shadow-md shadow-red-600/20 transition-all"
         >
           <Send className="size-4" />
         </Button>
@@ -376,9 +377,9 @@ const ChatInputBar = memo(function ChatInputBar({
 // ──────────────────────────────────────────────
 
 const pulseKeyframes = [
-  { scale: 1, boxShadow: '0 0 0 0 rgba(16, 185, 129, 0.4)' },
-  { scale: 1.05, boxShadow: '0 0 0 10px rgba(16, 185, 129, 0)' },
-  { scale: 1, boxShadow: '0 0 0 0 rgba(16, 185, 129, 0)' },
+  { scale: 1, boxShadow: '0 0 0 0 rgba(211, 47, 47, 0.4)' },
+  { scale: 1.05, boxShadow: '0 0 0 10px rgba(211, 47, 47, 0)' },
+  { scale: 1, boxShadow: '0 0 0 0 rgba(211, 47, 47, 0)' },
 ];
 
 // ──────────────────────────────────────────────
@@ -539,7 +540,7 @@ export function AiChatAssistant() {
         content: m.content,
       }));
 
-      const response = await fetch('/api/chat', {
+      const response = await fetch(buildApiUrl('/api/chat'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -676,7 +677,7 @@ export function AiChatAssistant() {
   // ── Render Header ──
   const renderHeader = (compact: boolean = false) => (
     <CardHeader
-      className={`pb-2 bg-gradient-to-r from-emerald-600 via-emerald-700 to-green-600 text-white rounded-t-2xl border-b border-emerald-500/30 select-none ${
+      className={`pb-2 bg-gradient-to-r from-red-600 via-red-700 to-blue-600 text-white rounded-t-2xl border-b border-red-500/30 select-none ${
         compact ? 'py-2 px-3' : ''
       }`}
     >
@@ -698,7 +699,7 @@ export function AiChatAssistant() {
               {t('chat.title')}
             </CardTitle>
             {!compact && (
-              <p className="text-xs text-emerald-200/80 truncate">
+              <p className="text-xs text-red-200/80 truncate">
                 {t('chat.subtitle')}
               </p>
             )}
@@ -710,7 +711,7 @@ export function AiChatAssistant() {
             <Button
               variant="ghost"
               size="icon"
-              className="size-7 text-emerald-200 hover:bg-emerald-800/50 hover:text-white"
+              className="size-7 text-red-200 hover:bg-red-800/50 hover:text-white"
               onClick={handleClearHistory}
               aria-label="Clear history"
               title="Limpar histórico"
@@ -724,7 +725,7 @@ export function AiChatAssistant() {
             <Button
               variant="ghost"
               size="icon"
-              className="size-7 text-emerald-200 hover:bg-emerald-800/50 hover:text-white"
+              className="size-7 text-red-200 hover:bg-red-800/50 hover:text-white"
               onClick={minimize}
               aria-label="Minimize"
             >
@@ -737,7 +738,7 @@ export function AiChatAssistant() {
             <Button
               variant="ghost"
               size="icon"
-              className="size-7 text-emerald-200 hover:bg-emerald-800/50 hover:text-white"
+              className="size-7 text-red-200 hover:bg-red-800/50 hover:text-white"
               onClick={maximize}
               aria-label="Maximize"
             >
@@ -750,7 +751,7 @@ export function AiChatAssistant() {
             <Button
               variant="ghost"
               size="icon"
-              className="size-7 text-emerald-200 hover:bg-emerald-800/50 hover:text-white"
+              className="size-7 text-red-200 hover:bg-red-800/50 hover:text-white"
               onClick={restoreFromFullscreen}
               aria-label="Restore"
             >
@@ -765,7 +766,7 @@ export function AiChatAssistant() {
               size="icon"
               className={`${
                 compact ? 'size-6' : 'size-7'
-              } text-emerald-200 hover:bg-emerald-800/50 hover:text-white`}
+              } text-red-200 hover:bg-red-800/50 hover:text-white`}
               onClick={restoreFromMinimized}
               aria-label="Restore"
             >
@@ -779,7 +780,7 @@ export function AiChatAssistant() {
             size="icon"
             className={`${
               compact ? 'size-6' : 'size-7'
-            } text-emerald-200 hover:bg-emerald-800/50 hover:text-white`}
+            } text-red-200 hover:bg-red-800/50 hover:text-white`}
             onClick={closeChat}
             aria-label={t('common.close')}
           >
@@ -792,14 +793,14 @@ export function AiChatAssistant() {
       {!compact && (
         <div className="flex items-center gap-2 mt-2">
           <Badge
-            className="bg-white/10 text-emerald-200 border-emerald-400/20 text-[10px] px-2 py-0.5"
+            className="bg-white/10 text-red-200 border-red-400/20 text-[10px] px-2 py-0.5"
           >
             <Globe className="size-2.5 mr-1" />
             {t('chat.dbConnected')}
           </Badge>
           {messages.length > 1 && (
             <Badge
-              className="bg-white/10 text-emerald-200 border-emerald-400/20 text-[10px] px-2 py-0.5"
+              className="bg-white/10 text-red-200 border-red-400/20 text-[10px] px-2 py-0.5"
             >
               <Sparkles className="size-2.5 mr-1" />
               {messages.length - 1} {t('chat.messagesInMemory')}
@@ -836,18 +837,18 @@ export function AiChatAssistant() {
               >
                 {msg.role === 'assistant' && (
                   <div
-                    className="shrink-0 size-7 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-900 dark:to-emerald-800 flex items-center justify-center shadow-sm"
+                    className="shrink-0 size-7 rounded-full bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900 dark:to-red-800 flex items-center justify-center shadow-sm"
                   >
                     <Bot
-                      className="size-3.5 text-emerald-700 dark:text-emerald-400"
+                      className="size-3.5 text-red-700 dark:text-red-400"
                     />
                   </div>
                 )}
                 <div
                   className={`max-w-[80%] rounded-xl px-3 py-2.5 text-sm ${
                     msg.role === 'user'
-                      ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-md shadow-emerald-600/20'
-                      : 'bg-white dark:bg-emerald-950/50 text-foreground border border-emerald-200/60 dark:border-emerald-800/40 shadow-sm'
+                      ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-md shadow-red-600/20'
+                      : 'bg-white dark:bg-red-950/50 text-foreground border border-red-200/60 dark:border-red-800/40 shadow-sm'
                   }`}
                 >
                   <p className="whitespace-pre-wrap break-words leading-relaxed">
@@ -856,7 +857,7 @@ export function AiChatAssistant() {
                   <p
                     className={`text-[10px] mt-1 ${
                       msg.role === 'user'
-                        ? 'text-emerald-200/60'
+                        ? 'text-red-200/60'
                         : 'text-muted-foreground/50'
                     }`}
                   >
@@ -865,7 +866,7 @@ export function AiChatAssistant() {
                 </div>
                 {msg.role === 'user' && (
                   <div
-                    className="shrink-0 size-7 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-md shadow-emerald-600/20"
+                    className="shrink-0 size-7 rounded-full bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center shadow-md shadow-red-600/20"
                   >
                     <User className="size-3.5 text-white" />
                   </div>
@@ -881,25 +882,25 @@ export function AiChatAssistant() {
                 className="flex gap-2 justify-start"
               >
                 <div
-                  className="shrink-0 size-7 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-900 dark:to-emerald-800 flex items-center justify-center"
+                  className="shrink-0 size-7 rounded-full bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900 dark:to-red-800 flex items-center justify-center"
                 >
                   <Bot
-                    className="size-3.5 text-emerald-700 dark:text-emerald-400"
+                    className="size-3.5 text-red-700 dark:text-red-400"
                   />
                 </div>
                 <div
-                  className="bg-white dark:bg-emerald-950/50 rounded-xl px-4 py-3 border border-emerald-200/60 dark:border-emerald-800/40 shadow-sm"
+                  className="bg-white dark:bg-red-950/50 rounded-xl px-4 py-3 border border-red-200/60 dark:border-red-800/40 shadow-sm"
                 >
                   <div className="flex items-center gap-2">
                     <div className="flex gap-1">
                       <div
-                        className="animate-bounce size-2 rounded-full bg-emerald-600 [animation-delay:0ms]"
+                        className="animate-bounce size-2 rounded-full bg-red-600 [animation-delay:0ms]"
                       />
                       <div
-                        className="animate-bounce size-2 rounded-full bg-emerald-600 [animation-delay:150ms]"
+                        className="animate-bounce size-2 rounded-full bg-red-600 [animation-delay:150ms]"
                       />
                       <div
-                        className="animate-bounce size-2 rounded-full bg-emerald-600 [animation-delay:300ms]"
+                        className="animate-bounce size-2 rounded-full bg-red-600 [animation-delay:300ms]"
                       />
                     </div>
                     <span className="text-xs text-muted-foreground">
@@ -942,7 +943,7 @@ export function AiChatAssistant() {
         {messages.length <= 2 && !isLoading && (
           <div className="px-4 pb-2">
             <Separator
-              className="mb-2 bg-emerald-200/40 dark:bg-emerald-800/40"
+              className="mb-2 bg-red-200/40 dark:bg-red-800/40"
             />
             <p className="text-xs text-muted-foreground mb-2 font-medium">
               {t('chat.frequentQuestions')}
@@ -953,7 +954,7 @@ export function AiChatAssistant() {
                   key={idx}
                   variant="outline"
                   size="sm"
-                  className="text-xs h-auto py-1.5 px-3 border-emerald-300/60 dark:border-emerald-700/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 rounded-lg shadow-sm transition-all hover:shadow-md"
+                  className="text-xs h-auto py-1.5 px-3 border-red-300/60 dark:border-red-700/60 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/50 rounded-lg shadow-sm transition-all hover:shadow-md"
                   onClick={() => handleQuickQuestion(question)}
                 >
                   {question}
@@ -979,7 +980,7 @@ export function AiChatAssistant() {
             animate="visible"
             exit="hidden"
             onClick={openNormal}
-            className="fixed bottom-6 right-6 z-50 flex items-center justify-center size-14 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 hover:from-emerald-600 hover:to-emerald-800 text-white shadow-lg shadow-emerald-600/30 hover:shadow-xl hover:shadow-emerald-600/40 transition-colors group"
+            className="fixed bottom-6 right-6 z-50 flex items-center justify-center size-14 rounded-full bg-gradient-to-br from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg shadow-red-600/30 hover:shadow-xl hover:shadow-red-600/40 transition-colors group"
             aria-label={t('chat.open')}
             // Pulsing animation when idle (no unread)
             {...(!hasUnread
@@ -988,9 +989,9 @@ export function AiChatAssistant() {
                     ...bubbleVariants.visible,
                     scale: [1, 1.05, 1],
                     boxShadow: [
-                      '0 0 0 0 rgba(16, 185, 129, 0.4)',
-                      '0 0 0 12px rgba(16, 185, 129, 0)',
-                      '0 0 0 0 rgba(16, 185, 129, 0)',
+                      '0 0 0 0 rgba(211, 47, 47, 0.4)',
+                      '0 0 0 12px rgba(211, 47, 47, 0)',
+                      '0 0 0 0 rgba(211, 47, 47, 0)',
                     ],
                   },
                   transition: {
@@ -1012,7 +1013,7 @@ export function AiChatAssistant() {
               className="size-6 group-hover:scale-110 transition-transform"
             />
             <Badge
-              className="absolute -top-1 -right-1 size-5 p-0 bg-yellow-400 text-emerald-900 text-[10px] flex items-center justify-center border-0 rounded-full shadow-sm"
+              className="absolute -top-1 -right-1 size-5 p-0 bg-yellow-400 text-red-900 text-[10px] flex items-center justify-center border-0 rounded-full shadow-sm"
             >
               <Sparkles className="size-3" />
             </Badge>
@@ -1042,7 +1043,7 @@ export function AiChatAssistant() {
             className={`fixed z-50 ${getPositionClasses()} ${getSizeClasses()}`}
           >
             <Card
-              className="border-emerald-200/60 dark:border-emerald-800/60 shadow-xl shadow-emerald-900/20 overflow-hidden rounded-xl"
+              className="border-red-200/60 dark:border-red-800/60 shadow-xl shadow-red-900/20 overflow-hidden rounded-xl"
             >
               {renderHeader(true)}
             </Card>
@@ -1071,7 +1072,7 @@ export function AiChatAssistant() {
             } ${getSizeClasses()}`}
           >
             <Card
-              className="border-emerald-200/60 dark:border-emerald-800/60 shadow-2xl shadow-emerald-900/20 h-full flex flex-col overflow-hidden rounded-2xl"
+              className="border-red-200/60 dark:border-red-800/60 shadow-2xl shadow-red-900/20 h-full flex flex-col overflow-hidden rounded-2xl"
             >
               {renderHeader(false)}
               {renderMessages()}
@@ -1100,7 +1101,7 @@ export function AiChatAssistant() {
             className={`fixed z-50 ${getPositionClasses()} ${getSizeClasses()}`}
           >
             <Card
-              className="border-emerald-200/60 dark:border-emerald-800/60 shadow-2xl shadow-emerald-900/20 h-full flex flex-col overflow-hidden rounded-2xl"
+              className="border-red-200/60 dark:border-red-800/60 shadow-2xl shadow-red-900/20 h-full flex flex-col overflow-hidden rounded-2xl"
             >
               {renderHeader(false)}
               {renderMessages()}

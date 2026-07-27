@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "next-themes";
 import { LanguageProvider } from "@/contexts/language-context";
 import { AppProvider } from "@/contexts/app-context";
+import { CapacitorBackButtonHandler } from "@/components/common/capacitor-back-handler";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,6 +56,7 @@ export default function RootLayout({
         >
           <LanguageProvider>
             <AppProvider>
+              <CapacitorBackButtonHandler />
               {children}
             </AppProvider>
           </LanguageProvider>

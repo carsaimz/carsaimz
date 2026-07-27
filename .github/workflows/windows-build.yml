@@ -1,0 +1,168 @@
+# =============================================================================
+# Carsai Mozambique - Windows Build Workflow
+# =============================================================================
+# Triggers on push to main and on tag push (v*).
+# Builds a portable Windows EXE using Electron + electron-builder,
+# and uploads as GitHub artifact.
+# =============================================================================
+
+name: Windows Build
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Build Windows Portable EXE
+  # ---------------------------------------------------------------------------
+  build-windows:
+    name: Build Windows Portable EXE
+    runs-on: windows-latest
+
+    steps:
+      # -----------------------------------------------------------------------
+      # Setup
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # -----------------------------------------------------------------------
+      # Install & Database
+      # -----------------------------------------------------------------------
+      - name: Install dependencies
+        run: bun install
+
+      - name: Setup database
+        env:
+          DATABASE_URL: "file:./db/custom.db"
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "db")) {
+            New-Item -ItemType Directory -Path "db" -Force
+          }
+          bun run db:generate
+          bun run db:push
+
+      # -----------------------------------------------------------------------
+      # Build Next.js Standalone
+      # -----------------------------------------------------------------------
+      - name: Build Next.js standalone
+        run: bun run build
+
+      - name: Verify standalone output
+        shell: pwsh
+        run: |
+          $standalonePath = ".next\standalone\server.js"
+          if (Test-Path $standalonePath) {
+            Write-Host "✅ Standalone server.js found at $standalonePath"
+          } else {
+            Write-Host "❌ Standalone server.js NOT found — build may have failed"
+            Get-ChildItem -Path ".next\standalone" -Recurse -Depth 1 | Select-Object FullName
+            exit 1
+          }
+          
+          # Verify static and public were copied
+          if (Test-Path ".next\standalone\.next\static") {
+            Write-Host "✅ Static files copied"
+          } else {
+            Write-Host "⚠️ Static files not copied — copying manually"
+            Copy-Item -Path ".next\static" -Destination ".next\standalone\.next\static" -Recurse -Force
+          }
+          
+          if (Test-Path ".next\standalone\public") {
+            Write-Host "✅ Public directory copied"
+          } else {
+            Write-Host "⚠️ Public directory not copied — copying manually"
+            Copy-Item -Path "public" -Destination ".next\standalone\public" -Recurse -Force
+          }
+
+      # -----------------------------------------------------------------------
+      # Build Electron Portable EXE
+      # -----------------------------------------------------------------------
+      - name: Build Electron portable EXE
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
+        run: |
+          Write-Host "🔧 Running electron-builder for Windows portable..."
+          bunx electron-builder --win portable
+          
+          Write-Host ""
+          Write-Host "📦 Build output:"
+          if (Test-Path "dist") {
+            Get-ChildItem -Path "dist" -Recurse | Select-Object FullName, Length
+          } else {
+            Write-Host "❌ dist directory not found"
+            exit 1
+          }
+
+      # -----------------------------------------------------------------------
+      # Rename & Upload Artifact
+      # -----------------------------------------------------------------------
+      - name: Rename portable EXE
+        shell: pwsh
+        run: |
+          # Find the portable EXE in the dist directory
+          $exeFiles = Get-ChildItem -Path "dist" -Filter "*.exe" -Recurse
+          
+          if ($exeFiles.Count -eq 0) {
+            Write-Host "❌ No .exe files found in dist directory"
+            exit 1
+          }
+          
+          $portableExe = $exeFiles | Where-Object { $_.Name -notlike "*Setup*" } | Select-Object -First 1
+          
+          if ($portableExe) {
+            $version = (Get-Content -Path "package.json" | ConvertFrom-Json).version
+            $newName = "CarsaiMozambique-${version}-Portable.exe"
+            Copy-Item -Path $portableExe.FullName -Destination $newName -Force
+            Write-Host "✅ Renamed: $($portableExe.Name) → $newName"
+            Write-Host "   Size: $([math]::Round($portableExe.Length / 1MB, 2)) MB"
+          } else {
+            Write-Host "❌ No portable EXE found (only setup files?)"
+            exit 1
+          }
+
+      - name: Upload Windows portable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-portable-exe
+          path: CarsaiMozambique-*-Portable.exe
+          retention-days: 30
+
+      # -----------------------------------------------------------------------
+      # Build Summary
+      # -----------------------------------------------------------------------
+      - name: Build Summary
+        shell: pwsh
+        run: |
+          $version = (Get-Content -Path "package.json" | ConvertFrom-Json).version
+          $exeFile = Get-ChildItem -Path "." -Filter "CarsaiMozambique-*-Portable.exe"
+          $exeSize = [math]::Round($exeFile.Length / 1MB, 2)
+          
+          $summary = @"
+          ## 🖥️ Windows Build Summary
+          
+          | Artifact | Size |
+          |:---------|-----:|
+          | 💻 Portable EXE | ${exeSize} MB |
+          
+          **Version:** ``${version}``
+          **Commit:** ``${{ github.sha }}``
+          **Branch:** ``${{ github.ref_name }}``
+          "@
+          
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $summary

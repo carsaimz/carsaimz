@@ -161,3 +161,45 @@ Stage Summary:
 - Capacitor setup ready (com.carsaimz package, version from package.json)
 - Unused directories cleaned up
 - Build: ✅ successful
+
+---
+Task ID: 7
+Agent: Super Z (Main)
+Task: Fix Electron build, Capacitor back nav, chatbot colors, registration fix, workflows, AndroidManifest, cleanup
+
+Work Log:
+- Created Electron main.js + preload.js for Windows EXE packaging (fixes "index.js not found" error)
+- Updated package.json with main field, electron-builder config, description, author, electron scripts
+- Installed electron and electron-builder as devDependencies
+- Fixed chatbot colors: ALL emerald/green → red/blue to match new theme
+- Updated hero badge in all 7 translation files to "Hospedagem Web Gratuita" (shorter, punchy)
+- Fixed registration for Capacitor app: created api-base.ts utility that resolves API URL based on runtime environment
+  - Web/Electron: relative paths work (local server)
+  - Capacitor mobile: uses NEXT_PUBLIC_API_URL for external server
+- Updated store.ts and chatbot to use buildApiUrl() for API calls
+- Added NEXT_PUBLIC_API_URL, NEXT_PUBLIC_APP_VERSION, NEXT_PUBLIC_APP_BUILD to .env
+- Created Capacitor back button handler hook (use-capacitor-back.ts) + component
+  - Intercepts hardware back button on Android → navigates to previous page instead of closing app
+  - Only activates in Capacitor native environment (no-op on web)
+- Added CapacitorBackButtonHandler to root layout
+- Updated Capacitor config with version from package.json, server URL option, improved splash screen
+- Created 4 GitHub Actions workflows:
+  - release.yml: Multi-platform release (web, APK, AAB, EXE) with changelog, download links, icons
+  - android-build.yml: Full Android pipeline with comprehensive AndroidManifest permissions/features
+  - windows-build.yml: Electron portable EXE build
+  - ci.yml: Validation checks (lint, build, typecheck, prisma, export)
+- AndroidManifest includes: INTERNET, CAMERA, storage, location, NFC, Bluetooth, Firebase/Google, notifications, boot, foreground service, biometric, etc.
+- Deleted unused directories: tool-results, mini-services
+- Added capacitor.config.ts to eslint ignores
+- Build: ✅ successful, lint: ✅ passes cleanly
+
+Stage Summary:
+- Electron build fixed (main.js entry point created, electron-builder configured)
+- Registration fixed for mobile app (API base URL resolver for Capacitor)
+- Capacitor back button handler prevents app closing on back press
+- Chatbot colors fully updated to red/blue theme
+- Hero badge shortened to "Hospedagem Web Gratuita" in all languages
+- 4 production-ready GitHub Actions workflows created
+- AndroidManifest with comprehensive permissions/features
+- Cleanup of unused directories completed
+- Build: ✅ successful, lint: ✅ passes
