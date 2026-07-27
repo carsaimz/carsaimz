@@ -203,3 +203,60 @@ Stage Summary:
 - AndroidManifest with comprehensive permissions/features
 - Cleanup of unused directories completed
 - Build: ✅ successful, lint: ✅ passes
+
+---
+Task ID: 1 (Current)
+Agent: Bug Fix Agent
+Task: Fix critical bugs - Electron build, chatbot focus, Capacitor back nav, build config cleanup
+
+Work Log:
+- Fixed electron/main.js path resolution for packaged app:
+  - Updated getServerPath() to use process.resourcesPath when packaged
+    (extraResources are placed outside the asar at process.resourcesPath)
+  - Previously used app.getAppPath() which returns the asar root, causing
+    the "index.js was not found" error because the standalone server files
+    were not inside the asar
+  - Fixed icon path: app.isPackaged ? process.resourcesPath : app.getAppPath()
+  - Added proper serverCwd resolution for the Node.js child process spawn
+  - Added detailed comments explaining asar vs extraResources path resolution
+
+- Fixed package.json build config (removed triple-duplication):
+  - Removed .next/standalone, .next/static, public from build.files
+    (they were in 3 places: build.files → inside asar, asarUnpack → unpacked
+    next to asar, extraResources → in resources dir)
+  - Removed asarUnpack entries entirely (no longer needed since files are
+    in extraResources outside the asar, not inside it)
+  - Added .next/static to extraResources (needed by Next.js standalone
+    for static asset serving)
+  - Files inside asar: only electron/**/* (main.js, preload.js)
+  - Files outside asar (extraResources): .next/standalone, .next/static, public
+  - This eliminates the confusing triple-placement that caused build failures
+
+- Fixed chatbot input focus bug:
+  - Added re-focus logic when response is received (isLoading transitions
+    from true to false) using prevLoadingRef to track state changes
+  - Uses double requestAnimationFrame for reliable focus on mobile devices
+  - Also tracks previous windowState to properly detect window open events
+  - Previously, input only focused on windowState change, not after responses
+
+- Fixed Capacitor back button navigation:
+  - Replaced unreliable window.history.length > 1 check with manual
+    navigation history stack (module-level navStack array)
+  - Capacitor apps start fresh, so window.history.length is always 1
+  - Stack tracks pathname changes with deduplication and max size limit
+  - Back button pops from stack and navigates to previous route
+  - At root of stack, navigates to /home instead of closing the app
+  - Installed @capacitor/app package for proper Capacitor plugin access
+  - Added hasSetupRef to prevent duplicate listener setup on re-renders
+
+- Deleted tool-results directory (stale read cache files)
+- Lint: ✅ passes cleanly
+- Commit: ✅ committed (push requires auth token)
+
+Stage Summary:
+- Electron build: fixed path resolution (process.resourcesPath for extraResources)
+- Build config: eliminated triple-duplication, clean asar/extraResources separation
+- Chatbot focus: re-focuses input after AI response received on mobile
+- Capacitor back: manual nav stack instead of unreliable window.history
+- Cleanup: tool-results deleted
+- Build: ✅ lint passes, dev server running
