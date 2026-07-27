@@ -25,29 +25,23 @@ let serverProcess = null;
 
 /**
  * Resolve the path to the Next.js standalone server.js.
- * In a packaged app the standalone folder lives inside the asar-unpacked
- * directory next to the app executable.
+ *
+ * When packaged by electron-builder:
+ *   - extraResources are placed in process.resourcesPath (outside the asar)
+ *   - The standalone server must be outside the asar because Node.js spawn()
+ *     cannot execute files inside an asar archive directly.
+ *   - extraResources copies .next/standalone to resources/.next/standalone/
+ *
+ * In dev mode, the standalone output is at the project root.
  */
 function getServerPath() {
-  // When running from source (dev build), the standalone output is at
-  // <project-root>/.next/standalone/server.js
-  const fromSource = path.join(process.cwd(), ".next", "standalone", "server.js");
-
-  // When packaged by electron-builder the app resources are unpacked.
-  // app.getAppPath() points to the asar root, but we unpacked .next/standalone
-  // so it lives in app.getAppPath()/.next/standalone/server.js
-  const fromPackage = path.join(
-    app.getAppPath(),
-    ".next",
-    "standalone",
-    "server.js"
-  );
-
-  // Prefer the packaged path when the app is packaged
   if (app.isPackaged) {
-    return fromPackage;
+    // extraResources places .next/standalone outside the asar at:
+    // process.resourcesPath/.next/standalone/server.js
+    return path.join(process.resourcesPath, ".next", "standalone", "server.js");
   }
-  return fromSource;
+  // Dev: standalone output at project root
+  return path.join(process.cwd(), ".next", "standalone", "server.js");
 }
 
 /**
@@ -99,9 +93,16 @@ function startServer() {
     NODE_ENV: "production",
   });
 
+  // Determine the cwd for the server process.
+  // When packaged, the standalone directory is at process.resourcesPath/.next/standalone
+  // and needs all sibling directories (.next/static, public) to be accessible.
+  const serverCwd = app.isPackaged
+    ? path.join(process.resourcesPath, ".next", "standalone")
+    : path.dirname(serverPath);
+
   serverProcess = spawn(process.execPath, [serverPath], {
     env,
-    cwd: path.dirname(serverPath),
+    cwd: serverCwd,
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true,
   });
@@ -149,8 +150,12 @@ function createWindow() {
     minHeight: 600,
     title: APP_TITLE,
     autoHideMenuBar: true,
-    icon: path.join(app.getAppPath(), "public", "logo.png"),
+    icon: app.isPackaged
+      ? path.join(process.resourcesPath, "public", "logo.png")
+      : path.join(app.getAppPath(), "public", "logo.png"),
     webPreferences: {
+      // preload.js is inside the asar (part of electron/ dir in build.files)
+      // __dirname works correctly inside an asar archive
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,

@@ -31,7 +31,9 @@
       "output": "dist"
     },
     "files": [
-      "electron/**/*",
+      "electron/**/*"
+    ],
+    "extraResources": [
       {
         "from": ".next/standalone",
         "to": ".next/standalone",
@@ -42,23 +44,11 @@
         "to": ".next/static",
         "filter": ["**/*"]
       },
-      "public/**/*"
-    ],
-    "extraResources": [
-      {
-        "from": ".next/standalone",
-        "to": ".next/standalone",
-        "filter": ["**/*"]
-      },
       {
         "from": "public",
         "to": "public",
         "filter": ["**/*"]
       }
-    ],
-    "asarUnpack": [
-      ".next/standalone/**/*",
-      "public/**/*"
     ],
     "win": {
       "target": [
@@ -86,6 +76,7 @@
     }
   },
   "dependencies": {
+    "@capacitor/app": "^8.1.1",
     "@capacitor/cli": "^8.4.2",
     "@capacitor/core": "^8.4.2",
     "@dnd-kit/core": "^6.3.1",

@@ -476,15 +476,28 @@ export function AiChatAssistant() {
     scrollToBottom();
   }, [messages, isLoading, scrollToBottom]);
 
-  // ── Focus input on open ──
+  // ── Focus input on open and after response received ──
+  const prevLoadingRef = useRef(false);
+  const prevWindowStateRef2 = useRef<WindowState>('closed');
   useEffect(() => {
-    if (
-      (windowState === 'normal' || windowState === 'fullscreen') &&
-      inputRef.current
-    ) {
-      setTimeout(() => inputRef.current?.focus(), 150);
+    const isOpen = windowState === 'normal' || windowState === 'fullscreen';
+    const justOpened = prevWindowStateRef2.current !== windowState && isOpen;
+    const justFinishedLoading = prevLoadingRef.current && !isLoading;
+
+    // Update refs after computing conditions
+    prevWindowStateRef2.current = windowState;
+    prevLoadingRef.current = isLoading;
+
+    // Focus on open OR when response arrives (loading finishes)
+    if (isOpen && (justOpened || justFinishedLoading)) {
+      // Use double requestAnimationFrame for reliable focus on mobile
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          inputRef.current?.focus();
+        });
+      });
     }
-  }, [windowState]);
+  }, [windowState, isLoading]);
 
   // ── Initialize greeting if no messages ──
   useEffect(() => {
