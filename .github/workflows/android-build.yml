@@ -94,7 +94,7 @@ jobs:
           # Build
           bun run build
           
-          echo "✅ Static export completed successfully"
+          echo "Static export completed successfully"
           EXPORT_SCRIPT
           chmod +x scripts/export.sh
 
@@ -125,14 +125,14 @@ jobs:
         run: |
           # Add Android platform if not already present
           if [ -d "android" ]; then
-            echo "✅ Android platform already exists — skipping add"
+            echo "Android platform already exists — skipping add"
           else
             bunx cap add android
             if [ ! -d "android" ]; then
-              echo "❌ Android platform failed to initialize"
+              echo "Android platform failed to initialize"
               exit 1
             fi
-            echo "✅ Android platform added successfully"
+            echo "Android platform added successfully"
           fi
 
       - name: Sync Capacitor
@@ -142,167 +142,38 @@ jobs:
         run: bunx cap copy android
 
       # -----------------------------------------------------------------------
-      # AndroidManifest.xml Configuration
+      # AndroidManifest.xml Validation
       # -----------------------------------------------------------------------
-      - name: Configure AndroidManifest.xml with all permissions and features
+      # The manifest is now maintained in the repo with all permissions included.
+      # We only validate it here — no runtime sed patching.
+      - name: Validate AndroidManifest.xml
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           
-          # Ensure the manifest file exists
           if [ ! -f "$MANIFEST" ]; then
-            echo "⚠️ AndroidManifest.xml not found, creating a new one..."
-            mkdir -p android/app/src/main
-            cat > "$MANIFEST" << 'MANIFEST_BASE'
-          <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools">
-          
-              <application
-                  android:allowBackup="true"
-                  android:icon="@mipmap/ic_launcher"
-                  android:label="@string/app_name"
-                  android:roundIcon="@mipmap/ic_launcher_round"
-                  android:supportsRtl="true"
-                  android:theme="@style/AppTheme"
-                  android:usesCleartextTraffic="true"
-                  android:networkSecurityConfig="@xml/network_security_config"
-                  tools:targetApi="31">
-          
-                  <activity
-                      android:name=".MainActivity"
-                      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
-                      android:exported="true"
-                      android:launchMode="singleTask"
-                      android:theme="@style/AppTheme.NoActionBar"
-                      android:windowSoftInputMode="adjustResize">
-          
-                      <intent-filter>
-                          <action android:name="android.intent.action.MAIN" />
-                          <category android:name="android.intent.category.LAUNCHER" />
-                      </intent-filter>
-                  </activity>
-              </application>
-          </manifest>
-          MANIFEST_BASE
+            echo "ERROR: AndroidManifest.xml not found"
+            exit 1
           fi
           
-          # -----------------------------------------------------------------------
-          # Insert all permissions BEFORE the <application> tag
-          # -----------------------------------------------------------------------
-          PERMS_BLOCK='
-              <!-- ============================================================= -->
-              <!-- Network Permissions -->
-              <!-- ============================================================= -->
-              <uses-permission android:name="android.permission.INTERNET" />
-              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-              <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-          
-              <!-- ============================================================= -->
-              <!-- Camera & Storage Permissions -->
-              <!-- ============================================================= -->
-              <uses-permission android:name="android.permission.CAMERA" />
-              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-                  android:maxSdkVersion="32" />
-              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-                  android:maxSdkVersion="29" />
-              <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-              <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-          
-              <!-- ============================================================= -->
-              <!-- Hardware & Sensors -->
-              <!-- ============================================================= -->
-              <uses-permission android:name="android.permission.VIBRATE" />
-              <uses-permission android:name="android.permission.USE_BIOMETRIC" />
-              <uses-permission android:name="android.permission.WAKE_LOCK" />
-          
-              <!-- ============================================================= -->
-              <!-- Boot & Services -->
-              <!-- ============================================================= -->
-              <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-              <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-              <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
-          
-              <!-- ============================================================= -->
-              <!-- Notifications -->
-              <!-- ============================================================= -->
-              <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-          
-              <!-- ============================================================= -->
-              <!-- Shortcuts -->
-              <!-- ============================================================= -->
-              <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
-              <uses-permission android:name="com.android.launcher.permission.UNINSTALL_SHORTCUT" />
-          
-              <!-- ============================================================= -->
-              <!-- Location -->
-              <!-- ============================================================= -->
-              <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-              <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-          
-              <!-- ============================================================= -->
-              <!-- Google / Firebase / FCM -->
-              <!-- ============================================================= -->
-              <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-              <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
-              <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
-          
-              <!-- ============================================================= -->
-              <!-- NFC -->
-              <!-- ============================================================= -->
-              <uses-permission android:name="android.permission.NFC" />
-          
-              <!-- ============================================================= -->
-              <!-- Bluetooth -->
-              <!-- ============================================================= -->
-              <uses-permission android:name="android.permission.BLUETOOTH"
-                  android:maxSdkVersion="30" />
-              <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
-                  android:maxSdkVersion="30" />
-              <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-              <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-          
-              <!-- ============================================================= -->
-              <!-- Hardware Features (uses-feature) -->
-              <!-- ============================================================= -->
-              <uses-feature android:name="android.hardware.camera"
-                  android:required="false" />
-              <uses-feature android:name="android.hardware.internet"
-                  android:required="false" />
-              <uses-feature android:name="android.hardware.location.gps"
-                  android:required="false" />
-              <uses-feature android:name="android.hardware.nfc"
-                  android:required="false" />
-              <uses-feature android:name="android.hardware.bluetooth"
-                  android:required="false" />
-          '
-          
-          # Insert the permissions block before the <application> tag
-          sed -i "/<application/r /dev/stdin" "$MANIFEST" <<< "$PERMS_BLOCK"
-          
-          # Remove any duplicate permissions (in case Capacitor already added some)
-          # We keep the first occurrence of each unique permission
-          awk "!seen && /uses-permission.*android.permission.INTERNET/ { print; seen=1; next } !/uses-permission.*android.permission.INTERNET/" "$MANIFEST" > "${MANIFEST}.tmp" && mv "${MANIFEST}.tmp" "$MANIFEST"
-          
-          echo ""
-          echo "=== Final AndroidManifest.xml ==="
+          echo "=== AndroidManifest.xml ==="
           cat "$MANIFEST"
           echo ""
           echo "=== Manifest validation ==="
           # Verify key permissions are present
           for perm in INTERNET ACCESS_NETWORK_STATE CAMERA READ_MEDIA_IMAGES VIBRATE WAKE_LOCK FOREGROUND_SERVICE POST_NOTIFICATIONS ACCESS_FINE_LOCATION NFC BLUETOOTH_CONNECT; do
             if grep -q "android.permission.${perm}" "$MANIFEST"; then
-              echo "✅ ${perm}"
+              echo "OK: ${perm}"
             else
-              echo "❌ ${perm} MISSING"
+              echo "MISSING: ${perm}"
             fi
           done
           
           # Verify uses-features
           for feat in android.hardware.camera android.hardware.internet android.hardware.location.gps android.hardware.nfc android.hardware.bluetooth; do
             if grep -q "${feat}" "$MANIFEST"; then
-              echo "✅ ${feat}"
+              echo "OK: ${feat}"
             else
-              echo "❌ ${feat} MISSING"
+              echo "MISSING: ${feat}"
             fi
           done
 
@@ -324,15 +195,15 @@ jobs:
             # Decode base64 keystore and place it where Gradle expects it
             mkdir -p android/app/upload
             echo "${KEYSTORE_FILE}" | base64 -d > android/app/upload/release.jks
-            echo "✅ Keystore decoded from KEYSTORE_FILE secret"
+            echo "Keystore decoded from KEYSTORE_FILE secret"
             
             # Create keystore properties file for Gradle
             printf 'storeFile=upload/release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
               "${KEYSTORE_PASSWORD}" "${KEYSTORE_ALIAS}" "${KEY_PASSWORD}" > android/keystore.properties
             
-            echo "✅ keystore.properties created — builds will be signed"
+            echo "keystore.properties created — builds will be signed"
           else
-            echo "⚠️ Signing secrets not configured — builds will be unsigned (OK for dev/testing)"
+            echo "Signing secrets not configured — builds will be unsigned (OK for dev/testing)"
           fi
 
       # -----------------------------------------------------------------------
@@ -355,11 +226,11 @@ jobs:
         run: |
           APK_PATH=$(find android/app/build/outputs/apk/release/ -name "*.apk" -type f | head -1)
           if [ -n "$APK_PATH" ]; then
-            echo "✅ Found APK: $APK_PATH"
+            echo "Found APK: $APK_PATH"
             ls -lh "$APK_PATH"
             cp "$APK_PATH" CarsaiMozambique-release.apk
           else
-            echo "❌ No APK found in build output"
+            echo "No APK found in build output"
             exit 1
           fi
 
@@ -367,11 +238,11 @@ jobs:
         run: |
           AAB_PATH=$(find android/app/build/outputs/bundle/release/ -name "*.aab" -type f | head -1)
           if [ -n "$AAB_PATH" ]; then
-            echo "✅ Found AAB: $AAB_PATH"
+            echo "Found AAB: $AAB_PATH"
             ls -lh "$AAB_PATH"
             cp "$AAB_PATH" CarsaiMozambique-release.aab
           else
-            echo "❌ No AAB found in build output"
+            echo "No AAB found in build output"
             exit 1
           fi
 

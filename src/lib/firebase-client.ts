@@ -25,6 +25,7 @@ import {
   getAuth,
   Auth,
   GoogleAuthProvider,
+  GithubAuthProvider,
   PhoneAuthProvider,
   signInWithPopup,
   signInWithRedirect,
@@ -128,6 +129,10 @@ export const googleProvider = new GoogleAuthProvider()
 googleProvider.addScope('profile')
 googleProvider.addScope('email')
 
+export const githubProvider = new GithubAuthProvider()
+githubProvider.addScope('user:email')
+githubProvider.addScope('read:user')
+
 // ─── FCM Token Request (client-side) ───
 
 /**
@@ -217,6 +222,7 @@ export {
   getRedirectResult,
 
   PhoneAuthProvider,
+  GithubAuthProvider,
   RecaptchaVerifier,
 }
 

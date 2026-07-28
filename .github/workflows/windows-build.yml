@@ -88,9 +88,9 @@ jobs:
         run: |
           try {
             bun run build
-            Write-Host "✅ Next.js build completed"
+            Write-Host "Next.js build completed"
           } catch {
-            Write-Host "❌ Next.js build failed: $_"
+            Write-Host "Next.js build failed: $_"
             exit 1
           }
 
@@ -101,13 +101,13 @@ jobs:
           $standaloneServer = ".next\standalone\server.js"
           
           if (Test-Path $standaloneServer) {
-            Write-Host "✅ Standalone server.js found at $standaloneServer"
+            Write-Host "Standalone server.js found at $standaloneServer"
           } else {
-            Write-Host "❌ Standalone server.js NOT found — build may have failed"
+            Write-Host "Standalone server.js NOT found — build may have failed"
             if (Test-Path $standaloneDir) {
               Get-ChildItem -Path $standaloneDir -Recurse -Depth 1 | Select-Object FullName
             } else {
-              Write-Host "❌ .next\standalone directory does not exist"
+              Write-Host ".next\standalone directory does not exist"
             }
             exit 1
           }
@@ -116,26 +116,26 @@ jobs:
           $staticSource = ".next\static"
           $staticDest = ".next\standalone\.next\static"
           if (Test-Path $staticDest) {
-            Write-Host "✅ Static files already present in standalone"
+            Write-Host "Static files already present in standalone"
           } else {
             if (Test-Path $staticSource) {
               Copy-Item -Path $staticSource -Destination $staticDest -Recurse -Force
-              Write-Host "✅ Static files copied to standalone"
+              Write-Host "Static files copied to standalone"
             } else {
-              Write-Host "⚠️ Static files source not found"
+              Write-Host "Static files source not found"
             }
           }
           
           # Copy public directory into standalone
           $publicDest = ".next\standalone\public"
           if (Test-Path $publicDest) {
-            Write-Host "✅ Public directory already present in standalone"
+            Write-Host "Public directory already present in standalone"
           } else {
             if (Test-Path "public") {
               Copy-Item -Path "public" -Destination $publicDest -Recurse -Force
-              Write-Host "✅ Public directory copied to standalone"
+              Write-Host "Public directory copied to standalone"
             } else {
-              Write-Host "⚠️ Public directory not found"
+              Write-Host "Public directory not found"
             }
           }
 
@@ -149,7 +149,7 @@ jobs:
           $restoredContent = $content -replace 'output:\s*"standalone"', 'output: "export"'
           Set-Content -Path $configFile -Value $restoredContent -NoNewline
           
-          Write-Host "✅ next.config.ts restored to export mode"
+          Write-Host "next.config.ts restored to export mode"
 
       # -----------------------------------------------------------------------
       # Build Electron Portable EXE
@@ -159,15 +159,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: pwsh
         run: |
-          Write-Host "🔧 Running electron-builder for Windows portable..."
+          Write-Host "Running electron-builder for Windows portable..."
           bunx electron-builder --win portable
           
           Write-Host ""
-          Write-Host "📦 Build output:"
+          Write-Host "Build output:"
           if (Test-Path "dist") {
             Get-ChildItem -Path "dist" -Recurse | Select-Object FullName, Length
           } else {
-            Write-Host "❌ dist directory not found"
+            Write-Host "dist directory not found"
             exit 1
           }
 
@@ -181,7 +181,7 @@ jobs:
           $exeFiles = Get-ChildItem -Path "dist" -Filter "*.exe" -Recurse
           
           if ($exeFiles.Count -eq 0) {
-            Write-Host "❌ No .exe files found in dist directory"
+            Write-Host "No .exe files found in dist directory"
             exit 1
           fi
           
@@ -191,10 +191,10 @@ jobs:
             $version = (Get-Content -Path "package.json" | ConvertFrom-Json).version
             $newName = "CarsaiMozambique-${version}-Portable.exe"
             Copy-Item -Path $portableExe.FullName -Destination $newName -Force
-            Write-Host "✅ Renamed: $($portableExe.Name) → $newName"
+            Write-Host "Renamed: $($portableExe.Name) -> $newName"
             Write-Host "   Size: $([math]::Round($portableExe.Length / 1MB, 2)) MB"
           } else {
-            Write-Host "❌ No portable EXE found (only setup files?)"
+            Write-Host "No portable EXE found (only setup files?)"
             exit 1
           }
 

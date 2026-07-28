@@ -82,7 +82,7 @@ export const FEATURES = {
 
   // Firebase Auth — Additional providers (free on Spark but require external setup)
   facebookSignIn: false,      // Requires Facebook Developer App
-  githubSignIn: false,        // Requires GitHub OAuth App
+  githubSignIn: true,         // Requires GitHub OAuth App (free to set up)
   microsoftSignIn: false,     // Requires Microsoft Entra ID App
   appleSignIn: false,         // Requires Apple Developer Account ($99/year)
 

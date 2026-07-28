@@ -164,7 +164,7 @@ jobs:
           sed -i 's/output: "standalone"/output: "export"/' "$CONFIG_FILE"
           # Build
           bun run build
-          echo "✅ Static export completed"
+          echo "Static export completed"
           SCRIPT
           chmod +x scripts/export.sh
 
@@ -196,28 +196,28 @@ jobs:
       - name: Copy web assets
         run: bunx cap copy android
 
-      - name: Configure AndroidManifest.xml
+      - name: Validate AndroidManifest.xml
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           
           if [ ! -f "$MANIFEST" ]; then
-            echo "Creating AndroidManifest.xml..."
-            mkdir -p android/app/src/main
-            cat > "$MANIFEST" << 'MANIFEST_EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools">
-          MANIFEST_EOF
+            echo "ERROR: AndroidManifest.xml not found"
+            exit 1
           fi
-          
-          # Add all required permissions before the <application> tag
-          sed -i '/<application/i\    <!-- Network -->\n    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />\n    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />\n\n    <!-- Camera & Storage -->\n    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />\n    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />\n\n    <!-- Hardware & Sensors -->\n    <uses-permission android:name="android.permission.VIBRATE" />\n    <uses-permission android:name="android.permission.USE_BIOMETRIC" />\n    <uses-permission android:name="android.permission.WAKE_LOCK" />\n\n    <!-- Boot & Services -->\n    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />\n\n    <!-- Notifications -->\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n\n    <!-- Shortcuts -->\n    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />\n    <uses-permission android:name="com.android.launcher.permission.UNINSTALL_SHORTCUT" />\n\n    <!-- Location -->\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n\n    <!-- Google / Firebase -->\n    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />\n    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n\n    <!-- NFC -->\n    <uses-permission android:name="android.permission.NFC" />\n\n    <!-- Bluetooth -->\n    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />\n    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />\n' "$MANIFEST"
-          
-          # Add uses-features before the <application> tag
-          sed -i '/<application/i\    <!-- Hardware Features -->\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <uses-feature android:name="android.hardware.internet" android:required="false" />\n    <uses-feature android:name="android.hardware.location.gps" android:required="false" />\n    <uses-feature android:name="android.hardware.nfc" android:required="false" />\n    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />\n' "$MANIFEST"
           
           echo "=== AndroidManifest.xml contents ==="
           cat "$MANIFEST"
+          
+          # Verify key permissions
+          echo ""
+          echo "=== Manifest validation ==="
+          for perm in INTERNET ACCESS_NETWORK_STATE CAMERA VIBRATE WAKE_LOCK FOREGROUND_SERVICE POST_NOTIFICATIONS ACCESS_FINE_LOCATION NFC BLUETOOTH_CONNECT; do
+            if grep -q "android.permission.${perm}" "$MANIFEST"; then
+              echo "OK: ${perm}"
+            else
+              echo "MISSING: ${perm}"
+            fi
+          done
 
       - name: Setup keystore for signing
         env:
@@ -230,15 +230,15 @@ jobs:
             # Decode base64 keystore and place it where Gradle expects it
             mkdir -p android/app/upload
             echo "${KEYSTORE_FILE}" | base64 -d > android/app/upload/release.jks
-            echo "✅ Keystore decoded from KEYSTORE_FILE secret"
+            echo "Keystore decoded from KEYSTORE_FILE secret"
 
             # Create keystore properties file for Gradle
             printf 'storeFile=upload/release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
               "${KEYSTORE_PASSWORD}" "${KEYSTORE_ALIAS}" "${KEY_PASSWORD}" > android/keystore.properties
 
-            echo "✅ keystore.properties created — builds will be signed"
+            echo "keystore.properties created — builds will be signed"
           else
-            echo "⚠️ Signing secrets not configured — builds will be unsigned (OK for dev/testing)"
+            echo "Signing secrets not configured — builds will be unsigned (OK for dev/testing)"
           fi
 
       - name: Build APK with Gradle
@@ -331,6 +331,9 @@ jobs:
           if ($exePath) {
             Copy-Item $exePath.FullName "CarsaiMozambique-$VERSION-Portable.exe"
             Write-Host "EXE: CarsaiMozambique-$VERSION-Portable.exe"
+          } else {
+            Write-Host "No EXE found in dist"
+            exit 1
           }
 
       - name: Upload Windows artifact
@@ -389,7 +392,7 @@ jobs:
           cat >> /tmp/release-body.md << 'DOWNLOADS'
           ---
           
-          ### 📦 Downloads
+          ### Downloads
           
           DOWNLOADS
           
@@ -438,7 +441,7 @@ jobs:
           |:---------|:--------|
           | 🌐 **Web** | Standalone Next.js server — extract and run `node server.js` |
           | 📱 **Android APK** | Direct install — enable "Install from unknown sources" |
-          | 📦 **Android AAB** | App Bundle for Google Play Store upload |
+          | **Android AAB** | App Bundle for Google Play Store upload |
           | 🖥️ **Windows EXE** | Portable — no installation required, just run |
           
           NOTES

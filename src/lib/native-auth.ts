@@ -99,6 +99,34 @@ export async function nativeSignInWithGoogle(): Promise<NativeAuthResult> {
 }
 
 /**
+ * Sign in with GitHub using the native Capacitor plugin.
+ * Opens the GitHub OAuth flow in the system browser / in-app browser.
+ */
+export async function nativeSignInWithGithub(): Promise<NativeAuthResult> {
+  const { FirebaseAuthentication } = await getNativeAuth()
+
+  const result: CapacitorSignInResult = await FirebaseAuthentication.signInWithGithub()
+
+  if (!result.user) {
+    throw new Error('GitHub sign-in failed — no user returned')
+  }
+
+  const idTokenResult: CapacitorIdTokenResult = await FirebaseAuthentication.getIdToken()
+
+  return {
+    idToken: idTokenResult.token,
+    uid: result.user.uid,
+    displayName: result.user.displayName,
+    email: result.user.email,
+    phoneNumber: result.user.phoneNumber,
+    photoUrl: result.user.photoUrl,
+    isAnonymous: result.user.isAnonymous,
+    emailVerified: result.user.emailVerified,
+    providerId: result.user.providerId || 'github.com',
+  }
+}
+
+/**
  * Sign in anonymously using the native Capacitor plugin.
  */
 export async function nativeSignInAnonymously(): Promise<NativeAuthResult> {

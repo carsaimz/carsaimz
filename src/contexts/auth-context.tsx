@@ -25,6 +25,7 @@ interface AuthContextValue {
   // Auth methods
   loginWithEmailPassword: (email: string, password: string) => Promise<AuthResult>;
   loginWithGoogle: () => Promise<AuthResult>;
+  loginWithGithub: () => Promise<AuthResult>;
   loginAnonymously: () => Promise<AuthResult>;
   loginWithPhone: (phoneNumber: string, recaptchaContainerId: string) => Promise<{ verificationId: string } | null>;
   verifyPhoneCode: ( verificationId: string, verificationCode: string) => Promise<AuthResult>;
@@ -51,6 +52,61 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const store = useAuthStore();
+
+  // ── Handle getRedirectResult after redirect-based sign-in ──
+  // When using signInWithRedirect (Google/GitHub), the page redirects away
+  // and then returns. On return, we must call getRedirectResult() to get
+  // the credential and complete the authentication.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function handleRedirectResult() {
+      try {
+        const { auth, getRedirectResult, isFirebaseConfigured } = await import('@/lib/firebase-client');
+
+        if (!isFirebaseConfigured()) return;
+
+        const result = await getRedirectResult(auth);
+
+        if (cancelled || !result) return;
+
+        // User returned from a redirect-based sign-in (Google/GitHub)
+        const idToken = await result.user.getIdToken();
+        const { buildApiUrl } = await import('@/lib/api-base');
+
+        const res = await fetch(buildApiUrl('/api/auth/social'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken }),
+        });
+
+        const data = await res.json();
+
+        if (data.user) {
+          const userRole = data.user.role || 'user';
+          const user: User = {
+            id: data.user.id || result.user.uid,
+            name: data.user.name || result.user.displayName || 'Utilizador',
+            email: data.user.email || result.user.email,
+            role: userRole,
+            avatar: data.user.avatar || result.user.photoURL || null,
+            phone: data.user.phone || result.user.phoneNumber || null,
+            authProvider: (result.user.providerData[0]?.providerId as AuthProviderType) || 'unknown',
+            isAnonymous: result.user.isAnonymous,
+            emailVerified: result.user.emailVerified,
+          };
+          store.setUser(user);
+          store.setIdToken(idToken);
+        }
+      } catch (err) {
+        console.warn('[Auth] Redirect result handling error:', err);
+      }
+    }
+
+    handleRedirectResult();
+
+    return () => { cancelled = true; };
+  }, []);
 
   // ── Listen for Firebase Auth state changes ──
   // This ensures the store stays in sync with Firebase Auth sessions.
@@ -138,6 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Auth methods
       loginWithEmailPassword: store.loginWithEmailPassword,
       loginWithGoogle: store.loginWithGoogle,
+      loginWithGithub: store.loginWithGithub,
       loginAnonymously: store.loginAnonymously,
       loginWithPhone: store.loginWithPhone,
       verifyPhoneCode: store.verifyPhoneCode,

@@ -4,6 +4,7 @@ import { buildApiUrl } from '@/lib/api-base'
 import {
   shouldUseNativeAuth,
   nativeSignInWithGoogle,
+  nativeSignInWithGithub,
   nativeSignInAnonymously,
   nativeSignInWithEmailPassword,
   nativeCreateUserWithEmailAndPassword,
@@ -90,6 +91,7 @@ interface AuthState {
   loginWithToken: (idToken: string) => Promise<AuthResult>
   loginWithEmailPassword: (email: string, password: string) => Promise<AuthResult>
   loginWithGoogle: () => Promise<AuthResult>
+  loginWithGithub: () => Promise<AuthResult>
   loginAnonymously: () => Promise<AuthResult>
   loginWithPhone: (phoneNumber: string, recaptchaContainerId: string) => Promise<{ verificationId: string } | null>
   verifyPhoneCode: (verificationId: string, verificationCode: string) => Promise<AuthResult>
@@ -357,6 +359,8 @@ export const useAuthStore = create<AuthState>()(
       },
 
       // ── Google Sign-In ──
+      // Web: Uses signInWithRedirect (more reliable than popup — avoids popup blockers)
+      // Native: Uses @capacitor-firebase/authentication GoogleSignIn
       loginWithGoogle: async (): Promise<AuthResult> => {
         set({ isLoading: true, lastLoginError: null })
 
@@ -369,10 +373,17 @@ export const useAuthStore = create<AuthState>()(
             const nativeResult = await nativeSignInWithGoogle()
             idToken = nativeResult.idToken
           } else {
-            // ── Web path: Firebase Web SDK signInWithPopup ──
-            const { signInWithPopup, auth, googleProvider } = await getFirebaseAuth()
-            const credential = await signInWithPopup(auth, googleProvider)
-            idToken = await credential.user.getIdToken()
+            // ── Web path: Firebase Web SDK signInWithRedirect ──
+            // Using redirect instead of popup because:
+            // 1. Popup blockers don't interfere
+            // 2. Works in Capacitor WebView (popup doesn't close immediately)
+            // 3. More reliable cross-browser compatibility
+            const { signInWithRedirect, auth, googleProvider } = await getFirebaseAuth()
+            await signInWithRedirect(auth, googleProvider)
+            // After redirect, the page will reload and getRedirectResult() will
+            // return the credential. The auth-context.tsx handles this on mount.
+            // Return a special "redirecting" result so the UI knows what's happening.
+            return { success: true }
           }
 
           const result = await verifyWithServer(idToken, '/api/auth/social')
@@ -395,6 +406,57 @@ export const useAuthStore = create<AuthState>()(
             errorMsg = 'Popup bloqueado pelo navegador. Permita popups e tente novamente.'
           } else if (err.code === 'auth/cancelled-popup-request') {
             errorMsg = 'Operação cancelada.'
+          } else if (err.code === 'auth/unauthorized-domain') {
+            errorMsg = 'Domínio não autorizado. Adicione este domínio no Firebase Console.'
+          } else if (err.code === 'auth/redirect-operation-pending') {
+            errorMsg = 'Operação de redirecionamento em curso. Aguarde.'
+          }
+
+          set({ isLoading: false, lastLoginError: errorMsg })
+          return { success: false, error: errorMsg }
+        }
+      },
+
+      // ── GitHub Sign-In ──
+      // Web: Uses signInWithRedirect (same reason as Google)
+      // Native: Uses @capacitor-firebase/authentication
+      loginWithGithub: async (): Promise<AuthResult> => {
+        set({ isLoading: true, lastLoginError: null })
+
+        try {
+          let idToken: string
+
+          if (shouldUseNativeAuth()) {
+            // ── Native path: @capacitor-firebase/authentication ──
+            const nativeResult = await nativeSignInWithGithub()
+            idToken = nativeResult.idToken
+          } else {
+            // ── Web path: Firebase Web SDK signInWithRedirect ──
+            const { signInWithRedirect, auth, githubProvider } = await getFirebaseAuth()
+            await signInWithRedirect(auth, githubProvider)
+            // After redirect, the page will reload and getRedirectResult() will
+            // return the credential. The auth-context.tsx handles this on mount.
+            return { success: true }
+          }
+
+          const result = await verifyWithServer(idToken, '/api/auth/social')
+
+          if (result.success && result.user) {
+            setUserInStore(set, result.user)
+            set({ idToken })
+            return { success: true, user: result.user }
+          } else {
+            set({ isLoading: false, lastLoginError: result.error })
+            return { success: false, error: result.error }
+          }
+        } catch (err: any) {
+          console.error('GitHub login error:', err)
+          let errorMsg = 'Falha no login com GitHub.'
+
+          if (err.code === 'auth/unauthorized-domain') {
+            errorMsg = 'Domínio não autorizado. Adicione este domínio no Firebase Console.'
+          } else if (err.code === 'auth/account-exists-with-different-credential') {
+            errorMsg = 'Conta já existe com outro método de login. Use o mesmo método que registou.'
           }
 
           set({ isLoading: false, lastLoginError: errorMsg })
