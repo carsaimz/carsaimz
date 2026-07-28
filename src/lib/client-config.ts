@@ -4,6 +4,17 @@
  * Holds only values that are safe to expose in browser code.
  * Firebase Auth handles authentication client-side.
  * Firestore is accessed via API routes (server-side Admin SDK).
+ *
+ * Firebase Spark Plan (Free) Features:
+ * ✅ Authentication (Email/Password, Google, Phone, Anonymous)
+ * ✅ Firestore (1GB storage, 50K reads/day, 20K writes/day)
+ * ✅ Cloud Storage (5GB free)
+ * ✅ Cloud Messaging (FCM — unlimited push notifications)
+ * ✅ Analytics (free usage tracking)
+ * ✅ App Check (free abuse prevention)
+ * ✅ Crashlytics (free crash reporting)
+ * ✅ Performance Monitoring (free)
+ * ✅ Remote Config (free dynamic configuration)
  */
 
 // ─── App version (embedded at build time) ───
@@ -39,24 +50,35 @@ export function isFirebaseConfigured(): boolean {
 }
 
 // ─── Feature flags ───
+// Toggle features based on Firebase project configuration.
+// Spark plan (free) supports: Email/Password, Google, Phone, Anonymous auth.
 
 export const FEATURES = {
+  // Core features
   chat: true,
   forum: true,
   blog: true,
   newsletter: true,
   affiliate: false,
-  // Firebase features
-  googleSignIn: true,
-  facebookSignIn: false,   // Enable after Facebook app setup
-  githubSignIn: false,     // Enable after GitHub OAuth setup
-  microsoftSignIn: false,  // Enable after Microsoft app setup
-  appleSignIn: false,      // Enable after Apple Developer setup
-  phoneSignIn: false,      // Enable after phone auth setup
-  anonymousSignIn: true,
-  pushNotifications: true, // FCM
-  analytics: true,
-  crashlytics: true,
-  performanceMonitoring: true,
-  remoteConfig: true,
+
+  // Firebase Auth — Spark plan (free) providers
+  emailSignIn: true,          // ✅ Free — Email/Password authentication
+  googleSignIn: true,         // ✅ Free — Google Sign-In
+  phoneSignIn: true,          // ✅ Free — Phone/SMS OTP authentication
+  anonymousSignIn: true,      // ✅ Free — Guest/anonymous access
+
+  // Firebase Auth — Additional providers (free on Spark but require external setup)
+  facebookSignIn: false,      // Requires Facebook Developer App
+  githubSignIn: false,        // Requires GitHub OAuth App
+  microsoftSignIn: false,     // Requires Microsoft Entra ID App
+  appleSignIn: false,         // Requires Apple Developer Account ($99/year)
+
+  // Firebase services
+  pushNotifications: true,    // FCM — free on Spark
+  analytics: true,            // Google Analytics — free
+  cloudStorage: true,         // 5GB free on Spark
+  crashlytics: true,          // Free crash reporting
+  performanceMonitoring: true, // Free performance tracking
+  remoteConfig: true,         // Free dynamic configuration
+  appCheck: true,             // Free abuse prevention
 }

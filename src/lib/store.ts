@@ -43,11 +43,20 @@ export type Language = 'en' | 'pt' | 'fr' | 'es' | 'zh' | 'de'
 // Auth Store (Firebase Auth — client-side authentication)
 //
 // Flow:
-// 1. Client authenticates with Firebase Auth directly (email/password, Google, etc.)
+// 1. Client authenticates with Firebase Auth directly (email/password, Google, phone, anonymous)
 // 2. Firebase Auth returns a UserCredential with an ID token
-// 3. Client sends ID token to /api/auth/login or /api/auth/social
+// 3. Client sends ID token to /api/auth/login, /api/auth/social, /api/auth/anonymous, or /api/auth/verify
 // 4. Server verifies token, returns Firestore profile (role, isActive, etc.)
 // 5. Store saves the combined profile
+//
+// Phone Auth Flow:
+// 1. Client calls loginWithPhone(phoneNumber, recaptchaContainerId)
+// 2. Firebase sends SMS OTP to the phone number
+// 3. User enters the OTP code
+// 4. Client calls verifyPhoneCode(verificationId, otpCode)
+// 5. Firebase verifies OTP and returns credential with ID token
+// 6. Client sends ID token to /api/auth/social (phone treated as social provider)
+// 7. Server verifies token and returns Firestore profile
 // ──────────────────────────────────────────────
 
 interface AuthResult {
@@ -68,14 +77,14 @@ interface AuthState {
   lastLoginError: string | null
   lastRegisterError: string | null
   idToken: string | null
+  // Phone auth state
+  phoneVerificationId: string | null
   loginWithToken: (idToken: string) => Promise<AuthResult>
   loginWithEmailPassword: (email: string, password: string) => Promise<AuthResult>
   loginWithGoogle: () => Promise<AuthResult>
-  loginWithFacebook: () => Promise<AuthResult>
-  loginWithGitHub: () => Promise<AuthResult>
-  loginWithMicrosoft: () => Promise<AuthResult>
-  loginWithApple: () => Promise<AuthResult>
   loginAnonymously: () => Promise<AuthResult>
+  loginWithPhone: (phoneNumber: string, recaptchaContainerId: string) => Promise<{ verificationId: string } | null>
+  verifyPhoneCode: (verificationId: string, verificationCode: string) => Promise<AuthResult>
   register: (name: string, email: string, password: string, phone?: string) => Promise<AuthResult>
   logout: () => void
   setUser: (user: User) => void
@@ -167,6 +176,7 @@ export const useAuthStore = create<AuthState>()(
       lastLoginError: null,
       lastRegisterError: null,
       idToken: null,
+      phoneVerificationId: null,
 
       // ── Login with pre-obtained ID token ──
       loginWithToken: async (idToken: string): Promise<AuthResult> => {
@@ -212,6 +222,8 @@ export const useAuthStore = create<AuthState>()(
             errorMsg = 'Muitas tentativas. Tente novamente mais tarde.'
           } else if (err.code === 'auth/user-disabled') {
             errorMsg = 'Conta desactivada. Contacte o suporte.'
+          } else if (err.code === 'auth/invalid-email') {
+            errorMsg = 'Email inválido.'
           } else if (err.message?.includes('not configured')) {
             errorMsg = 'Firebase não configurado. Contacte o administrador.'
           }
@@ -257,114 +269,80 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // ── Facebook Sign-In ──
-      loginWithFacebook: async (): Promise<AuthResult> => {
+      // ── Phone Authentication (Step 1: Send SMS OTP) ──
+      loginWithPhone: async (phoneNumber: string, recaptchaContainerId: string): Promise<{ verificationId: string } | null> => {
         set({ isLoading: true, lastLoginError: null })
 
         try {
-          const { signInWithPopup, auth, facebookProvider } = await getFirebaseAuth()
-          const credential = await signInWithPopup(auth, facebookProvider)
-          const idToken = await credential.user.getIdToken()
+          const fb = await getFirebaseAuth()
+          const { auth, PhoneAuthProvider, createRecaptchaVerifier } = fb
 
-          const result = await verifyWithServer(idToken, '/api/auth/social')
+          // Create RecaptchaVerifier for the given container
+          const recaptchaVerifier = createRecaptchaVerifier(recaptchaContainerId, 'invisible')
 
-          if (result.success && result.user) {
-            setUserInStore(set, result.user)
-            set({ idToken })
-            return { success: true, user: result.user }
-          } else {
-            set({ isLoading: false, lastLoginError: result.error })
-            return { success: false, error: result.error }
-          }
+          // Send SMS verification code
+          const phoneProvider = new PhoneAuthProvider(auth)
+          const verificationId = await phoneProvider.verifyPhoneNumber(
+            phoneNumber,
+            recaptchaVerifier
+          )
+
+          set({ phoneVerificationId: verificationId, isLoading: false })
+          return { verificationId }
         } catch (err: any) {
-          console.error('Facebook login error:', err)
-          let errorMsg = 'Falha no login com Facebook.'
-          if (err.code === 'auth/popup-closed-by-user') errorMsg = 'Popup fechado.'
+          console.error('Phone auth error:', err)
+          let errorMsg = 'Falha no login por telefone.'
+
+          if (err.code === 'auth/invalid-phone-number') {
+            errorMsg = 'Número de telefone inválido. Use formato +258XXXXXXXXX.'
+          } else if (err.code === 'auth/quota-exceeded') {
+            errorMsg = 'Limite de SMS excedido. Tente novamente mais tarde.'
+          } else if (err.code === 'auth/too-many-requests') {
+            errorMsg = 'Muitas tentativas. Tente novamente mais tarde.'
+          }
+
           set({ isLoading: false, lastLoginError: errorMsg })
-          return { success: false, error: errorMsg }
+          return null
         }
       },
 
-      // ── GitHub Sign-In ──
-      loginWithGitHub: async (): Promise<AuthResult> => {
+      // ── Phone Authentication (Step 2: Verify OTP code) ──
+      verifyPhoneCode: async (verificationId: string, verificationCode: string): Promise<AuthResult> => {
         set({ isLoading: true, lastLoginError: null })
 
         try {
-          const { signInWithPopup, auth, githubProvider } = await getFirebaseAuth()
-          const credential = await signInWithPopup(auth, githubProvider)
-          const idToken = await credential.user.getIdToken()
+          const fb = await getFirebaseAuth()
+          const { auth, PhoneAuthProvider, signInWithCredential } = fb
 
+          // Create credential from verification ID + OTP code
+          const credential = PhoneAuthProvider.credential(verificationId, verificationCode)
+          const userCredential = await signInWithCredential(auth, credential)
+          const idToken = await userCredential.user.getIdToken()
+
+          // Verify with server to get Firestore profile
           const result = await verifyWithServer(idToken, '/api/auth/social')
 
           if (result.success && result.user) {
             setUserInStore(set, result.user)
-            set({ idToken })
+            set({ idToken, phoneVerificationId: null })
             return { success: true, user: result.user }
           } else {
-            set({ isLoading: false, lastLoginError: result.error })
+            set({ isLoading: false, lastLoginError: result.error, phoneVerificationId: null })
             return { success: false, error: result.error }
           }
         } catch (err: any) {
-          console.error('GitHub login error:', err)
-          let errorMsg = 'Falha no login com GitHub.'
-          if (err.code === 'auth/popup-closed-by-user') errorMsg = 'Popup fechado.'
-          set({ isLoading: false, lastLoginError: errorMsg })
-          return { success: false, error: errorMsg }
-        }
-      },
+          console.error('Phone verify error:', err)
+          let errorMsg = 'Código de verificação inválido.'
 
-      // ── Microsoft Sign-In ──
-      loginWithMicrosoft: async (): Promise<AuthResult> => {
-        set({ isLoading: true, lastLoginError: null })
-
-        try {
-          const { signInWithPopup, auth, microsoftProvider } = await getFirebaseAuth()
-          const credential = await signInWithPopup(auth, microsoftProvider)
-          const idToken = await credential.user.getIdToken()
-
-          const result = await verifyWithServer(idToken, '/api/auth/social')
-
-          if (result.success && result.user) {
-            setUserInStore(set, result.user)
-            set({ idToken })
-            return { success: true, user: result.user }
-          } else {
-            set({ isLoading: false, lastLoginError: result.error })
-            return { success: false, error: result.error }
+          if (err.code === 'auth/invalid-verification-code') {
+            errorMsg = 'Código SMS incorreto. Verifique e tente novamente.'
+          } else if (err.code === 'auth/invalid-verification-id') {
+            errorMsg = 'Sessão de verificação expirada. Tente novamente.'
+          } else if (err.code === 'auth/code-expired') {
+            errorMsg = 'Código expirado. Solicite um novo código SMS.'
           }
-        } catch (err: any) {
-          console.error('Microsoft login error:', err)
-          let errorMsg = 'Falha no login com Microsoft.'
-          if (err.code === 'auth/popup-closed-by-user') errorMsg = 'Popup fechado.'
-          set({ isLoading: false, lastLoginError: errorMsg })
-          return { success: false, error: errorMsg }
-        }
-      },
 
-      // ── Apple Sign-In ──
-      loginWithApple: async (): Promise<AuthResult> => {
-        set({ isLoading: true, lastLoginError: null })
-
-        try {
-          const { signInWithPopup, auth, appleProvider } = await getFirebaseAuth()
-          const credential = await signInWithPopup(auth, appleProvider)
-          const idToken = await credential.user.getIdToken()
-
-          const result = await verifyWithServer(idToken, '/api/auth/social')
-
-          if (result.success && result.user) {
-            setUserInStore(set, result.user)
-            set({ idToken })
-            return { success: true, user: result.user }
-          } else {
-            set({ isLoading: false, lastLoginError: result.error })
-            return { success: false, error: result.error }
-          }
-        } catch (err: any) {
-          console.error('Apple login error:', err)
-          let errorMsg = 'Falha no login com Apple.'
-          if (err.code === 'auth/popup-closed-by-user') errorMsg = 'Popup fechado.'
-          set({ isLoading: false, lastLoginError: errorMsg })
+          set({ isLoading: false, lastLoginError: errorMsg, phoneVerificationId: null })
           return { success: false, error: errorMsg }
         }
       },
@@ -400,11 +378,10 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, lastRegisterError: null })
 
         try {
-          const { createUserWithEmailAndPassword, auth } = await getFirebaseAuth()
+          const { createUserWithEmailAndPassword, auth, updateProfile } = await getFirebaseAuth()
           const credential = await createUserWithEmailAndPassword(auth, email, password)
 
           // Update display name in Firebase Auth
-          const { updateProfile } = await getFirebaseAuth()
           await updateProfile(credential.user, { displayName: name })
 
           const idToken = await credential.user.getIdToken()
@@ -413,7 +390,7 @@ export const useAuthStore = create<AuthState>()(
           const res = await fetch(buildApiUrl('/api/auth/register'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password, phone }),
+            body: JSON.stringify({ name, email, phone }),
           })
 
           const data = await res.json()
@@ -486,6 +463,7 @@ export const useAuthStore = create<AuthState>()(
           isUser: false,
           isSuperAdmin: false,
           idToken: null,
+          phoneVerificationId: null,
           lastLoginError: null,
           lastRegisterError: null,
         })
