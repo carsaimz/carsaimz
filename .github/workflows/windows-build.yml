@@ -183,7 +183,7 @@ jobs:
           if ($exeFiles.Count -eq 0) {
             Write-Host "No .exe files found in dist directory"
             exit 1
-          fi
+          }
           
           $portableExe = $exeFiles | Where-Object { $_.Name -notlike "*Setup*" } | Select-Object -First 1
           
