@@ -488,3 +488,34 @@ Work Log:
    - Wrapped `{children}` inside `<ClientLayoutWrapper>` within the existing AppProvider
 
 - Build: ✅ successful (all changes compile cleanly)
+
+---
+Task ID: 10
+Agent: Main
+Task: Fix all major issues - chatbot, registration, Android, build, loading overlay, contact info
+
+Work Log:
+- Created .z-ai-config for Z.ai SDK integration
+- Rewrote /api/chat/route.ts - removed Prisma dependency, added Z.ai SDK + Direct API fallback
+- Added Supabase client-side auth as primary method for register/login
+- Added 5s timeout for database operations in auth routes
+- Installed @capacitor/android and added android platform
+- Created cross-platform build script (scripts/build.js) - works on Windows/macOS/Linux
+- Updated CI workflow to check for 'out' directory (export mode)
+- Added loading overlay component with logo and localized text in all 7 languages
+- Added contact info to about section, terms page, and chatbot greeting
+- Added loading.title translations in all 7 languages
+- Made Supabase clients lazy (prevents build crash when anon key is empty)
+- Stored GitHub token in git credentials
+- Committed and pushed to GitHub
+
+Stage Summary:
+- Chatbot now uses Z.ai SDK (no Prisma dependency) with 3-tier failover
+- Registration uses Supabase client-side auth as primary (REST API), Prisma as fallback
+- Android platform added successfully
+- Build works on all platforms (Windows, macOS, Linux)
+- Loading overlay shows on initial page load
+- Contact info added to about, terms, and chatbot
+- CI updated for export mode
+- PUSHED: commit 3d06b96 to main branch
+- Known: NEXT_PUBLIC_SUPABASE_ANON_KEY must be set for Supabase client auth
