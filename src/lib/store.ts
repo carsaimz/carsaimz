@@ -112,7 +112,9 @@ function mapRole(roleData: any): UserRole {
 }
 
 /**
- * Send ID token to server and get Firestore profile.
+ * Verify authentication with server API route.
+ * If server is unavailable (static export / Capacitor), falls back to
+ * client-side Firestore profile lookup/creation.
  */
 async function verifyWithServer(idToken: string, endpoint: string): Promise<{ success: boolean; user?: User; error?: string }> {
   try {
@@ -122,31 +124,135 @@ async function verifyWithServer(idToken: string, endpoint: string): Promise<{ su
       body: JSON.stringify({ idToken }),
     })
 
-    const data = await res.json()
+    // If the server returned a valid response (not 404), use it
+    if (res.ok) {
+      const data = await res.json()
 
-    if (data.user) {
-      const userRole = mapRole(data.user.role)
+      if (data.user) {
+        const userRole = mapRole(data.user.role)
+        const user: User = {
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          role: userRole,
+          avatar: data.user.avatar || null,
+          phone: data.user.phone || null,
+          company: data.user.company || null,
+          bio: data.user.bio || null,
+          address: data.user.address || null,
+          authProvider: data.user.authProvider as AuthProvider || 'unknown',
+          isAnonymous: data.user.isAnonymous || false,
+          emailVerified: data.user.emailVerified || false,
+        }
+        return { success: true, user }
+      } else {
+        return { success: false, error: data.error || 'Autenticação falhou.' }
+      }
+    }
+
+    // Server returned 404 or other error — fall back to client-side Firestore
+    console.warn('[Auth] Server API unavailable, falling back to client-side Firestore')
+    return await verifyWithClientFirestore(idToken)
+  } catch (err) {
+    // Network error — server not available (static export / Capacitor)
+    console.warn('[Auth] Server API not reachable, falling back to client-side Firestore:', err)
+    return await verifyWithClientFirestore(idToken)
+  }
+}
+
+/**
+ * Client-side Firestore fallback for authentication.
+ * Used when the server API routes are not available (static export / Capacitor).
+ * Reads the user profile from Firestore directly, or creates one if it doesn't exist.
+ */
+async function verifyWithClientFirestore(idToken: string): Promise<{ success: boolean; user?: User; error?: string }> {
+  try {
+    const { auth, firestoreClient, isFirebaseConfigured } = await import('@/lib/firebase-client')
+
+    if (!isFirebaseConfigured() || !firestoreClient) {
+      return { success: false, error: 'Firebase não configurado.' }
+    }
+
+    // Decode the ID token to get the Firebase user info
+    // We need to get the current Firebase Auth user
+    const currentUser = auth.currentUser
+    if (!currentUser) {
+      return { success: false, error: 'Utilizador não autenticado.' }
+    }
+
+    const uid = currentUser.uid
+    const { doc, getDoc, setDoc } = await import('firebase/firestore')
+
+    // Try to read existing profile from Firestore
+    const userRef = doc(firestoreClient, 'users', uid)
+    const userSnap = await getDoc(userRef)
+
+    if (userSnap.exists()) {
+      // Profile exists — return it
+      const profile = userSnap.data()
+      const userRole = mapRole(profile.role)
       const user: User = {
-        id: data.user.id,
-        name: data.user.name,
-        email: data.user.email,
+        id: uid,
+        name: profile.name || currentUser.displayName || 'Utilizador',
+        email: profile.email || currentUser.email || null,
         role: userRole,
-        avatar: data.user.avatar || null,
-        phone: data.user.phone || null,
-        company: data.user.company || null,
-        bio: data.user.bio || null,
-        address: data.user.address || null,
-        authProvider: data.user.authProvider as AuthProvider || 'unknown',
-        isAnonymous: data.user.isAnonymous || false,
-        emailVerified: data.user.emailVerified || false,
+        avatar: profile.avatar || currentUser.photoURL || null,
+        phone: profile.phone || currentUser.phoneNumber || null,
+        company: profile.company || null,
+        bio: profile.bio || null,
+        address: profile.address || null,
+        authProvider: (currentUser.providerData[0]?.providerId as AuthProvider) || 'unknown',
+        isAnonymous: currentUser.isAnonymous,
+        emailVerified: currentUser.emailVerified,
       }
       return { success: true, user }
-    } else {
-      return { success: false, error: data.error || 'Autenticação falhou.' }
     }
+
+    // Profile doesn't exist — create it (first-time social/anonymous login)
+    const providerId = currentUser.providerData[0]?.providerId || 'unknown'
+    let authProvider: AuthProvider = 'unknown'
+    if (providerId === 'google.com') authProvider = 'google.com'
+    else if (providerId === 'phone') authProvider = 'phone'
+    else if (providerId === 'anonymous') authProvider = 'anonymous'
+    else if (providerId === 'password') authProvider = 'email'
+
+    const newProfile = {
+      name: currentUser.displayName || 'Utilizador',
+      email: currentUser.email || null,
+      phone: currentUser.phoneNumber || null,
+      avatar: currentUser.photoURL || null,
+      company: null,
+      bio: null,
+      address: null,
+      role: 'user',
+      isActive: true,
+      emailVerified: currentUser.emailVerified,
+      authProvider,
+      isAnonymous: currentUser.isAnonymous,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+
+    await setDoc(userRef, newProfile)
+
+    const user: User = {
+      id: uid,
+      name: newProfile.name,
+      email: newProfile.email,
+      role: 'user',
+      avatar: newProfile.avatar,
+      phone: newProfile.phone,
+      company: null,
+      bio: null,
+      address: null,
+      authProvider,
+      isAnonymous: currentUser.isAnonymous,
+      emailVerified: currentUser.emailVerified,
+    }
+    return { success: true, user }
   } catch (err) {
-    console.error('Server auth error:', err)
-    return { success: false, error: 'Erro de ligação. Verifique a sua rede e tente novamente.' }
+    console.error('[Auth] Client-side Firestore fallback error:', err)
+    return { success: false, error: 'Erro de autenticação. Tente novamente.' }
   }
 }
 

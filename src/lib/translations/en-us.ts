@@ -68,6 +68,18 @@ export const enUS: TranslationObject = {
     backToHome: 'Back to home',
     passwordUpdateFailed: 'Failed to update password',
     emailAlreadyExists: 'An account with this email already exists',
+    signInWithGoogle: 'Sign in with Google',
+    signInAsGuest: 'Sign in as guest',
+    or: 'or',
+    sendingCode: 'Sending code...',
+    sendSmsCode: 'Send SMS code',
+    smsCode: 'SMS code',
+    verifying: 'Verifying...',
+    verifyCode: 'Verify code',
+    resendCode: 'Resend code',
+    signingIn: 'Signing in...',
+    loginFailed: 'Login failed',
+    registerFailed: 'Registration failed',
   },
 
   // ============================================================================

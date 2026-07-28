@@ -89,6 +89,18 @@ export const ptBR: TranslationObject = {
     backToHome: 'Voltar ao início',
     passwordUpdateFailed: 'Falha ao atualizar a senha',
     emailAlreadyExists: 'Já existe uma conta com este e-mail',
+    signInWithGoogle: 'Entrar com Google',
+    signInAsGuest: 'Entrar como visitante',
+    or: 'ou',
+    sendingCode: 'Enviando código...',
+    sendSmsCode: 'Enviar código SMS',
+    smsCode: 'Código SMS',
+    verifying: 'Verificando...',
+    verifyCode: 'Verificar código',
+    resendCode: 'Reenviar código',
+    signingIn: 'Entrando...',
+    loginFailed: 'Falha no login',
+    registerFailed: 'Falha ao criar conta',
   },
 
   // ============================================================================

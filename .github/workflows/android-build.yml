@@ -327,12 +327,8 @@ jobs:
             echo "✅ Keystore decoded from KEYSTORE_FILE secret"
             
             # Create keystore properties file for Gradle
-            cat > android/keystore.properties << KEYSTORE_PROPS
-            storeFile=upload/release.jks
-            storePassword=${KEYSTORE_PASSWORD}
-            keyAlias=${KEYSTORE_ALIAS}
-            keyPassword=${KEY_PASSWORD}
-            KEYSTORE_PROPS
+            printf 'storeFile=upload/release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
+              "${KEYSTORE_PASSWORD}" "${KEYSTORE_ALIAS}" "${KEY_PASSWORD}" > android/keystore.properties
             
             echo "✅ keystore.properties created — builds will be signed"
           else
