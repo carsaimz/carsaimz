@@ -14,6 +14,7 @@ import {
   MapPin,
   Globe,
 } from 'lucide-react';
+import { GITHUB_URL } from '@/lib/client-config';
 
 export function Footer() {
   const { t } = useLanguage();
@@ -54,7 +55,7 @@ export function Footer() {
     { icon: Globe, label: t('footer.socialTiktok'), href: 'https://tiktok.com/@carsaimz', color: 'hover:text-red-400' },
     { icon: Youtube, label: t('footer.socialYoutube'), href: 'https://youtube.com/@carsaimz', color: 'hover:text-red-500' },
     { icon: MessageCircle, label: t('footer.socialDiscord'), href: 'https://discord.gg/carsaimz', color: 'hover:text-indigo-400' },
-    { icon: Github, label: t('footer.socialGithub'), href: 'https://github.com/carsaimz', color: 'hover:text-gray-300' },
+    { icon: Github, label: t('footer.socialGithub'), href: GITHUB_URL, color: 'hover:text-gray-300' },
   ];
 
   return (

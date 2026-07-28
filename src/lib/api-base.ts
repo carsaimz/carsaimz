@@ -5,12 +5,10 @@
  * In Capacitor mobile app (static export), API calls must go to the
  * actual server URL since there's no local server running.
  *
- * This module resolves the correct base URL based on the environment.
+ * Config sourced from client-config.ts (env vars with hardcoded fallbacks).
  */
 
-// The production server URL where the Next.js backend runs
-// This MUST be set in .env for the mobile app to work
-const SERVER_URL = process.env.NEXT_PUBLIC_API_URL || '';
+import { API_BASE_URL } from '@/lib/client-config';
 
 /**
  * Detect if we're running inside a Capacitor native app
@@ -40,7 +38,7 @@ export function isElectronApp(): boolean {
 /**
  * Get the API base URL for fetch calls
  * - Web (Next.js server): empty string (relative paths work)
- * - Capacitor (mobile app): NEXT_PUBLIC_API_URL (absolute URL to server)
+ * - Capacitor (mobile app): API_BASE_URL (absolute URL to server)
  * - Electron: empty string (local server runs within Electron)
  */
 export function getApiBaseUrl(): string {
@@ -51,12 +49,12 @@ export function getApiBaseUrl(): string {
 
   if (isCapacitorApp()) {
     // Capacitor static export needs to call the external server
-    if (!SERVER_URL) {
+    if (!API_BASE_URL) {
       console.warn('[API] NEXT_PUBLIC_API_URL not set - mobile app API calls will fail!');
       // Fallback: try relative paths (won't work for static export)
       return '';
     }
-    return SERVER_URL.replace(/\/$/, ''); // Remove trailing slash
+    return API_BASE_URL.replace(/\/$/, ''); // Remove trailing slash
   }
 
   // Web (Next.js server running) - relative paths work

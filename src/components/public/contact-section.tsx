@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/contexts/language-context';
+import { GITHUB_URL } from '@/lib/client-config';
 
 const TechPatternSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
@@ -64,7 +65,7 @@ export function ContactSection() {
     { icon: Globe, label: t('footer.socialTiktok'), href: 'https://tiktok.com/@carsaimz', color: 'text-red-600 hover:text-red-700' },
     { icon: Globe, label: t('footer.socialYoutube'), href: 'https://youtube.com/@carsaimz', color: 'text-red-700 hover:text-red-800' },
     { icon: MessageCircle, label: t('footer.socialDiscord'), href: 'https://discord.gg/carsaimz', color: 'text-indigo-600 hover:text-indigo-700' },
-    { icon: Globe, label: t('footer.socialGithub'), href: 'https://github.com/carsaimz', color: 'text-gray-700 hover:text-gray-800' },
+    { icon: Globe, label: t('footer.socialGithub'), href: GITHUB_URL, color: 'text-gray-700 hover:text-gray-800' },
   ];
 
   return (

@@ -179,7 +179,7 @@ export const ptBR: TranslationObject = {
   home: {
     heroTitle: 'Transformação Digital para Mozambique',
     heroSubtitle: 'Soluções tecnológicas inovadoras que impulsionam o crescimento empresarial e a inclusão digital em Mozambique',
-    heroBadge: 'Hospedagem Web Gratuita',
+    heroBadge: 'Soluções Digitais e Hospedagem Web Gratuita',
     heroCtaPrimary: 'Começar Agora',
     heroCtaSecondary: 'Ver Serviços',
     statsClients: 'Clientes Satisfeitos',

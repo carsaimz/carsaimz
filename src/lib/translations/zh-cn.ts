@@ -158,7 +158,7 @@ export const zhCN: TranslationObject = {
   home: {
     heroTitle: '莫桑比克的数字化转型',
     heroSubtitle: '为莫桑比克企业增长和数字包容提供创新技术解决方案',
-    heroBadge: '免费Web托管',
+    heroBadge: '数字解决方案与免费Web托管',
     heroCtaPrimary: '开始使用',
     heroCtaSecondary: '查看服务',
     statsClients: '满意客户',

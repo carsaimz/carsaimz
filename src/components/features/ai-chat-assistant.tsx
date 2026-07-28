@@ -23,7 +23,6 @@ import {
   RefreshCw,
   ChevronUp,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -689,9 +688,9 @@ export function AiChatAssistant() {
 
   // ── Render Header ──
   const renderHeader = (compact: boolean = false) => (
-    <CardHeader
-      className={`pb-2 bg-gradient-to-r from-red-600 via-red-700 to-blue-600 text-white rounded-t-2xl border-b border-red-500/30 select-none ${
-        compact ? 'py-2 px-3' : ''
+    <div
+      className={`bg-gradient-to-r from-red-600 via-red-700 to-blue-600 text-white rounded-t-2xl border-b border-red-500/30 select-none ${
+        compact ? 'py-2 px-3' : 'p-4 pb-2'
       }`}
     >
       <div className="flex items-center justify-between">
@@ -704,15 +703,15 @@ export function AiChatAssistant() {
             <Bot className={`${compact ? 'size-3' : 'size-4'} text-white`} />
           </div>
           <div className="min-w-0">
-            <CardTitle
-              className={`font-semibold truncate ${
+            <h3
+              className={`font-semibold truncate leading-tight ${
                 compact ? 'text-xs' : 'text-sm'
               }`}
             >
               {t('chat.title')}
-            </CardTitle>
+            </h3>
             {!compact && (
-              <p className="text-xs text-red-200/80 truncate">
+              <p className="text-xs text-red-200/80 truncate leading-tight">
                 {t('chat.subtitle')}
               </p>
             )}
@@ -721,90 +720,84 @@ export function AiChatAssistant() {
         <div className="flex items-center gap-1 shrink-0" data-no-drag>
           {/* Clear history - only in normal/fullscreen */}
           {!compact && messages.length > 2 && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-7 text-red-200 hover:bg-red-800/50 hover:text-white"
+            <button
+              type="button"
+              className="inline-flex items-center justify-center size-7 rounded-md text-red-200 hover:bg-red-800/50 hover:text-white transition-colors"
               onClick={handleClearHistory}
               aria-label="Clear history"
               title="Limpar histórico"
             >
               <Trash2 className="size-3.5" />
-            </Button>
+            </button>
           )}
 
           {/* Minimize button - in normal state */}
           {windowState === 'normal' && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-7 text-red-200 hover:bg-red-800/50 hover:text-white"
+            <button
+              type="button"
+              className="inline-flex items-center justify-center size-7 rounded-md text-red-200 hover:bg-red-800/50 hover:text-white transition-colors"
               onClick={minimize}
               aria-label="Minimize"
             >
               <Minimize2 className="size-3.5" />
-            </Button>
+            </button>
           )}
 
           {/* Maximize button - in normal state */}
           {windowState === 'normal' && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-7 text-red-200 hover:bg-red-800/50 hover:text-white"
+            <button
+              type="button"
+              className="inline-flex items-center justify-center size-7 rounded-md text-red-200 hover:bg-red-800/50 hover:text-white transition-colors"
               onClick={maximize}
               aria-label="Maximize"
             >
               <Maximize2 className="size-3.5" />
-            </Button>
+            </button>
           )}
 
           {/* Restore from fullscreen - in fullscreen state */}
           {windowState === 'fullscreen' && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-7 text-red-200 hover:bg-red-800/50 hover:text-white"
+            <button
+              type="button"
+              className="inline-flex items-center justify-center size-7 rounded-md text-red-200 hover:bg-red-800/50 hover:text-white transition-colors"
               onClick={restoreFromFullscreen}
               aria-label="Restore"
             >
               <Minimize2 className="size-3.5" />
-            </Button>
+            </button>
           )}
 
           {/* Restore from minimized - in minimized state */}
           {windowState === 'minimized' && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`${
+            <button
+              type="button"
+              className={`inline-flex items-center justify-center rounded-md text-red-200 hover:bg-red-800/50 hover:text-white transition-colors ${
                 compact ? 'size-6' : 'size-7'
-              } text-red-200 hover:bg-red-800/50 hover:text-white`}
+              }`}
               onClick={restoreFromMinimized}
               aria-label="Restore"
             >
               <ChevronUp className={`${compact ? 'size-3' : 'size-3.5'}`} />
-            </Button>
+            </button>
           )}
 
           {/* Close button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className={`${
+          <button
+            type="button"
+            className={`inline-flex items-center justify-center rounded-md text-red-200 hover:bg-red-800/50 hover:text-white transition-colors ${
               compact ? 'size-6' : 'size-7'
-            } text-red-200 hover:bg-red-800/50 hover:text-white`}
+            }`}
             onClick={closeChat}
             aria-label={t('common.close')}
           >
             <X className={`${compact ? 'size-3' : 'size-3.5'}`} />
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* ── Session memory indicator (only in expanded states) ── */}
       {!compact && (
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
           <Badge
             className="bg-white/10 text-red-200 border-red-400/20 text-[10px] px-2 py-0.5"
           >
@@ -821,7 +814,7 @@ export function AiChatAssistant() {
           )}
         </div>
       )}
-    </CardHeader>
+    </div>
   );
 
   // ── Render Messages Area ──
@@ -833,8 +826,8 @@ export function AiChatAssistant() {
         : 'h-[calc(70vh-180px)] lg:h-[420px]';
 
     return (
-      <CardContent
-        className="flex-1 p-0 overflow-hidden bg-gradient-to-b from-background to-muted/10"
+      <div
+        className="flex-1 overflow-hidden bg-gradient-to-b from-background to-muted/10"
       >
         <ScrollArea className={`${scrollHeight} px-4 py-3`}>
           <div ref={scrollRef} className="flex flex-col gap-3">
@@ -858,13 +851,13 @@ export function AiChatAssistant() {
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] rounded-xl px-3 py-2.5 text-sm ${
+                  className={`max-w-[80%] min-w-0 rounded-xl px-3 py-2.5 text-sm overflow-hidden ${
                     msg.role === 'user'
                       ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-md shadow-red-600/20'
                       : 'bg-white dark:bg-red-950/50 text-foreground border border-red-200/60 dark:border-red-800/40 shadow-sm'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap break-words leading-relaxed">
+                  <p className="whitespace-pre-wrap break-words overflow-wrap-anywhere leading-relaxed">
                     {msg.content}
                   </p>
                   <p
@@ -934,7 +927,7 @@ export function AiChatAssistant() {
                 <div
                   className="bg-red-50 dark:bg-red-950/30 rounded-xl px-3 py-2 border border-red-200/60 dark:border-red-800/40"
                 >
-                  <p className="text-sm text-red-700 dark:text-red-400 mb-2">
+                  <p className="text-sm text-red-700 dark:text-red-400 mb-2 whitespace-pre-wrap break-words">
                     {t('chat.error')}
                   </p>
                   <Button
@@ -963,20 +956,19 @@ export function AiChatAssistant() {
             </p>
             <div className="flex flex-wrap gap-1.5">
               {quickQuestions.map((question, idx) => (
-                <Button
+                <button
                   key={idx}
-                  variant="outline"
-                  size="sm"
-                  className="text-xs h-auto py-1.5 px-3 border-red-300/60 dark:border-red-700/60 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/50 rounded-lg shadow-sm transition-all hover:shadow-md"
+                  type="button"
+                  className="inline-flex items-center justify-center text-xs h-auto py-1.5 px-3 border border-red-300/60 dark:border-red-700/60 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/50 rounded-lg shadow-sm transition-all hover:shadow-md bg-white dark:bg-red-950/50"
                   onClick={() => handleQuickQuestion(question)}
                 >
                   {question}
-                </Button>
+                </button>
               ))}
             </div>
           </div>
         )}
-      </CardContent>
+      </div>
     );
   };
 
@@ -1055,11 +1047,11 @@ export function AiChatAssistant() {
             exit="exit"
             className={`fixed z-50 ${getPositionClasses()} ${getSizeClasses()}`}
           >
-            <Card
-              className="border-red-200/60 dark:border-red-800/60 shadow-xl shadow-red-900/20 overflow-hidden rounded-xl"
+            <div
+              className="border border-red-200/60 dark:border-red-800/60 shadow-xl shadow-red-900/20 overflow-hidden rounded-xl bg-background"
             >
               {renderHeader(true)}
-            </Card>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1084,8 +1076,8 @@ export function AiChatAssistant() {
               isDesktop.current ? '' : 'bottom-6 right-6'
             } ${getSizeClasses()}`}
           >
-            <Card
-              className="border-red-200/60 dark:border-red-800/60 shadow-2xl shadow-red-900/20 h-full flex flex-col overflow-hidden rounded-2xl"
+            <div
+              className="border border-red-200/60 dark:border-red-800/60 shadow-2xl shadow-red-900/20 h-full flex flex-col overflow-hidden rounded-2xl bg-background"
             >
               {renderHeader(false)}
               {renderMessages()}
@@ -1098,7 +1090,7 @@ export function AiChatAssistant() {
                 placeholder={t('chat.placeholder')}
                 poweredBy={t('chat.poweredBy')}
               />
-            </Card>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1113,8 +1105,8 @@ export function AiChatAssistant() {
             exit="exit"
             className={`fixed z-50 ${getPositionClasses()} ${getSizeClasses()}`}
           >
-            <Card
-              className="border-red-200/60 dark:border-red-800/60 shadow-2xl shadow-red-900/20 h-full flex flex-col overflow-hidden rounded-2xl"
+            <div
+              className="border border-red-200/60 dark:border-red-800/60 shadow-2xl shadow-red-900/20 h-full flex flex-col overflow-hidden rounded-2xl bg-background"
             >
               {renderHeader(false)}
               {renderMessages()}
@@ -1127,7 +1119,7 @@ export function AiChatAssistant() {
                 placeholder={t('chat.placeholder')}
                 poweredBy={t('chat.poweredBy')}
               />
-            </Card>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -158,7 +158,7 @@ export const deDE: TranslationObject = {
   home: {
     heroTitle: 'Digitale Transformation für Mosambik',
     heroSubtitle: 'Innovative Technologielösungen für Unternehmenswachstum und digitale Inklusion in Mosambik',
-    heroBadge: 'Kostenloses Webhosting',
+    heroBadge: 'Digitale Lösungen & Kostenlos Webhosting',
     heroCtaPrimary: 'Jetzt starten',
     heroCtaSecondary: 'Services anzeigen',
     statsClients: 'Zufriedene Kunden',

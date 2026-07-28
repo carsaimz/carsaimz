@@ -158,7 +158,7 @@ export const esES: TranslationObject = {
   home: {
     heroTitle: 'Transformación digital para Mozambique',
     heroSubtitle: 'Soluciones tecnológicas innovadoras para el crecimiento empresarial y la inclusión digital en Mozambique',
-    heroBadge: 'Hospedaje Web Gratuito',
+    heroBadge: 'Soluciones Digitales y Hospedaje Web Gratuito',
     heroCtaPrimary: 'Comenzar',
     heroCtaSecondary: 'Ver servicios',
     statsClients: 'Clientes satisfechos',
