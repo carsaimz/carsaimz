@@ -78,3 +78,28 @@ Stage Summary:
 - GitHub auth provider properly mapped in client-side Firestore fallback
 - All previously requested features (Google Sign-In separation, GitHub login, setup page) were already implemented in prior sessions
 - AndroidManifest.xml parse failure was likely caused by the build failing upstream (translation errors prevented static export, which broke Capacitor sync)
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix Firestore, Blog/Forum errors, and auth flow
+
+Work Log:
+- Diagnosed root cause: `output: "export"` in next.config.ts breaks all API routes (returns HTML instead of JSON)
+- Fixed register() in store.ts: now falls back to client-side Firestore when API route is unavailable
+- Fixed auth-context.tsx: both getRedirectResult and onAuthStateChanged handlers now check content-type before parsing JSON, and fall back to client-side Firestore
+- Created src/lib/client-firestore.ts: client-side Firestore data layer for blog posts and forum data
+- Modified blog-page.tsx, forum-page.tsx, post-detail.tsx, topic-detail.tsx, global-search.tsx to use fetchWithFallback() which tries API first, then falls back to client-side Firestore
+- Created src/lib/client-seed.ts: client-side seed utility that populates initial Firestore data (roles, permissions, categories, forum categories, settings, services, projects) from the browser
+- Created src/components/common/database-setup.tsx: setup prompt component that shows when Firestore is empty
+- Added DatabaseSetup component to root layout.tsx
+- Made output: "export" conditional based on BUILD_TARGET=capacitor env var in next.config.ts
+- Updated android-build.yml and windows-build.yml workflows to use the new build configuration
+- Verified both web build (API routes work) and Capacitor build (static export works) pass
+
+Stage Summary:
+- Firestore collections are created automatically when documents are written - no manual creation needed
+- Blog/Forum "Unexpected token" error fixed by adding client-side Firestore fallback
+- Registration now works even without API routes by falling back to client-side Firestore
+- Database setup component auto-detects empty Firestore and prompts user to seed initial data
+- next.config.ts now uses BUILD_TARGET=capacitor for static export, standard mode for web

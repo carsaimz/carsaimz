@@ -52,25 +52,7 @@ jobs:
       # -----------------------------------------------------------------------
       # Build Next.js Standalone (for Electron)
       # -----------------------------------------------------------------------
-      - name: Switch to standalone output and build
-        shell: pwsh
-        run: |
-          $configFile = "next.config.ts"
-          
-          # Read the original config
-          $originalContent = Get-Content -Path $configFile -Raw
-          Write-Host "Original next.config.ts content:"
-          Write-Host $originalContent
-          
-          # Replace output: "export" with output: "standalone"
-          $modifiedContent = $originalContent -replace 'output:\s*"export"', 'output: "standalone"'
-          Set-Content -Path $configFile -Value $modifiedContent -NoNewline
-          
-          Write-Host ""
-          Write-Host "Modified next.config.ts (standalone mode):"
-          Write-Host $modifiedContent
-
-      - name: Run Next.js build
+      - name: Run Next.js build (standalone for Electron)
         env:
           NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
@@ -86,6 +68,7 @@ jobs:
           FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
         shell: pwsh
         run: |
+          # No BUILD_TARGET set — builds in standard server mode (API routes work)
           try {
             bun run build
             Write-Host "Next.js build completed"
@@ -138,18 +121,6 @@ jobs:
               Write-Host "Public directory not found"
             }
           }
-
-      - name: Restore original next.config.ts
-        shell: pwsh
-        run: |
-          $configFile = "next.config.ts"
-          $content = Get-Content -Path $configFile -Raw
-          
-          # Restore output: "export"
-          $restoredContent = $content -replace 'output:\s*"standalone"', 'output: "export"'
-          Set-Content -Path $configFile -Value $restoredContent -NoNewline
-          
-          Write-Host "next.config.ts restored to export mode"
 
       # -----------------------------------------------------------------------
       # Build Electron Portable EXE

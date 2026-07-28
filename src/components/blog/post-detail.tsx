@@ -27,6 +27,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/language-context';
+import { fetchWithFallback, fetchPostsClient } from '@/lib/client-firestore';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -113,30 +114,25 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
     async function fetchPosts() {
       try {
         setLoading(true);
-        const res = await fetch('/api/posts');
-        const json = await res.json();
-        if (json.success) {
-          const allPosts: PostData[] = json.data;
-          const found = allPosts.find((p: PostData) => p.slug === propSlug);
-          if (found) {
-            // Ensure comments array exists (API may not include it)
-            found.comments = found.comments || [];
-            setPost(found);
-            // Related posts: same category or similar tags
-            const related = allPosts
-              .filter(
-                (p: PostData) =>
-                  p.id !== found.id &&
-                  (p.category?.id === found.category?.id ||
-                    p.tags.some((tag) => found.tags.some((ft) => ft.id === tag.id)))
-              )
-              .slice(0, 3);
-            setRelatedPosts(related);
-          } else {
-            setError('Post not found');
-          }
+        const result = await fetchWithFallback('/api/posts', fetchPostsClient);
+        const allPosts: PostData[] = result.data;
+        const found = allPosts.find((p: PostData) => p.slug === propSlug);
+        if (found) {
+          // Ensure comments array exists (API may not include it)
+          (found as any).comments = (found as any).comments || [];
+          setPost(found);
+          // Related posts: same category or similar tags
+          const related = allPosts
+            .filter(
+              (p: PostData) =>
+                p.id !== found.id &&
+                (p.category?.id === found.category?.id ||
+                  p.tags.some((tag) => found.tags.some((ft) => ft.id === tag.id)))
+            )
+            .slice(0, 3);
+          setRelatedPosts(related);
         } else {
-          setError(json.message || 'Failed to fetch posts');
+          setError('Post not found');
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Network error');
@@ -174,7 +170,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
         author: {
           id: user.id,
           name: user.name,
-          email: user.email,
+          email: user.email || '',
           avatar: user.avatar,
         },
         isApproved: true,

@@ -35,6 +35,7 @@ import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/language-context';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
+import { fetchWithFallback, fetchForumClient } from '@/lib/client-firestore';
 
 const TechPatternSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
@@ -117,18 +118,13 @@ export function ForumPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showNewTopicDialog, setShowNewTopicDialog] = useState(false);
 
-  // Fetch forum data
+  // Fetch forum data, with client-side Firestore fallback
   useEffect(() => {
     async function fetchForum() {
       try {
         setLoading(true);
-        const res = await fetch('/api/forum');
-        const json = await res.json();
-        if (json.success) {
-          setCategories(json.data);
-        } else {
-          setError(json.message || 'Failed to fetch forum data');
-        }
+        const result = await fetchWithFallback('/api/forum', fetchForumClient);
+        setCategories(result.data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Network error');
       } finally {

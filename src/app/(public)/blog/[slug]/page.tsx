@@ -1,7 +1,12 @@
-'use client';
 import { PostDetail } from '@/components/blog/post-detail';
-import { useParams } from 'next/navigation';
+
+// Required for static export: return empty array since all slugs are dynamic
+// In Next.js, generateStaticParams must be in a server component file.
+export async function generateStaticParams() {
+  return [];
+}
+
+// Server component that renders the client component
 export default function BlogPostPageRoute() {
-  const params = useParams();
-  return <PostDetail slug={params.slug as string} />;
+  return <PostDetail slug="__dynamic__" />;
 }

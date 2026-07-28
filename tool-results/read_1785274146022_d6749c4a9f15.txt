@@ -1,0 +1,830 @@
+     1→import { create } from 'zustand'
+     2→import { persist } from 'zustand/middleware'
+     3→import { buildApiUrl } from '@/lib/api-base'
+     4→import {
+     5→  shouldUseNativeAuth,
+     6→  nativeSignInWithGoogle,
+     7→  nativeSignInWithGithub,
+     8→  nativeSignInAnonymously,
+     9→  nativeSignInWithEmailPassword,
+    10→  nativeCreateUserWithEmailAndPassword,
+    11→  nativeSignOut,
+    12→} from '@/lib/native-auth'
+    13→
+    14→// ──────────────────────────────────────────────
+    15→// Types
+    16→// ──────────────────────────────────────────────
+    17→
+    18→export type UserRole = 'admin' | 'partner' | 'user' | 'super_admin'
+    19→export type AuthProvider = 'email' | 'google.com' | 'facebook.com' | 'twitter.com' | 'github.com' | 'microsoft.com' | 'apple.com' | 'phone' | 'anonymous' | 'unknown'
+    20→
+    21→export interface User {
+    22→  id: string
+    23→  name: string
+    24→  email: string | null
+    25→  role: UserRole
+    26→  avatar: string | null
+    27→  phone?: string | null
+    28→  company?: string | null
+    29→  bio?: string | null
+    30→  address?: string | null
+    31→  authProvider?: AuthProvider
+    32→  isAnonymous?: boolean
+    33→  emailVerified?: boolean
+    34→}
+    35→
+    36→export type NotificationType = 'info' | 'success' | 'warning' | 'error'
+    37→
+    38→export interface Notification {
+    39→  id: string
+    40→  type: NotificationType
+    41→  title: string
+    42→  message: string
+    43→  read: boolean
+    44→  createdAt: Date
+    45→}
+    46→
+    47→export type AppView = 'home' | 'services' | 'projects' | 'about' | 'faq' | 'blog' | 'forum' | 'blogPost' | 'forumTopic' | 'contact' | 'dashboard' | 'vehicles' | 'partners' | 'reports' | 'settings' | 'map' | 'analytics' | 'admin' | 'partner' | 'chat'
+    48→
+    49→export type Language = 'en' | 'pt' | 'fr' | 'es' | 'zh' | 'de'
+    50→
+    51→// ──────────────────────────────────────────────
+    52→// Auth Store (Firebase Auth — client-side authentication)
+    53→//
+    54→// Flow:
+    55→// 1. Client authenticates with Firebase Auth directly (email/password, Google, phone, anonymous)
+    56→// 2. Firebase Auth returns a UserCredential with an ID token
+    57→// 3. Client sends ID token to /api/auth/login, /api/auth/social, /api/auth/anonymous, or /api/auth/verify
+    58→// 4. Server verifies token, returns Firestore profile (role, isActive, etc.)
+    59→// 5. Store saves the combined profile
+    60→//
+    61→// Phone Auth Flow:
+    62→// 1. Client calls loginWithPhone(phoneNumber, recaptchaContainerId)
+    63→// 2. Firebase sends SMS OTP to the phone number
+    64→// 3. User enters the OTP code
+    65→// 4. Client calls verifyPhoneCode(verificationId, otpCode)
+    66→// 5. Firebase verifies OTP and returns credential with ID token
+    67→// 6. Client sends ID token to /api/auth/social (phone treated as social provider)
+    68→// 7. Server verifies token and returns Firestore profile
+    69→// ──────────────────────────────────────────────
+    70→
+    71→export interface AuthResult {
+    72→  success: boolean
+    73→  error?: string
+    74→  user?: User
+    75→}
+    76→
+    77→interface AuthState {
+    78→  user: User | null
+    79→  isAuthenticated: boolean
+    80→  isAdmin: boolean
+    81→  isPartner: boolean
+    82→  isUser: boolean
+    83→  isSuperAdmin: boolean
+    84→  isLoading: boolean
+    85→  hasHydrated: boolean
+    86→  lastLoginError: string | null
+    87→  lastRegisterError: string | null
+    88→  idToken: string | null
+    89→  // Phone auth state
+    90→  phoneVerificationId: string | null
+    91→  loginWithToken: (idToken: string) => Promise<AuthResult>
+    92→  loginWithEmailPassword: (email: string, password: string) => Promise<AuthResult>
+    93→  loginWithGoogle: () => Promise<AuthResult>
+    94→  loginWithGithub: () => Promise<AuthResult>
+    95→  loginAnonymously: () => Promise<AuthResult>
+    96→  loginWithPhone: (phoneNumber: string, recaptchaContainerId: string) => Promise<{ verificationId: string } | null>
+    97→  verifyPhoneCode: (verificationId: string, verificationCode: string) => Promise<AuthResult>
+    98→  register: (name: string, email: string, password: string, phone?: string) => Promise<AuthResult>
+    99→  logout: () => void
+   100→  setUser: (user: User) => void
+   101→  updateAvatar: (avatar: string) => void
+   102→  setIdToken: (token: string) => void
+   103→}
+   104→
+   105→function setUserInStore(set: (partial: Partial<AuthState>) => void, user: User) {
+   106→  const userRole = user.role
+   107→  set({
+   108→    user,
+   109→    isAuthenticated: true,
+   110→    isAdmin: userRole === 'admin' || userRole === 'super_admin',
+   111→    isPartner: userRole === 'partner',
+   112→    isUser: userRole === 'user',
+   113→    isSuperAdmin: userRole === 'super_admin',
+   114→    isLoading: false,
+   115→  })
+   116→}
+   117→
+   118→function mapRole(roleData: any): UserRole {
+   119→  if (typeof roleData === 'string') return roleData as UserRole
+   120→  if (roleData && typeof roleData === 'object' && roleData.name) return roleData.name as UserRole
+   121→  return 'user'
+   122→}
+   123→
+   124→/**
+   125→ * Verify authentication with server API route.
+   126→ * If server is unavailable (static export / Capacitor), falls back to
+   127→ * client-side Firestore profile lookup/creation.
+   128→ */
+   129→async function verifyWithServer(idToken: string, endpoint: string): Promise<{ success: boolean; user?: User; error?: string }> {
+   130→  try {
+   131→    const res = await fetch(buildApiUrl(endpoint), {
+   132→      method: 'POST',
+   133→      headers: { 'Content-Type': 'application/json' },
+   134→      body: JSON.stringify({ idToken }),
+   135→    })
+   136→
+   137→    // If the server returned a valid response (not 404), use it
+   138→    if (res.ok) {
+   139→      const data = await res.json()
+   140→
+   141→      if (data.user) {
+   142→        const userRole = mapRole(data.user.role)
+   143→        const user: User = {
+   144→          id: data.user.id,
+   145→          name: data.user.name,
+   146→          email: data.user.email,
+   147→          role: userRole,
+   148→          avatar: data.user.avatar || null,
+   149→          phone: data.user.phone || null,
+   150→          company: data.user.company || null,
+   151→          bio: data.user.bio || null,
+   152→          address: data.user.address || null,
+   153→          authProvider: data.user.authProvider as AuthProvider || 'unknown',
+   154→          isAnonymous: data.user.isAnonymous || false,
+   155→          emailVerified: data.user.emailVerified || false,
+   156→        }
+   157→        return { success: true, user }
+   158→      } else {
+   159→        return { success: false, error: data.error || 'Autenticação falhou.' }
+   160→      }
+   161→    }
+   162→
+   163→    // Server returned 404 or other error — fall back to client-side Firestore
+   164→    console.warn('[Auth] Server API unavailable, falling back to client-side Firestore')
+   165→    return await verifyWithClientFirestore(idToken)
+   166→  } catch (err) {
+   167→    // Network error — server not available (static export / Capacitor)
+   168→    console.warn('[Auth] Server API not reachable, falling back to client-side Firestore:', err)
+   169→    return await verifyWithClientFirestore(idToken)
+   170→  }
+   171→}
+   172→
+   173→/**
+   174→ * Client-side Firestore fallback for authentication.
+   175→ * Used when the server API routes are not available (static export / Capacitor).
+   176→ * Reads the user profile from Firestore directly, or creates one if it doesn't exist.
+   177→ */
+   178→async function verifyWithClientFirestore(idToken: string): Promise<{ success: boolean; user?: User; error?: string }> {
+   179→  try {
+   180→    const { auth, firestoreClient, isFirebaseConfigured } = await import('@/lib/firebase-client')
+   181→
+   182→    if (!isFirebaseConfigured() || !firestoreClient) {
+   183→      return { success: false, error: 'Firebase não configurado.' }
+   184→    }
+   185→
+   186→    // Decode the ID token to get the Firebase user info
+   187→    // We need to get the current Firebase Auth user
+   188→    const currentUser = auth.currentUser
+   189→    if (!currentUser) {
+   190→      return { success: false, error: 'Utilizador não autenticado.' }
+   191→    }
+   192→
+   193→    const uid = currentUser.uid
+   194→    const { doc, getDoc, setDoc } = await import('firebase/firestore')
+   195→
+   196→    // Try to read existing profile from Firestore
+   197→    const userRef = doc(firestoreClient, 'users', uid)
+   198→    const userSnap = await getDoc(userRef)
+   199→
+   200→    if (userSnap.exists()) {
+   201→      // Profile exists — return it
+   202→      const profile = userSnap.data()
+   203→      const userRole = mapRole(profile.role)
+   204→      const user: User = {
+   205→        id: uid,
+   206→        name: profile.name || currentUser.displayName || 'Utilizador',
+   207→        email: profile.email || currentUser.email || null,
+   208→        role: userRole,
+   209→        avatar: profile.avatar || currentUser.photoURL || null,
+   210→        phone: profile.phone || currentUser.phoneNumber || null,
+   211→        company: profile.company || null,
+   212→        bio: profile.bio || null,
+   213→        address: profile.address || null,
+   214→        authProvider: (currentUser.providerData[0]?.providerId as AuthProvider) || 'unknown',
+   215→        isAnonymous: currentUser.isAnonymous,
+   216→        emailVerified: currentUser.emailVerified,
+   217→      }
+   218→      return { success: true, user }
+   219→    }
+   220→
+   221→    // Profile doesn't exist — create it (first-time social/anonymous login)
+   222→    const providerId = currentUser.providerData[0]?.providerId || 'unknown'
+   223→    let authProvider: AuthProvider = 'unknown'
+   224→    if (providerId === 'google.com') authProvider = 'google.com'
+   225→    else if (providerId === 'github.com') authProvider = 'github.com'
+   226→    else if (providerId === 'phone') authProvider = 'phone'
+   227→    else if (providerId === 'anonymous') authProvider = 'anonymous'
+   228→    else if (providerId === 'password') authProvider = 'email'
+   229→
+   230→    const newProfile = {
+   231→      name: currentUser.displayName || 'Utilizador',
+   232→      email: currentUser.email || null,
+   233→      phone: currentUser.phoneNumber || null,
+   234→      avatar: currentUser.photoURL || null,
+   235→      company: null,
+   236→      bio: null,
+   237→      address: null,
+   238→      role: 'user',
+   239→      isActive: true,
+   240→      emailVerified: currentUser.emailVerified,
+   241→      authProvider,
+   242→      isAnonymous: currentUser.isAnonymous,
+   243→      createdAt: new Date(),
+   244→      updatedAt: new Date(),
+   245→    }
+   246→
+   247→    await setDoc(userRef, newProfile)
+   248→
+   249→    const user: User = {
+   250→      id: uid,
+   251→      name: newProfile.name,
+   252→      email: newProfile.email,
+   253→      role: 'user',
+   254→      avatar: newProfile.avatar,
+   255→      phone: newProfile.phone,
+   256→      company: null,
+   257→      bio: null,
+   258→      address: null,
+   259→      authProvider,
+   260→      isAnonymous: currentUser.isAnonymous,
+   261→      emailVerified: currentUser.emailVerified,
+   262→    }
+   263→    return { success: true, user }
+   264→  } catch (err) {
+   265→    console.error('[Auth] Client-side Firestore fallback error:', err)
+   266→    return { success: false, error: 'Erro de autenticação. Tente novamente.' }
+   267→  }
+   268→}
+   269→
+   270→// ─── Lazy Firebase Auth imports (only when needed) ───
+   271→
+   272→async function getFirebaseAuth() {
+   273→  const { auth, isFirebaseConfigured } = await import('@/lib/firebase-client')
+   274→
+   275→  if (!isFirebaseConfigured()) {
+   276→    throw new Error('Firebase não configurado. Adicione as credenciais em .env')
+   277→  }
+   278→
+   279→  return await import('@/lib/firebase-client')
+   280→}
+   281→
+   282→export const useAuthStore = create<AuthState>()(
+   283→  persist(
+   284→    (set, get) => ({
+   285→      user: null,
+   286→      isAuthenticated: false,
+   287→      isAdmin: false,
+   288→      isPartner: false,
+   289→      isUser: false,
+   290→      isSuperAdmin: false,
+   291→      isLoading: false,
+   292→      hasHydrated: false,
+   293→      lastLoginError: null,
+   294→      lastRegisterError: null,
+   295→      idToken: null,
+   296→      phoneVerificationId: null,
+   297→
+   298→      // ── Login with pre-obtained ID token ──
+   299→      loginWithToken: async (idToken: string): Promise<AuthResult> => {
+   300→        set({ isLoading: true, lastLoginError: null })
+   301→        const result = await verifyWithServer(idToken, '/api/auth/login')
+   302→
+   303→        if (result.success && result.user) {
+   304→          setUserInStore(set, result.user)
+   305→          set({ idToken })
+   306→          return { success: true, user: result.user }
+   307→        } else {
+   308→          set({ isLoading: false, lastLoginError: result.error })
+   309→          return { success: false, error: result.error }
+   310→        }
+   311→      },
+   312→
+   313→      // ── Email/password login via Firebase Auth client ──
+   314→      loginWithEmailPassword: async (email: string, password: string): Promise<AuthResult> => {
+   315→        set({ isLoading: true, lastLoginError: null })
+   316→
+   317→        try {
+   318→          let idToken: string
+   319→
+   320→          if (shouldUseNativeAuth()) {
+   321→            // ── Native path: @capacitor-firebase/authentication ──
+   322→            const nativeResult = await nativeSignInWithEmailPassword(email, password)
+   323→            idToken = nativeResult.idToken
+   324→          } else {
+   325→            // ── Web path: Firebase Web SDK ──
+   326→            const { signInWithEmailAndPassword, auth } = await getFirebaseAuth()
+   327→            const credential = await signInWithEmailAndPassword(auth, email, password)
+   328→            idToken = await credential.user.getIdToken()
+   329→          }
+   330→
+   331→          const result = await verifyWithServer(idToken, '/api/auth/login')
+   332→
+   333→          if (result.success && result.user) {
+   334→            setUserInStore(set, result.user)
+   335→            set({ idToken })
+   336→            return { success: true, user: result.user }
+   337→          } else {
+   338→            set({ isLoading: false, lastLoginError: result.error })
+   339→            return { success: false, error: result.error }
+   340→          }
+   341→        } catch (err: any) {
+   342→          console.error('Email login error:', err)
+   343→          let errorMsg = 'Credenciais inválidas.'
+   344→
+   345→          if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+   346→            errorMsg = 'Email ou senha incorretos.'
+   347→          } else if (err.code === 'auth/too-many-requests') {
+   348→            errorMsg = 'Muitas tentativas. Tente novamente mais tarde.'
+   349→          } else if (err.code === 'auth/user-disabled') {
+   350→            errorMsg = 'Conta desactivada. Contacte o suporte.'
+   351→          } else if (err.code === 'auth/invalid-email') {
+   352→            errorMsg = 'Email inválido.'
+   353→          } else if (err.message?.includes('not configured')) {
+   354→            errorMsg = 'Firebase não configurado. Contacte o administrador.'
+   355→          }
+   356→
+   357→          set({ isLoading: false, lastLoginError: errorMsg })
+   358→          return { success: false, error: errorMsg }
+   359→        }
+   360→      },
+   361→
+   362→      // ── Google Sign-In ──
+   363→      // Web: Uses signInWithRedirect (more reliable than popup — avoids popup blockers)
+   364→      // Native: Uses @capacitor-firebase/authentication GoogleSignIn
+   365→      loginWithGoogle: async (): Promise<AuthResult> => {
+   366→        set({ isLoading: true, lastLoginError: null })
+   367→
+   368→        try {
+   369→          let idToken: string
+   370→          const isNative = shouldUseNativeAuth()
+   371→          console.log('[Auth] loginWithGoogle — isNative:', isNative)
+   372→
+   373→          if (isNative) {
+   374→            // ── Native path: @capacitor-firebase/authentication ──
+   375→            // Uses Google Sign-In via Android system account picker / iOS ASAuthorization
+   376→            console.log('[Auth] Calling nativeSignInWithGoogle...')
+   377→            const nativeResult = await nativeSignInWithGoogle()
+   378→            idToken = nativeResult.idToken
+   379→            console.log('[Auth] Native Google sign-in succeeded, got ID token')
+   380→          } else {
+   381→            // ── Web path: Firebase Web SDK signInWithRedirect ──
+   382→            // Using redirect instead of popup because:
+   383→            // 1. Popup blockers don't interfere
+   384→            // 2. Works in Capacitor WebView (popup doesn't close immediately)
+   385→            // 3. More reliable cross-browser compatibility
+   386→            const { signInWithRedirect, auth, googleProvider } = await getFirebaseAuth()
+   387→            await signInWithRedirect(auth, googleProvider)
+   388→            // After redirect, the page will reload and getRedirectResult() will
+   389→            // return the credential. The auth-context.tsx handles this on mount.
+   390→            // Return a special "redirecting" result so the UI knows what's happening.
+   391→            return { success: true }
+   392→          }
+   393→
+   394→          const result = await verifyWithServer(idToken, '/api/auth/social')
+   395→
+   396→          if (result.success && result.user) {
+   397→            setUserInStore(set, result.user)
+   398→            set({ idToken })
+   399→            return { success: true, user: result.user }
+   400→          } else {
+   401→            set({ isLoading: false, lastLoginError: result.error })
+   402→            return { success: false, error: result.error }
+   403→          }
+   404→        } catch (err: any) {
+   405→          console.error('Google login error:', err)
+   406→          let errorMsg = 'Falha no login com Google.'
+   407→
+   408→          if (err.code === 'auth/popup-closed-by-user') {
+   409→            errorMsg = 'Popup fechado. Tente novamente.'
+   410→          } else if (err.code === 'auth/popup-blocked') {
+   411→            errorMsg = 'Popup bloqueado pelo navegador. Permita popups e tente novamente.'
+   412→          } else if (err.code === 'auth/cancelled-popup-request') {
+   413→            errorMsg = 'Operação cancelada.'
+   414→          } else if (err.code === 'auth/unauthorized-domain') {
+   415→            errorMsg = 'Domínio não autorizado. Adicione este domínio no Firebase Console.'
+   416→          } else if (err.code === 'auth/redirect-operation-pending') {
+   417→            errorMsg = 'Operação de redirecionamento em curso. Aguarde.'
+   418→          }
+   419→
+   420→          set({ isLoading: false, lastLoginError: errorMsg })
+   421→          return { success: false, error: errorMsg }
+   422→        }
+   423→      },
+   424→
+   425→      // ── GitHub Sign-In ──
+   426→      // Web: Uses signInWithRedirect (same reason as Google)
+   427→      // Native: Uses @capacitor-firebase/authentication
+   428→      loginWithGithub: async (): Promise<AuthResult> => {
+   429→        set({ isLoading: true, lastLoginError: null })
+   430→
+   431→        try {
+   432→          let idToken: string
+   433→          const isNative = shouldUseNativeAuth()
+   434→          console.log('[Auth] loginWithGithub — isNative:', isNative)
+   435→
+   436→          if (isNative) {
+   437→            // ── Native path: @capacitor-firebase/authentication ──
+   438→            console.log('[Auth] Calling nativeSignInWithGithub...')
+   439→            const nativeResult = await nativeSignInWithGithub()
+   440→            idToken = nativeResult.idToken
+   441→            console.log('[Auth] Native GitHub sign-in succeeded, got ID token')
+   442→          } else {
+   443→            // ── Web path: Firebase Web SDK signInWithRedirect ──
+   444→            const { signInWithRedirect, auth, githubProvider } = await getFirebaseAuth()
+   445→            await signInWithRedirect(auth, githubProvider)
+   446→            // After redirect, the page will reload and getRedirectResult() will
+   447→            // return the credential. The auth-context.tsx handles this on mount.
+   448→            return { success: true }
+   449→          }
+   450→
+   451→          const result = await verifyWithServer(idToken, '/api/auth/social')
+   452→
+   453→          if (result.success && result.user) {
+   454→            setUserInStore(set, result.user)
+   455→            set({ idToken })
+   456→            return { success: true, user: result.user }
+   457→          } else {
+   458→            set({ isLoading: false, lastLoginError: result.error })
+   459→            return { success: false, error: result.error }
+   460→          }
+   461→        } catch (err: any) {
+   462→          console.error('GitHub login error:', err)
+   463→          let errorMsg = 'Falha no login com GitHub.'
+   464→
+   465→          if (err.code === 'auth/unauthorized-domain') {
+   466→            errorMsg = 'Domínio não autorizado. Adicione este domínio no Firebase Console.'
+   467→          } else if (err.code === 'auth/account-exists-with-different-credential') {
+   468→            errorMsg = 'Conta já existe com outro método de login. Use o mesmo método que registou.'
+   469→          }
+   470→
+   471→          set({ isLoading: false, lastLoginError: errorMsg })
+   472→          return { success: false, error: errorMsg }
+   473→        }
+   474→      },
+   475→
+   476→      // ── Phone Authentication (Step 1: Send SMS OTP) ──
+   477→      loginWithPhone: async (phoneNumber: string, recaptchaContainerId: string): Promise<{ verificationId: string } | null> => {
+   478→        set({ isLoading: true, lastLoginError: null })
+   479→
+   480→        try {
+   481→          const fb = await getFirebaseAuth()
+   482→          const { auth, PhoneAuthProvider, createRecaptchaVerifier } = fb
+   483→
+   484→          // Create RecaptchaVerifier for the given container
+   485→          const recaptchaVerifier = createRecaptchaVerifier(recaptchaContainerId, 'invisible')
+   486→
+   487→          // Send SMS verification code
+   488→          const phoneProvider = new PhoneAuthProvider(auth)
+   489→          const verificationId = await phoneProvider.verifyPhoneNumber(
+   490→            phoneNumber,
+   491→            recaptchaVerifier
+   492→          )
+   493→
+   494→          set({ phoneVerificationId: verificationId, isLoading: false })
+   495→          return { verificationId }
+   496→        } catch (err: any) {
+   497→          console.error('Phone auth error:', err)
+   498→          let errorMsg = 'Falha no login por telefone.'
+   499→
+   500→          if (err.code === 'auth/invalid-phone-number') {
+   501→            errorMsg = 'Número de telefone inválido. Use formato +258XXXXXXXXX.'
+   502→          } else if (err.code === 'auth/quota-exceeded') {
+   503→            errorMsg = 'Limite de SMS excedido. Tente novamente mais tarde.'
+   504→          } else if (err.code === 'auth/too-many-requests') {
+   505→            errorMsg = 'Muitas tentativas. Tente novamente mais tarde.'
+   506→          }
+   507→
+   508→          set({ isLoading: false, lastLoginError: errorMsg })
+   509→          return null
+   510→        }
+   511→      },
+   512→
+   513→      // ── Phone Authentication (Step 2: Verify OTP code) ──
+   514→      verifyPhoneCode: async (verificationId: string, verificationCode: string): Promise<AuthResult> => {
+   515→        set({ isLoading: true, lastLoginError: null })
+   516→
+   517→        try {
+   518→          const fb = await getFirebaseAuth()
+   519→          const { auth, PhoneAuthProvider, signInWithCredential } = fb
+   520→
+   521→          // Create credential from verification ID + OTP code
+   522→          const credential = PhoneAuthProvider.credential(verificationId, verificationCode)
+   523→          const userCredential = await signInWithCredential(auth, credential)
+   524→          const idToken = await userCredential.user.getIdToken()
+   525→
+   526→          // Verify with server to get Firestore profile
+   527→          const result = await verifyWithServer(idToken, '/api/auth/social')
+   528→
+   529→          if (result.success && result.user) {
+   530→            setUserInStore(set, result.user)
+   531→            set({ idToken, phoneVerificationId: null })
+   532→            return { success: true, user: result.user }
+   533→          } else {
+   534→            set({ isLoading: false, lastLoginError: result.error, phoneVerificationId: null })
+   535→            return { success: false, error: result.error }
+   536→          }
+   537→        } catch (err: any) {
+   538→          console.error('Phone verify error:', err)
+   539→          let errorMsg = 'Código de verificação inválido.'
+   540→
+   541→          if (err.code === 'auth/invalid-verification-code') {
+   542→            errorMsg = 'Código SMS incorreto. Verifique e tente novamente.'
+   543→          } else if (err.code === 'auth/invalid-verification-id') {
+   544→            errorMsg = 'Sessão de verificação expirada. Tente novamente.'
+   545→          } else if (err.code === 'auth/code-expired') {
+   546→            errorMsg = 'Código expirado. Solicite um novo código SMS.'
+   547→          }
+   548→
+   549→          set({ isLoading: false, lastLoginError: errorMsg, phoneVerificationId: null })
+   550→          return { success: false, error: errorMsg }
+   551→        }
+   552→      },
+   553→
+   554→      // ── Anonymous Sign-In ──
+   555→      loginAnonymously: async (): Promise<AuthResult> => {
+   556→        set({ isLoading: true, lastLoginError: null })
+   557→
+   558→        try {
+   559→          let idToken: string
+   560→
+   561→          if (shouldUseNativeAuth()) {
+   562→            // ── Native path: @capacitor-firebase/authentication ──
+   563→            const nativeResult = await nativeSignInAnonymously()
+   564→            idToken = nativeResult.idToken
+   565→          } else {
+   566→            // ── Web path: Firebase Web SDK ──
+   567→            const { signInAnonymously, auth } = await getFirebaseAuth()
+   568→            const credential = await signInAnonymously(auth)
+   569→            idToken = await credential.user.getIdToken()
+   570→          }
+   571→
+   572→          const result = await verifyWithServer(idToken, '/api/auth/anonymous')
+   573→
+   574→          if (result.success && result.user) {
+   575→            setUserInStore(set, result.user)
+   576→            set({ idToken })
+   577→            return { success: true, user: result.user }
+   578→          } else {
+   579→            set({ isLoading: false, lastLoginError: result.error })
+   580→            return { success: false, error: result.error }
+   581→          }
+   582→        } catch (err: any) {
+   583→          console.error('Anonymous login error:', err)
+   584→          set({ isLoading: false, lastLoginError: 'Falha no login como visitante.' })
+   585→          return { success: false, error: 'Falha no login como visitante.' }
+   586→        }
+   587→      },
+   588→
+   589→      // ── Email/password registration ──
+   590→      register: async (name: string, email: string, password: string, phone?: string): Promise<AuthResult> => {
+   591→        set({ isLoading: true, lastRegisterError: null })
+   592→
+   593→        try {
+   594→          const { createUserWithEmailAndPassword, auth, updateProfile } = await getFirebaseAuth()
+   595→          const credential = await createUserWithEmailAndPassword(auth, email, password)
+   596→
+   597→          // Update display name in Firebase Auth
+   598→          await updateProfile(credential.user, { displayName: name })
+   599→
+   600→          const idToken = await credential.user.getIdToken()
+   601→
+   602→          // Send to server to create Firestore profile
+   603→          const res = await fetch(buildApiUrl('/api/auth/register'), {
+   604→            method: 'POST',
+   605→            headers: { 'Content-Type': 'application/json' },
+   606→            body: JSON.stringify({ name, email, phone }),
+   607→          })
+   608→
+   609→          const data = await res.json()
+   610→
+   611→          if (data.user) {
+   612→            const userRole = mapRole(data.user.role)
+   613→            const user: User = {
+   614→              id: data.user.id || credential.user.uid,
+   615→              name: data.user.name || name,
+   616→              email: data.user.email || email,
+   617→              role: userRole,
+   618→              avatar: null,
+   619→              phone: data.user.phone || phone || null,
+   620→              authProvider: 'email',
+   621→              isAnonymous: false,
+   622→              emailVerified: false,
+   623→            }
+   624→            setUserInStore(set, user)
+   625→            set({ idToken, lastRegisterError: null })
+   626→            return { success: true, user }
+   627→          } else {
+   628→            // Firebase Auth user was created but Firestore profile failed
+   629→            // Still set the user with basic info
+   630→            const user: User = {
+   631→              id: credential.user.uid,
+   632→              name: name,
+   633→              email: email,
+   634→              role: 'user',
+   635→              avatar: null,
+   636→              authProvider: 'email',
+   637→              isAnonymous: false,
+   638→              emailVerified: false,
+   639→            }
+   640→            setUserInStore(set, user)
+   641→            set({ idToken })
+   642→            return { success: true, user }
+   643→          }
+   644→        } catch (err: any) {
+   645→          console.error('Register error:', err)
+   646→          let errorMsg = 'Falha ao criar conta.'
+   647→
+   648→          if (err.code === 'auth/email-already-in-use') {
+   649→            errorMsg = 'Este email já está registado.'
+   650→          } else if (err.code === 'auth/weak-password') {
+   651→            errorMsg = 'Senha demasiado fraca. Use pelo menos 6 caracteres.'
+   652→          } else if (err.code === 'auth/invalid-email') {
+   653→            errorMsg = 'Email inválido.'
+   654→          } else if (err.message?.includes('not configured')) {
+   655→            errorMsg = 'Firebase não configurado. Contacte o administrador.'
+   656→          }
+   657→
+   658→          set({ isLoading: false, lastRegisterError: errorMsg })
+   659→          return { success: false, error: errorMsg }
+   660→        }
+   661→      },
+   662→
+   663→      logout: async () => {
+   664→        try {
+   665→          if (shouldUseNativeAuth()) {
+   666→            await nativeSignOut()
+   667→          } else {
+   668→            const { signOut, auth } = await getFirebaseAuth()
+   669→            await signOut(auth)
+   670→          }
+   671→        } catch (err) {
+   672→          console.warn('Firebase signOut failed (non-critical):', err)
+   673→        }
+   674→
+   675→        set({
+   676→          user: null,
+   677→          isAuthenticated: false,
+   678→          isAdmin: false,
+   679→          isPartner: false,
+   680→          isUser: false,
+   681→          isSuperAdmin: false,
+   682→          idToken: null,
+   683→          phoneVerificationId: null,
+   684→          lastLoginError: null,
+   685→          lastRegisterError: null,
+   686→        })
+   687→      },
+   688→
+   689→      setUser: (user: User) => {
+   690→        setUserInStore(set, user)
+   691→      },
+   692→
+   693→      updateAvatar: (avatar: string) => {
+   694→        const currentUser = get().user
+   695→        if (currentUser) {
+   696→          set({ user: { ...currentUser, avatar } })
+   697→        }
+   698→      },
+   699→
+   700→      setIdToken: (token: string) => {
+   701→        set({ idToken: token })
+   702→      },
+   703→    }),
+   704→    {
+   705→      name: 'carsai-auth',
+   706→      partialize: (state) => ({
+   707→        user: state.user,
+   708→        isAuthenticated: state.isAuthenticated,
+   709→        isAdmin: state.isAdmin,
+   710→        isPartner: state.isPartner,
+   711→        isUser: state.isUser,
+   712→        isSuperAdmin: state.isSuperAdmin,
+   713→        idToken: state.idToken,
+   714→      }),
+   715→      onRehydrateStorage: () => (state) => {
+   716→        if (state) {
+   717→          state.hasHydrated = true
+   718→        }
+   719→      },
+   720→    }
+   721→  )
+   722→)
+   723→
+   724→// ──────────────────────────────────────────────
+   725→// Notification Store
+   726→// ──────────────────────────────────────────────
+   727→
+   728→interface NotificationState {
+   729→  notifications: Notification[]
+   730→  unreadCount: number
+   731→  addNotification: (type: NotificationType, title: string, message: string) => void
+   732→  markAsRead: (id: string) => void
+   733→  markAllAsRead: () => void
+   734→  removeNotification: (id: string) => void
+   735→  clearAll: () => void
+   736→}
+   737→
+   738→export const useNotificationStore = create<NotificationState>((set, get) => ({
+   739→  notifications: [],
+   740→  unreadCount: 0,
+   741→
+   742→  addNotification: (type: NotificationType, title: string, message: string) => {
+   743→    const id = `notif-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+   744→    const newNotification: Notification = {
+   745→      id,
+   746→      type,
+   747→      title,
+   748→      message,
+   749→      read: false,
+   750→      createdAt: new Date(),
+   751→    }
+   752→    const updated = [newNotification, ...get().notifications]
+   753→    set({
+   754→      notifications: updated,
+   755→      unreadCount: updated.filter((n) => !n.read).length,
+   756→    })
+   757→  },
+   758→
+   759→  markAsRead: (id: string) => {
+   760→    const updated = get().notifications.map((n) =>
+   761→      n.id === id ? { ...n, read: true } : n
+   762→    )
+   763→    set({
+   764→      notifications: updated,
+   765→      unreadCount: updated.filter((n) => !n.read).length,
+   766→    })
+   767→  },
+   768→
+   769→  markAllAsRead: () => {
+   770→    const updated = get().notifications.map((n) => ({ ...n, read: true }))
+   771→    set({
+   772→      notifications: updated,
+   773→      unreadCount: 0,
+   774→    })
+   775→  },
+   776→
+   777→  removeNotification: (id: string) => {
+   778→    const updated = get().notifications.filter((n) => n.id !== id)
+   779→    set({
+   780→      notifications: updated,
+   781→      unreadCount: updated.filter((n) => !n.read).length,
+   782→    })
+   783→  },
+   784→
+   785→  clearAll: () => {
+   786→    set({ notifications: [], unreadCount: 0 })
+   787→  },
+   788→}))
+   789→
+   790→// ──────────────────────────────────────────────
+   791→// App Store
+   792→// ──────────────────────────────────────────────
+   793→
+   794→interface AppState {
+   795→  currentView: AppView
+   796→  sidebarOpen: boolean
+   797→  searchQuery: string
+   798→  searchOpen: boolean
+   799→  language: Language
+   800→  selectedPostSlug: string | null
+   801→  selectedTopicSlug: string | null
+   802→  setCurrentView: (view: AppView) => void
+   803→  setSidebarOpen: (open: boolean) => void
+   804→  toggleSidebar: () => void
+   805→  setSearchQuery: (query: string) => void
+   806→  setSearchOpen: (open: boolean) => void
+   807→  setLanguage: (language: Language) => void
+   808→  setSelectedPostSlug: (slug: string | null) => void
+   809→  setSelectedTopicSlug: (slug: string | null) => void
+   810→}
+   811→
+   812→export const useAppStore = create<AppState>((set, get) => ({
+   813→  currentView: 'home',
+   814→  sidebarOpen: true,
+   815→  searchQuery: '',
+   816→  searchOpen: false,
+   817→  language: 'pt',
+   818→  selectedPostSlug: null,
+   819→  selectedTopicSlug: null,
+   820→
+   821→  setCurrentView: (view: AppView) => set({ currentView: view }),
+   822→  setSidebarOpen: (open: boolean) => set({ sidebarOpen: open }),
+   823→  toggleSidebar: () => set({ sidebarOpen: !get().sidebarOpen }),
+   824→  setSearchQuery: (query: string) => set({ searchQuery: query }),
+   825→  setSearchOpen: (open: boolean) => set({ searchOpen: open }),
+   826→  setLanguage: (language: Language) => set({ language }),
+   827→  setSelectedPostSlug: (slug: string | null) => set({ selectedPostSlug: slug }),
+   828→  setSelectedTopicSlug: (slug: string | null) => set({ selectedTopicSlug: slug }),
+   829→}))
+   830→

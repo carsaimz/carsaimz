@@ -599,48 +599,117 @@ export const useAuthStore = create<AuthState>()(
 
           const idToken = await credential.user.getIdToken()
 
-          // Send to server to create Firestore profile
-          const res = await fetch(buildApiUrl('/api/auth/register'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, phone }),
-          })
+          // Try server API first to create Firestore profile
+          let serverProfileCreated = false
+          try {
+            const res = await fetch(buildApiUrl('/api/auth/register'), {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name, email, phone }),
+            })
 
-          const data = await res.json()
+            // Check if response is JSON (not HTML from static export)
+            const contentType = res.headers.get('content-type') || ''
+            if (contentType.includes('application/json')) {
+              const data = await res.json()
 
-          if (data.user) {
-            const userRole = mapRole(data.user.role)
-            const user: User = {
-              id: data.user.id || credential.user.uid,
-              name: data.user.name || name,
-              email: data.user.email || email,
-              role: userRole,
-              avatar: null,
-              phone: data.user.phone || phone || null,
-              authProvider: 'email',
-              isAnonymous: false,
-              emailVerified: false,
+              if (data.user) {
+                const userRole = mapRole(data.user.role)
+                const user: User = {
+                  id: data.user.id || credential.user.uid,
+                  name: data.user.name || name,
+                  email: data.user.email || email,
+                  role: userRole,
+                  avatar: null,
+                  phone: data.user.phone || phone || null,
+                  authProvider: 'email',
+                  isAnonymous: false,
+                  emailVerified: false,
+                }
+                setUserInStore(set, user)
+                set({ idToken, lastRegisterError: null })
+                return { success: true, user }
+              }
             }
-            setUserInStore(set, user)
-            set({ idToken, lastRegisterError: null })
-            return { success: true, user }
-          } else {
-            // Firebase Auth user was created but Firestore profile failed
-            // Still set the user with basic info
-            const user: User = {
-              id: credential.user.uid,
-              name: name,
-              email: email,
-              role: 'user',
-              avatar: null,
-              authProvider: 'email',
-              isAnonymous: false,
-              emailVerified: false,
-            }
-            setUserInStore(set, user)
-            set({ idToken })
-            return { success: true, user }
+            // If not JSON or no user data, fall through to client-side Firestore
+          } catch (apiErr) {
+            console.warn('[Auth] Server API unavailable for registration, falling back to client-side Firestore:', apiErr)
           }
+
+          // Fallback: Create Firestore profile directly using client SDK
+          if (!serverProfileCreated) {
+            try {
+              const { firestoreClient } = await import('@/lib/firebase-client')
+              if (firestoreClient) {
+                const { doc, setDoc, getDoc, getDocs, collection, query, where } = await import('firebase/firestore')
+                const uid = credential.user.uid
+
+                // Find the "user" role
+                let roleId: string | null = null
+                try {
+                  const rolesRef = collection(firestoreClient, 'roles')
+                  const q = query(rolesRef, where('name', '==', 'user'))
+                  const roleSnap = await getDocs(q)
+                  if (!roleSnap.empty) {
+                    roleId = roleSnap.docs[0].id
+                  }
+                } catch (e) {
+                  console.warn('[Auth] Could not find user role:', e)
+                }
+
+                // Create user profile in Firestore
+                const userRef = doc(firestoreClient, 'users', uid)
+                await setDoc(userRef, {
+                  name: name || email.split('@')[0],
+                  email: email.toLowerCase().trim(),
+                  phone: phone || null,
+                  company: null,
+                  avatar: null,
+                  bio: null,
+                  address: null,
+                  roleId: roleId,
+                  isActive: true,
+                  emailVerified: false,
+                  authProvider: 'email',
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                })
+
+                const user: User = {
+                  id: uid,
+                  name: name,
+                  email: email,
+                  role: 'user',
+                  avatar: null,
+                  phone: phone || null,
+                  authProvider: 'email',
+                  isAnonymous: false,
+                  emailVerified: false,
+                }
+                setUserInStore(set, user)
+                set({ idToken, lastRegisterError: null })
+                return { success: true, user }
+              }
+            } catch (fsErr) {
+              console.error('[Auth] Client-side Firestore profile creation failed:', fsErr)
+            }
+          }
+
+          // Last resort: Firebase Auth user was created but Firestore profile failed
+          // Still set the user with basic info so the UI works
+          const user: User = {
+            id: credential.user.uid,
+            name: name,
+            email: email,
+            role: 'user',
+            avatar: null,
+            authProvider: 'email',
+            isAnonymous: false,
+            emailVerified: false,
+          }
+          setUserInStore(set, user)
+          set({ idToken })
+          return { success: true, user }
         } catch (err: any) {
           console.error('Register error:', err)
           let errorMsg = 'Falha ao criar conta.'

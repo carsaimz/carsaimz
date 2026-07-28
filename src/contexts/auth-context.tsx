@@ -74,23 +74,111 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const idToken = await result.user.getIdToken();
         const { buildApiUrl } = await import('@/lib/api-base');
 
-        const res = await fetch(buildApiUrl('/api/auth/social'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken }),
-        });
+        try {
+          const res = await fetch(buildApiUrl('/api/auth/social'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken }),
+          });
 
-        const data = await res.json();
+          const contentType = res.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            const data = await res.json();
 
-        if (data.user) {
-          const userRole = data.user.role || 'user';
+            if (data.user) {
+              const userRole = data.user.role || 'user';
+              const user: User = {
+                id: data.user.id || result.user.uid,
+                name: data.user.name || result.user.displayName || 'Utilizador',
+                email: data.user.email || result.user.email,
+                role: userRole,
+                avatar: data.user.avatar || result.user.photoURL || null,
+                phone: data.user.phone || result.user.phoneNumber || null,
+                authProvider: (result.user.providerData[0]?.providerId as AuthProviderType) || 'unknown',
+                isAnonymous: result.user.isAnonymous,
+                emailVerified: result.user.emailVerified,
+              };
+              store.setUser(user);
+              store.setIdToken(idToken);
+              return;
+            }
+          }
+        } catch (err) {
+          console.warn('[Auth] Server API unavailable for redirect result, falling back to client-side Firestore:', err);
+        }
+
+        // Fallback: Use client-side Firestore to create/retrieve profile
+        try {
+          const { firestoreClient } = await import('@/lib/firebase-client');
+          if (firestoreClient) {
+            const { doc, getDoc, setDoc, getDocs, collection, query, where } = await import('firebase/firestore');
+            const uid = result.user.uid;
+            const userRef = doc(firestoreClient, 'users', uid);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+              const profile = userSnap.data();
+              const user: User = {
+                id: uid,
+                name: profile.name || result.user.displayName || 'Utilizador',
+                email: profile.email || result.user.email,
+                role: profile.roleId ? 'user' : 'user',
+                avatar: profile.avatar || result.user.photoURL || null,
+                phone: profile.phone || result.user.phoneNumber || null,
+                authProvider: (result.user.providerData[0]?.providerId as AuthProviderType) || 'unknown',
+                isAnonymous: result.user.isAnonymous,
+                emailVerified: result.user.emailVerified,
+              };
+              store.setUser(user);
+              store.setIdToken(idToken);
+            } else {
+              // Create new profile
+              let roleId: string | null = null;
+              try {
+                const rolesRef = collection(firestoreClient, 'roles');
+                const q = query(rolesRef, where('name', '==', 'user'));
+                const roleSnap = await getDocs(q);
+                if (!roleSnap.empty) roleId = roleSnap.docs[0].id;
+              } catch {}
+
+              const providerId = result.user.providerData[0]?.providerId || 'unknown';
+              await setDoc(userRef, {
+                name: result.user.displayName || 'Utilizador',
+                email: result.user.email || null,
+                phone: result.user.phoneNumber || null,
+                avatar: result.user.photoURL || null,
+                company: null, bio: null, address: null,
+                roleId, isActive: true,
+                emailVerified: result.user.emailVerified,
+                authProvider: providerId,
+                createdAt: new Date(), updatedAt: new Date(),
+              });
+
+              const user: User = {
+                id: uid,
+                name: result.user.displayName || 'Utilizador',
+                email: result.user.email,
+                role: 'user',
+                avatar: result.user.photoURL || null,
+                phone: result.user.phoneNumber || null,
+                authProvider: (result.user.providerData[0]?.providerId as AuthProviderType) || 'unknown',
+                isAnonymous: result.user.isAnonymous,
+                emailVerified: result.user.emailVerified,
+              };
+              store.setUser(user);
+              store.setIdToken(idToken);
+            }
+          }
+        } catch (fsErr) {
+          console.warn('[Auth] Client-side Firestore fallback failed for redirect result:', fsErr);
+          // Last resort: set user from Firebase Auth data
           const user: User = {
-            id: data.user.id || result.user.uid,
-            name: data.user.name || result.user.displayName || 'Utilizador',
-            email: data.user.email || result.user.email,
-            role: userRole,
-            avatar: data.user.avatar || result.user.photoURL || null,
-            phone: data.user.phone || result.user.phoneNumber || null,
+            id: result.user.uid,
+            name: result.user.displayName || 'Utilizador',
+            email: result.user.email,
+            role: 'user',
+            avatar: result.user.photoURL || null,
+            phone: result.user.phoneNumber || null,
             authProvider: (result.user.providerData[0]?.providerId as AuthProviderType) || 'unknown',
             isAnonymous: result.user.isAnonymous,
             emailVerified: result.user.emailVerified,
@@ -129,32 +217,124 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               const idToken = await firebaseUser.getIdToken();
               const { buildApiUrl } = await import('@/lib/api-base');
 
-              const res = await fetch(buildApiUrl('/api/auth/login'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ idToken }),
-              });
+              let profileRestored = false;
 
-              const data = await res.json();
+              // Try server API first
+              try {
+                const res = await fetch(buildApiUrl('/api/auth/login'), {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ idToken }),
+                });
 
-              if (data.user) {
-                const userRole = data.user.role || 'user';
-                const user: User = {
-                  id: data.user.id || firebaseUser.uid,
-                  name: data.user.name || firebaseUser.displayName || 'Utilizador',
-                  email: data.user.email || firebaseUser.email,
-                  role: userRole,
-                  avatar: data.user.avatar || firebaseUser.photoURL || null,
-                  phone: data.user.phone || firebaseUser.phoneNumber || null,
-                  authProvider: (firebaseUser.providerData[0]?.providerId as AuthProviderType) || 'unknown',
-                  isAnonymous: firebaseUser.isAnonymous,
-                  emailVerified: firebaseUser.emailVerified,
-                };
-                store.setUser(user);
-                store.setIdToken(idToken);
+                const contentType = res.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                  const data = await res.json();
+
+                  if (data.user) {
+                    const userRole = data.user.role || 'user';
+                    const user: User = {
+                      id: data.user.id || firebaseUser.uid,
+                      name: data.user.name || firebaseUser.displayName || 'Utilizador',
+                      email: data.user.email || firebaseUser.email,
+                      role: userRole,
+                      avatar: data.user.avatar || firebaseUser.photoURL || null,
+                      phone: data.user.phone || firebaseUser.phoneNumber || null,
+                      authProvider: (firebaseUser.providerData[0]?.providerId as AuthProviderType) || 'unknown',
+                      isAnonymous: firebaseUser.isAnonymous,
+                      emailVerified: firebaseUser.emailVerified,
+                    };
+                    store.setUser(user);
+                    store.setIdToken(idToken);
+                    profileRestored = true;
+                  }
+                }
+              } catch (err) {
+                console.warn('[Auth] Server API unavailable for session restore, falling back to client-side Firestore:', err);
+              }
+
+              // Fallback: Use client-side Firestore
+              if (!profileRestored) {
+                try {
+                  const { firestoreClient } = await import('@/lib/firebase-client');
+                  if (firestoreClient) {
+                    const { doc, getDoc, setDoc, getDocs, collection, query, where } = await import('firebase/firestore');
+                    const uid = firebaseUser.uid;
+                    const userRef = doc(firestoreClient, 'users', uid);
+                    const userSnap = await getDoc(userRef);
+
+                    if (userSnap.exists()) {
+                      const profile = userSnap.data();
+                      const user: User = {
+                        id: uid,
+                        name: profile.name || firebaseUser.displayName || 'Utilizador',
+                        email: profile.email || firebaseUser.email,
+                        role: 'user',
+                        avatar: profile.avatar || firebaseUser.photoURL || null,
+                        phone: profile.phone || firebaseUser.phoneNumber || null,
+                        authProvider: (firebaseUser.providerData[0]?.providerId as AuthProviderType) || 'unknown',
+                        isAnonymous: firebaseUser.isAnonymous,
+                        emailVerified: firebaseUser.emailVerified,
+                      };
+                      store.setUser(user);
+                      store.setIdToken(idToken);
+                    } else {
+                      // Create new profile
+                      let roleId: string | null = null;
+                      try {
+                        const rolesRef = collection(firestoreClient, 'roles');
+                        const q = query(rolesRef, where('name', '==', 'user'));
+                        const roleSnap = await getDocs(q);
+                        if (!roleSnap.empty) roleId = roleSnap.docs[0].id;
+                      } catch {}
+
+                      await setDoc(userRef, {
+                        name: firebaseUser.displayName || 'Utilizador',
+                        email: firebaseUser.email || null,
+                        phone: firebaseUser.phoneNumber || null,
+                        avatar: firebaseUser.photoURL || null,
+                        company: null, bio: null, address: null,
+                        roleId, isActive: true,
+                        emailVerified: firebaseUser.emailVerified,
+                        authProvider: (firebaseUser.providerData[0]?.providerId as AuthProviderType) || 'unknown',
+                        createdAt: new Date(), updatedAt: new Date(),
+                      });
+
+                      const user: User = {
+                        id: uid,
+                        name: firebaseUser.displayName || 'Utilizador',
+                        email: firebaseUser.email,
+                        role: 'user',
+                        avatar: firebaseUser.photoURL || null,
+                        phone: firebaseUser.phoneNumber || null,
+                        authProvider: (firebaseUser.providerData[0]?.providerId as AuthProviderType) || 'unknown',
+                        isAnonymous: firebaseUser.isAnonymous,
+                        emailVerified: firebaseUser.emailVerified,
+                      };
+                      store.setUser(user);
+                      store.setIdToken(idToken);
+                    }
+                  }
+                } catch (fsErr) {
+                  console.warn('[Auth] Client-side Firestore fallback failed:', fsErr);
+                  // Last resort: set user from Firebase Auth data
+                  const user: User = {
+                    id: firebaseUser.uid,
+                    name: firebaseUser.displayName || 'Utilizador',
+                    email: firebaseUser.email,
+                    role: 'user',
+                    avatar: firebaseUser.photoURL || null,
+                    phone: firebaseUser.phoneNumber || null,
+                    authProvider: (firebaseUser.providerData[0]?.providerId as AuthProviderType) || 'unknown',
+                    isAnonymous: firebaseUser.isAnonymous,
+                    emailVerified: firebaseUser.emailVerified,
+                  };
+                  store.setUser(user);
+                  store.setIdToken(idToken);
+                }
               }
             } catch (err) {
-              console.warn('[Auth] Failed to restore session from server:', err);
+              console.warn('[Auth] Failed to restore session:', err);
             }
           } else if (!firebaseUser && store.isAuthenticated) {
             // User signed out in Firebase but store still thinks they're logged in

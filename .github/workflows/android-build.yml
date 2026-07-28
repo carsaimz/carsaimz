@@ -74,25 +74,38 @@ jobs:
           #!/bin/bash
           set -e
           
-          CONFIG_FILE="next.config.ts"
+          # API routes are incompatible with output: "export" (no server in static sites).
+          # The Capacitor app uses client-side Firestore directly, so API routes are not needed.
+          # Dynamic [slug] routes also need generateStaticParams() which is problematic.
+          # The Capacitor app handles navigation client-side via the store's selectedPostSlug/selectedTopicSlug.
           
-          # Backup original config
-          cp "$CONFIG_FILE" "${CONFIG_FILE}.bak"
+          # Backup and remove API directory
+          if [ -d "src/app/api" ]; then
+            mv src/app/api /tmp/api_bak
+            echo "API routes temporarily removed for static export"
+          fi
           
-          # Trap to restore on exit via git checkout
-          trap 'mv "${CONFIG_FILE}.bak" "$CONFIG_FILE"; git checkout -- src/app/api; git checkout -- src/app' EXIT
+          # Backup and remove dynamic [slug] routes
+          for slug_dir in $(find src/app -type d -name '[slug]'); do
+            mv "$slug_dir" "${slug_dir}.bak"
+            echo "Dynamic route temporarily removed: $slug_dir"
+          done
           
-          # Remove API routes (delete completely — .bak dirs get detected by Next.js)
-          rm -rf src/app/api
+          # Build with BUILD_TARGET=capacitor for static export
+          BUILD_TARGET=capacitor bun run build
           
-          # Remove [slug] dynamic routes (delete completely)
-          find src/app -type d -name '\[*\]' -exec rm -rf {} + 2>/dev/null || true
+          # Restore API directory
+          if [ -d "/tmp/api_bak" ]; then
+            mv /tmp/api_bak src/app/api
+            echo "API routes restored"
+          fi
           
-          # Change output to "export"
-          sed -i 's/output: "standalone"/output: "export"/' "$CONFIG_FILE"
-          
-          # Build
-          bun run build
+          # Restore dynamic [slug] routes
+          for bak_dir in $(find src/app -type d -name '[slug].bak'); do
+            original="${bak_dir%.bak}"
+            mv "$bak_dir" "$original"
+            echo "Dynamic route restored: $original"
+          done
           
           echo "Static export completed successfully"
           EXPORT_SCRIPT

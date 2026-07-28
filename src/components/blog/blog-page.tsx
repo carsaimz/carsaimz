@@ -23,6 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveI18nContent } from '@/lib/i18n-content';
+import { fetchWithFallback, fetchPostsClient } from '@/lib/client-firestore';
 import { useRouter } from 'next/navigation';
 
 const TechPatternSVG = dynamic(
@@ -104,18 +105,13 @@ export function BlogPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // Fetch posts from API
+  // Fetch posts from API, with client-side Firestore fallback
   useEffect(() => {
     async function fetchPosts() {
       try {
         setLoading(true);
-        const res = await fetch('/api/posts');
-        const json = await res.json();
-        if (json.success) {
-          setPosts(json.data);
-        } else {
-          setError(json.message || 'Failed to fetch posts');
-        }
+        const result = await fetchWithFallback('/api/posts', fetchPostsClient);
+        setPosts(result.data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Network error');
       } finally {

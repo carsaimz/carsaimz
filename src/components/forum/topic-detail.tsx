@@ -24,6 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/language-context';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
+import { fetchWithFallback, fetchForumClient } from '@/lib/client-firestore';
 
 // ──────────────────────────────────────────────
 // Types
@@ -120,27 +121,22 @@ export function TopicDetail({ slug: propSlug }: { slug?: string }) {
     async function fetchForum() {
       try {
         setLoading(true);
-        const res = await fetch('/api/forum');
-        const json = await res.json();
-        if (json.success) {
-          const allCategories: ForumCategoryData[] = json.data;
-          // Find the topic across all categories
-          let found: ForumTopicData | null = null;
-          for (const cat of allCategories) {
-            const topicMatch = cat.topics.find((t) => t.slug === propSlug);
-            if (topicMatch) {
-              found = topicMatch;
-              break;
-            }
+        const result = await fetchWithFallback('/api/forum', fetchForumClient);
+        const allCategories: ForumCategoryData[] = result.data;
+        // Find the topic across all categories
+        let found: ForumTopicData | null = null;
+        for (const cat of allCategories) {
+          const topicMatch = cat.topics.find((t) => t.slug === propSlug);
+          if (topicMatch) {
+            found = topicMatch;
+            break;
           }
-          if (found) {
-            setTopic(found);
-            setLikeCount(found._count.likes);
-          } else {
-            setError('Topic not found');
-          }
+        }
+        if (found) {
+          setTopic(found);
+          setLikeCount(found._count.likes);
         } else {
-          setError(json.message || 'Failed to fetch forum data');
+          setError('Topic not found');
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Network error');
@@ -174,7 +170,7 @@ export function TopicDetail({ slug: propSlug }: { slug?: string }) {
         author: {
           id: user.id,
           name: user.name,
-          email: user.email,
+          email: user.email || '',
           avatar: user.avatar,
         },
       };

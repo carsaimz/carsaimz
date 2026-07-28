@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAppStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
 import { useRouter } from 'next/navigation';
+import { fetchWithFallback, fetchPostsClient, fetchForumClient } from '@/lib/client-firestore';
 
 // ──────────────────────────────────────────────
 // Types
@@ -85,11 +86,20 @@ export function GlobalSearch() {
       const lowerQuery = searchQuery.toLowerCase();
 
       // Fetch from multiple endpoints simultaneously
-      const [servicesRes, projectsRes, postsRes, forumRes] = await Promise.allSettled([
-        fetch('/api/services'),
-        fetch('/api/projects'),
-        fetch('/api/posts'),
-        fetch('/api/forum'),
+      // Use fetchWithFallback for blog/forum to handle static export
+      const [servicesRes, projectsRes, postsResult, forumResult] = await Promise.allSettled([
+        fetch('/api/services').then(async (res) => {
+          const ct = res.headers.get('content-type') || '';
+          if (ct.includes('application/json') && res.ok) return res.json();
+          throw new Error('Not JSON');
+        }).catch(() => null),
+        fetch('/api/projects').then(async (res) => {
+          const ct = res.headers.get('content-type') || '';
+          if (ct.includes('application/json') && res.ok) return res.json();
+          throw new Error('Not JSON');
+        }).catch(() => null),
+        fetchWithFallback('/api/posts', fetchPostsClient).then(r => r.data).catch(() => []),
+        fetchWithFallback('/api/forum', fetchForumClient).then(r => r.data).catch(() => []),
       ]);
 
       const allResults: SearchResult[] = [];
@@ -143,55 +153,51 @@ export function GlobalSearch() {
       }
 
       // Process posts (blog)
-      if (postsRes.status === 'fulfilled') {
+      if (postsResult.status === 'fulfilled' && Array.isArray(postsResult.value)) {
         try {
-          const postsData = await postsRes.value.json();
-          if (postsData.success && postsData.data) {
-            postsData.data
-              .filter((p: Record<string, unknown>) => {
-                const title = String(p.title || '');
-                const excerpt = String(p.excerpt || '');
-                return title.toLowerCase().includes(lowerQuery) || excerpt.toLowerCase().includes(lowerQuery);
-              })
-              .forEach((p: Record<string, unknown>) => {
-                allResults.push({
-                  id: `post-${p.id}`,
-                  title: String(p.title || ''),
-                  description: String(p.excerpt || '').slice(0, 120),
-                  type: 'blog',
-                  view: 'blogPost',
-                  slug: String(p.slug || ''),
-                });
+          const postsData = postsResult.value as any[];
+          postsData
+            .filter((p: any) => {
+              const title = String(p.title || '');
+              const excerpt = String(p.excerpt || '');
+              return title.toLowerCase().includes(lowerQuery) || excerpt.toLowerCase().includes(lowerQuery);
+            })
+            .forEach((p: any) => {
+              allResults.push({
+                id: `post-${p.id}`,
+                title: String(p.title || ''),
+                description: String(p.excerpt || '').slice(0, 120),
+                type: 'blog',
+                view: 'blogPost',
+                slug: String(p.slug || ''),
               });
-          }
+            });
         } catch { /* skip */ }
       }
 
       // Process forum topics
-      if (forumRes.status === 'fulfilled') {
+      if (forumResult.status === 'fulfilled' && Array.isArray(forumResult.value)) {
         try {
-          const forumData = await forumRes.value.json();
-          if (forumData.success && forumData.data) {
-            // Forum data is nested in categories
-            forumData.data.forEach((cat: Record<string, unknown>) => {
-              const topics = Array.isArray(cat.topics) ? cat.topics : [];
-              topics
-                .filter((topic: Record<string, unknown>) => {
-                  const title = String(topic.title || '');
-                  return title.toLowerCase().includes(lowerQuery);
-                })
-                .forEach((topic: Record<string, unknown>) => {
-                  allResults.push({
-                    id: `forum-${topic.id}`,
-                    title: String(topic.title || ''),
-                    description: String(topic.content || '').slice(0, 120),
-                    type: 'forum',
-                    view: 'forumTopic',
-                    slug: String(topic.slug || ''),
-                  });
+          const forumData = forumResult.value as any[];
+          // Forum data is nested in categories
+          forumData.forEach((cat: any) => {
+            const topics = Array.isArray(cat.topics) ? cat.topics : [];
+            topics
+              .filter((topic: any) => {
+                const title = String(topic.title || '');
+                return title.toLowerCase().includes(lowerQuery);
+              })
+              .forEach((topic: any) => {
+                allResults.push({
+                  id: `forum-${topic.id}`,
+                  title: String(topic.title || ''),
+                  description: String(topic.content || '').slice(0, 120),
+                  type: 'forum',
+                  view: 'forumTopic',
+                  slug: String(topic.slug || ''),
                 });
-            });
-          }
+              });
+          });
         } catch { /* skip */ }
       }
 

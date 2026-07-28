@@ -1,7 +1,11 @@
-'use client';
 import { TopicDetail } from '@/components/forum/topic-detail';
-import { useParams } from 'next/navigation';
+
+// Required for static export: return empty array since all slugs are dynamic
+export async function generateStaticParams() {
+  return [];
+}
+
+// Server component that renders the client component
 export default function ForumTopicPageRoute() {
-  const params = useParams();
-  return <TopicDetail slug={params.slug as string} />;
+  return <TopicDetail slug="__dynamic__" />;
 }
