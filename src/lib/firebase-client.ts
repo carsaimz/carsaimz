@@ -2,7 +2,9 @@
  * Carsai Mozambique — Firebase Client Configuration
  *
  * Used by browser-side code (Firebase Auth, Firestore client reads, FCM, Analytics).
- * All values come from NEXT_PUBLIC_ env vars so they're embedded at build time.
+ * All values come from the hardcoded config in client-config.ts
+ * (Firebase client SDK config is public by design — it ends up in the
+ * client bundle regardless of whether it comes from env vars or hardcoded).
  *
  * Firebase Spark Plan (Free) features integrated:
  * - Authentication (email/password, Google, anonymous, phone)
@@ -15,6 +17,8 @@
  * - Performance Monitoring (free)
  * - Remote Config (free dynamic configuration)
  */
+
+import { FIREBASE_CONFIG, FIREBASE_VAPID_KEY } from '@/lib/client-config'
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app'
 import {
@@ -52,24 +56,12 @@ import { getStorage, FirebaseStorage } from 'firebase/storage'
 import { getMessaging, Messaging, isSupported as isMessagingSupported } from 'firebase/messaging'
 import { getAnalytics, Analytics, isSupported as isAnalyticsSupported } from 'firebase/analytics'
 
-// ─── Firebase Web App Config (from environment) ───
-
-const firebaseConfig = {
-  apiKey:             process.env.NEXT_PUBLIC_FIREBASE_API_KEY || '',
-  authDomain:         process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
-  projectId:          process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '',
-  storageBucket:      process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '',
-  messagingSenderId:  process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId:              process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '',
-  measurementId:      process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || '',
-}
-
 // ─── Firebase App singleton ───
 
 let app: FirebaseApp
 
 if (!getApps().length) {
-  app = initializeApp(firebaseConfig)
+  app = initializeApp(FIREBASE_CONFIG)
 } else {
   app = getApp()
 }
@@ -155,10 +147,9 @@ export async function requestFCMToken(): Promise<string | null> {
     if (!messagingClient) return null
 
     const { getToken } = await import('firebase/messaging')
-    const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY
 
-    if (!vapidKey) {
-      console.warn('[FCM] NEXT_PUBLIC_FIREBASE_VAPID_KEY not set — push notifications disabled')
+    if (!FIREBASE_VAPID_KEY) {
+      console.warn('[FCM] VAPID key not configured — push notifications disabled')
       return null
     }
 
@@ -168,7 +159,7 @@ export async function requestFCMToken(): Promise<string | null> {
       return null
     }
 
-    const token = await getToken(messagingClient, { vapidKey })
+    const token = await getToken(messagingClient, { vapidKey: FIREBASE_VAPID_KEY })
     return token
   } catch (error) {
     console.error('[FCM] Error getting token:', error)
@@ -258,5 +249,5 @@ export type { User, UserCredential, IdTokenResult, ApplicationVerifier }
 // ─── Helper: check if Firebase is configured ───
 
 export function isFirebaseConfigured(): boolean {
-  return !!firebaseConfig.apiKey && !!firebaseConfig.projectId
+  return !!FIREBASE_CONFIG.apiKey && !!FIREBASE_CONFIG.projectId
 }

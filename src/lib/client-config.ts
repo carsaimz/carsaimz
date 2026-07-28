@@ -2,8 +2,9 @@
  * Carsai Mozambique — Client-Side Configuration
  *
  * Holds only values that are safe to expose in browser code.
- * Firebase Auth handles authentication client-side.
- * Firestore is accessed via API routes (server-side Admin SDK).
+ * Firebase client config is hardcoded here (it's public anyway —
+ * embedded in the client bundle regardless of whether it comes
+ * from env vars or hardcoded).
  *
  * Firebase Spark Plan (Free) Features:
  * ✅ Authentication (Email/Password, Google, Phone, Anonymous)
@@ -33,17 +34,26 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''
 export const SITE_URL = 'https://carsai.mz'
 export const GITHUB_URL = 'https://github.com/carsaimz'
 
-// ─── Firebase Config (client-side) ───
+// ─── Firebase Config (client-side — hardcoded) ───
+// These values are public by design — they end up in the client bundle
+// regardless of whether they come from env vars or hardcoded constants.
+// Hardcoding them eliminates the risk of accidentally committing secrets
+// in .env files and simplifies local development setup.
 
 export const FIREBASE_CONFIG = {
-  apiKey:             process.env.NEXT_PUBLIC_FIREBASE_API_KEY || '',
-  authDomain:         process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
-  projectId:          process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '',
-  storageBucket:      process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '',
-  messagingSenderId:  process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId:              process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '',
-  measurementId:      process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || '',
+  apiKey:             'AIzaSyBAqWCPbR_ExDUYSH__1CvFZ7ONo2JZXKU',
+  authDomain:         'carsai-mozambique-d5983.firebaseapp.com',
+  projectId:          'carsai-mozambique-d5983',
+  storageBucket:      'carsai-mozambique-d5983.firebasestorage.app',
+  messagingSenderId:  '136334398331',
+  appId:              '1:136334398331:web:4a81fc100951ed4835e3de',
+  measurementId:      'G-4P1J5KZHXF',
 }
+
+// ─── Firebase VAPID Key (for FCM push notifications) ───
+// Public key — safe to hardcode (used client-side for web push).
+
+export const FIREBASE_VAPID_KEY = 'BOWPwKVMZEKRdoPsEKm-VZNd7QMvCGFYj-NUhGqdrufuycM0t4sfteUh3MJPPS5AdvIAqXs-tsNte7mcn7hpOqE'
 
 export function isFirebaseConfigured(): boolean {
   return !!FIREBASE_CONFIG.apiKey && !!FIREBASE_CONFIG.projectId

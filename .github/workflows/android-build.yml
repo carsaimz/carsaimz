@@ -100,17 +100,7 @@ jobs:
 
       - name: Run static export
         env:
-          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
-          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
-          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
-          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
-          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
-          NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
-          NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID }}
-          NEXT_PUBLIC_FIREBASE_VAPID_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_VAPID_KEY }}
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-          NEXT_PUBLIC_APP_VERSION: ${{ secrets.NEXT_PUBLIC_APP_VERSION }}
-          NEXT_PUBLIC_APP_BUILD: ${{ secrets.NEXT_PUBLIC_APP_BUILD }}
           FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
           FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
           FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
@@ -309,27 +299,24 @@ jobs:
           done
 
       # -----------------------------------------------------------------------
-      # Keystore & Signing (optional — unsigned builds work for dev/testing)
+      # Keystore & Signing
       # -----------------------------------------------------------------------
-      # The build.gradle already has conditional signing code that reads
-      # keystore.properties. We only create the properties file when secrets
-      # are configured. Without secrets, builds are unsigned (still valid).
+      # The KEYSTORE_FILE secret contains the base64-encoded keystore file.
+      # Decode it and create keystore.properties for Gradle signing.
+      # Without secrets, builds are unsigned (still valid for dev/testing).
       - name: Setup keystore for signing (if configured)
         env:
+          KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          # Only create keystore.properties when ALL signing secrets are configured
-          if [ -n "${KEYSTORE_PASSWORD}" ] && [ -n "${KEYSTORE_ALIAS}" ] && [ -n "${KEY_PASSWORD}" ]; then
-            # Copy keystore file if present
+          # Only setup signing when ALL secrets are configured
+          if [ -n "${KEYSTORE_FILE}" ] && [ -n "${KEYSTORE_PASSWORD}" ] && [ -n "${KEYSTORE_ALIAS}" ] && [ -n "${KEY_PASSWORD}" ]; then
+            # Decode base64 keystore and place it where Gradle expects it
             mkdir -p android/app/upload
-            if [ -f "upload/release.jks" ]; then
-              cp upload/release.jks android/app/upload/release.jks
-              echo "✅ Keystore copied from upload/release.jks"
-            else
-              echo "⚠️ No keystore file at upload/release.jks — signing will fail if properties reference it"
-            fi
+            echo "${KEYSTORE_FILE}" | base64 -d > android/app/upload/release.jks
+            echo "✅ Keystore decoded from KEYSTORE_FILE secret"
             
             # Create keystore properties file for Gradle
             cat > android/keystore.properties << KEYSTORE_PROPS

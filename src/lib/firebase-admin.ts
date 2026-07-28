@@ -39,7 +39,7 @@ function getAdminApp(): FirebaseAdminApp {
 
   if (!projectId || !clientEmail || !privateKey) {
     throw new Error(
-      'Firebase Admin SDK not configured. Set FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, and FIREBASE_ADMIN_PRIVATE_KEY in .env'
+      'Firebase Admin SDK not configured. Set FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, and FIREBASE_ADMIN_PRIVATE_KEY as environment variables (GitHub Secrets for CI, .env.local for local dev)'
     )
   }
 
