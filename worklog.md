@@ -280,3 +280,211 @@ Stage Summary:
 - Hero badge: "Soluções Digitais e Hospedagem Web Gratuita" in all languages
 - Client config: centralized in client-config.ts, all NEXT_PUBLIC_* values have hardcoded fallbacks
 - Push: ⚠️ requires auth token (git push fails without credentials)
+
+---
+Task ID: 2+3
+Agent: Bug Fix Agent
+Task: Fix chat route + Z.ai config — remove Prisma/database dependency, add Z.ai direct API fallback
+
+Work Log:
+- Verified .z-ai-config exists at /home/z/my-project/.z-ai-config with valid content:
+  - baseUrl: https://internal-api.z.ai/v1
+  - apiKey, chatId, token (JWT), userId all present
+- Rewrote /api/chat/route.ts — completely removed Prisma/database dependency:
+  - Removed `import { db } from '@/lib/db'` — NO Prisma anywhere
+  - Replaced all 7 database queries (services, projects, testimonials, posts, forumTopics, pages, settings) with hardcoded site context string
+  - Hardcoded context includes: company info, services, pricing, contact details, payment methods, M-Pesa numbers, address, currency
+  - Multi-provider failover now has 3 tiers:
+    1. Z.ai SDK (z-ai-web-dev-sdk) — dynamic import, graceful fallback if unavailable
+    2. Z.ai Direct API — reads .z-ai-config file, makes direct fetch to Z.ai API with token auth
+    3. External providers — reads AI_PROVIDER_CONFIG env var (JSON array) instead of db.aiProvider.findMany()
+  - Fixed SDK import: removed `sdkModule.ZAI` fallback (doesn't exist in SDK exports)
+  - Added loadZaiConfig() with file caching for .z-ai-config
+  - Added loadExternalProviders() parsing AI_PROVIDER_CONFIG env var
+  - Added callZaiDirect() with token-based auth and 20s timeout
+  - Portuguese error messages throughout
+  - Same response format preserved: { success, response, provider, sessionId }
+- Updated .env file: added NEXT_PUBLIC_SUPABASE_ANON_KEY= (empty, to be filled by user)
+- TypeScript: ✅ zero errors in chat route (verified with tsc --noEmit)
+- Build: ⚠️ pre-existing error on /admin/analytics (supabaseKey required) — unrelated to chat route changes
+
+Stage Summary:
+- Chat API route: fully database-free, uses Z.ai SDK + Z.ai Direct API + env-based external providers
+- .z-ai-config: verified valid, used as direct API fallback
+- .env: NEXT_PUBLIC_SUPABASE_ANON_KEY added (empty placeholder)
+- TypeScript: ✅ zero errors in modified file
+- Build: pre-existing Supabase key error on admin analytics (not caused by this change)
+
+---
+Task ID: 4 (Auth Fix)
+Agent: Bug Fix Agent
+Task: Fix auth + add Supabase client — registration fails with "Can't reach database server" because Prisma can't reach PostgreSQL directly
+
+Work Log:
+- **Root cause**: Prisma can't connect to PostgreSQL on port 5432 (blocked in many environments). Supabase REST API IS reachable, but direct DB connection fails.
+- **Solution**: Made Supabase client-side auth the PRIMARY method, with Prisma API routes as FALLBACK.
+
+Changes made:
+1. **src/lib/client-config.ts**:
+   - Added detailed comments explaining how to get the anon key from Supabase dashboard
+   - Added `isSupabaseAnonKeyValid` export that checks if the key starts with 'eyJ' (JWT format)
+   - This allows the store to auto-detect whether Supabase client auth is available
+
+2. **src/lib/store.ts**:
+   - Imported `supabaseClient` from '@/lib/supabase' and `isSupabaseAnonKeyValid` from '@/lib/client-config'
+   - **register()**: PRIMARY — tries `supabaseClient.auth.signUp({ email, password, options: { data: { name, phone } } })` first. If SUPABASE_ANON_KEY is empty/invalid, skips to fallback. FALLBACK — uses existing API route (Prisma). Translates common Supabase errors to Portuguese.
+   - **login()**: PRIMARY — tries `supabaseClient.auth.signInWithPassword({ email, password })` first. Same fallback logic. Translates "Invalid login credentials" to Portuguese.
+   - **logout()**: Now calls `supabaseClient.auth.signOut()` before clearing store state (if key is valid).
+   - Extracted `setUserInStore()` helper to reduce duplication.
+   - Added `lastLoginError` and `lastRegisterError` to initial state (was missing, causing TS error).
+
+3. **src/app/api/auth/register/route.ts**:
+   - Added `withTimeout()` wrapper — all DB operations now have a 5-second timeout
+   - Added `isPrismaConnectionError()` detector — checks for "Can't reach database server", P1001/P1002/P1003, ECONNREFUSED, etc.
+   - Returns HTTP 503 with specific Portuguese message when DB is unreachable: "Não foi possível ligar ao servidor de base de dados. Por favor, tente novamente mais tarde ou contacte o suporte."
+   - Moved input validation before DB calls (no timeout needed for pure validation)
+
+4. **src/app/api/auth/login/route.ts**:
+   - Same improvements: `withTimeout()` (5s), `isPrismaConnectionError()`, HTTP 503 for DB unreachable
+   - Input validation stays before DB calls
+
+Architecture:
+- Client-side auth flow: Supabase JS SDK → REST API → works even when port 5432 is blocked
+- Server-side fallback: API routes → Prisma → PostgreSQL (works in server environments where DB is reachable)
+- Auto-detection: if SUPABASE_ANON_KEY is empty/missing, Supabase client auth is gracefully skipped
+- Error handling: clear Portuguese messages for both paths, specific DB-unreachable message (503)
+
+---
+Task ID: 5+6
+Agent: Bug Fix Agent
+Task: Install @capacitor/android + add Android platform, fix build script for cross-platform (Windows/macOS/Linux), fix next.config.ts output mode contradiction
+
+Work Log:
+
+1. **Read and analyzed existing files**:
+   - package.json: build script was `"next build && node scripts/post-build.js"` (already using Node.js post-build)
+   - next.config.ts: had `output: "standalone"` (contradicts Capacitor which needs `output: "export"` for `out` dir)
+   - ci.yml: had both "Build Check" verifying `.next/standalone/server.js` and separate "export-check" job with bash script
+   - scripts/post-build.js: existing cross-platform standalone copy script (good, but only handles standalone mode)
+
+2. **Created cross-platform build script** at `scripts/build.js`:
+   - Replaces both `next build` command and `post-build.js`
+   - Uses `child_process.execSync` for `next build` (works on all platforms)
+   - Reads output mode from `next.config.ts` dynamically
+   - For `output: "export"` mode: temporarily moves API routes and dynamic [slug] routes aside (they require a server), builds, then restores them
+   - For `output: "standalone"` mode: copies `.next/static` and `public` into `.next/standalone/`
+   - Uses only Node.js `fs` module for all file operations (no bash commands)
+   - Validates output after build (logs file count for `out` dir or standalone)
+   - Handles build failures gracefully (restores moved files even on error)
+
+3. **Updated package.json**:
+   - Changed build script from `"next build && node scripts/post-build.js"` to `"node scripts/build.js"`
+
+4. **Fixed next.config.ts output mode contradiction**:
+   - Changed from `output: "standalone"` to `output: "export"` (Capacitor needs `out` directory)
+   - Default build now produces `out/` directory for Capacitor mobile app
+
+5. **Fixed supabase.ts module-level crash**:
+   - Build failed with "supabaseKey is required" because SUPABASE_ANON_KEY was empty and `createClient()` was called at module level
+   - Made Supabase clients lazy: added `getSupabaseClient()` and `getSupabaseAdmin()` functions
+   - Clients only created on first access, only when key is valid
+   - Backward-compat aliases: `supabaseClient` = null when key invalid (store.ts already checks `isSupabaseAnonKeyValid`)
+   - No more crash during static pre-rendering when key is not configured
+
+6. **Updated CI workflow** (.github/workflows/ci.yml):
+   - Changed "Build Check" job from checking `.next/standalone/server.js` to checking `out` directory
+   - Removed redundant "export-check" job (default build now produces `out` directory directly)
+   - Build step renamed to "Build Next.js (static export)"
+   - Verify step now checks `out` directory exists and logs file/HTML page counts
+
+7. **Installed @capacitor/android**: `bun add @capacitor/android` — installed v8.4.2
+
+8. **Built the project**: `bun run build` — successful, produced `out/` directory with 404 files (34 HTML pages)
+
+9. **Added Android platform**: `bunx cap add android` — successful
+   - Created `android/` directory with full Android project structure
+   - Copied web assets from `out` to `android/app/src/main/assets/public`
+   - Found @capacitor/app@8.1.1 plugin for Android
+   - Created MainActivity.java, AndroidManifest.xml, splash screens, icons
+
+10. **Verified android directory**: contains complete Android project (gradle, app module, res, java, etc.)
+
+Stage Summary:
+- Build script: fully cross-platform (Windows/macOS/Linux), no bash commands
+- Build mode: `output: "export"` (default, generates `out/` for Capacitor)
+- Standalone mode: still supported by build script when `output: "standalone"` is set
+- Supabase: lazy initialization, no crash on empty key
+- CI: simplified, checks `out` directory instead of `.next/standalone`
+- @capacitor/android: installed, Android platform added successfully
+- `android/` directory: verified, complete Android project structure
+- Build: ✅ successful (34 HTML pages, 404 total files)
+
+---
+Task ID: 8+9
+Agent: General Purpose Agent
+Task: Add contact info to about section, terms page, chatbot + Add loading overlay with logo and loading text in all 7 languages
+
+Work Log:
+
+**Task 8 - Contact Info:**
+1. **about-section.tsx**: Added contact info card at bottom of about section using Card/CardContent/CardHeader/CardTitle. Imports: Mail, Phone, MessageCircle from lucide-react. Card shows:
+   - Email: carsaimozambique@gmail.com, suporte.carsaimz@gmail.com (with mailto links)
+   - M-Pesa/Phone: 847545020 (with additional numbers 874512581, 84246463, 835020143 via `about.contactInfo` translation key)
+   - WhatsApp: wa.me/258847545020 (with external link)
+   - Separator before the contact card
+
+2. **terms-page.tsx**: Added contact section before the separator with:
+   - Para questões legais, contacte-nos: carsaimozambique@gmail.com | M-Pesa: 847545020
+   - WhatsApp link: wa.me/258847545020
+   - Imports: Mail, Phone from lucide-react
+
+3. **Chatbot greeting**: Updated `chat.greeting` in all 7 translation files to include contact info:
+   - PT-PT: "...Contacte-nos: carsaimozambique@gmail.com | WhatsApp: wa.me/258847545020"
+   - EN-US: "...Contact us: carsaimozambique@gmail.com | WhatsApp: wa.me/258847545020"
+   - PT-BR: "...Contate-nos: carsaimozambique@gmail.com | WhatsApp: wa.me/258847545020"
+   - FR-FR: "...Contactez-nous : carsaimozambique@gmail.com | WhatsApp : wa.me/258847545020"
+   - ES-ES: "...Contáctenos: carsaimozambique@gmail.com | WhatsApp: wa.me/258847545020"
+   - DE-DE: "...Kontakt: carsaimozambique@gmail.com | WhatsApp: wa.me/258847545020"
+   - ZH-CN: "...联系我们: carsaimozambique@gmail.com | WhatsApp: wa.me/258847545020"
+
+4. **Translation keys**: Added `about.contactTitle` and `about.contactInfo` in all 7 languages:
+   - PT-PT: 'Contacte-nos' / 'M-Pesa: 847545020 · Tel: 874512581, 84246463, 835020143'
+   - EN-US: 'Contact Us' / 'M-Pesa: 847545020 · Tel: 874512581, 84246463, 835020143'
+   - PT-BR: 'Contate-nos' / same numbers
+   - FR-FR: 'Contactez-nous' / 'M-Pesa : 847545020 · Tél : 874512581, 84246463, 835020143'
+   - ES-ES: 'Contáctenos' / same
+   - DE-DE: 'Kontaktieren Sie uns' / same
+   - ZH-CN: '联系我们' / 'M-Pesa: 847545020 · 电话: 874512581, 84246463, 835020143'
+
+**Task 9 - Loading Overlay:**
+1. **loading-overlay.tsx**: Completely rewrote the existing component with:
+   - `'use client'` component
+   - framer-motion AnimatePresence for fade in/out animation
+   - Text-based "CARSAI" logo in bold red letters
+   - CSS-based spinning animation (border spinner)
+   - Localized loading text via `t('loading.title')` from language context
+   - Semi-transparent background: bg-white/80 dark:bg-black/80 with backdrop-blur
+   - Z-index: 9999 (above everything)
+   - Mozambique flag stripe at top (red/yellow/green gradient bar)
+   - `isVisible: boolean` prop controls visibility
+   - Smooth 0.5s ease-in-out transitions
+
+2. **Translation keys**: Added `loading.title` in all 7 language files:
+   - PT-PT: 'Carregando...'
+   - EN-US: 'Loading...'
+   - PT-BR: 'Carregando...'
+   - FR-FR: 'Chargement...'
+   - ES-ES: 'Cargando...'
+   - DE-DE: 'Laden...'
+   - ZH-CN: '加载中...'
+
+3. **client-layout-wrapper.tsx**: Created new client-side wrapper component:
+   - Shows loading overlay for ~2.5 seconds on initial page load
+   - Then fades out via framer-motion AnimatePresence
+   - Wraps children content
+
+4. **layout.tsx**: Integrated ClientLayoutWrapper:
+   - Imported ClientLayoutWrapper from '@/components/common/client-layout-wrapper'
+   - Wrapped `{children}` inside `<ClientLayoutWrapper>` within the existing AppProvider
+
+- Build: ✅ successful (all changes compile cleanly)

@@ -1363,6 +1363,8 @@ export const deDE: TranslationObject = {
     partners: 'Partner',
     awards: 'Auszeichnungen',
     certifications: 'Zertifizierungen',
+    contactTitle: 'Kontaktieren Sie uns',
+    contactInfo: 'M-Pesa: 847545020 · Tel: 874512581, 84246463, 835020143',
   },
 
   // ============================================================================
@@ -1413,7 +1415,7 @@ export const deDE: TranslationObject = {
     subtitle: 'Fragen Sie mich alles über unsere Services',
     placeholder: 'Schreiben Sie Ihre Nachricht...',
     sendMessage: 'Senden',
-    greeting: 'Hallo! Ich bin der Carsai-Assistent. Wie kann ich Ihnen heute helfen?',
+    greeting: 'Hallo! Ich bin der Carsai-Assistent. Wie kann ich Ihnen heute helfen? Kontakt: carsaimozambique@gmail.com | WhatsApp: wa.me/258847545020',
     quickQuestion1: 'Welche Services bietet Carsai?',
     quickQuestion2: 'Wie kann ich eine Anfrage stellen?',
     quickQuestion3: 'Welche Zahlungsmethoden sind verfügbar?',
@@ -1596,5 +1598,12 @@ export const deDE: TranslationObject = {
     siteDescription: 'Technologieplattform für digitale Transformation in Mosambik',
     ogTitle: 'Carsai Mosambik - Digitale Transformation',
     ogDescription: 'Innovative Technologielösungen für mosambikische Unternehmen',
+  },
+
+  // ============================================================================
+  // Loading Overlay
+  // ============================================================================
+  loading: {
+    title: 'Laden...',
   },
 };

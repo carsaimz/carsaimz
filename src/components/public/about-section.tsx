@@ -13,6 +13,9 @@ import {
   Users,
   Target,
   Eye,
+  Mail,
+  Phone,
+  MessageCircle,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -255,6 +258,67 @@ export function AboutSection() {
               </div>
             </motion.div>
           ))}
+        </motion.div>
+
+        {/* Contact Info */}
+        <Separator className="my-12" />
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="max-w-2xl mx-auto"
+        >
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-200">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-blue-600 text-white">
+                  <Mail className="h-5 w-5" />
+                </div>
+                <CardTitle>{t('about.contactTitle')}</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Email */}
+                <div className="flex items-start gap-3">
+                  <Mail className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+                  <div className="text-sm text-foreground leading-relaxed">
+                    <a href="mailto:carsaimozambique@gmail.com" className="hover:text-blue-600 hover:underline">
+                      carsaimozambique@gmail.com
+                    </a>
+                    <br />
+                    <a href="mailto:suporte.carsaimz@gmail.com" className="hover:text-blue-600 hover:underline">
+                      suporte.carsaimz@gmail.com
+                    </a>
+                  </div>
+                </div>
+
+                {/* M-Pesa / Phone */}
+                <div className="flex items-start gap-3">
+                  <Phone className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+                  <div className="text-sm text-foreground leading-relaxed">
+                    {t('about.contactInfo')}
+                  </div>
+                </div>
+
+                {/* WhatsApp */}
+                <div className="flex items-start gap-3">
+                  <MessageCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                  <div className="text-sm text-foreground">
+                    <a
+                      href="https://wa.me/258847545020"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-green-600 hover:underline"
+                    >
+                      WhatsApp: +258 84 754 5020
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
       </div>
     </section>

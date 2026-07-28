@@ -6,19 +6,32 @@ function hashPassword(password: string): string {
   return createHash('sha256').update(password).digest('hex')
 }
 
+// ── Timeout helper ──
+function withTimeout<T>(promise: Promise<T>, ms: number, fallbackMessage: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(fallbackMessage)), ms)
+    promise.then(
+      (result) => { clearTimeout(timer); resolve(result) },
+      (error) => { clearTimeout(timer); reject(error) }
+    )
+  })
+}
+
+// ── Detect Prisma connection errors ──
+function isPrismaConnectionError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase()
+    return msg.includes('can\'t reach database') ||
+           msg.includes('connection') ||
+           msg.includes('timeout') ||
+           msg.includes('econnrefused') ||
+           msg.includes('enetunreach')
+  }
+  return false
+}
+
 export async function POST(request: NextRequest) {
   try {
-    // ── Auto-seed roles on login too (belt-and-suspenders) ──
-    const requiredRoles = ['super_admin', 'admin', 'partner', 'user']
-    for (const roleName of requiredRoles) {
-      const existing = await db.role.findFirst({ where: { name: roleName } })
-      if (!existing) {
-        await db.role.create({
-          data: { name: roleName, description: `${roleName} role` },
-        })
-      }
-    }
-
     const body = await request.json()
     const { login, password } = body
 
@@ -39,15 +52,24 @@ export async function POST(request: NextRequest) {
     const loginValue = login.trim()
     const isEmail = loginValue.includes('@')
 
+    // Find user with timeout
     const user = isEmail
-      ? await db.user.findUnique({
-          where: { email: loginValue.toLowerCase() },
-          include: { role: true },
-        })
-      : await db.user.findFirst({
-          where: { phone: loginValue },
-          include: { role: true },
-        })
+      ? await withTimeout(
+          db.user.findUnique({
+            where: { email: loginValue.toLowerCase() },
+            include: { role: true },
+          }),
+          5000,
+          'Servidor de base de dados indisponível.'
+        )
+      : await withTimeout(
+          db.user.findFirst({
+            where: { phone: loginValue },
+            include: { role: true },
+          }),
+          5000,
+          'Servidor de base de dados indisponível.'
+        )
 
     if (!user) {
       return NextResponse.json(
@@ -58,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     if (!user.passwordHash) {
       return NextResponse.json(
-        { error: 'Esta conta não tem palavra-passe definida. Contacte o suporte.' },
+        { error: 'Esta conta não tem palavra-passe definida. Contacte o suporte via carsaimozambique@gmail.com' },
         { status: 401 }
       )
     }
@@ -73,7 +95,7 @@ export async function POST(request: NextRequest) {
 
     if (!user.isActive) {
       return NextResponse.json(
-        { error: 'Conta desactivada. Contacte o suporte.' },
+        { error: 'Conta desactivada. Contacte o suporte via carsaimozambique@gmail.com' },
         { status: 403 }
       )
     }
@@ -96,8 +118,20 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Login error:', error)
+
+    // Specific error for database connection issues
+    if (isPrismaConnectionError(error)) {
+      return NextResponse.json(
+        {
+          error: 'Servidor de base de dados indisponível. Por favor, tente novamente mais tarde ou contacte-nos via carsaimozambique@gmail.com',
+          errorType: 'database_unavailable',
+        },
+        { status: 503 }
+      )
+    }
+
     return NextResponse.json(
-      { error: 'Falha ao entrar. Por favor, tente novamente.' },
+      { error: 'Falha ao entrar. Por favor, tente novamente ou contacte-nos via carsaimozambique@gmail.com' },
       { status: 500 }
     )
   }

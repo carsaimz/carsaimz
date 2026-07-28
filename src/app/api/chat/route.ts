@@ -1,41 +1,144 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import fs from 'fs/promises'
+import path from 'path'
 
 /**
  * Carsai Mozambique - AI Chat API Endpoint
  *
- * Multi-provider failover system:
- * 1. Try providers in priority order (Z.ai first by default)
- * 2. If one fails, try the next one
- * 3. Admin can add/configure providers via /api/admin/ai-providers
- * 4. NO hardcoded fallback responses — always use real AI
+ * Multi-provider failover system (NO Prisma/Database dependency):
+ * 1. Try Z.ai SDK first (reads .z-ai-config automatically)
+ * 2. Try Z.ai Direct API (reads .z-ai-config and calls API directly)
+ * 3. Try configured external providers (from AI_PROVIDER_CONFIG env var)
  *
- * Connected to database for real site context.
+ * Site context is hardcoded — no database needed.
  */
+
+// ── Hardcoded Site Context (no database dependency) ──
+
+const CARSAI_CONTEXT = `You are the Carsai Mozambique assistant — a knowledgeable, friendly, and concise AI chatbot. Carsai Mozambique offers Soluções Digitais e Hospedagem Web Gratuita — including FREE shared hosting (Apache) provided by ifastnet/byet.
+
+=== COMPANY INFORMATION ===
+- Company: Carsai Mozambique
+- Email: carsaimozambique@gmail.com, suporte.carsaimz@gmail.com
+- Phone/M-Pesa: 847545020, 874512581, 84246463, 835020143
+- WhatsApp: wa.me/258847545020
+- Address: Montepuez, Cabo Delgado, Mozambique
+- Website: https://carsai.mz
+- GitHub: https://github.com/carsaimz
+
+=== SERVICES ===
+- Web Development: Custom websites, web apps, e-commerce — starting from MT 5,000
+- FREE Web Hosting: Apache shared hosting provided by ifastnet/byet (no cost!)
+- Domain Registration: .mz, .com, .net, .org domains
+- SSL Certificates: Free Let's Encrypt and premium options
+- SEO Optimization: Search engine optimization for better visibility
+- Mobile App Development: Android and iOS apps
+- Graphic Design: Logos, branding, marketing materials
+
+=== IMPORTANT RULES ===
+1. Always respond in the same language the user writes in (Portuguese, English, French, etc.).
+2. Be helpful, friendly, and concise.
+3. Never invent or guess information — if you don't know, say so and suggest contacting us directly.
+4. When asked about pricing, mention base prices from the services list and that FREE hosting is available.
+5. Mention our FREE hosting offering (Apache shared hosting by ifastnet/byet) when relevant.
+6. Payment methods: M-Pesa (mobile money), bank transfers, international credit cards.
+7. Currency: Mozambican Metical (MT), USD also accepted.
+8. For detailed quotes, direct users to contact us via email or WhatsApp.
+9. Development services start at MT 5,000 — no service is completely free except web hosting.
+10. The FREE hosting is provided by ifastnet/byet (Apache shared hosting), not by Carsai directly.
+`
+
+// ── Config caching for .z-ai-config ──
+
+let cachedConfig: { baseUrl: string; apiKey: string; token?: string; chatId?: string; userId?: string } | null = null
+
+async function loadZaiConfig() {
+  if (cachedConfig) return cachedConfig
+
+  const configPaths = [
+    path.join(process.cwd(), '.z-ai-config'),
+    path.join(require('os').homedir(), '.z-ai-config'),
+    '/etc/.z-ai-config',
+  ]
+
+  for (const filePath of configPaths) {
+    try {
+      const configStr = await fs.readFile(filePath, 'utf-8')
+      const config = JSON.parse(configStr)
+      if (config.baseUrl && config.apiKey) {
+        cachedConfig = config
+        return config
+      }
+    } catch {
+      // Continue to next path
+    }
+  }
+
+  return null
+}
 
 // ── Provider call implementations ──
 
 async function callZai(messages: Array<{ role: string; content: string }>): Promise<string | null> {
   try {
-    // Dynamic import — z-ai-web-dev-sdk is optional and may not be available in all environments
-    let ZAI;
+    // Dynamic import — z-ai-web-dev-sdk reads .z-ai-config automatically
+    let ZAI
     try {
-      const sdkModule = await import('z-ai-web-dev-sdk');
-      ZAI = sdkModule.default || sdkModule.ZAI || sdkModule;
+      const sdkModule = await import('z-ai-web-dev-sdk')
+      ZAI = sdkModule.default || sdkModule
     } catch (importErr) {
-      console.warn('[Z.ai] SDK not available in this environment:', (importErr as Error).message);
-      return null;
+      console.warn('[Z.ai] SDK not available:', (importErr as Error).message)
+      return null
     }
 
-    const zai = await ZAI.create();
+    const zai = await ZAI.create()
     const completion = await zai.chat.completions.create({
       model: 'default',
       messages,
-    });
-    return completion.choices?.[0]?.message?.content || null;
+    })
+    return completion.choices?.[0]?.message?.content || null
   } catch (err) {
-    console.error('[Z.ai] Provider error:', err);
-    return null;
+    console.error('[Z.ai] SDK error:', err)
+    return null
+  }
+}
+
+async function callZaiDirect(messages: Array<{ role: string; content: string }>): Promise<string | null> {
+  try {
+    const config = await loadZaiConfig()
+    if (!config) return null
+
+    const url = `${config.baseUrl}/chat/completions`
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${config.apiKey}`,
+      'X-Z-AI-From': 'Z',
+    }
+
+    if (config.chatId) headers['X-Chat-Id'] = config.chatId
+    if (config.userId) headers['X-User-Id'] = config.userId
+    if (config.token) headers['X-Token'] = config.token
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        messages,
+        thinking: { type: 'disabled' },
+      }),
+      signal: AbortSignal.timeout(20000), // 20s timeout
+    })
+
+    if (!response.ok) {
+      console.error(`[Z.ai Direct] HTTP ${response.status} from ${url}`)
+      return null
+    }
+
+    const data = await response.json()
+    return data.choices?.[0]?.message?.content || null
+  } catch (err) {
+    console.error('[Z.ai Direct] Error:', err)
+    return null
   }
 }
 
@@ -48,11 +151,7 @@ async function callOpenAICompatible(
 ): Promise<string | null> {
   try {
     const url = `${baseUrl.replace(/\/$/, '')}/chat/completions`
-    const body = {
-      model,
-      messages,
-      ...extraConfig,
-    }
+    const body = { model, messages, ...extraConfig }
     const res = await fetch(url, {
       method: 'POST',
       headers: {
@@ -69,8 +168,31 @@ async function callOpenAICompatible(
     const data = await res.json()
     return data.choices?.[0]?.message?.content || null
   } catch (err) {
-    console.error('[OpenAI-compatible] Provider error:', err)
+    console.error('[OpenAI-compatible] Error:', err)
     return null
+  }
+}
+
+// ── Load external providers from environment ──
+
+interface ExternalProvider {
+  name: string
+  apiKey: string
+  baseUrl: string
+  model: string
+  priority?: number
+  config?: Record<string, unknown>
+}
+
+function loadExternalProviders(): ExternalProvider[] {
+  try {
+    const configStr = process.env.AI_PROVIDER_CONFIG
+    if (!configStr) return []
+    const providers = JSON.parse(configStr)
+    if (!Array.isArray(providers)) return []
+    return providers.filter((p: ExternalProvider) => p.apiKey && p.baseUrl && p.model)
+  } catch {
+    return []
   }
 }
 
@@ -88,125 +210,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // ── Fetch real site content from database ──
-    const [
-      services,
-      projects,
-      testimonials,
-      publishedPosts,
-      forumTopics,
-      pages,
-      settings,
-    ] = await Promise.all([
-      db.service.findMany({
-        where: { isPublished: true },
-        select: { id: true, title: true, slug: true, description: true, basePrice: true, isFeatured: true },
-      }),
-      db.project.findMany({
-        where: { isPublished: true },
-        select: { id: true, title: true, slug: true, description: true, client: true, technologies: true, isFeatured: true },
-      }),
-      db.testimonial.findMany({
-        where: { isPublished: true },
-        select: { id: true, name: true, company: true, content: true, rating: true },
-      }),
-      db.post.findMany({
-        where: { published: true },
-        select: { id: true, title: true, slug: true, excerpt: true, createdAt: true },
-        take: 20,
-        orderBy: { createdAt: 'desc' },
-      }),
-      db.forumTopic.findMany({
-        select: { id: true, title: true, slug: true, isResolved: true },
-        take: 10,
-        orderBy: { createdAt: 'desc' },
-      }),
-      db.page.findMany({
-        where: { isPublished: true },
-        select: { id: true, slug: true, title: true, content: true },
-      }),
-      db.setting.findMany({
-        select: { key: true, value: true },
-      }),
-    ])
-
-    // ── Build settings map ──
-    const settingsMap: Record<string, string> = {}
-    for (const s of settings) {
-      settingsMap[s.key] = s.value || ''
-    }
-
-    // ── Build comprehensive site context ──
-    const servicesList = services.map(s =>
-      `- ${s.title} (${s.slug}): ${s.description || 'N/A'} | Preço base: MT ${(s.basePrice || 0).toLocaleString()} | ${s.isFeatured ? 'Destacado' : 'Regular'}`
-    ).join('\n')
-
-    const projectsList = projects.map(p =>
-      `- ${p.title} (${p.slug}): ${p.description || 'N/A'} | Cliente: ${p.client || 'N/A'} | Tecnologias: ${p.technologies || 'N/A'}`
-    ).join('\n')
-
-    const testimonialsList = testimonials.map(t =>
-      `- ${t.name} (${t.company || 'N/A'}): "${t.content}" | Rating: ${t.rating}/5`
-    ).join('\n')
-
-    const postsList = publishedPosts.map(p =>
-      `- ${p.title} (${p.slug}): ${p.excerpt || 'N/A'}`
-    ).join('\n')
-
-    const forumTopicsList = forumTopics.map(f =>
-      `- ${f.title} (${f.slug}): ${f.isResolved ? 'Resolvido' : 'Em discussão'}`
-    ).join('\n')
-
-    const pagesList = pages.map(p =>
-      `- ${p.title} (${p.slug}): ${(p.content || '').substring(0, 200)}...`
-    ).join('\n')
-
-    const carsaiContext = `You are the Carsai Mozambique assistant — a knowledgeable, friendly, and concise AI chatbot. Carsai Mozambique offers Soluções Digitais e Hospedagem Web Gratuita — including FREE shared hosting (Apache) provided by ifastnet/byet.
-
-=== CURRENT SITE CONTENT (from database) ===
-
-SERVICES (${services.length} available):
-${servicesList}
-
-PROJECTS (${projects.length} completed):
-${projectsList}
-
-TESTIMONIALS (${testimonials.length}):
-${testimonialsList}
-
-BLOG POSTS (${publishedPosts.length} published):
-${postsList}
-
-FORUM TOPICS (${forumTopics.length}):
-${forumTopicsList}
-
-PAGES:
-${pagesList}
-
-SITE SETTINGS:
-- Company: ${settingsMap['company_name'] || 'Carsai Mozambique'}
-- Email: ${settingsMap['contact_email'] || 'carsaimozambique@gmail.com'}
-- Phone: ${settingsMap['contact_phone'] || '847545020'}
-- Address: ${settingsMap['contact_address'] || 'Montepuez, Cabo Delgado, Mozambique'}
-- Website: ${settingsMap['website_url'] || 'https://carsai.mz'}
-- Free Hosting: Yes, provided by ifastnet/byet (Apache shared hosting)
-
-=== IMPORTANT RULES ===
-1. Always use the REAL data above when answering questions about services, projects, prices, testimonials, blog posts, etc.
-2. Never invent or guess information — if you don't find it in the context above, say you don't have that specific information and suggest the user contact us directly.
-3. Be helpful, friendly, and concise.
-4. Always respond in the same language the user writes in (Portuguese, English, etc.).
-5. When asked about pricing, mention the base prices from the services list and that FREE hosting is available.
-6. When asked about projects, reference the actual projects and clients listed above.
-7. When asked about testimonials, reference the actual testimonials and ratings.
-8. Mention our FREE hosting offering (Apache shared hosting by ifastnet/byet) when relevant.
-9. Payment methods: M-Pesa (mobile money), bank transfers, international credit cards.
-10. Currency: Mozambican Metical (MT), USD also accepted.
-`
-
     // ── Build messages array with session context ──
     const aiMessages: Array<{ role: string; content: string }> = [
-      { role: 'system', content: carsaiContext },
+      { role: 'system', content: CARSAI_CONTEXT },
     ]
 
     // Add session context
@@ -223,9 +229,8 @@ SITE SETTINGS:
     aiMessages.push({ role: 'user', content: message })
 
     // ── Multi-provider failover: try providers in priority order ──
-    // Always try Z.ai first (built-in), then configured external providers
 
-    // 1. Try Z.ai (always available, no key needed)
+    // 1. Try Z.ai SDK (reads .z-ai-config automatically)
     const zaiResponse = await callZai(aiMessages)
     if (zaiResponse) {
       return NextResponse.json({
@@ -236,27 +241,28 @@ SITE SETTINGS:
       })
     }
 
-    // 2. Try configured external providers in priority order
-    const providers = await db.aiProvider.findMany({
-      where: { isActive: true },
-      orderBy: { priority: 'asc' },
-    })
+    // 2. Try Z.ai Direct API (bypasses SDK, reads .z-ai-config manually)
+    const zaiDirectResponse = await callZaiDirect(aiMessages)
+    if (zaiDirectResponse) {
+      return NextResponse.json({
+        success: true,
+        response: zaiDirectResponse,
+        provider: 'z_ai_direct',
+        sessionId: sessionId || `session-${Date.now()}`,
+      })
+    }
+
+    // 3. Try configured external providers in priority order
+    const providers = loadExternalProviders()
+    providers.sort((a, b) => (a.priority || 999) - (b.priority || 999))
 
     for (const provider of providers) {
-      if (!provider.apiKey || !provider.baseUrl || !provider.model) continue
-
-      // Parse extra config
-      let extraConfig: Record<string, unknown> = {}
-      if (provider.config) {
-        try { extraConfig = JSON.parse(provider.config) } catch { /* ignore */ }
-      }
-
       const response = await callOpenAICompatible(
         provider.apiKey,
         provider.baseUrl,
         provider.model,
         aiMessages,
-        extraConfig,
+        provider.config,
       )
 
       if (response) {
@@ -273,7 +279,7 @@ SITE SETTINGS:
     console.error('[Chat] All AI providers failed for message:', message.substring(0, 50))
     return NextResponse.json({
       success: false,
-      error: 'Todos os provedores de IA estão indisponíveis no momento. Por favor, tente novamente em alguns minutos.',
+      error: 'Todos os provedores de IA estão indisponíveis no momento. Por favor, tente novamente em alguns minutos ou contacte-nos via carsaimozambique@gmail.com',
       sessionId: sessionId || `session-${Date.now()}`,
     })
 
@@ -282,7 +288,7 @@ SITE SETTINGS:
     return NextResponse.json(
       {
         success: false,
-        error: 'Erro interno. Por favor, tente novamente.',
+        error: 'Erro interno. Por favor, tente novamente ou contacte-nos via carsaimozambique@gmail.com',
       },
       { status: 500 }
     )

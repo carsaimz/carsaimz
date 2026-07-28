@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Carsai Mozambique</string>
+    <string name="title_activity_main">Carsai Mozambique</string>
+    <string name="package_name">com.carsaimz</string>
+    <string name="custom_url_scheme">com.carsaimz</string>
+</resources>

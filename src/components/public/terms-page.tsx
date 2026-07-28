@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Scale, Briefcase, BookOpen, Shield, AlertTriangle, XCircle, Gavel } from 'lucide-react';
+import { Scale, Briefcase, BookOpen, Shield, AlertTriangle, XCircle, Gavel, Mail, Phone } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
@@ -75,6 +75,20 @@ export function TermsPage() {
             );
           })}
         </motion.div>
+
+        {/* Contact Info for Legal Questions */}
+        <div className="mt-8 p-4 rounded-xl bg-blue-50/60 border border-blue-200/80 text-center">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Mail className="h-4 w-4 text-blue-600" />
+            <Phone className="h-4 w-4 text-blue-600" />
+          </div>
+          <p className="text-sm text-foreground">
+            Para questões legais, contacte-nos: carsaimozambique@gmail.com | M-Pesa: 847545020
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            WhatsApp: <a href="https://wa.me/258847545020" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">+258 84 754 5020</a>
+          </p>
+        </div>
 
         <Separator className="my-8" />
 

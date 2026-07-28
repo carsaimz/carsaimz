@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { buildApiUrl } from '@/lib/api-base';
+import { supabaseClient } from '@/lib/supabase';
+import { isSupabaseAnonKeyValid } from '@/lib/client-config';
 
 // ──────────────────────────────────────────────
 // Types
@@ -62,6 +64,25 @@ interface AuthState {
   updateAvatar: (avatar: string) => void;
 }
 
+/**
+ * Helper: set the user in the store after a successful auth.
+ */
+function setUserInStore(
+  set: (partial: Partial<AuthState>) => void,
+  user: User,
+) {
+  const userRole = user.role;
+  set({
+    user,
+    isAuthenticated: true,
+    isAdmin: userRole === 'admin' || userRole === 'super_admin',
+    isPartner: userRole === 'partner',
+    isUser: userRole === 'user',
+    isSuperAdmin: userRole === 'super_admin',
+    isLoading: false,
+  });
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -73,9 +94,54 @@ export const useAuthStore = create<AuthState>()(
       isSuperAdmin: false,
       isLoading: false,
       hasHydrated: false,
+      lastLoginError: null,
+      lastRegisterError: null,
 
       login: async (login: string, password: string): Promise<AuthResult> => {
         set({ isLoading: true, lastLoginError: null });
+
+        // ── PRIMARY: Supabase client-side auth ──
+        if (isSupabaseAnonKeyValid) {
+          try {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+              email: login,
+              password,
+            });
+
+            if (error) {
+              // Supabase returned an auth error (wrong password, user not found, etc.)
+              const errorMsg = error.message === 'Invalid login credentials'
+                ? 'Credenciais inválidas'
+                : error.message;
+              set({ isLoading: false, lastLoginError: errorMsg });
+              return { success: false, error: errorMsg };
+            }
+
+            if (data.user) {
+              const meta = data.user.user_metadata || {};
+              const user: User = {
+                id: data.user.id,
+                name: meta.name || data.user.email?.split('@')[0] || 'Utilizador',
+                email: data.user.email || '',
+                role: (meta.role as UserRole) || 'user',
+                avatar: meta.avatar || null,
+                phone: meta.phone || null,
+                company: meta.company || null,
+                bio: meta.bio || null,
+                address: meta.address || null,
+              };
+              setUserInStore(set, user);
+              return { success: true };
+            }
+          } catch (supabaseErr) {
+            console.warn('[Auth] Supabase client auth failed, falling back to API route:', supabaseErr);
+            // Fall through to API route fallback
+          }
+        } else {
+          console.info('[Auth] SUPABASE_ANON_KEY not set or invalid — skipping Supabase client auth, using API route fallback.');
+        }
+
+        // ── FALLBACK: API route (Prisma) ──
         try {
           const res = await fetch(buildApiUrl('/api/auth/login'), {
             method: 'POST',
@@ -87,25 +153,18 @@ export const useAuthStore = create<AuthState>()(
 
           if (data.success && data.user) {
             const userRole = (data.user.role as UserRole) || 'user';
-            set({
-              user: {
-                id: data.user.id,
-                name: data.user.name,
-                email: data.user.email,
-                role: userRole,
-                avatar: data.user.avatar || null,
-                phone: data.user.phone || null,
-                company: data.user.company || null,
-                bio: data.user.bio || null,
-                address: data.user.address || null,
-              },
-              isAuthenticated: true,
-              isAdmin: userRole === 'admin' || userRole === 'super_admin',
-              isPartner: userRole === 'partner',
-              isUser: userRole === 'user',
-              isSuperAdmin: userRole === 'super_admin',
-              isLoading: false,
-            });
+            const user: User = {
+              id: data.user.id,
+              name: data.user.name,
+              email: data.user.email,
+              role: userRole,
+              avatar: data.user.avatar || null,
+              phone: data.user.phone || null,
+              company: data.user.company || null,
+              bio: data.user.bio || null,
+              address: data.user.address || null,
+            };
+            setUserInStore(set, user);
             return { success: true };
           } else {
             const errorMsg = data.error || 'Credenciais inválidas';
@@ -113,7 +172,7 @@ export const useAuthStore = create<AuthState>()(
             return { success: false, error: errorMsg };
           }
         } catch (err) {
-          console.error('Login error:', err);
+          console.error('Login error (API route fallback):', err);
           const errorMsg = 'Erro de ligação. Verifique a sua rede e tente novamente.';
           set({ isLoading: false, lastLoginError: errorMsg });
           return { success: false, error: errorMsg };
@@ -122,6 +181,60 @@ export const useAuthStore = create<AuthState>()(
 
       register: async (name: string, email: string, password: string, phone?: string): Promise<AuthResult> => {
         set({ isLoading: true, lastRegisterError: null });
+
+        // ── PRIMARY: Supabase client-side auth ──
+        if (isSupabaseAnonKeyValid) {
+          try {
+            const { data, error } = await supabaseClient.auth.signUp({
+              email,
+              password,
+              options: {
+                data: {
+                  name,
+                  phone: phone || undefined,
+                },
+              },
+            });
+
+            if (error) {
+              // Supabase returned an error (email taken, weak password, etc.)
+              let errorMsg = error.message;
+              // Translate common Supabase errors to Portuguese
+              if (errorMsg.includes('already registered') || errorMsg.includes('already been registered')) {
+                errorMsg = 'Já existe uma conta com este e-mail';
+              } else if (errorMsg.includes('Password should be')) {
+                errorMsg = 'Palavra-passe deve ter pelo menos 8 caracteres';
+              }
+              set({ isLoading: false, lastRegisterError: errorMsg });
+              return { success: false, error: errorMsg };
+            }
+
+            if (data.user) {
+              const meta = data.user.user_metadata || {};
+              const user: User = {
+                id: data.user.id,
+                name: meta.name || name,
+                email: data.user.email || email,
+                role: 'user',
+                avatar: null,
+                phone: meta.phone || phone || null,
+                company: null,
+                bio: null,
+                address: null,
+              };
+              setUserInStore(set, user);
+              set({ lastRegisterError: null });
+              return { success: true };
+            }
+          } catch (supabaseErr) {
+            console.warn('[Auth] Supabase client auth failed, falling back to API route:', supabaseErr);
+            // Fall through to API route fallback
+          }
+        } else {
+          console.info('[Auth] SUPABASE_ANON_KEY not set or invalid — skipping Supabase client auth, using API route fallback.');
+        }
+
+        // ── FALLBACK: API route (Prisma) ──
         try {
           const res = await fetch(buildApiUrl('/api/auth/register'), {
             method: 'POST',
@@ -133,26 +246,19 @@ export const useAuthStore = create<AuthState>()(
 
           if (data.success && data.user) {
             const userRole = (data.user.role as UserRole) || 'user';
-            set({
-              user: {
-                id: data.user.id,
-                name: data.user.name,
-                email: data.user.email,
-                role: userRole,
-                avatar: null,
-                phone: data.user.phone || null,
-                company: null,
-                bio: null,
-                address: null,
-              },
-              isAuthenticated: true,
-              isAdmin: userRole === 'admin' || userRole === 'super_admin',
-              isPartner: userRole === 'partner',
-              isUser: userRole === 'user',
-              isSuperAdmin: userRole === 'super_admin',
-              isLoading: false,
-              lastRegisterError: null,
-            });
+            const user: User = {
+              id: data.user.id,
+              name: data.user.name,
+              email: data.user.email,
+              role: userRole,
+              avatar: null,
+              phone: data.user.phone || null,
+              company: null,
+              bio: null,
+              address: null,
+            };
+            setUserInStore(set, user);
+            set({ lastRegisterError: null });
             return { success: true };
           } else {
             const errorMsg = data.error || 'Falha ao criar conta. Por favor, tente novamente.';
@@ -160,14 +266,22 @@ export const useAuthStore = create<AuthState>()(
             return { success: false, error: errorMsg };
           }
         } catch (err) {
-          console.error('Register error:', err);
+          console.error('Register error (API route fallback):', err);
           const errorMsg = 'Erro de ligação. Verifique a sua rede e tente novamente.';
           set({ isLoading: false, lastRegisterError: errorMsg });
           return { success: false, error: errorMsg };
         }
       },
 
-      logout: () => {
+      logout: async () => {
+        // Sign out from Supabase if the key is configured
+        if (isSupabaseAnonKeyValid) {
+          try {
+            await supabaseClient.auth.signOut();
+          } catch (err) {
+            console.warn('[Auth] Supabase signOut failed (non-critical):', err);
+          }
+        }
         set({
           user: null,
           isAuthenticated: false,
@@ -181,14 +295,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       setUser: (user: User) => {
-        set({
-          user,
-          isAuthenticated: true,
-          isAdmin: user.role === 'admin' || user.role === 'super_admin',
-          isPartner: user.role === 'partner',
-          isUser: user.role === 'user',
-          isSuperAdmin: user.role === 'super_admin',
-        });
+        setUserInStore(set, user);
       },
 
       updateAvatar: (avatar: string) => {

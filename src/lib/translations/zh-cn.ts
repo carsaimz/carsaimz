@@ -1363,6 +1363,8 @@ export const zhCN: TranslationObject = {
     partners: '合作伙伴',
     awards: '荣誉奖项',
     certifications: '资质认证',
+    contactTitle: '联系我们',
+    contactInfo: 'M-Pesa: 847545020 · 电话: 874512581, 84246463, 835020143',
   },
 
   // ============================================================================
@@ -1413,7 +1415,7 @@ export const zhCN: TranslationObject = {
     subtitle: '向我咨询任何关于我们服务的问题',
     placeholder: '输入您的消息...',
     sendMessage: '发送',
-    greeting: '你好！我是Carsai助手。今天我能帮您什么？',
+    greeting: '你好！我是Carsai助手。今天我能帮您什么？联系我们: carsaimozambique@gmail.com | WhatsApp: wa.me/258847545020',
     quickQuestion1: 'Carsai提供哪些服务？',
     quickQuestion2: '如何请求报价？',
     quickQuestion3: '有哪些付款方式？',
@@ -1596,5 +1598,12 @@ export const zhCN: TranslationObject = {
     siteDescription: '莫桑比克数字化转型技术平台',
     ogTitle: 'Carsai莫桑比克 - 数字化转型',
     ogDescription: '为莫桑比克企业提供创新技术解决方案',
+  },
+
+  // ============================================================================
+  // Loading Overlay
+  // ============================================================================
+  loading: {
+    title: '加载中...',
   },
 };

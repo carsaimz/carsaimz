@@ -6,6 +6,7 @@ import { ThemeProvider } from "next-themes";
 import { LanguageProvider } from "@/contexts/language-context";
 import { AppProvider } from "@/contexts/app-context";
 import { CapacitorBackButtonHandler } from "@/components/common/capacitor-back-handler";
+import { ClientLayoutWrapper } from "@/components/common/client-layout-wrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,7 +58,9 @@ export default function RootLayout({
           <LanguageProvider>
             <AppProvider>
               <CapacitorBackButtonHandler />
-              {children}
+              <ClientLayoutWrapper>
+                {children}
+              </ClientLayoutWrapper>
             </AppProvider>
           </LanguageProvider>
         </ThemeProvider>
