@@ -476,7 +476,7 @@ export const ptBR: TranslationObject = {
     published: 'Publicado',
     draft: 'Rascunho',
     togglePublish: 'Alterar status de publicação',
-    title: 'Título',
+    itemTitle: 'Título',
     slug: 'Slug',
     description: 'Descrição',
     excerpt: 'Resumo',

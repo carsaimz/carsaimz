@@ -462,7 +462,7 @@ export const ptPT: TranslationObject = {
     published: 'Publicado',
     draft: 'Rascunho',
     togglePublish: 'Alterar estado de publicação',
-    title: 'Título',
+    itemTitle: 'Título',
     slug: 'Slug',
     description: 'Descrição',
     excerpt: 'Resumo',

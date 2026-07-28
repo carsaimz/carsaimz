@@ -455,7 +455,7 @@ export const enUS: TranslationObject = {
     published: 'Published',
     draft: 'Draft',
     togglePublish: 'Toggle publish status',
-    title: 'Title',
+    itemTitle: 'Title',
     slug: 'Slug',
     description: 'Description',
     excerpt: 'Excerpt',

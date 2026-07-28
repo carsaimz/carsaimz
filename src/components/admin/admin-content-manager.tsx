@@ -448,7 +448,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
       <LanguageTabs
         defaultLanguageFields={
           <div className="space-y-2">
-            <Label className="text-sm font-medium">{t('admin.title')}</Label>
+            <Label className="text-sm font-medium">{t('admin.itemTitle')}</Label>
             <Input
               value={formTitle}
               onChange={(e) => handleTitleChange(e.target.value)}
@@ -461,7 +461,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
           i18nLangs.map((lang) => [
             lang,
             <div className="space-y-2" key={lang}>
-              <Label className="text-sm font-medium">{t('admin.title')} ({lang})</Label>
+              <Label className="text-sm font-medium">{t('admin.itemTitle')} ({lang})</Label>
               <Input
                 value={formTitleI18n[lang] || ''}
                 onChange={(e) => setI18nValue(setFormTitleI18n, lang, e.target.value)}
@@ -574,7 +574,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
       <LanguageTabs
         defaultLanguageFields={
           <div className="space-y-2">
-            <Label className="text-sm font-medium">{t('admin.title')}</Label>
+            <Label className="text-sm font-medium">{t('admin.itemTitle')}</Label>
             <Input
               value={formTitle}
               onChange={(e) => handleTitleChange(e.target.value)}
@@ -587,7 +587,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
           i18nLangs.map((lang) => [
             lang,
             <div className="space-y-2" key={lang}>
-              <Label className="text-sm font-medium">{t('admin.title')} ({lang})</Label>
+              <Label className="text-sm font-medium">{t('admin.itemTitle')} ({lang})</Label>
               <Input
                 value={formTitleI18n[lang] || ''}
                 onChange={(e) => setI18nValue(setFormTitleI18n, lang, e.target.value)}
@@ -692,7 +692,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
       <LanguageTabs
         defaultLanguageFields={
           <div className="space-y-2">
-            <Label className="text-sm font-medium">{t('admin.title')}</Label>
+            <Label className="text-sm font-medium">{t('admin.itemTitle')}</Label>
             <Input
               value={formTitle}
               onChange={(e) => handleTitleChange(e.target.value)}
@@ -705,7 +705,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
           i18nLangs.map((lang) => [
             lang,
             <div className="space-y-2" key={lang}>
-              <Label className="text-sm font-medium">{t('admin.title')} ({lang})</Label>
+              <Label className="text-sm font-medium">{t('admin.itemTitle')} ({lang})</Label>
               <Input
                 value={formTitleI18n[lang] || ''}
                 onChange={(e) => setI18nValue(setFormTitleI18n, lang, e.target.value)}
@@ -959,7 +959,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t('admin.title')}</TableHead>
+                    <TableHead>{t('admin.itemTitle')}</TableHead>
                     {contentType !== 'testimonials' && (
                       <TableHead>{t('admin.slug')}</TableHead>
                     )}
