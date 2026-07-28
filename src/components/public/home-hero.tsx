@@ -148,7 +148,7 @@ export function HomeHero() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-red-400/50 text-red-100 hover:bg-red-700/50 hover:text-white font-semibold px-8 py-3 text-base rounded-xl backdrop-blur-sm transition-all"
+                className="border-white/30 text-white hover:bg-white/20 hover:text-white font-semibold px-8 py-3 text-base rounded-xl backdrop-blur-sm transition-all shadow-lg shadow-white/5"
                 onClick={() => router.push('/projects')}
               >
                 {t('home.heroCtaSecondary')}
