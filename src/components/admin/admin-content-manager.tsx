@@ -357,7 +357,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
           contentI18n: contentI18nStr,
           categoryId: formCategoryId || null,
           published: formPublished,
-          authorId: editingItem?.authorId || 'default-author',
+          authorId: (editingItem as any)?.authorId || 'default-author',
         };
       case 'testimonials':
         return {

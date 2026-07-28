@@ -70,7 +70,7 @@ export const frFR: TranslationObject = {
     emailAlreadyExists: 'Un compte avec cet e-mail existe déjà',
     signInWithGoogle: 'Se connecter avec Google',
     signInAsGuest: 'Se connecter en tant qu\'invité',
-signInWithGithub: 'Se connecter avec GitHub'
+    signInWithGithub: 'Se connecter avec GitHub',
     or: 'ou',
     sendingCode: 'Envoi du code...',
     sendSmsCode: 'Envoyer le code SMS',

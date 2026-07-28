@@ -222,6 +222,7 @@ async function verifyWithClientFirestore(idToken: string): Promise<{ success: bo
     const providerId = currentUser.providerData[0]?.providerId || 'unknown'
     let authProvider: AuthProvider = 'unknown'
     if (providerId === 'google.com') authProvider = 'google.com'
+    else if (providerId === 'github.com') authProvider = 'github.com'
     else if (providerId === 'phone') authProvider = 'phone'
     else if (providerId === 'anonymous') authProvider = 'anonymous'
     else if (providerId === 'password') authProvider = 'email'

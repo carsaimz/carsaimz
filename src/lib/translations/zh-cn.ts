@@ -70,7 +70,7 @@ export const zhCN: TranslationObject = {
     emailAlreadyExists: '该邮箱已注册账号',
     signInWithGoogle: '使用 Google 登录',
     signInAsGuest: '访客登录',
-signInWithGithub: '使用 GitHub 登录'
+    signInWithGithub: '使用 GitHub 登录',
     or: '或',
     sendingCode: '发送验证码...',
     sendSmsCode: '发送短信验证码',

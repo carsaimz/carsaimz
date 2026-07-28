@@ -77,7 +77,7 @@ export const ptPT: TranslationObject = {
     emailAlreadyExists: 'Já existe uma conta com este e-mail',
     signInWithGoogle: 'Entrar com Google',
     signInAsGuest: 'Entrar como visitante',
-signInWithGithub: 'Entrar com GitHub'
+    signInWithGithub: 'Entrar com GitHub',
     or: 'ou',
     sendingCode: 'A enviar código...',
     sendSmsCode: 'Enviar código SMS',

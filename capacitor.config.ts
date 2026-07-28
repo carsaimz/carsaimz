@@ -21,7 +21,6 @@ const config: CapacitorConfig = {
       keystorePassword: process.env.KEYSTORE_PASSWORD || '',
       releaseType: 'AAB',
     },
-    versionCode: parseInt(pkg.version?.replace(/\./g, '') || '21', 10) || 2,
   },
   plugins: {
     SplashScreen: {

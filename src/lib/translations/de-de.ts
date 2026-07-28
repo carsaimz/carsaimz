@@ -70,7 +70,7 @@ export const deDE: TranslationObject = {
     emailAlreadyExists: 'Ein Konto mit dieser E-Mail existiert bereits',
     signInWithGoogle: 'Mit Google anmelden',
     signInAsGuest: 'Als Gast anmelden',
-signInWithGithub: 'Mit GitHub anmelden'
+    signInWithGithub: 'Mit GitHub anmelden',
     or: 'oder',
     sendingCode: 'Code wird gesendet...',
     sendSmsCode: 'SMS-Code senden',
