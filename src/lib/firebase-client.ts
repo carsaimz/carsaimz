@@ -2,9 +2,9 @@
  * Carsai Mozambique — Firebase Client Configuration
  *
  * Used by browser-side code (Firebase Auth, Firestore client reads, FCM, Analytics).
- * All values come from the hardcoded config in client-config.ts
- * (Firebase client SDK config is public by design — it ends up in the
- * client bundle regardless of whether it comes from env vars or hardcoded).
+ * Values come from client-config.ts which uses env vars with hardcoded fallbacks:
+ *   - CI: env vars injected from GitHub Secrets override fallbacks
+ *   - Local dev: hardcoded fallbacks work without .env
  *
  * Firebase Spark Plan (Free) features integrated:
  * - Authentication (email/password, Google, anonymous, phone)
@@ -72,7 +72,6 @@ let auth: Auth
 
 try {
   auth = getAuth(app)
-  // Set language for auth UI (email verification, password reset, etc.)
   auth.languageCode = 'pt'
 } catch {
   // During static export, auth may not be available
@@ -86,7 +85,6 @@ let firestoreClient: Firestore | null = null
 try {
   firestoreClient = getFirestore(app)
 } catch {
-  // During static export, Firestore may not be available
   firestoreClient = null
 }
 
@@ -109,9 +107,7 @@ if (typeof window !== 'undefined') {
     if (supported) {
       analyticsClient = getAnalytics(app)
     }
-  }).catch(() => {
-    // Analytics not supported (e.g. SSR, privacy mode)
-  })
+  }).catch(() => {})
 }
 
 // ─── Firebase Cloud Messaging (lazy — only in browser) ───
@@ -123,16 +119,12 @@ if (typeof window !== 'undefined') {
     if (supported) {
       messagingClient = getMessaging(app)
     }
-  }).catch(() => {
-    // FCM not supported (e.g. Safari, SSR)
-  })
+  }).catch(() => {})
 }
 
 // ─── Auth providers ───
 
 export const googleProvider = new GoogleAuthProvider()
-
-// Configure Google provider to request profile + email
 googleProvider.addScope('profile')
 googleProvider.addScope('email')
 
@@ -140,7 +132,6 @@ googleProvider.addScope('email')
 
 /**
  * Request FCM registration token for push notifications.
- * Returns the token string or null if not supported/permission denied.
  */
 export async function requestFCMToken(): Promise<string | null> {
   try {
@@ -175,7 +166,6 @@ export async function onForegroundMessage(
 ): Promise<() => void> {
   try {
     if (!messagingClient) return () => {}
-
     const { onMessage } = await import('firebase/messaging')
     return onMessage(messagingClient, callback)
   } catch {
@@ -185,26 +175,14 @@ export async function onForegroundMessage(
 
 // ─── Phone Auth Helper ───
 
-/**
- * Create a RecaptchaVerifier instance for phone authentication.
- * Must be called in the browser with a visible reCAPTCHA container.
- *
- * Usage:
- *   const verifier = createRecaptchaVerifier('recaptcha-container')
- *   const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, verifier)
- */
 export function createRecaptchaVerifier(
   containerOrId: string | HTMLElement,
   size: 'normal' | 'invisible' = 'invisible'
 ): RecaptchaVerifier {
   return new RecaptchaVerifier(auth, containerOrId, {
     size,
-    callback: () => {
-      // reCAPTCHA solved — allow sign-in
-    },
-    'expired-callback': () => {
-      // Response expired — ask user to solve again
-    },
+    callback: () => {},
+    'expired-callback': () => {},
   })
 }
 
@@ -218,7 +196,6 @@ export {
   analyticsClient,
   messagingClient,
 
-  // Auth functions
   signInWithPopup,
   signInWithRedirect,
   signInWithCredential,
@@ -239,14 +216,11 @@ export {
   fetchSignInMethodsForEmail,
   getRedirectResult,
 
-  // Auth types
   PhoneAuthProvider,
   RecaptchaVerifier,
 }
 
 export type { User, UserCredential, IdTokenResult, ApplicationVerifier }
-
-// ─── Helper: check if Firebase is configured ───
 
 export function isFirebaseConfigured(): boolean {
   return !!FIREBASE_CONFIG.apiKey && !!FIREBASE_CONFIG.projectId
