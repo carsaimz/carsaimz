@@ -300,57 +300,39 @@ jobs:
           done
 
       # -----------------------------------------------------------------------
-      # Keystore & Signing
+      # Keystore & Signing (optional — unsigned builds work for dev/testing)
       # -----------------------------------------------------------------------
-      - name: Setup keystore for signing
+      # The build.gradle already has conditional signing code that reads
+      # keystore.properties. We only create the properties file when secrets
+      # are configured. Without secrets, builds are unsigned (still valid).
+      - name: Setup keystore for signing (if configured)
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          # Copy keystore to the Android app directory
-          mkdir -p android/app/upload
-          if [ -f "upload/release.jks" ]; then
-            cp upload/release.jks android/app/upload/release.jks
-            echo "✅ Keystore copied from upload/release.jks"
+          # Only create keystore.properties when ALL signing secrets are configured
+          if [ -n "${KEYSTORE_PASSWORD}" ] && [ -n "${KEYSTORE_ALIAS}" ] && [ -n "${KEY_PASSWORD}" ]; then
+            # Copy keystore file if present
+            mkdir -p android/app/upload
+            if [ -f "upload/release.jks" ]; then
+              cp upload/release.jks android/app/upload/release.jks
+              echo "✅ Keystore copied from upload/release.jks"
+            else
+              echo "⚠️ No keystore file at upload/release.jks — signing will fail if properties reference it"
+            fi
+            
+            # Create keystore properties file for Gradle
+            cat > android/keystore.properties << KEYSTORE_PROPS
+            storeFile=upload/release.jks
+            storePassword=${KEYSTORE_PASSWORD}
+            keyAlias=${KEYSTORE_ALIAS}
+            keyPassword=${KEY_PASSWORD}
+            KEYSTORE_PROPS
+            
+            echo "✅ keystore.properties created — builds will be signed"
           else
-            echo "⚠️ No keystore found at upload/release.jks — builds will be unsigned"
-          fi
-          
-          # Create keystore properties file for Gradle
-          cat > android/keystore.properties << KEYSTORE_PROPS
-          storeFile=upload/release.jks
-          storePassword=${KEYSTORE_PASSWORD}
-          keyAlias=${KEYSTORE_ALIAS:-carsai}
-          keyPassword=${KEY_PASSWORD}
-          KEYSTORE_PROPS
-          
-          echo "✅ keystore.properties created"
-
-      - name: Configure Gradle signing
-        run: |
-          # Modify the Android app's build.gradle to use the keystore properties
-          BUILD_GRADLE="android/app/build.gradle"
-          
-          if [ -f "$BUILD_GRADLE" ]; then
-            # Add keystore properties loading at the top of the android block
-            if ! grep -q "keystoreProperties" "$BUILD_GRADLE"; then
-              sed -i '/android {/i\def keystoreProperties = new Properties()\ndef keystorePropertiesFile = rootProject.file("keystore.properties")\nif (keystorePropertiesFile.exists()) {\n    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))\n}\n' "$BUILD_GRADLE"
-            fi
-            
-            # Add signingConfigs block before buildTypes
-            if ! grep -q "signingConfigs" "$BUILD_GRADLE"; then
-              sed -i '/buildTypes {/i\    signingConfigs {\n        release {\n            keyAlias keystoreProperties[\"keyAlias\"]\n            keyPassword keystoreProperties[\"keyPassword\"]\n            storeFile keystoreProperties[\"storeFile\"] ? file(keystoreProperties[\"storeFile\"]) : null\n            storePassword keystoreProperties[\"storePassword\"]\n        }\n    }\n' "$BUILD_GRADLE"
-            fi
-            
-            # Add signingConfig to release buildType
-            if ! grep -q "signingConfig signingConfigs.release" "$BUILD_GRADLE"; then
-              sed -i '/release {/a\            signingConfig signingConfigs.release' "$BUILD_GRADLE"
-            fi
-            
-            echo "✅ Gradle signing configured"
-          else
-            echo "⚠️ build.gradle not found — skipping signing configuration"
+            echo "⚠️ Signing secrets not configured — builds will be unsigned (OK for dev/testing)"
           fi
 
       # -----------------------------------------------------------------------
