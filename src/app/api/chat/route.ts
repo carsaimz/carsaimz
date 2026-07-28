@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs/promises'
-import path from 'path'
+import ZAI from 'z-ai-web-dev-sdk'
 
 /**
  * Carsai Mozambique - AI Chat API Endpoint
  *
- * Multi-provider failover system (NO Prisma/Database dependency):
- * 1. Try Z.ai SDK first (reads .z-ai-config automatically)
- * 2. Try Z.ai Direct API (reads .z-ai-config and calls API directly)
- * 3. Try configured external providers (from AI_PROVIDER_CONFIG env var)
+ * Uses z-ai-web-dev-sdk as the primary AI provider.
+ * The SDK auto-configures via ZAI.create() — no .z-ai-config file needed.
  *
- * Site context is hardcoded — no database needed.
+ * IMPORTANT: z-ai-web-dev-sdk MUST be used in backend code only.
+ * System prompts use role: 'assistant' (not 'system') per SDK convention.
  */
 
 // ── Hardcoded Site Context (no database dependency) ──
@@ -48,152 +46,15 @@ const CARSAI_CONTEXT = `You are the Carsai Mozambique assistant — a knowledgea
 10. The FREE hosting is provided by ifastnet/byet (Apache shared hosting), not by Carsai directly.
 `
 
-// ── Config caching for .z-ai-config ──
+// ── Singleton ZAI instance (reuse across requests) ──
 
-let cachedConfig: { baseUrl: string; apiKey: string; token?: string; chatId?: string; userId?: string } | null = null
+let zaiInstance: Awaited<ReturnType<typeof ZAI.create>> | null = null
 
-async function loadZaiConfig() {
-  if (cachedConfig) return cachedConfig
-
-  const configPaths = [
-    path.join(process.cwd(), '.z-ai-config'),
-    path.join(require('os').homedir(), '.z-ai-config'),
-    '/etc/.z-ai-config',
-  ]
-
-  for (const filePath of configPaths) {
-    try {
-      const configStr = await fs.readFile(filePath, 'utf-8')
-      const config = JSON.parse(configStr)
-      if (config.baseUrl && config.apiKey) {
-        cachedConfig = config
-        return config
-      }
-    } catch {
-      // Continue to next path
-    }
+async function getZaiInstance() {
+  if (!zaiInstance) {
+    zaiInstance = await ZAI.create()
   }
-
-  return null
-}
-
-// ── Provider call implementations ──
-
-async function callZai(messages: Array<{ role: string; content: string }>): Promise<string | null> {
-  try {
-    // Dynamic import — z-ai-web-dev-sdk reads .z-ai-config automatically
-    let ZAI
-    try {
-      const sdkModule = await import('z-ai-web-dev-sdk')
-      ZAI = sdkModule.default || sdkModule
-    } catch (importErr) {
-      console.warn('[Z.ai] SDK not available:', (importErr as Error).message)
-      return null
-    }
-
-    const zai = await ZAI.create()
-    const completion = await zai.chat.completions.create({
-      model: 'default',
-      messages,
-    })
-    return completion.choices?.[0]?.message?.content || null
-  } catch (err) {
-    console.error('[Z.ai] SDK error:', err)
-    return null
-  }
-}
-
-async function callZaiDirect(messages: Array<{ role: string; content: string }>): Promise<string | null> {
-  try {
-    const config = await loadZaiConfig()
-    if (!config) return null
-
-    const url = `${config.baseUrl}/chat/completions`
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${config.apiKey}`,
-      'X-Z-AI-From': 'Z',
-    }
-
-    if (config.chatId) headers['X-Chat-Id'] = config.chatId
-    if (config.userId) headers['X-User-Id'] = config.userId
-    if (config.token) headers['X-Token'] = config.token
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        messages,
-        thinking: { type: 'disabled' },
-      }),
-      signal: AbortSignal.timeout(20000), // 20s timeout
-    })
-
-    if (!response.ok) {
-      console.error(`[Z.ai Direct] HTTP ${response.status} from ${url}`)
-      return null
-    }
-
-    const data = await response.json()
-    return data.choices?.[0]?.message?.content || null
-  } catch (err) {
-    console.error('[Z.ai Direct] Error:', err)
-    return null
-  }
-}
-
-async function callOpenAICompatible(
-  apiKey: string,
-  baseUrl: string,
-  model: string,
-  messages: Array<{ role: string; content: string }>,
-  extraConfig?: Record<string, unknown>
-): Promise<string | null> {
-  try {
-    const url = `${baseUrl.replace(/\/$/, '')}/chat/completions`
-    const body = { model, messages, ...extraConfig }
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(15000), // 15s timeout
-    })
-    if (!res.ok) {
-      console.error(`[OpenAI-compatible] HTTP ${res.status} from ${url}`)
-      return null
-    }
-    const data = await res.json()
-    return data.choices?.[0]?.message?.content || null
-  } catch (err) {
-    console.error('[OpenAI-compatible] Error:', err)
-    return null
-  }
-}
-
-// ── Load external providers from environment ──
-
-interface ExternalProvider {
-  name: string
-  apiKey: string
-  baseUrl: string
-  model: string
-  priority?: number
-  config?: Record<string, unknown>
-}
-
-function loadExternalProviders(): ExternalProvider[] {
-  try {
-    const configStr = process.env.AI_PROVIDER_CONFIG
-    if (!configStr) return []
-    const providers = JSON.parse(configStr)
-    if (!Array.isArray(providers)) return []
-    return providers.filter((p: ExternalProvider) => p.apiKey && p.baseUrl && p.model)
-  } catch {
-    return []
-  }
+  return zaiInstance
 }
 
 // ── Route handler ──
@@ -211,80 +72,71 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Build messages array with session context ──
-    const aiMessages: Array<{ role: string; content: string }> = [
-      { role: 'system', content: CARSAI_CONTEXT },
+    // Note: SDK uses role: 'assistant' for system prompts, not 'system'
+    const aiMessages: Array<{ role: 'assistant' | 'user'; content: string }> = [
+      { role: 'assistant', content: CARSAI_CONTEXT },
     ]
 
-    // Add session context
+    // Add session context (previous messages)
     if (context && Array.isArray(context)) {
       for (const ctxMsg of context.slice(-10)) {
-        aiMessages.push({
-          role: ctxMsg.role as string,
-          content: ctxMsg.content as string,
-        })
+        const role = ctxMsg.role as string
+        if (role === 'user' || role === 'assistant') {
+          aiMessages.push({
+            role: role as 'assistant' | 'user',
+            content: ctxMsg.content as string,
+          })
+        }
       }
     }
 
     // Add the current user message
     aiMessages.push({ role: 'user', content: message })
 
-    // ── Multi-provider failover: try providers in priority order ──
+    // ── Call Z.ai SDK ──
+    const zai = await getZaiInstance()
+    const completion = await zai.chat.completions.create({
+      messages: aiMessages,
+      thinking: { type: 'disabled' },
+    })
 
-    // 1. Try Z.ai SDK (reads .z-ai-config automatically)
-    const zaiResponse = await callZai(aiMessages)
-    if (zaiResponse) {
+    const response = completion.choices?.[0]?.message?.content
+
+    if (response && response.trim().length > 0) {
       return NextResponse.json({
         success: true,
-        response: zaiResponse,
+        response,
         provider: 'z_ai',
         sessionId: sessionId || `session-${Date.now()}`,
       })
     }
 
-    // 2. Try Z.ai Direct API (bypasses SDK, reads .z-ai-config manually)
-    const zaiDirectResponse = await callZaiDirect(aiMessages)
-    if (zaiDirectResponse) {
-      return NextResponse.json({
-        success: true,
-        response: zaiDirectResponse,
-        provider: 'z_ai_direct',
-        sessionId: sessionId || `session-${Date.now()}`,
-      })
-    }
-
-    // 3. Try configured external providers in priority order
-    const providers = loadExternalProviders()
-    providers.sort((a, b) => (a.priority || 999) - (b.priority || 999))
-
-    for (const provider of providers) {
-      const response = await callOpenAICompatible(
-        provider.apiKey,
-        provider.baseUrl,
-        provider.model,
-        aiMessages,
-        provider.config,
-      )
-
-      if (response) {
-        return NextResponse.json({
-          success: true,
-          response,
-          provider: provider.name,
-          sessionId: sessionId || `session-${Date.now()}`,
-        })
-      }
-    }
-
-    // ── All providers failed — return honest error, NO fake responses ──
-    console.error('[Chat] All AI providers failed for message:', message.substring(0, 50))
+    // ── Empty response from Z.ai ──
+    console.error('[Chat] Z.ai returned empty response')
     return NextResponse.json({
       success: false,
-      error: 'Todos os provedores de IA estão indisponíveis no momento. Por favor, tente novamente em alguns minutos ou contacte-nos via carsaimozambique@gmail.com',
+      error: 'Não foi possível gerar uma resposta. Por favor, tente novamente ou contacte-nos via carsaimozambique@gmail.com',
       sessionId: sessionId || `session-${Date.now()}`,
     })
 
   } catch (error) {
-    console.error('Chat API error:', error)
+    console.error('[Chat] Error:', error)
+
+    // Reset ZAI instance on error (might be stale)
+    zaiInstance = null
+
+    const errorMessage = error instanceof Error
+      ? error.message
+      : 'Unknown error'
+
+    // Check if it's a connection/config error
+    if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('timeout') || errorMessage.includes('network')) {
+      return NextResponse.json({
+        success: false,
+        error: 'Erro de ligação ao servidor de IA. Por favor, tente novamente em alguns minutos.',
+      })
+    }
+
     return NextResponse.json(
       {
         success: false,
