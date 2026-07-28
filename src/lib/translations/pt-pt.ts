@@ -106,6 +106,7 @@ export const ptPT: TranslationObject = {
     noResults: 'Nenhum resultado encontrado',
     success: 'Sucesso',
     error: 'Erro',
+    networkError: 'Erro de ligação. Verifique a sua rede e tente novamente.',
     warning: 'Aviso',
     info: 'Informação',
     yes: 'Sim',

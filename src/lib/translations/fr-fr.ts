@@ -99,6 +99,7 @@ export const frFR: TranslationObject = {
     noResults: 'Aucun résultat trouvé',
     success: 'Succès',
     error: 'Erreur',
+    networkError: 'Erreur de connexion. Vérifiez votre réseau et réessayez.',
     warning: 'Attention',
     info: 'Information',
     yes: 'Oui',

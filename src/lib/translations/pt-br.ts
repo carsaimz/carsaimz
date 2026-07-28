@@ -120,6 +120,7 @@ export const ptBR: TranslationObject = {
     noResults: 'Nenhum resultado encontrado',
     success: 'Sucesso',
     error: 'Erro',
+    networkError: 'Erro de conexão. Verifique sua rede e tente novamente.',
     warning: 'Aviso',
     info: 'Informação',
     yes: 'Sim',

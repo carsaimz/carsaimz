@@ -99,6 +99,7 @@ export const esES: TranslationObject = {
     noResults: 'No se encontraron resultados',
     success: 'Éxito',
     error: 'Error',
+    networkError: 'Error de conexión. Verifique su red e intente de nuevo.',
     warning: 'Advertencia',
     info: 'Información',
     yes: 'Sí',

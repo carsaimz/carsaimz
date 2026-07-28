@@ -59,7 +59,7 @@ export type Language = 'en' | 'pt' | 'fr' | 'es' | 'zh' | 'de'
 // 7. Server verifies token and returns Firestore profile
 // ──────────────────────────────────────────────
 
-interface AuthResult {
+export interface AuthResult {
   success: boolean
   error?: string
   user?: User

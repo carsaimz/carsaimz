@@ -29,3 +29,26 @@ Stage Summary:
 - Build compiles successfully (34 pages, 406 files)
 - Still needs: FIREBASE_ADMIN_CLIENT_EMAIL and FIREBASE_ADMIN_PRIVATE_KEY (service account key) for server-side API routes to work
 - Still needs: NEXT_PUBLIC_FIREBASE_VAPID_KEY for FCM web push notifications
+
+---
+Task ID: 1
+Agent: main
+Task: Fix Android build Java 21 error, missing language flags, and hardcoded Portuguese strings in auth UI
+
+Work Log:
+- Diagnosed Android build failure: `invalid source release: 21` caused by Java 17 in CI vs JavaVersion.VERSION_21 in capacitor.build.gradle
+- Updated android-build.yml: Java 17→21, SDK platforms;android-34→36, build-tools;34.0.0→36.0.0
+- Updated release.yml: Java 17→21
+- Added flags for fr-fr (🇫🇷), es-es (🇪🇸), zh-cn (🇨🇳), de-de (🇩🇪) in LANGUAGE_FLAGS mapping in public-header.tsx
+- Replaced hardcoded Portuguese strings in auth page with t() translation calls (ou→t('auth.or'), Falha no login→t('auth.loginFailed'), etc.)
+- Replaced hardcoded Portuguese fallback strings in login-modal.tsx with pure t() calls
+- Added common.networkError translation key to all 7 translation files (pt-pt, en-us, pt-br, fr-fr, es-es, zh-cn, de-de)
+- Exported AuthResult interface from store.ts (was causing TS2459 error in auth-context.tsx)
+- Verified all changed files pass ESLint
+
+Stage Summary:
+- Android CI build now uses Java 21 + SDK 36 matching capacitor.build.gradle
+- All 7 languages now have proper flag emojis in the language switcher
+- Auth UI no longer has hardcoded Portuguese strings — all text uses t() for i18n
+- common.networkError key added to all translation files
+- AuthResult properly exported from store.ts

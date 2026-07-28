@@ -99,6 +99,7 @@ export const deDE: TranslationObject = {
     noResults: 'Keine Ergebnisse gefunden',
     success: 'Erfolg',
     error: 'Fehler',
+    networkError: 'Netzwerkfehler. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.',
     warning: 'Warnung',
     info: 'Info',
     yes: 'Ja',

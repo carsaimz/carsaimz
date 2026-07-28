@@ -99,6 +99,7 @@ export const zhCN: TranslationObject = {
     noResults: '未找到结果',
     success: '成功',
     error: '错误',
+    networkError: '网络错误。请检查网络连接后重试。',
     warning: '警告',
     info: '提示',
     yes: '是',

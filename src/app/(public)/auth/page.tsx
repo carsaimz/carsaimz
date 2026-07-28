@@ -85,7 +85,7 @@ export default function AuthPage() {
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="text-center space-y-3">
           <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t('common.loading') || 'Loading...'}</p>
         </div>
       </div>
     );
@@ -106,7 +106,7 @@ export default function AuthPage() {
   const handleLogin = async () => {
     setLoginError('');
     if (!loginIdentifier) {
-      setLoginError(loginMode === 'email' ? t('auth.emailRequired') : t('auth.phoneRequired') || 'Número de telefone é obrigatório');
+      setLoginError(loginMode === 'email' ? t('auth.emailRequired') : t('auth.phoneRequired'));
       return;
     }
     if (!loginPassword) {
@@ -123,11 +123,11 @@ export default function AuthPage() {
         else if (role === 'partner') router.push('/partner');
         else router.push('/user');
       } else {
-        setLoginError(result.error || t('auth.invalidCredentials') || 'Credenciais inválidas');
+        setLoginError(result.error || t('auth.invalidCredentials'));
         toast.error(result.error || t('auth.invalidCredentials'));
       }
     } catch {
-      setLoginError(t('auth.invalidCredentials') || 'Credenciais inválidas');
+      setLoginError(t('auth.invalidCredentials'));
       toast.error(t('auth.invalidCredentials'));
     }
     setLoginLoading(false);
@@ -136,7 +136,7 @@ export default function AuthPage() {
   const handleRegister = async () => {
     setRegisterError('');
     if (!registerName) {
-      setRegisterError(t('auth.fullNameRequired') || 'Full name is required');
+      setRegisterError(t('auth.fullNameRequired'));
       return;
     }
     if (!registerEmail) {
@@ -158,12 +158,12 @@ export default function AuthPage() {
         toast.success(t('auth.registerSuccess'));
         router.push('/user');
       } else {
-        setRegisterError(result.error || t('common.error') || 'Falha ao criar conta. Por favor, tente novamente.');
+        setRegisterError(result.error || t('common.error'));
         toast.error(result.error || t('common.error'));
       }
     } catch {
-      setRegisterError('Erro de ligação. Verifique a sua rede e tente novamente.');
-      toast.error('Erro de ligação');
+      setRegisterError(t('common.networkError'));
+      toast.error(t('common.networkError'));
     }
     setRegisterLoading(false);
   };
@@ -221,10 +221,10 @@ export default function AuthPage() {
                             else if (role === 'partner') router.push('/partner');
                             else router.push('/user');
                           } else {
-                            toast.error(result.error || 'Falha no login com Google.');
+                            toast.error(result.error || t('auth.loginFailed'));
                           }
                         } catch {
-                          toast.error('Falha no login com Google.');
+                          toast.error(t('auth.loginFailed'));
                         }
                       }}
                     >
@@ -234,7 +234,7 @@ export default function AuthPage() {
                         <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                         <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                       </svg>
-                      Entrar com Google
+                      {t('auth.signInWithGoogle')}
                     </Button>
                     {FEATURES.anonymousSignIn && (
                       <Button
@@ -247,14 +247,14 @@ export default function AuthPage() {
                               toast.success(t('auth.loginSuccess'));
                               router.push('/user');
                             } else {
-                              toast.error(result.error || 'Falha no login como visitante.');
+                              toast.error(result.error || t('auth.loginFailed'));
                             }
                           } catch {
-                            toast.error('Falha no login como visitante.');
+                            toast.error(t('auth.loginFailed'));
                           }
                         }}
                       >
-                        Entrar como visitante
+                        {t('auth.signInAsGuest')}
                       </Button>
                     )}
                   </div>
@@ -265,7 +265,7 @@ export default function AuthPage() {
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
                     <span className="bg-background px-2 text-muted-foreground">
-                      ou
+                      {t('auth.or')}
                     </span>
                   </div>
                 </div>

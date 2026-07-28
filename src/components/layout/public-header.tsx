@@ -59,14 +59,17 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 // ──────────────────────────────────────────────
-// Language flag emoji mapping
-// Only pt-pt, en-us, pt-br get flags; others get 🌐
+// Language flag emoji mapping — all supported languages
 // ──────────────────────────────────────────────
 
 const LANGUAGE_FLAGS: Record<string, string> = {
   'pt-pt': '🇲🇿',
   'en-us': '🇺🇸',
   'pt-br': '🇧🇷',
+  'fr-fr': '🇫🇷',
+  'es-es': '🇪🇸',
+  'zh-cn': '🇨🇳',
+  'de-de': '🇩🇪',
 };
 
 // ──────────────────────────────────────────────

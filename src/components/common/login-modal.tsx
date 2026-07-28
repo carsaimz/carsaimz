@@ -118,7 +118,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
   const handlePhoneSendCode = async () => {
     setPhoneError('');
     if (!phoneNumber) {
-      setPhoneError(t('auth.phoneRequired') || 'Número de telefone é obrigatório');
+      setPhoneError(t('auth.phoneRequired'));
       return;
     }
     setPhoneLoading(true);
@@ -208,7 +208,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
   const handleRegister = async () => {
     setRegisterError('');
     if (!registerName) {
-      setRegisterError(t('auth.fullNameRequired') || 'Nome completo é obrigatório');
+      setRegisterError(t('auth.fullNameRequired'));
       return;
     }
     if (!registerEmail) {
@@ -216,7 +216,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
       return;
     }
     if (!registerPassword || registerPassword.length < 6) {
-      setRegisterError(t('auth.passwordMinLength') || 'Senha deve ter pelo menos 6 caracteres');
+      setRegisterError(t('auth.passwordMinLength'));
       return;
     }
     if (registerPassword !== registerConfirmPassword) {
@@ -236,12 +236,12 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
         setRegisterConfirmPassword('');
         setRegisterPhone('');
       } else {
-        setRegisterError(result.error || t('common.error') || 'Falha ao criar conta.');
-        toast.error(result.error || 'Falha ao criar conta.');
+        setRegisterError(result.error || t('common.error'));
+        toast.error(result.error || t('common.error'));
       }
     } catch {
-      setRegisterError(t('common.error') || 'Falha ao criar conta.');
-      toast.error(t('common.error') || 'Falha ao criar conta.');
+      setRegisterError(t('common.error'));
+      toast.error(t('common.error'));
     }
     setRegisterLoading(false);
   };
