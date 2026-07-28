@@ -260,3 +260,23 @@ Stage Summary:
 - Capacitor back: manual nav stack instead of unreliable window.history
 - Cleanup: tool-results deleted
 - Build: ✅ lint passes, dev server running
+
+---
+Task ID: 8
+Agent: Super Z (Main)
+Task: Fix CI lockfile, fix chatbot responsiveness (no Card, text wrap, buttons), update hero badge, centralize client configs
+
+Work Log:
+- Fixed CI error: bun lockfile was out of sync. Ran `bun install` and committed updated bun.lock.
+- Fixed chatbot: removed Card/CardContent/CardHeader/CardTitle wrapper components that caused layout/responsiveness issues. Replaced with plain divs and native `<button>` elements. Added `overflow-wrap-anywhere` and `min-w-0` for proper text wrapping. Quick question buttons changed from shadcn `<Button>` to native `<button>` for better display. Header buttons changed to native buttons for reliable rendering.
+- Updated hero badge text from "Free Web Hosting" / "Hospedagem Web Gratuita" to "Soluções Digitais e Hospedagem Web Gratuita" across all 7 translation files.
+- Created centralized `client-config.ts` module for all public-facing config values: SUPABASE_URL, SUPABASE_ANON_KEY, API_BASE_URL, APP_VERSION, APP_BUILD, SITE_URL, GITHUB_URL. All values try NEXT_PUBLIC_* env vars first with hardcoded fallbacks.
+- Updated supabase.ts, api-base.ts, app-config.ts, footer.tsx, contact-section.tsx to import from client-config.ts.
+- Build: ✅ successful (bun run build passes)
+
+Stage Summary:
+- CI lockfile: synced and committed
+- Chatbot: fully responsive, no Card wrappers, text wraps properly, buttons display correctly
+- Hero badge: "Soluções Digitais e Hospedagem Web Gratuita" in all languages
+- Client config: centralized in client-config.ts, all NEXT_PUBLIC_* values have hardcoded fallbacks
+- Push: ⚠️ requires auth token (git push fails without credentials)
