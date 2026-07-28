@@ -16,8 +16,13 @@ android {
         applicationId "com.carsaimz"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+
+        // Read version from package.json so Android version stays in sync
+        def pkg = new groovy.json.JsonSlurper().parseText(file('../../package.json').text)
+        def (major, minor, patch) = pkg.version.tokenize('.').collect { it.toInteger() }
+        versionCode major * 10000 + minor * 100 + patch
+        versionName pkg.version
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

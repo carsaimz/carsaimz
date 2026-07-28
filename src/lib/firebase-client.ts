@@ -73,7 +73,10 @@ let auth: Auth
 
 try {
   auth = getAuth(app)
-  auth.languageCode = 'pt'
+  // Don't hardcode language — let Firebase Auth use the browser/device language
+  // The app's i18n system handles UI translations via the t() function
+  // Firebase Auth uses languageCode for its own UI (e.g. Google Sign-In popup)
+  // We update it dynamically in the LanguageProvider via auth.languageCode
 } catch {
   // During static export, auth may not be available
   auth = null as unknown as Auth
@@ -222,6 +225,7 @@ export {
   getRedirectResult,
 
   PhoneAuthProvider,
+  GoogleAuthProvider,
   GithubAuthProvider,
   RecaptchaVerifier,
 }

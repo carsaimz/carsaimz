@@ -34,6 +34,10 @@ const config: CapacitorConfig = {
       style: 'DARK',
       backgroundColor: '#D32F2F',
     },
+    // @capacitor-firebase/authentication — must list providers for native auth
+    FirebaseAuthentication: {
+      providers: ['google.com', 'github.com', 'phone'],
+    },
   },
 };
 

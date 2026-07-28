@@ -239,11 +239,19 @@ export function LanguageProvider({
     initializeLanguageStore();
   }, [initialLanguage]);
 
-  // Set the HTML lang attribute when language changes
+  // Set the HTML lang attribute and Firebase Auth language when language changes
   useEffect(() => {
     if (typeof document !== 'undefined') {
       const config = getLanguageConfig(language);
       document.documentElement.lang = config.locale;
+    }
+    // Sync Firebase Auth language so its own UI (Google/GitHub popups) matches
+    if (typeof window !== 'undefined') {
+      import('@/lib/firebase-client').then(({ auth }) => {
+        if (auth && auth.languageCode !== language.split('-')[0]) {
+          auth.languageCode = language.split('-')[0]; // e.g. 'pt-pt' → 'pt', 'en-us' → 'en'
+        }
+      }).catch(() => {}); // Firebase may not be configured
     }
   }, [language]);
 

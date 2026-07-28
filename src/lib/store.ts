@@ -367,12 +367,16 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           let idToken: string
+          const isNative = shouldUseNativeAuth()
+          console.log('[Auth] loginWithGoogle — isNative:', isNative)
 
-          if (shouldUseNativeAuth()) {
+          if (isNative) {
             // ── Native path: @capacitor-firebase/authentication ──
             // Uses Google Sign-In via Android system account picker / iOS ASAuthorization
+            console.log('[Auth] Calling nativeSignInWithGoogle...')
             const nativeResult = await nativeSignInWithGoogle()
             idToken = nativeResult.idToken
+            console.log('[Auth] Native Google sign-in succeeded, got ID token')
           } else {
             // ── Web path: Firebase Web SDK signInWithRedirect ──
             // Using redirect instead of popup because:
@@ -426,11 +430,15 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           let idToken: string
+          const isNative = shouldUseNativeAuth()
+          console.log('[Auth] loginWithGithub — isNative:', isNative)
 
-          if (shouldUseNativeAuth()) {
+          if (isNative) {
             // ── Native path: @capacitor-firebase/authentication ──
+            console.log('[Auth] Calling nativeSignInWithGithub...')
             const nativeResult = await nativeSignInWithGithub()
             idToken = nativeResult.idToken
+            console.log('[Auth] Native GitHub sign-in succeeded, got ID token')
           } else {
             // ── Web path: Firebase Web SDK signInWithRedirect ──
             const { signInWithRedirect, auth, githubProvider } = await getFirebaseAuth()

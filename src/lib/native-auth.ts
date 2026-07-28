@@ -72,6 +72,9 @@ export interface NativeAuthResult {
  * Sign in with Google using the native Capacitor plugin.
  * On Android, this uses Google Sign-In via the system account picker.
  * On iOS, this uses the ASAuthorizationAppleIDProvider flow.
+ *
+ * After native sign-in, we also sign in to the Firebase Web SDK
+ * so that auth.currentUser is available for client-side Firestore queries.
  */
 export async function nativeSignInWithGoogle(): Promise<NativeAuthResult> {
   const { FirebaseAuthentication } = await getNativeAuth()
@@ -80,6 +83,20 @@ export async function nativeSignInWithGoogle(): Promise<NativeAuthResult> {
 
   if (!result.user) {
     throw new Error('Google sign-in failed — no user returned')
+  }
+
+  // Sync to Firebase Web SDK so auth.currentUser is available
+  try {
+    const { auth, GoogleAuthProvider, signInWithCredential } = await import('@/lib/firebase-client')
+    if (result.credential?.idToken) {
+      const credential = GoogleAuthProvider.credential(result.credential.idToken)
+      await signInWithCredential(auth, credential)
+      console.log('[NativeAuth] Google sign-in synced to Web SDK')
+    } else {
+      console.warn('[NativeAuth] No credential ID token from native Google sign-in — Web SDK not synced')
+    }
+  } catch (syncErr) {
+    console.warn('[NativeAuth] Failed to sync Google sign-in to Web SDK:', syncErr)
   }
 
   // Get the ID token from the native auth session
@@ -101,6 +118,9 @@ export async function nativeSignInWithGoogle(): Promise<NativeAuthResult> {
 /**
  * Sign in with GitHub using the native Capacitor plugin.
  * Opens the GitHub OAuth flow in the system browser / in-app browser.
+ *
+ * After native sign-in, we also sign in to the Firebase Web SDK
+ * so that auth.currentUser is available for client-side Firestore queries.
  */
 export async function nativeSignInWithGithub(): Promise<NativeAuthResult> {
   const { FirebaseAuthentication } = await getNativeAuth()
@@ -109,6 +129,20 @@ export async function nativeSignInWithGithub(): Promise<NativeAuthResult> {
 
   if (!result.user) {
     throw new Error('GitHub sign-in failed — no user returned')
+  }
+
+  // Sync to Firebase Web SDK so auth.currentUser is available
+  try {
+    const { auth, GithubAuthProvider, signInWithCredential } = await import('@/lib/firebase-client')
+    if (result.credential?.idToken) {
+      const credential = GithubAuthProvider.credential(result.credential.idToken)
+      await signInWithCredential(auth, credential)
+      console.log('[NativeAuth] GitHub sign-in synced to Web SDK')
+    } else {
+      console.warn('[NativeAuth] No credential ID token from native GitHub sign-in — Web SDK not synced')
+    }
+  } catch (syncErr) {
+    console.warn('[NativeAuth] Failed to sync GitHub sign-in to Web SDK:', syncErr)
   }
 
   const idTokenResult: CapacitorIdTokenResult = await FirebaseAuthentication.getIdToken()
