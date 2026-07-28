@@ -1,6 +1,14 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { buildApiUrl } from '@/lib/api-base'
+import {
+  shouldUseNativeAuth,
+  nativeSignInWithGoogle,
+  nativeSignInAnonymously,
+  nativeSignInWithEmailPassword,
+  nativeCreateUserWithEmailAndPassword,
+  nativeSignOut,
+} from '@/lib/native-auth'
 
 // ──────────────────────────────────────────────
 // Types
@@ -304,9 +312,18 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, lastLoginError: null })
 
         try {
-          const { signInWithEmailAndPassword, auth } = await getFirebaseAuth()
-          const credential = await signInWithEmailAndPassword(auth, email, password)
-          const idToken = await credential.user.getIdToken()
+          let idToken: string
+
+          if (shouldUseNativeAuth()) {
+            // ── Native path: @capacitor-firebase/authentication ──
+            const nativeResult = await nativeSignInWithEmailPassword(email, password)
+            idToken = nativeResult.idToken
+          } else {
+            // ── Web path: Firebase Web SDK ──
+            const { signInWithEmailAndPassword, auth } = await getFirebaseAuth()
+            const credential = await signInWithEmailAndPassword(auth, email, password)
+            idToken = await credential.user.getIdToken()
+          }
 
           const result = await verifyWithServer(idToken, '/api/auth/login')
 
@@ -344,9 +361,19 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, lastLoginError: null })
 
         try {
-          const { signInWithPopup, auth, googleProvider } = await getFirebaseAuth()
-          const credential = await signInWithPopup(auth, googleProvider)
-          const idToken = await credential.user.getIdToken()
+          let idToken: string
+
+          if (shouldUseNativeAuth()) {
+            // ── Native path: @capacitor-firebase/authentication ──
+            // Uses Google Sign-In via Android system account picker / iOS ASAuthorization
+            const nativeResult = await nativeSignInWithGoogle()
+            idToken = nativeResult.idToken
+          } else {
+            // ── Web path: Firebase Web SDK signInWithPopup ──
+            const { signInWithPopup, auth, googleProvider } = await getFirebaseAuth()
+            const credential = await signInWithPopup(auth, googleProvider)
+            idToken = await credential.user.getIdToken()
+          }
 
           const result = await verifyWithServer(idToken, '/api/auth/social')
 
@@ -458,9 +485,18 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, lastLoginError: null })
 
         try {
-          const { signInAnonymously, auth } = await getFirebaseAuth()
-          const credential = await signInAnonymously(auth)
-          const idToken = await credential.user.getIdToken()
+          let idToken: string
+
+          if (shouldUseNativeAuth()) {
+            // ── Native path: @capacitor-firebase/authentication ──
+            const nativeResult = await nativeSignInAnonymously()
+            idToken = nativeResult.idToken
+          } else {
+            // ── Web path: Firebase Web SDK ──
+            const { signInAnonymously, auth } = await getFirebaseAuth()
+            const credential = await signInAnonymously(auth)
+            idToken = await credential.user.getIdToken()
+          }
 
           const result = await verifyWithServer(idToken, '/api/auth/anonymous')
 
@@ -555,8 +591,12 @@ export const useAuthStore = create<AuthState>()(
 
       logout: async () => {
         try {
-          const { signOut, auth } = await getFirebaseAuth()
-          await signOut(auth)
+          if (shouldUseNativeAuth()) {
+            await nativeSignOut()
+          } else {
+            const { signOut, auth } = await getFirebaseAuth()
+            await signOut(auth)
+          }
         } catch (err) {
           console.warn('Firebase signOut failed (non-critical):', err)
         }
