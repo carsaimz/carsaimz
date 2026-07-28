@@ -1,12 +1,15 @@
+/**
+ * Carsai Mozambique — User Profile API Route
+ * Firebase Auth + Firestore
+ *
+ * Password changes are handled by Firebase Auth (not stored in Firestore).
+ * Profile data (name, phone, etc.) is stored in Firestore.
+ */
+
 import { NextRequest, NextResponse } from 'next/server'
 import { getDoc, updateDoc, getDocByField } from '@/lib/db'
-import { createHash } from 'crypto'
+import { getAdminAuth } from '@/lib/firebase-admin'
 import { serializeFirestore } from '@/lib/serialize'
-
-// Simple password hashing - matches auth routes
-function hashPassword(password: string): string {
-  return createHash('sha256').update(password).digest('hex')
-}
 
 export async function GET(request: NextRequest) {
   try {
@@ -79,18 +82,44 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Build update object with only provided fields
+    // Build update object with only provided fields (Firestore profile)
     const updateData: Record<string, unknown> = {}
     if (name !== undefined) updateData.name = name
     if (phone !== undefined) updateData.phone = phone
     if (company !== undefined) updateData.company = company
     if (bio !== undefined) updateData.bio = bio
     if (address !== undefined) updateData.address = address
-    if (newPassword && newPassword.length >= 8) {
-      updateData.passwordHash = hashPassword(newPassword)
+
+    // Update Firestore profile
+    await updateDoc('users', userId, updateData)
+
+    // Update display name in Firebase Auth if name changed
+    if (name) {
+      try {
+        const auth = getAdminAuth()
+        await auth.updateUser(userId, { displayName: name })
+      } catch (authErr) {
+        console.warn('[Profile] Could not update Firebase Auth displayName:', authErr)
+      }
     }
 
-    await updateDoc('users', userId, updateData)
+    // Password change via Firebase Auth (NOT stored in Firestore)
+    if (newPassword && newPassword.length >= 6) {
+      try {
+        const auth = getAdminAuth()
+        await auth.updateUser(userId, { password: newPassword })
+      } catch (authErr: any) {
+        console.error('[Profile] Password update failed:', authErr)
+        const errorCode = authErr.errorInfo?.code || authErr.code || ''
+        if (errorCode === 'auth/weak-password') {
+          return NextResponse.json(
+            { error: 'Senha demasiado fraca. Use pelo menos 6 caracteres.' },
+            { status: 400 }
+          )
+        }
+        // Continue — profile was updated even if password failed
+      }
+    }
 
     // Fetch updated user with role
     const updatedUser = await getDoc('users', userId)

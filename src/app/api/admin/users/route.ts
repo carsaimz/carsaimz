@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     const start = (page - 1) * limit
     const paginatedUsers = filteredUsers.slice(start, start + limit)
 
-    // Map users to clean format (exclude passwordHash)
+    // Map users to clean format (Firestore doesn't store passwords — Firebase Auth manages them)
     const mappedUsers = paginatedUsers.map((u: any) => {
       const userRole = u.roleId ? roleMap.get(u.roleId) : null
       const roleName = userRole?.name || 'user'

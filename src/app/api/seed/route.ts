@@ -128,12 +128,12 @@ async function seedDatabase() {
   results.forum_categories = FORUM_CATEGORIES.length
 
   // ── Seed a demo super_admin user ──
-  // NOTE: In production, auth users are created via Firebase Auth.
-  // Here we just create the Firestore profile document.
+  // NOTE: Auth users are created via Firebase Auth (use firebase-seed.js or register API).
+  // Here we only create the Firestore profile document.
+  // passwordHash is NOT stored in Firestore — Firebase Auth manages passwords.
   const superAdminId = await createDoc('users', {
     name: 'Carsai Admin',
     email: 'carsaimozambique@gmail.com',
-    passwordHash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', // hash of 'password'
     roleId: roleIds['super_admin'],
     isActive: true,
     emailVerified: true,
@@ -142,6 +142,7 @@ async function seedDatabase() {
     company: 'Carsai Mozambique',
     bio: 'Super Administrator',
     address: 'Montepuez, Cabo Delgado, Mozambique',
+    authProvider: 'email',
   })
   results.superAdmin = superAdminId
 
@@ -149,7 +150,6 @@ async function seedDatabase() {
   const adminId = await createDoc('users', {
     name: 'Admin User',
     email: 'admin@carsai.mz',
-    passwordHash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
     roleId: roleIds['admin'],
     isActive: true,
     emailVerified: true,
@@ -158,6 +158,7 @@ async function seedDatabase() {
     company: 'Carsai Mozambique',
     bio: 'Administrator',
     address: 'Maputo, Mozambique',
+    authProvider: 'email',
   })
   results.admin = adminId
 
