@@ -201,18 +201,14 @@ jobs:
           # Backup original config
           cp "$CONFIG_FILE" "${CONFIG_FILE}.bak"
           
-          # Trap to restore on exit
-          trap 'mv "${CONFIG_FILE}.bak" "$CONFIG_FILE"; if [ -d "src/app/api.bak" ]; then rm -rf src/app/api; mv src/app/api.bak src/app/api; fi; find src/app -type d -name "*.slug.bak" | while read d; do mv "$d" "${d%.bak}"; done' EXIT
+          # Trap to restore on exit via git checkout
+          trap 'mv "${CONFIG_FILE}.bak" "$CONFIG_FILE"; git checkout -- src/app/api; git checkout -- src/app' EXIT
           
-          # Remove API routes
-          if [ -d "src/app/api" ]; then
-            mv src/app/api src/app/api.bak
-          fi
+          # Remove API routes (delete completely — .bak dirs get detected by Next.js)
+          rm -rf src/app/api
           
-          # Remove dynamic [slug] routes
-          find src/app -type d -name '\[*\]' | while read dir; do
-            mv "$dir" "${dir}.bak"
-          done
+          # Remove dynamic [slug] routes (delete completely)
+          find src/app -type d -name '\[*\]' -exec rm -rf {} + 2>/dev/null || true
           
           # Change output to "export"
           sed -i 's/output: "standalone"/output: "export"/' "$CONFIG_FILE"

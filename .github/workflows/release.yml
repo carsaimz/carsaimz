@@ -153,30 +153,17 @@ jobs:
           CONFIG_FILE="next.config.ts"
           # Backup original config
           cp "$CONFIG_FILE" "$CONFIG_FILE.bak"
-          # Trap to restore on exit
-          trap 'mv "$CONFIG_FILE.bak" "$CONFIG_FILE"' EXIT
-          # Remove API routes (they don't work with static export)
-          if [ -d "src/app/api" ]; then
-            mv src/app/api src/app/api.bak
-            trap 'mv "$CONFIG_FILE.bak" "$CONFIG_FILE"; mv src/app/api.bak src/app/api' EXIT
-          fi
-          # Remove [slug] dynamic routes
-          find src/app -type d -name '\[*\]' | while read dir; do
-            mv "$dir" "${dir}.bak"
-          done
+          # Trap to restore on exit via git checkout
+          trap 'mv "$CONFIG_FILE.bak" "$CONFIG_FILE"; git checkout -- src/app/api; git checkout -- src/app' EXIT
+          # Remove API routes (delete completely — .bak dirs get detected by Next.js)
+          rm -rf src/app/api
+          # Remove [slug] dynamic routes (delete completely)
+          find src/app -type d -name '\[*\]' -exec rm -rf {} + 2>/dev/null || true
           # Change output to "export"
           sed -i 's/output: "standalone"/output: "export"/' "$CONFIG_FILE"
           # Build
           bun run build
-          # Restore everything
-          mv "$CONFIG_FILE.bak" "$CONFIG_FILE"
-          if [ -d "src/app/api.bak" ]; then
-            mv src/app/api.bak src/app/api
-          fi
-          find src/app -type d -name '*.bak' | while read dir; do
-            newdir="${dir%.bak}"
-            mv "$dir" "$newdir"
-          done
+          echo "✅ Static export completed"
           SCRIPT
           chmod +x scripts/export.sh
 
