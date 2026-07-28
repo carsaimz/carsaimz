@@ -64,11 +64,9 @@ jobs:
 
       - name: Setup database
         env:
-          DATABASE_URL: "file:./db/custom.db"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          mkdir -p db
           bun run db:generate
-          bun run db:push
 
       - name: Build Next.js standalone
         run: bun run build
@@ -157,12 +155,12 @@ jobs:
 
       - name: Generate Prisma client
         env:
-          DATABASE_URL: "file:./db/custom.db"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: bun run db:generate
 
       - name: Check Prisma migrate status
         env:
-          DATABASE_URL: "file:./db/custom.db"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: bunx prisma migrate status || echo "⚠️ Migration status check requires an existing DB"
 
   # ---------------------------------------------------------------------------
@@ -187,11 +185,9 @@ jobs:
 
       - name: Setup database
         env:
-          DATABASE_URL: "file:./db/custom.db"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          mkdir -p db
           bun run db:generate
-          bun run db:push
 
       - name: Create export script
         run: |

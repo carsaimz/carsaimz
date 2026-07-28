@@ -90,11 +90,9 @@ jobs:
 
       - name: Setup database
         env:
-          DATABASE_URL: "file:./db/custom.db"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          mkdir -p db
           bun run db:generate
-          bun run db:push
 
       - name: Build Next.js standalone
         run: bun run build
@@ -142,11 +140,9 @@ jobs:
 
       - name: Setup database
         env:
-          DATABASE_URL: "file:./db/custom.db"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          mkdir -p db
           bun run db:generate
-          bun run db:push
 
       - name: Create export script
         run: |
@@ -304,11 +300,8 @@ jobs:
 
       - name: Setup database
         env:
-          DATABASE_URL: "file:./db/custom.db"
-        run: |
-          if (-not (Test-Path "db")) { New-Item -ItemType Directory -Path "db" }
-          bun run db:generate
-          bun run db:push
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: bun run db:generate
         shell: pwsh
 
       - name: Build Next.js standalone
@@ -373,7 +366,7 @@ jobs:
           REPO="${{ github.repository }}"
           
           cat > /tmp/release-body.md << 'HEADER'
-          ## 🚗 Carsai Mozambique — Release
+          ## 🏢 Carsai Mozambique — Release
           HEADER
           
           echo "" >> /tmp/release-body.md

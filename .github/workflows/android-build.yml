@@ -66,11 +66,9 @@ jobs:
 
       - name: Setup database
         env:
-          DATABASE_URL: "file:./db/custom.db"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          mkdir -p db
           bun run db:generate
-          bun run db:push
 
       # -----------------------------------------------------------------------
       # Static Export (for Capacitor)

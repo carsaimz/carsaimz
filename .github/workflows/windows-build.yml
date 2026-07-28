@@ -47,14 +47,9 @@ jobs:
 
       - name: Setup database
         env:
-          DATABASE_URL: "file:./db/custom.db"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         shell: pwsh
-        run: |
-          if (-not (Test-Path "db")) {
-            New-Item -ItemType Directory -Path "db" -Force
-          }
-          bun run db:generate
-          bun run db:push
+        run: bun run db:generate
 
       # -----------------------------------------------------------------------
       # Build Next.js Standalone

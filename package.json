@@ -2,7 +2,7 @@
   "name": "com.carsaimz",
   "version": "0.2.1",
   "private": true,
-  "description": "Carsai Mozambique - Automotive services platform for Mozambique",
+  "description": "Carsai Mozambique - Business services platform for Mozambique",
   "author": "Carsai Mozambique",
   "main": "electron/main.js",
   "scripts": {
@@ -145,7 +145,6 @@
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
     "vaul": "^1.1.2",
-    "z-ai-web-dev-sdk": "^0.0.18",
     "zod": "^4.0.2",
     "zustand": "^5.0.6"
   },

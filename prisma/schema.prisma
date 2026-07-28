@@ -1,12 +1,12 @@
 // Carsai Mozambique - Database Schema
-// Prisma with SQLite
+// Prisma with PostgreSQL (Supabase)
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
