@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDocs, getDoc, updateDoc, createDocWithId } from '@/lib/db'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET() {
   try {
-    const settings = await db.setting.findMany()
+    const settings = await getDocs('settings')
 
     // Convert array to key-value object for easier consumption
     const settingsMap = settings.reduce(
-      (acc, setting) => {
+      (acc: Record<string, string | null>, setting: any) => {
         acc[setting.key] = setting.value
         return acc
       },
@@ -17,7 +18,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: {
-        raw: settings,
+        raw: serializeFirestore(settings),
         map: settingsMap,
       },
     })
@@ -50,23 +51,26 @@ export async function POST(request: Request) {
       )
     }
 
-    // Upsert each setting (create if not exists, update if exists)
+    // Upsert each setting (check if exists, then update or create)
     const results = await Promise.all(
-      settings.map((setting: { key: string; value: string | null }) =>
-        db.setting.upsert({
-          where: { key: setting.key },
-          update: { value: setting.value ?? undefined },
-          create: {
-            key: setting.key,
-            value: setting.value ?? undefined,
-          },
-        })
-      )
+      settings.map(async (setting: { key: string; value: string | null }) => {
+        const existing = await getDoc('settings', setting.key)
+
+        if (existing) {
+          await updateDoc('settings', setting.key, { value: setting.value ?? null })
+          const updated = await getDoc('settings', setting.key)
+          return serializeFirestore(updated)
+        } else {
+          await createDocWithId('settings', setting.key, { key: setting.key, value: setting.value ?? null })
+          const created = await getDoc('settings', setting.key)
+          return serializeFirestore(created)
+        }
+      })
     )
 
     // Return the updated settings map
     const settingsMap = results.reduce(
-      (acc: Record<string, string | null>, setting) => {
+      (acc: Record<string, string | null>, setting: any) => {
         acc[setting.key] = setting.value
         return acc
       },

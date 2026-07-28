@@ -1,88 +1,130 @@
 /**
  * Carsai Mozambique — Login API Route
- * Uses Prisma + MySQL directly (no Supabase dependency).
+ * Firebase Auth — verifies ID token from client-side Firebase Auth.
+ *
+ * The client authenticates with Firebase Auth directly (email/password, Google, etc.)
+ * then sends the ID token to this route for server-side verification
+ * and Firestore profile retrieval.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-import { createHash } from 'crypto'
-
-function hashPassword(password: string): string {
-  return createHash('sha256').update(password).digest('hex')
-}
+import { getAdminAuth } from '@/lib/firebase-admin'
+import { getDoc, getDocByField, createDocWithId } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password } = body
+    const { idToken, email, password } = body
 
-    // ── Validation ──
-    if (!email || !password) {
+    // ── Mode 1: ID token verification (client already authenticated with Firebase) ──
+    if (idToken) {
+      const auth = getAdminAuth()
+      const decodedToken = await auth.verifyIdToken(idToken)
+      const uid = decodedToken.uid
+
+      // Get Firestore profile
+      const userProfile = await getDoc('users', uid)
+
+      if (!userProfile) {
+        // User exists in Firebase Auth but not in Firestore — create profile
+        const authUser = await auth.getUser(uid)
+        const userRole = await getDocByField('roles', 'name', 'user')
+
+        await createDocWithId('users', uid, {
+          name: authUser.displayName || authUser.email?.split('@')[0] || 'Utilizador',
+          email: authUser.email || '',
+          phone: authUser.phoneNumber || null,
+          company: null,
+          avatar: authUser.photoURL || null,
+          bio: null,
+          address: null,
+          roleId: userRole?.id || null,
+          isActive: true,
+          emailVerified: authUser.emailVerified,
+          authProvider: decodedToken.firebase?.sign_in_provider || 'unknown',
+        })
+
+        const role = userRole ? { id: userRole.id, name: userRole.name } : null
+
+        return NextResponse.json({
+          message: 'Login realizado com sucesso!',
+          user: {
+            id: uid,
+            name: authUser.displayName || authUser.email?.split('@')[0] || 'Utilizador',
+            email: authUser.email || '',
+            avatar: authUser.photoURL || null,
+            phone: authUser.phoneNumber || null,
+            role,
+            isActive: true,
+            emailVerified: authUser.emailVerified,
+            authProvider: decodedToken.firebase?.sign_in_provider || 'unknown',
+          },
+        })
+      }
+
+      // Check if user is active
+      if (!userProfile.isActive) {
+        return NextResponse.json(
+          { error: 'A sua conta está desactivada. Contacte o suporte.' },
+          { status: 403 }
+        )
+      }
+
+      // Get role info
+      let role: any = null
+      if (userProfile.roleId) {
+        const roleDoc = await getDoc('roles', userProfile.roleId)
+        if (roleDoc) role = { id: roleDoc.id, name: roleDoc.name }
+      }
+
+      return NextResponse.json({
+        message: 'Login realizado com sucesso!',
+        user: {
+          id: uid,
+          name: userProfile.name,
+          email: userProfile.email,
+          avatar: userProfile.avatar || null,
+          phone: userProfile.phone || null,
+          company: userProfile.company || null,
+          role,
+          isActive: userProfile.isActive,
+          emailVerified: decodedToken.email_verified,
+          authProvider: decodedToken.firebase?.sign_in_provider || 'unknown',
+        },
+      })
+    }
+
+    // ── Mode 2: Email/password login (fallback for non-Firebase-auth clients) ──
+    if (email && password) {
+      // We cannot directly verify email/password with Firebase Admin SDK.
+      // The client should use Firebase Auth client SDK for this.
+      // This mode is only for backward compatibility during transition.
       return NextResponse.json(
-        { error: 'Email e senha são obrigatórios.' },
+        { error: 'Use Firebase Auth no cliente para login com email/senha. Envie o idToken após autenticação.' },
         { status: 400 }
       )
     }
 
-    const emailLower = email.toLowerCase().trim()
-
-    // ── Find user ──
-    const user = await db.user.findUnique({
-      where: { email: emailLower },
-      include: { role: true },
-    })
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Email ou senha incorretos.' },
-        { status: 401 }
-      )
-    }
-
-    // ── Verify password ──
-    if (!user.passwordHash || user.passwordHash !== hashPassword(password)) {
-      return NextResponse.json(
-        { error: 'Email ou senha incorretos.' },
-        { status: 401 }
-      )
-    }
-
-    // ── Check if user is active ──
-    if (!user.isActive) {
-      return NextResponse.json(
-        { error: 'A sua conta está desactivada. Contacte o suporte.' },
-        { status: 403 }
-      )
-    }
-
-    // ── Return user data (without password hash) ──
-    const userData = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      avatar: user.avatar,
-      phone: user.phone,
-      company: user.company,
-      isActive: user.isActive,
-      emailVerified: user.emailVerified,
-      role: user.role
-        ? { id: user.role.id, name: user.role.name }
-        : null,
-      createdAt: user.createdAt,
-    }
-
     return NextResponse.json(
-      {
-        message: 'Login realizado com sucesso!',
-        user: userData,
-      },
-      { status: 200 }
+      { error: 'idToken ou credenciais são obrigatórios.' },
+      { status: 400 }
     )
   } catch (error: any) {
     console.error('[LOGIN ERROR]', error)
-    return NextResponse.json(
-      { error: 'Falha ao fazer login. Verifique a sua ligação e tente novamente.' },
-      { status: 500 }
-    )
+
+    const errorCode = error.errorInfo?.code || error.code || ''
+    let errorMsg = 'Falha ao fazer login. Verifique a sua ligação e tente novamente.'
+
+    if (errorCode === 'auth/id-token-expired') {
+      errorMsg = 'Sessão expirada. Faça login novamente.'
+    } else if (errorCode === 'auth/invalid-id-token') {
+      errorMsg = 'Token inválido. Faça login novamente.'
+    } else if (errorCode === 'auth/user-not-found') {
+      errorMsg = 'Utilizador não encontrado.'
+    } else if (errorCode.includes('not configured') || errorCode.includes('credential')) {
+      errorMsg = 'Serviço de autenticação não configurado. Contacte o administrador.'
+    }
+
+    return NextResponse.json({ error: errorMsg }, { status: 500 })
   }
 }

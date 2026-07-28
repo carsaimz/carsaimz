@@ -709,7 +709,7 @@ export const enUS: TranslationObject = {
     faq27Q: 'Who is behind Carsai?',
     faq27A: 'Carsai Mozambique was founded and is led by Carimo Saide Mpinda, CEO and founder, who manages all areas of the company — development, design, support, and strategy. Technical development is done by CarsaiDev (carsaideveloper@gmail.com). Our team is small but highly competent, focused on delivering quality and real digital transformation for Mozambique.',
     faq28Q: 'What technologies do you use?',
-    faq28A: 'We use modern and internationally recognized technologies: Next.js, React, TypeScript for frontend and backend, Prisma ORM for data management, MySQL and SQLite for databases, Tailwind CSS for design, Docker and cloud providers (AWS, GCP) for infrastructure, and AI API integration for intelligent features. We prioritize security, performance, and maintainability.',
+    faq28A: 'We use modern and internationally recognized technologies: Next.js, React, TypeScript for frontend and backend, Firebase Firestore and Auth for data and authentication for databases, Tailwind CSS for design, Docker and cloud providers (AWS, GCP) for infrastructure, and AI API integration for intelligent features. We prioritize security, performance, and maintainability.',
     faq29Q: 'Is my data secure with Carsai?',
     faq29A: 'Yes, data security is our top priority. We implement: data encryption (SSL/TLS for communications, hashing for passwords), compliance with Mozambican data protection laws, automatic backups and redundancy, continuous security monitoring, and a transparent privacy policy. We never share data with third parties without explicit consent.',
     faq30Q: 'Can I request a custom project?',

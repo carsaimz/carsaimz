@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDoc, getDocByField, updateDoc, deleteDoc } from '@/lib/db'
 import { buildI18nJson } from '@/lib/i18n-content'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET(
   request: Request,
@@ -9,9 +10,7 @@ export async function GET(
   try {
     const { id } = await params
 
-    const service = await db.service.findUnique({
-      where: { id },
-    })
+    const service = await getDoc('services', id)
 
     if (!service) {
       return NextResponse.json(
@@ -22,7 +21,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: service,
+      data: serializeFirestore(service),
     })
   } catch (error) {
     console.error('Service fetch error:', error)
@@ -46,7 +45,7 @@ export async function PUT(
     const body = await request.json()
 
     // Check that the service exists
-    const existing = await db.service.findUnique({ where: { id } })
+    const existing = await getDoc('services', id)
     if (!existing) {
       return NextResponse.json(
         { success: false, message: 'Service not found' },
@@ -69,7 +68,7 @@ export async function PUT(
 
     // If slug is being changed, check for duplicates
     if (slug && slug !== existing.slug) {
-      const duplicate = await db.service.findUnique({ where: { slug } })
+      const duplicate = await getDocByField('services', 'slug', slug)
       if (duplicate) {
         return NextResponse.json(
           {
@@ -105,14 +104,12 @@ export async function PUT(
     if (isPublished !== undefined) updateData.isPublished = isPublished
     if (order !== undefined) updateData.order = order
 
-    const service = await db.service.update({
-      where: { id },
-      data: updateData,
-    })
+    await updateDoc('services', id, updateData)
+    const service = await getDoc('services', id)
 
     return NextResponse.json({
       success: true,
-      data: service,
+      data: serializeFirestore(service),
     })
   } catch (error) {
     console.error('Service update error:', error)
@@ -135,7 +132,7 @@ export async function DELETE(
     const { id } = await params
 
     // Check that the service exists
-    const existing = await db.service.findUnique({ where: { id } })
+    const existing = await getDoc('services', id)
     if (!existing) {
       return NextResponse.json(
         { success: false, message: 'Service not found' },
@@ -143,7 +140,7 @@ export async function DELETE(
       )
     }
 
-    await db.service.delete({ where: { id } })
+    await deleteDoc('services', id)
 
     return NextResponse.json({
       success: true,

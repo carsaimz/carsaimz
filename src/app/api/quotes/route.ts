@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDoc, queryDocs, getDocByField, createDoc } from '@/lib/db'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,9 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify the user exists
-    const user = await db.user.findUnique({
-      where: { id: userId },
-    })
+    const user = await getDoc('users', userId)
 
     if (!user) {
       return NextResponse.json(
@@ -25,37 +24,44 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const quotes = await db.quote.findMany({
-      where: { userId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-            phone: true,
-          },
-        },
-        proposals: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            totalAmount: true,
-            status: true,
-            validUntil: true,
-            createdAt: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    const quotes = await queryDocs('quotes', [
+      { field: 'userId', op: '==', value: userId },
+    ], 'createdAt', 'desc')
+
+    // Enrich each quote with user and proposals data
+    const enrichedQuotes = await Promise.all(
+      quotes.map(async (q: any) => {
+        const quoteUser = q.userId ? await getDoc('users', q.userId) : null
+        const proposals = await queryDocs('proposals', [
+          { field: 'quoteId', op: '==', value: q.id },
+        ])
+
+        return serializeFirestore({
+          ...q,
+          user: quoteUser ? {
+            id: quoteUser.id,
+            name: quoteUser.name,
+            email: quoteUser.email,
+            avatar: quoteUser.avatar,
+            phone: quoteUser.phone,
+          } : null,
+          proposals: proposals.map((p: any) => ({
+            id: p.id,
+            title: p.title,
+            description: p.description,
+            totalAmount: p.totalAmount,
+            status: p.status,
+            validUntil: serializeFirestore(p.validUntil),
+            createdAt: serializeFirestore(p.createdAt),
+          })),
+        })
+      })
+    )
 
     return NextResponse.json({
       success: true,
-      data: quotes,
-      count: quotes.length,
+      data: enrichedQuotes,
+      count: enrichedQuotes.length,
     })
   } catch (error) {
     console.error('Quotes fetch error:', error)
@@ -83,9 +89,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the user exists
-    const user = await db.user.findUnique({
-      where: { id: userId },
-    })
+    const user = await getDoc('users', userId)
 
     if (!user) {
       return NextResponse.json(
@@ -94,29 +98,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const quote = await db.quote.create({
-      data: {
-        userId,
-        title,
-        description: description || null,
-        attachments: attachments ? JSON.stringify(attachments) : null,
-        status: 'pending',
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-          },
-        },
-      },
+    const quoteId = await createDoc('quotes', {
+      userId,
+      title,
+      description: description || null,
+      attachments: attachments ? JSON.stringify(attachments) : null,
+      status: 'pending',
+    })
+
+    const quote = await getDoc('quotes', quoteId)
+
+    // Enrich with user data
+    const quoteUser = await getDoc('users', userId)
+    const enrichedQuote = serializeFirestore({
+      ...quote,
+      user: quoteUser ? {
+        id: quoteUser.id,
+        name: quoteUser.name,
+        email: quoteUser.email,
+        avatar: quoteUser.avatar,
+      } : null,
     })
 
     return NextResponse.json({
       success: true,
-      data: quote,
+      data: enrichedQuote,
       message: 'Quote request created successfully',
     }, { status: 201 })
   } catch (error) {

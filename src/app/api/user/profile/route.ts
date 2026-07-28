@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDoc, updateDoc, getDocByField } from '@/lib/db'
 import { createHash } from 'crypto'
+import { serializeFirestore } from '@/lib/serialize'
 
 // Simple password hashing - matches auth routes
 function hashPassword(password: string): string {
@@ -13,19 +14,27 @@ export async function GET(request: NextRequest) {
     const email = searchParams.get('email')
     const userId = searchParams.get('userId')
 
-    const whereClause = email ? { email } : userId ? { id: userId } : null
-
-    if (!whereClause) {
+    if (!email && !userId) {
       return NextResponse.json({ error: 'email or userId is required' }, { status: 400 })
     }
 
-    const user = await db.user.findUnique({
-      where: whereClause,
-      include: { role: true },
-    })
+    let user: any = null
+
+    if (email) {
+      user = await getDocByField('users', 'email', email)
+    } else if (userId) {
+      user = await getDoc('users', userId)
+    }
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Fetch role
+    let roleName = 'user'
+    if (user.roleId) {
+      const roleDoc = await getDoc('roles', user.roleId)
+      if (roleDoc) roleName = roleDoc.name
     }
 
     return NextResponse.json({
@@ -39,7 +48,7 @@ export async function GET(request: NextRequest) {
         company: user.company,
         bio: user.bio,
         address: user.address,
-        role: user.role?.name || 'user',
+        role: roleName,
       },
     })
   } catch (error) {
@@ -61,9 +70,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check user exists
-    const existingUser = await db.user.findUnique({
-      where: { id: userId },
-    })
+    const existingUser = await getDoc('users', userId)
 
     if (!existingUser) {
       return NextResponse.json(
@@ -83,28 +90,30 @@ export async function PUT(request: NextRequest) {
       updateData.passwordHash = hashPassword(newPassword)
     }
 
-    const updatedUser = await db.user.update({
-      where: { id: userId },
-      data: updateData,
-      include: {
-        role: true,
-      },
-    })
+    await updateDoc('users', userId, updateData)
+
+    // Fetch updated user with role
+    const updatedUser = await getDoc('users', userId)
+    let roleName = 'user'
+    if (updatedUser?.roleId) {
+      const roleDoc = await getDoc('roles', updatedUser.roleId)
+      if (roleDoc) roleName = roleDoc.name
+    }
 
     return NextResponse.json({
       success: true,
       user: {
-        id: updatedUser.id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        avatar: updatedUser.avatar,
-        phone: updatedUser.phone,
-        company: updatedUser.company,
-        bio: updatedUser.bio,
-        address: updatedUser.address,
-        role: updatedUser.role?.name || 'user',
-        isActive: updatedUser.isActive,
-        emailVerified: updatedUser.emailVerified,
+        id: updatedUser!.id,
+        name: updatedUser!.name,
+        email: updatedUser!.email,
+        avatar: updatedUser!.avatar,
+        phone: updatedUser!.phone,
+        company: updatedUser!.company,
+        bio: updatedUser!.bio,
+        address: updatedUser!.address,
+        role: roleName,
+        isActive: updatedUser!.isActive,
+        emailVerified: updatedUser!.emailVerified,
       },
     })
   } catch (error) {

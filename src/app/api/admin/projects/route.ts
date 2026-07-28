@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { queryDocs, getDocByField, createDoc, updateDoc, getDoc, deleteDoc } from '@/lib/db'
+import { serializeFirestore } from '@/lib/serialize'
 
 // GET all projects (including unpublished) for admin
 export async function GET() {
   try {
-    const projects = await db.project.findMany({
-      orderBy: { createdAt: 'desc' },
-    })
-    return NextResponse.json({ success: true, data: projects })
+    const projects = await queryDocs('projects', [], 'createdAt', 'desc')
+    return NextResponse.json({ success: true, data: serializeFirestore(projects) })
   } catch (error) {
     console.error('Admin projects fetch error:', error)
     return NextResponse.json(
@@ -23,7 +22,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { title, titleI18n, slug, description, descriptionI18n, client, technologies, demoUrl, isFeatured, isPublished } = body
 
-    const existing = await db.project.findUnique({ where: { slug } })
+    const existing = await getDocByField('projects', 'slug', slug)
     if (existing) {
       return NextResponse.json(
         { success: false, message: 'Slug already exists' },
@@ -31,21 +30,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const project = await db.project.create({
-      data: {
-        title,
-        titleI18n: titleI18n || null,
-        slug,
-        description: description || null,
-        descriptionI18n: descriptionI18n || null,
-        client: client || null,
-        technologies: technologies || null,
-        demoUrl: demoUrl || null,
-        isFeatured: isFeatured || false,
-        isPublished: isPublished || false,
-      },
+    const projectId = await createDoc('projects', {
+      title,
+      titleI18n: titleI18n || null,
+      slug,
+      description: description || null,
+      descriptionI18n: descriptionI18n || null,
+      client: client || null,
+      technologies: technologies || null,
+      demoUrl: demoUrl || null,
+      isFeatured: isFeatured || false,
+      isPublished: isPublished || false,
     })
-    return NextResponse.json({ success: true, data: project })
+
+    const project = await getDoc('projects', projectId)
+    return NextResponse.json({ success: true, data: serializeFirestore(project) })
   } catch (error) {
     console.error('Admin project create error:', error)
     return NextResponse.json(
@@ -69,7 +68,7 @@ export async function PUT(request: NextRequest) {
     }
 
     if (slug) {
-      const existing = await db.project.findUnique({ where: { slug } })
+      const existing = await getDocByField('projects', 'slug', slug)
       if (existing && existing.id !== id) {
         return NextResponse.json(
           { success: false, message: 'Slug already exists' },
@@ -78,22 +77,21 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    const project = await db.project.update({
-      where: { id },
-      data: {
-        title,
-        titleI18n: titleI18n || null,
-        slug,
-        description: description || null,
-        descriptionI18n: descriptionI18n || null,
-        client: client || null,
-        technologies: technologies || null,
-        demoUrl: demoUrl || null,
-        isFeatured: isFeatured || false,
-        isPublished: isPublished || false,
-      },
-    })
-    return NextResponse.json({ success: true, data: project })
+    const updateData: Record<string, any> = {}
+    if (title !== undefined) updateData.title = title
+    if (titleI18n !== undefined) updateData.titleI18n = titleI18n || null
+    if (slug !== undefined) updateData.slug = slug
+    if (description !== undefined) updateData.description = description || null
+    if (descriptionI18n !== undefined) updateData.descriptionI18n = descriptionI18n || null
+    if (client !== undefined) updateData.client = client || null
+    if (technologies !== undefined) updateData.technologies = technologies || null
+    if (demoUrl !== undefined) updateData.demoUrl = demoUrl || null
+    if (isFeatured !== undefined) updateData.isFeatured = isFeatured || false
+    if (isPublished !== undefined) updateData.isPublished = isPublished || false
+
+    await updateDoc('projects', id, updateData)
+    const project = await getDoc('projects', id)
+    return NextResponse.json({ success: true, data: serializeFirestore(project) })
   } catch (error) {
     console.error('Admin project update error:', error)
     return NextResponse.json(
@@ -116,7 +114,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    await db.project.delete({ where: { id } })
+    await deleteDoc('projects', id)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Admin project delete error:', error)

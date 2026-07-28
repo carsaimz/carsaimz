@@ -1,26 +1,29 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { queryDocs, getDocs, getDoc } from '@/lib/db'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET() {
   try {
-    const notifications = await db.notification.findMany({
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    const notifications = await queryDocs('notifications', [], 'createdAt', 'desc')
+
+    // Enrich with user data
+    const enrichedNotifications = await Promise.all(
+      notifications.map(async (n: any) => {
+        let user: any = null
+        if (n.userId) {
+          const userDoc = await getDoc('users', n.userId)
+          if (userDoc) {
+            user = { id: userDoc.id, name: userDoc.name, email: userDoc.email, avatar: userDoc.avatar }
+          }
+        }
+        return serializeFirestore({ ...n, user })
+      })
+    )
 
     // Summary stats
-    const unreadCount = notifications.filter((n) => !n.isRead).length
-    const typeBreakdown = notifications.reduce(
-      (acc, n) => {
+    const unreadCount = enrichedNotifications.filter((n: any) => !n.isRead).length
+    const typeBreakdown = enrichedNotifications.reduce(
+      (acc: Record<string, number>, n: any) => {
         acc[n.type] = (acc[n.type] || 0) + 1
         return acc
       },
@@ -29,9 +32,9 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      data: notifications,
+      data: enrichedNotifications,
       meta: {
-        total: notifications.length,
+        total: enrichedNotifications.length,
         unread: unreadCount,
         types: typeBreakdown,
       },

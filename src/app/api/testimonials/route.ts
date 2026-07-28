@@ -1,28 +1,30 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { queryDocs, createDoc, getDoc } from '@/lib/db'
 import { buildI18nJson } from '@/lib/i18n-content'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET() {
   try {
-    const testimonials = await db.testimonial.findMany({
-      where: { isPublished: true },
-      select: {
-        id: true,
-        name: true,
-        company: true,
-        content: true,
-        contentI18n: true,
-        rating: true,
-        avatar: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    const testimonials = await queryDocs('testimonials', [
+      { field: 'isPublished', op: '==', value: true },
+    ], 'createdAt', 'desc')
+
+    // Select only public fields
+    const publicTestimonials = testimonials.map((t: any) => ({
+      id: t.id,
+      name: t.name,
+      company: t.company,
+      content: t.content,
+      contentI18n: t.contentI18n,
+      rating: t.rating,
+      avatar: t.avatar,
+      createdAt: serializeFirestore(t.createdAt),
+    }))
 
     return NextResponse.json({
       success: true,
-      data: testimonials,
-      count: testimonials.length,
+      data: publicTestimonials,
+      count: publicTestimonials.length,
     })
   } catch (error) {
     console.error('Testimonials fetch error:', error)
@@ -68,21 +70,21 @@ export async function POST(request: Request) {
         ? buildI18nJson(contentI18n)
         : contentI18n
 
-    const testimonial = await db.testimonial.create({
-      data: {
-        name,
-        company: company ?? undefined,
-        content,
-        contentI18n: contentI18nValue ?? undefined,
-        rating: rating ?? 5,
-        avatar: avatar ?? undefined,
-        isPublished: isPublished ?? true,
-      },
+    const testimonialId = await createDoc('testimonials', {
+      name,
+      company: company ?? null,
+      content,
+      contentI18n: contentI18nValue ?? null,
+      rating: rating ?? 5,
+      avatar: avatar ?? null,
+      isPublished: isPublished ?? true,
     })
+
+    const testimonial = await getDoc('testimonials', testimonialId)
 
     return NextResponse.json({
       success: true,
-      data: testimonial,
+      data: serializeFirestore(testimonial),
     }, { status: 201 })
   } catch (error) {
     console.error('Testimonial creation error:', error)

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDoc, queryDocs, getDocs } from '@/lib/db'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,9 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify the user exists
-    const user = await db.user.findUnique({
-      where: { id: userId },
-    })
+    const user = await getDoc('users', userId)
 
     if (!user) {
       return NextResponse.json(
@@ -25,42 +24,64 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Find all proposals linked to the user's quotes
-    const userQuotes = await db.quote.findMany({
-      where: { userId },
-      select: { id: true },
-    })
-
-    const quoteIds = userQuotes.map(q => q.id)
+    // Find all quotes linked to the user
+    const userQuotes = await queryDocs('quotes', [
+      { field: 'userId', op: '==', value: userId },
+    ])
+    const quoteIds = userQuotes.map((q: any) => q.id)
 
     // Get all proposals for these quotes
-    const proposals = await db.proposal.findMany({
-      where: { quoteId: { in: quoteIds } },
-      select: { id: true },
-    })
-
-    const proposalIds = proposals.map(p => p.id)
+    const allProposals: any[] = []
+    for (const quoteId of quoteIds) {
+      const quoteProposals = await queryDocs('proposals', [
+        { field: 'quoteId', op: '==', value: quoteId },
+      ])
+      allProposals.push(...quoteProposals)
+    }
+    const proposalIds = allProposals.map((p: any) => p.id)
 
     // Get invoices for these proposals
-    const invoices = await db.invoice.findMany({
-      where: { proposalId: { in: proposalIds } },
-      include: {
-        proposal: {
-          select: {
-            id: true,
-            title: true,
-            quote: {
-              select: {
-                id: true,
-                title: true,
-                userId: true,
-              },
-            },
-          },
-        },
-        items: true,
-      },
-      orderBy: { createdAt: 'desc' },
+    const allInvoices: any[] = []
+    for (const proposalId of proposalIds) {
+      const proposalInvoices = await queryDocs('invoices', [
+        { field: 'proposalId', op: '==', value: proposalId },
+      ])
+      allInvoices.push(...proposalInvoices)
+    }
+
+    // Enrich each invoice with proposal, quote, and items data
+    const invoices = await Promise.all(
+      allInvoices.map(async (invoice: any) => {
+        const proposal = invoice.proposalId ? await getDoc('proposals', invoice.proposalId) : null
+        let quote: any = null
+        if (proposal && proposal.quoteId) {
+          quote = await getDoc('quotes', proposal.quoteId)
+        }
+        const items = await queryDocs('invoice_items', [
+          { field: 'invoiceId', op: '==', value: invoice.id },
+        ])
+
+        return serializeFirestore({
+          ...invoice,
+          proposal: proposal ? {
+            id: proposal.id,
+            title: proposal.title,
+            quote: quote ? {
+              id: quote.id,
+              title: quote.title,
+              userId: quote.userId,
+            } : null,
+          } : null,
+          items,
+        })
+      })
+    )
+
+    // Sort by createdAt desc
+    invoices.sort((a: any, b: any) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0
+      return bTime - aTime
     })
 
     return NextResponse.json({

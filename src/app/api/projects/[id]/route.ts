@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDoc, getDocByField, updateDoc, deleteDoc } from '@/lib/db'
 import { buildI18nJson } from '@/lib/i18n-content'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET(
   request: Request,
@@ -9,9 +10,7 @@ export async function GET(
   try {
     const { id } = await params
 
-    const project = await db.project.findUnique({
-      where: { id },
-    })
+    const project = await getDoc('projects', id)
 
     if (!project) {
       return NextResponse.json(
@@ -22,7 +21,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: project,
+      data: serializeFirestore(project),
     })
   } catch (error) {
     console.error('Project fetch error:', error)
@@ -46,7 +45,7 @@ export async function PUT(
     const body = await request.json()
 
     // Check that the project exists
-    const existing = await db.project.findUnique({ where: { id } })
+    const existing = await getDoc('projects', id)
     if (!existing) {
       return NextResponse.json(
         { success: false, message: 'Project not found' },
@@ -70,7 +69,7 @@ export async function PUT(
 
     // If slug is being changed, check for duplicates
     if (slug && slug !== existing.slug) {
-      const duplicate = await db.project.findUnique({ where: { slug } })
+      const duplicate = await getDocByField('projects', 'slug', slug)
       if (duplicate) {
         return NextResponse.json(
           {
@@ -107,14 +106,12 @@ export async function PUT(
     if (isFeatured !== undefined) updateData.isFeatured = isFeatured
     if (isPublished !== undefined) updateData.isPublished = isPublished
 
-    const project = await db.project.update({
-      where: { id },
-      data: updateData,
-    })
+    await updateDoc('projects', id, updateData)
+    const project = await getDoc('projects', id)
 
     return NextResponse.json({
       success: true,
-      data: project,
+      data: serializeFirestore(project),
     })
   } catch (error) {
     console.error('Project update error:', error)
@@ -137,7 +134,7 @@ export async function DELETE(
     const { id } = await params
 
     // Check that the project exists
-    const existing = await db.project.findUnique({ where: { id } })
+    const existing = await getDoc('projects', id)
     if (!existing) {
       return NextResponse.json(
         { success: false, message: 'Project not found' },
@@ -145,7 +142,7 @@ export async function DELETE(
       )
     }
 
-    await db.project.delete({ where: { id } })
+    await deleteDoc('projects', id)
 
     return NextResponse.json({
       success: true,

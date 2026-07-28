@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { queryDocs, getDocByField, createDoc, getDoc } from '@/lib/db'
 import { buildI18nJson } from '@/lib/i18n-content'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET() {
   try {
-    const projects = await db.project.findMany({
-      where: { isPublished: true },
-      orderBy: { createdAt: 'desc' },
-    })
+    const projects = await queryDocs('projects', [
+      { field: 'isPublished', op: '==', value: true },
+    ], 'createdAt', 'desc')
 
     return NextResponse.json({
       success: true,
-      data: projects,
+      data: serializeFirestore(projects),
       count: projects.length,
     })
   } catch (error) {
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     }
 
     // Check for duplicate slug
-    const existing = await db.project.findUnique({ where: { slug } })
+    const existing = await getDocByField('projects', 'slug', slug)
     if (existing) {
       return NextResponse.json(
         {
@@ -79,25 +79,25 @@ export async function POST(request: Request) {
         ? buildI18nJson(descriptionI18n)
         : descriptionI18n
 
-    const project = await db.project.create({
-      data: {
-        slug,
-        title,
-        titleI18n: titleI18nValue ?? undefined,
-        description: description ?? undefined,
-        descriptionI18n: descriptionI18nValue ?? undefined,
-        client: client ?? undefined,
-        technologies: technologies ?? undefined,
-        demoUrl: demoUrl ?? undefined,
-        images: images ?? undefined,
-        isFeatured: isFeatured ?? false,
-        isPublished: isPublished ?? true,
-      },
+    const projectId = await createDoc('projects', {
+      slug,
+      title,
+      titleI18n: titleI18nValue ?? null,
+      description: description ?? null,
+      descriptionI18n: descriptionI18nValue ?? null,
+      client: client ?? null,
+      technologies: technologies ?? null,
+      demoUrl: demoUrl ?? null,
+      images: images ?? null,
+      isFeatured: isFeatured ?? false,
+      isPublished: isPublished ?? true,
     })
+
+    const project = await getDoc('projects', projectId)
 
     return NextResponse.json({
       success: true,
-      data: project,
+      data: serializeFirestore(project),
     }, { status: 201 })
   } catch (error) {
     console.error('Project creation error:', error)

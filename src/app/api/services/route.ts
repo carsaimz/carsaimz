@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { queryDocs, getDocByField, createDoc, getDoc } from '@/lib/db'
 import { buildI18nJson } from '@/lib/i18n-content'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET() {
   try {
-    const services = await db.service.findMany({
-      where: { isPublished: true },
-      orderBy: { order: 'asc' },
-    })
+    const services = await queryDocs('services', [
+      { field: 'isPublished', op: '==', value: true },
+    ], 'order', 'asc')
 
     return NextResponse.json({
       success: true,
-      data: services,
+      data: serializeFirestore(services),
       count: services.length,
     })
   } catch (error) {
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     }
 
     // Check for duplicate slug
-    const existing = await db.service.findUnique({ where: { slug } })
+    const existing = await getDocByField('services', 'slug', slug)
     if (existing) {
       return NextResponse.json(
         {
@@ -78,24 +78,24 @@ export async function POST(request: Request) {
         ? buildI18nJson(descriptionI18n)
         : descriptionI18n
 
-    const service = await db.service.create({
-      data: {
-        slug,
-        title,
-        titleI18n: titleI18nValue ?? undefined,
-        description: description ?? undefined,
-        descriptionI18n: descriptionI18nValue ?? undefined,
-        icon: icon ?? undefined,
-        basePrice: basePrice ?? undefined,
-        isFeatured: isFeatured ?? false,
-        isPublished: isPublished ?? true,
-        order: order ?? 0,
-      },
+    const serviceId = await createDoc('services', {
+      slug,
+      title,
+      titleI18n: titleI18nValue ?? null,
+      description: description ?? null,
+      descriptionI18n: descriptionI18nValue ?? null,
+      icon: icon ?? null,
+      basePrice: basePrice ?? null,
+      isFeatured: isFeatured ?? false,
+      isPublished: isPublished ?? true,
+      order: order ?? 0,
     })
+
+    const service = await getDoc('services', serviceId)
 
     return NextResponse.json({
       success: true,
-      data: service,
+      data: serializeFirestore(service),
     }, { status: 201 })
   } catch (error) {
     console.error('Service creation error:', error)

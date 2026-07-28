@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { queryDocs, getDocs, countDocs, getDoc } from '@/lib/db'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,64 +8,71 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
     const search = searchParams.get('search') || ''
-    const excludeSuperAdmin = searchParams.get('excludeSuperAdmin') === 'true'
 
-    // Build where clause
-    const whereClause: Record<string, unknown> = {}
+    // Fetch all users (Firestore doesn't support relation-based filtering)
+    const allUsers = await getDocs('users')
 
-    // Always exclude super_admin from the list unless explicitly requested otherwise
-    // super_admin users are hidden from admin UI for security
-    if (excludeSuperAdmin || !searchParams.has('excludeSuperAdmin')) {
-      whereClause.role = { name: { not: 'super_admin' } }
-    }
+    // Fetch all roles so we can join them
+    const roles = await getDocs('roles')
+    const roleMap = new Map(roles.map(r => [r.id, r]))
+
+    // Filter out super_admin users and apply search
+    let filteredUsers = allUsers.filter((u: any) => {
+      const userRole = u.roleId ? roleMap.get(u.roleId) : null
+      const roleName = userRole?.name || 'user'
+      return roleName !== 'super_admin'
+    })
 
     if (search) {
-      whereClause.OR = [
-        { name: { contains: search } },
-        { email: { contains: search } },
-        { phone: { contains: search } },
-      ]
+      const searchLower = search.toLowerCase()
+      filteredUsers = filteredUsers.filter((u: any) =>
+        (u.name && u.name.toLowerCase().includes(searchLower)) ||
+        (u.email && u.email.toLowerCase().includes(searchLower)) ||
+        (u.phone && u.phone.toLowerCase().includes(searchLower))
+      )
     }
 
-    const [users, total] = await Promise.all([
-      db.user.findMany({
-        where: whereClause,
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          role: {
-            select: { id: true, name: true },
-          },
-        },
-      }),
-      db.user.count({ where: whereClause }),
-    ])
+    // Sort by createdAt descending
+    filteredUsers.sort((a: any, b: any) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0
+      return bTime - aTime
+    })
 
-    // Map users to a clean format (exclude passwordHash)
-    // Also filter out super_admin users defensively in case the where clause didn't work
-    const mappedUsers = users
-      .filter((u: any) => u.role?.name !== 'super_admin')
-      .map((u: any) => ({
+    // Paginate
+    const total = filteredUsers.length
+    const start = (page - 1) * limit
+    const paginatedUsers = filteredUsers.slice(start, start + limit)
+
+    // Map users to clean format (exclude passwordHash)
+    const mappedUsers = paginatedUsers.map((u: any) => {
+      const userRole = u.roleId ? roleMap.get(u.roleId) : null
+      const roleName = userRole?.name || 'user'
+      const createdAt = u.createdAt
+        ? (typeof u.createdAt === 'string' ? u.createdAt : u.createdAt?.toDate?.()?.toISOString?.() || new Date().toISOString())
+        : new Date().toISOString()
+
+      return {
         id: u.id,
         name: u.name || '',
         email: u.email,
         phone: u.phone,
-        role: u.role?.name || 'user',
+        role: roleName,
         roleId: u.roleId,
         avatar: u.avatar,
         isActive: u.isActive,
-        createdAt: typeof u.createdAt === 'string' ? u.createdAt : u.createdAt?.toISOString?.() || new Date().toISOString(),
-      }))
+        createdAt,
+      }
+    })
 
     return NextResponse.json({
       success: true,
       data: mappedUsers,
       meta: {
-        total: mappedUsers.length,
+        total,
         page,
         limit,
-        totalPages: Math.ceil(mappedUsers.length / limit),
+        totalPages: Math.ceil(total / limit),
       },
     })
   } catch (error) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { queryDocs, getDocByField, createDoc, updateDoc, getDoc, deleteDoc } from '@/lib/db'
+import { serializeFirestore } from '@/lib/serialize'
 
 /**
  * Carsai Mozambique - AI Providers Admin API
@@ -11,13 +12,11 @@ import { db } from '@/lib/db'
 // ── GET: List all providers ──
 export async function GET() {
   try {
-    const providers = await db.aiProvider.findMany({
-      orderBy: { priority: 'asc' },
-    })
+    const providers = await queryDocs('ai_providers', [], 'priority', 'asc')
 
     // Mask API keys for security (only show last 4 chars)
     const masked = providers.map(p => ({
-      ...p,
+      ...serializeFirestore(p),
       apiKey: p.apiKey ? `...${p.apiKey.slice(-4)}` : null,
     }))
 
@@ -42,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for duplicate name
-    const existing = await db.aiProvider.findUnique({ where: { name } })
+    const existing = await getDocByField('ai_providers', 'name', name.toLowerCase())
     if (existing) {
       return NextResponse.json({ error: 'Provider with this name already exists' }, { status: 409 })
     }
@@ -78,20 +77,20 @@ export async function POST(request: NextRequest) {
 
     const preset = defaults[name.toLowerCase()] || {}
 
-    const provider = await db.aiProvider.create({
-      data: {
-        name: name.toLowerCase(),
-        displayName: displayName || preset.displayName || name,
-        apiKey: apiKey || null,
-        baseUrl: baseUrl || preset.baseUrl || null,
-        model: model || preset.model || null,
-        priority: priority ?? 10,
-        isActive: isActive ?? true,
-        config: config ? JSON.stringify(config) : null,
-      },
+    const providerId = await createDoc('ai_providers', {
+      name: name.toLowerCase(),
+      displayName: displayName || preset.displayName || name,
+      apiKey: apiKey || null,
+      baseUrl: baseUrl || preset.baseUrl || null,
+      model: model || preset.model || null,
+      priority: priority ?? 10,
+      isActive: isActive ?? true,
+      config: config ? JSON.stringify(config) : null,
     })
 
-    return NextResponse.json({ success: true, provider })
+    const provider = await getDoc('ai_providers', providerId)
+
+    return NextResponse.json({ success: true, provider: serializeFirestore(provider) })
   } catch (error) {
     console.error('AI providers POST error:', error)
     return NextResponse.json(
@@ -111,20 +110,19 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Provider ID is required' }, { status: 400 })
     }
 
-    const provider = await db.aiProvider.update({
-      where: { id },
-      data: {
-        ...(displayName !== undefined && { displayName }),
-        ...(apiKey !== undefined && { apiKey }),
-        ...(baseUrl !== undefined && { baseUrl }),
-        ...(model !== undefined && { model }),
-        ...(priority !== undefined && { priority }),
-        ...(isActive !== undefined && { isActive }),
-        ...(config !== undefined && { config: JSON.stringify(config) }),
-      },
-    })
+    const updateData: Record<string, any> = {}
+    if (displayName !== undefined) updateData.displayName = displayName
+    if (apiKey !== undefined) updateData.apiKey = apiKey
+    if (baseUrl !== undefined) updateData.baseUrl = baseUrl
+    if (model !== undefined) updateData.model = model
+    if (priority !== undefined) updateData.priority = priority
+    if (isActive !== undefined) updateData.isActive = isActive
+    if (config !== undefined) updateData.config = JSON.stringify(config)
 
-    return NextResponse.json({ success: true, provider })
+    await updateDoc('ai_providers', id, updateData)
+    const provider = await getDoc('ai_providers', id)
+
+    return NextResponse.json({ success: true, provider: serializeFirestore(provider) })
   } catch (error) {
     console.error('AI providers PUT error:', error)
     return NextResponse.json(
@@ -144,7 +142,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Provider ID is required' }, { status: 400 })
     }
 
-    await db.aiProvider.delete({ where: { id } })
+    await deleteDoc('ai_providers', id)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('AI providers DELETE error:', error)

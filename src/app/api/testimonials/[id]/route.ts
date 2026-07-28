@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDoc, updateDoc, deleteDoc } from '@/lib/db'
 import { buildI18nJson } from '@/lib/i18n-content'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET(
   request: Request,
@@ -9,9 +10,7 @@ export async function GET(
   try {
     const { id } = await params
 
-    const testimonial = await db.testimonial.findUnique({
-      where: { id },
-    })
+    const testimonial = await getDoc('testimonials', id)
 
     if (!testimonial) {
       return NextResponse.json(
@@ -22,7 +21,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: testimonial,
+      data: serializeFirestore(testimonial),
     })
   } catch (error) {
     console.error('Testimonial fetch error:', error)
@@ -46,7 +45,7 @@ export async function PUT(
     const body = await request.json()
 
     // Check that the testimonial exists
-    const existing = await db.testimonial.findUnique({ where: { id } })
+    const existing = await getDoc('testimonials', id)
     if (!existing) {
       return NextResponse.json(
         { success: false, message: 'Testimonial not found' },
@@ -80,14 +79,12 @@ export async function PUT(
     if (avatar !== undefined) updateData.avatar = avatar
     if (isPublished !== undefined) updateData.isPublished = isPublished
 
-    const testimonial = await db.testimonial.update({
-      where: { id },
-      data: updateData,
-    })
+    await updateDoc('testimonials', id, updateData)
+    const testimonial = await getDoc('testimonials', id)
 
     return NextResponse.json({
       success: true,
-      data: testimonial,
+      data: serializeFirestore(testimonial),
     })
   } catch (error) {
     console.error('Testimonial update error:', error)
@@ -110,7 +107,7 @@ export async function DELETE(
     const { id } = await params
 
     // Check that the testimonial exists
-    const existing = await db.testimonial.findUnique({ where: { id } })
+    const existing = await getDoc('testimonials', id)
     if (!existing) {
       return NextResponse.json(
         { success: false, message: 'Testimonial not found' },
@@ -118,7 +115,7 @@ export async function DELETE(
       )
     }
 
-    await db.testimonial.delete({ where: { id } })
+    await deleteDoc('testimonials', id)
 
     return NextResponse.json({
       success: true,

@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { queryDocs, createDoc, updateDoc, getDoc, deleteDoc } from '@/lib/db'
+import { serializeFirestore } from '@/lib/serialize'
 
 // GET all testimonials (including unpublished) for admin
 export async function GET() {
   try {
-    const testimonials = await db.testimonial.findMany({
-      orderBy: { createdAt: 'desc' },
-    })
-    return NextResponse.json({ success: true, data: testimonials })
+    const testimonials = await queryDocs('testimonials', [], 'createdAt', 'desc')
+    return NextResponse.json({ success: true, data: serializeFirestore(testimonials) })
   } catch (error) {
     console.error('Admin testimonials fetch error:', error)
     return NextResponse.json(
@@ -30,17 +29,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const testimonial = await db.testimonial.create({
-      data: {
-        name,
-        company: company || null,
-        content,
-        contentI18n: contentI18n || null,
-        rating: rating || 5,
-        isPublished: isPublished || false,
-      },
+    const testimonialId = await createDoc('testimonials', {
+      name,
+      company: company || null,
+      content,
+      contentI18n: contentI18n || null,
+      rating: rating || 5,
+      isPublished: isPublished || false,
     })
-    return NextResponse.json({ success: true, data: testimonial })
+
+    const testimonial = await getDoc('testimonials', testimonialId)
+    return NextResponse.json({ success: true, data: serializeFirestore(testimonial) })
   } catch (error) {
     console.error('Admin testimonial create error:', error)
     return NextResponse.json(
@@ -63,18 +62,17 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const testimonial = await db.testimonial.update({
-      where: { id },
-      data: {
-        name,
-        company: company || null,
-        content,
-        contentI18n: contentI18n || null,
-        rating: rating || 5,
-        isPublished: isPublished || false,
-      },
-    })
-    return NextResponse.json({ success: true, data: testimonial })
+    const updateData: Record<string, any> = {}
+    if (name !== undefined) updateData.name = name
+    if (company !== undefined) updateData.company = company || null
+    if (content !== undefined) updateData.content = content
+    if (contentI18n !== undefined) updateData.contentI18n = contentI18n || null
+    if (rating !== undefined) updateData.rating = rating || 5
+    if (isPublished !== undefined) updateData.isPublished = isPublished || false
+
+    await updateDoc('testimonials', id, updateData)
+    const testimonial = await getDoc('testimonials', id)
+    return NextResponse.json({ success: true, data: serializeFirestore(testimonial) })
   } catch (error) {
     console.error('Admin testimonial update error:', error)
     return NextResponse.json(
@@ -97,7 +95,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    await db.testimonial.delete({ where: { id } })
+    await deleteDoc('testimonials', id)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Admin testimonial delete error:', error)

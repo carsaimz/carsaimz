@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDoc, queryDocs, getDocByField, createDoc, getDocs } from '@/lib/db'
 import { buildI18nJson } from '@/lib/i18n-content'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,52 +9,8 @@ export async function GET(request: NextRequest) {
     const slug = searchParams.get('slug')
 
     if (slug) {
-      // Fetch a single post by slug with full details including comments
-      const post = await db.post.findUnique({
-        where: { slug },
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true,
-            },
-          },
-          category: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-          tags: {
-            include: {
-              tag: {
-                select: {
-                  id: true,
-                  name: true,
-                  slug: true,
-                },
-              },
-            },
-          },
-          comments: {
-            where: { isApproved: true },
-            include: {
-              author: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  avatar: true,
-                },
-              },
-            },
-            orderBy: { createdAt: 'desc' },
-          },
-        },
-      })
+      // Fetch a single post by slug
+      const post = await getDocByField('posts', 'slug', slug)
 
       if (!post) {
         return NextResponse.json(
@@ -62,11 +19,61 @@ export async function GET(request: NextRequest) {
         )
       }
 
-      // Transform tags to a cleaner format
-      const formattedPost = {
-        ...post,
-        tags: post.tags.map((pt) => pt.tag),
+      // Enrich with author, category, tags, and comments
+      let author: any = null
+      if (post.authorId) {
+        const authorDoc = await getDoc('users', post.authorId)
+        if (authorDoc) {
+          author = { id: authorDoc.id, name: authorDoc.name, email: authorDoc.email, avatar: authorDoc.avatar }
+        }
       }
+
+      let category: any = null
+      if (post.categoryId) {
+        const catDoc = await getDoc('categories', post.categoryId)
+        if (catDoc) {
+          category = { id: catDoc.id, name: catDoc.name, slug: catDoc.slug }
+        }
+      }
+
+      // Get post tags
+      const postTags = await queryDocs('post_tags', [
+        { field: 'postId', op: '==', value: post.id },
+      ])
+      const tags = await Promise.all(
+        postTags.map(async (pt: any) => {
+          if (pt.tagId) {
+            const tagDoc = await getDoc('tags', pt.tagId)
+            if (tagDoc) return { id: tagDoc.id, name: tagDoc.name, slug: tagDoc.slug }
+          }
+          return null
+        }).filter(Boolean)
+      )
+
+      // Get approved comments
+      const commentsRaw = await queryDocs('comments', [
+        { field: 'postId', op: '==', value: post.id },
+        { field: 'isApproved', op: '==', value: true },
+      ], 'createdAt', 'desc')
+
+      const comments = await Promise.all(
+        commentsRaw.map(async (c: any) => {
+          let commentAuthor: any = null
+          if (c.authorId) {
+            const a = await getDoc('users', c.authorId)
+            if (a) commentAuthor = { id: a.id, name: a.name, email: a.email, avatar: a.avatar }
+          }
+          return serializeFirestore({ ...c, author: commentAuthor })
+        })
+      )
+
+      const formattedPost = serializeFirestore({
+        ...post,
+        author,
+        category,
+        tags,
+        comments,
+      })
 
       return NextResponse.json({
         success: true,
@@ -74,59 +81,70 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Fetch all published posts with comments included
-    const posts = await db.post.findMany({
-      where: { published: true },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-          },
-        },
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        tags: {
-          include: {
-            tag: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              },
-            },
-          },
-        },
-        comments: {
-          where: { isApproved: true },
-          include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                avatar: true,
-              },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    // Fetch all published posts
+    const posts = await queryDocs('posts', [
+      { field: 'published', op: '==', value: true },
+    ], 'createdAt', 'desc')
 
-    // Transform tags to a cleaner format
-    const formattedPosts = posts.map((post) => ({
-      ...post,
-      tags: post.tags.map((pt) => pt.tag),
-    }))
+    // Enrich each post
+    const formattedPosts = await Promise.all(
+      posts.map(async (post: any) => {
+        let author: any = null
+        if (post.authorId) {
+          const authorDoc = await getDoc('users', post.authorId)
+          if (authorDoc) {
+            author = { id: authorDoc.id, name: authorDoc.name, email: authorDoc.email, avatar: authorDoc.avatar }
+          }
+        }
+
+        let category: any = null
+        if (post.categoryId) {
+          const catDoc = await getDoc('categories', post.categoryId)
+          if (catDoc) {
+            category = { id: catDoc.id, name: catDoc.name, slug: catDoc.slug }
+          }
+        }
+
+        // Get tags for this post
+        const postTags = await queryDocs('post_tags', [
+          { field: 'postId', op: '==', value: post.id },
+        ])
+        const tags = await Promise.all(
+          postTags.map(async (pt: any) => {
+            if (pt.tagId) {
+              const tagDoc = await getDoc('tags', pt.tagId)
+              if (tagDoc) return { id: tagDoc.id, name: tagDoc.name, slug: tagDoc.slug }
+            }
+            return null
+          }).filter(Boolean)
+        )
+
+        // Get approved comments
+        const commentsRaw = await queryDocs('comments', [
+          { field: 'postId', op: '==', value: post.id },
+          { field: 'isApproved', op: '==', value: true },
+        ], 'createdAt', 'desc')
+
+        const comments = await Promise.all(
+          commentsRaw.map(async (c: any) => {
+            let commentAuthor: any = null
+            if (c.authorId) {
+              const a = await getDoc('users', c.authorId)
+              if (a) commentAuthor = { id: a.id, name: a.name, email: a.email, avatar: a.avatar }
+            }
+            return serializeFirestore({ ...c, author: commentAuthor })
+          })
+        )
+
+        return serializeFirestore({
+          ...post,
+          author,
+          category,
+          tags,
+          comments,
+        })
+      })
+    )
 
     return NextResponse.json({
       success: true,
@@ -177,7 +195,7 @@ export async function POST(request: Request) {
     }
 
     // Check for duplicate slug
-    const existing = await db.post.findUnique({ where: { slug } })
+    const existing = await getDocByField('posts', 'slug', slug)
     if (existing) {
       return NextResponse.json(
         {
@@ -189,7 +207,7 @@ export async function POST(request: Request) {
     }
 
     // Verify author exists
-    const author = await db.user.findUnique({ where: { id: authorId } })
+    const author = await getDoc('users', authorId)
     if (!author) {
       return NextResponse.json(
         {
@@ -217,62 +235,66 @@ export async function POST(request: Request) {
         : contentI18n
 
     // Create the post
-    const post = await db.post.create({
-      data: {
-        title,
-        titleI18n: titleI18nValue ?? undefined,
-        slug,
-        excerpt: excerpt ?? undefined,
-        excerptI18n: excerptI18nValue ?? undefined,
-        content: content ?? undefined,
-        contentI18n: contentI18nValue ?? undefined,
-        featuredImage: featuredImage ?? undefined,
-        published: published ?? false,
-        authorId,
-        categoryId: categoryId ?? undefined,
-        tags: tagIds && Array.isArray(tagIds) && tagIds.length > 0
-          ? {
-              create: tagIds.map((tagId: string) => ({
-                tag: { connect: { id: tagId } },
-              })),
-            }
-          : undefined,
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-          },
-        },
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        tags: {
-          include: {
-            tag: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              },
-            },
-          },
-        },
-      },
+    const postId = await createDoc('posts', {
+      title,
+      titleI18n: titleI18nValue ?? null,
+      slug,
+      excerpt: excerpt ?? null,
+      excerptI18n: excerptI18nValue ?? null,
+      content: content ?? null,
+      contentI18n: contentI18nValue ?? null,
+      featuredImage: featuredImage ?? null,
+      published: published ?? false,
+      authorId,
+      categoryId: categoryId ?? null,
     })
 
-    // Transform tags to a cleaner format
-    const formattedPost = {
-      ...post,
-      tags: post.tags.map((pt) => pt.tag),
+    // Create tag connections
+    if (tagIds && Array.isArray(tagIds) && tagIds.length > 0) {
+      for (const tagId of tagIds) {
+        await createDoc('post_tags', { postId, tagId })
+      }
     }
+
+    // Fetch and enrich the created post
+    const createdPost = await getDoc('posts', postId)
+
+    let postAuthor: any = null
+    if (createdPost?.authorId) {
+      const a = await getDoc('users', createdPost.authorId)
+      if (a) {
+        postAuthor = { id: a.id, name: a.name, email: a.email, avatar: a.avatar }
+      }
+    }
+
+    let postCategory: any = null
+    if (createdPost?.categoryId) {
+      const c = await getDoc('categories', createdPost.categoryId)
+      if (c) {
+        postCategory = { id: c.id, name: c.name, slug: c.slug }
+      }
+    }
+
+    // Get tags
+    const postTags = await queryDocs('post_tags', [
+      { field: 'postId', op: '==', value: postId },
+    ])
+    const postTagList = await Promise.all(
+      postTags.map(async (pt: any) => {
+        if (pt.tagId) {
+          const t = await getDoc('tags', pt.tagId)
+          if (t) return { id: t.id, name: t.name, slug: t.slug }
+        }
+        return null
+      }).filter(Boolean)
+    )
+
+    const formattedPost = serializeFirestore({
+      ...createdPost,
+      author: postAuthor,
+      category: postCategory,
+      tags: postTagList,
+    })
 
     return NextResponse.json({
       success: true,

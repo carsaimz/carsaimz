@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDoc, queryDocs, createDoc } from '@/lib/db'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,9 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify the user exists
-    const user = await db.user.findUnique({
-      where: { id: userId },
-    })
+    const user = await getDoc('users', userId)
 
     if (!user) {
       return NextResponse.json(
@@ -25,38 +24,49 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const tickets = await db.supportTicket.findMany({
-      where: { userId },
-      include: {
-        replies: {
-          include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                avatar: true,
-              },
-            },
-          },
-          orderBy: { createdAt: 'asc' },
-        },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    const tickets = await queryDocs('support_tickets', [
+      { field: 'userId', op: '==', value: userId },
+    ], 'createdAt', 'desc')
+
+    // Enrich each ticket with replies and user data
+    const enrichedTickets = await Promise.all(
+      tickets.map(async (ticket: any) => {
+        // Get replies with authors
+        const repliesRaw = await queryDocs('ticket_replies', [
+          { field: 'ticketId', op: '==', value: ticket.id },
+        ], 'createdAt', 'asc')
+
+        const replies = await Promise.all(
+          repliesRaw.map(async (reply: any) => {
+            let replyAuthor: any = null
+            if (reply.authorId) {
+              const a = await getDoc('users', reply.authorId)
+              if (a) replyAuthor = { id: a.id, name: a.name, email: a.email, avatar: a.avatar }
+            }
+            return serializeFirestore({ ...reply, author: replyAuthor })
+          })
+        )
+
+        // Get ticket user data
+        const ticketUser = ticket.userId ? await getDoc('users', ticket.userId) : null
+
+        return serializeFirestore({
+          ...ticket,
+          replies,
+          user: ticketUser ? {
+            id: ticketUser.id,
+            name: ticketUser.name,
+            email: ticketUser.email,
+            avatar: ticketUser.avatar,
+          } : null,
+        })
+      })
+    )
 
     return NextResponse.json({
       success: true,
-      data: tickets,
-      count: tickets.length,
+      data: enrichedTickets,
+      count: enrichedTickets.length,
     })
   } catch (error) {
     console.error('Support tickets fetch error:', error)
@@ -84,9 +94,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the user exists
-    const user = await db.user.findUnique({
-      where: { id: userId },
-    })
+    const user = await getDoc('users', userId)
 
     if (!user) {
       return NextResponse.json(
@@ -95,28 +103,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const ticket = await db.supportTicket.create({
-      data: {
-        userId,
-        subject,
-        priority: priority || 'medium',
-        status: 'open',
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-          },
-        },
+    const ticketId = await createDoc('support_tickets', {
+      userId,
+      subject,
+      priority: priority || 'medium',
+      status: 'open',
+    })
+
+    const ticket = await getDoc('support_tickets', ticketId)
+
+    // Enrich with user data
+    const enrichedTicket = serializeFirestore({
+      ...ticket,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
       },
     })
 
     return NextResponse.json({
       success: true,
-      data: ticket,
+      data: enrichedTicket,
       message: 'Support ticket created successfully',
     }, { status: 201 })
   } catch (error) {

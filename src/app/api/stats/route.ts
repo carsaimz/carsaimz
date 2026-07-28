@@ -1,57 +1,84 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { countDocs, getDocs, queryDocs } from '@/lib/db'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET() {
   try {
-    // Total counts (exclude super_admin from user count)
-    const totalUsers = await db.user.count({ where: { role: { name: { not: 'super_admin' } } } })
-    const totalPosts = await db.post.count({ where: { published: true } })
-    const totalProjects = await db.project.count({ where: { isPublished: true } })
-    const totalServices = await db.service.count({ where: { isPublished: true } })
-    const totalForumTopics = await db.forumTopic.count()
-    const totalTestimonials = await db.testimonial.count({ where: { isPublished: true } })
-    const totalNotifications = await db.notification.count()
-    const totalCategories = await db.category.count()
-    const totalTags = await db.tag.count()
+    // Total counts — Firestore doesn't support relation-based filtering,
+    // so we filter in JS where needed
+    const allUsers = await getDocs('users')
+    const roles = await getDocs('roles')
+    const roleMap = new Map(roles.map(r => [r.id, r]))
+
+    // Exclude super_admin from user count
+    const nonSuperAdminUsers = allUsers.filter((u: any) => {
+      const uRole = u.roleId ? roleMap.get(u.roleId) : null
+      return uRole?.name !== 'super_admin'
+    })
+
+    const totalUsers = nonSuperAdminUsers.length
+    const totalPosts = await countDocs('posts', [{ field: 'published', op: '==', value: true }])
+    const totalProjects = await countDocs('projects', [{ field: 'isPublished', op: '==', value: true }])
+    const totalServices = await countDocs('services', [{ field: 'isPublished', op: '==', value: true }])
+    const totalForumTopics = await countDocs('forum_topics')
+    const totalTestimonials = await countDocs('testimonials', [{ field: 'isPublished', op: '==', value: true }])
+    const totalNotifications = await countDocs('notifications')
+    const totalCategories = await countDocs('categories')
+    const totalTags = await countDocs('tags')
 
     // Revenue stats (from payments)
-    const payments = await db.payment.findMany()
-    const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0)
-    const confirmedPayments = payments.filter((p) => p.status === 'confirmed')
-    const confirmedRevenue = confirmedPayments.reduce((sum, p) => sum + p.amount, 0)
+    const payments = await getDocs('payments')
+    const totalRevenue = payments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0)
+    const confirmedPayments = payments.filter((p: any) => p.status === 'confirmed')
+    const confirmedRevenue = confirmedPayments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0)
 
     // Payment method breakdown
-    const mpesaPayments = payments.filter((p) => p.method === 'mpesa')
-    const transferPayments = payments.filter((p) => p.method === 'transfer')
-    const depositPayments = payments.filter((p) => p.method === 'deposit')
+    const mpesaPayments = payments.filter((p: any) => p.method === 'mpesa')
+    const transferPayments = payments.filter((p: any) => p.method === 'transfer')
+    const depositPayments = payments.filter((p: any) => p.method === 'deposit')
 
     // User role breakdown
-    const adminCount = await db.user.count({ where: { role: { name: 'admin' } } })
-    const partnerCount = await db.user.count({ where: { role: { name: 'partner' } } })
-    const regularUserCount = await db.user.count({ where: { role: { name: 'user' } } })
+    const adminCount = allUsers.filter((u: any) => {
+      const uRole = u.roleId ? roleMap.get(u.roleId) : null
+      return uRole?.name === 'admin'
+    }).length
+
+    const partnerCount = allUsers.filter((u: any) => {
+      const uRole = u.roleId ? roleMap.get(u.roleId) : null
+      return uRole?.name === 'partner'
+    }).length
+
+    const regularUserCount = allUsers.filter((u: any) => {
+      const uRole = u.roleId ? roleMap.get(u.roleId) : null
+      return uRole?.name === 'user'
+    }).length
 
     // Active users (exclude super_admin)
-    const activeUsers = await db.user.count({ where: { isActive: true, role: { name: { not: 'super_admin' } } } })
+    const activeUsers = nonSuperAdminUsers.filter((u: any) => u.isActive).length
 
     // Unread notifications
-    const unreadNotifications = await db.notification.count({ where: { isRead: false } })
+    const unreadNotifications = await countDocs('notifications', [{ field: 'isRead', op: '==', value: false }])
 
     // Featured projects & services
-    const featuredProjects = await db.project.count({ where: { isFeatured: true, isPublished: true } })
-    const featuredServices = await db.service.count({ where: { isFeatured: true, isPublished: true } })
+    const featuredProjects = await countDocs('projects', [
+      { field: 'isFeatured', op: '==', value: true },
+      { field: 'isPublished', op: '==', value: true },
+    ])
+    const featuredServices = await countDocs('services', [
+      { field: 'isFeatured', op: '==', value: true },
+      { field: 'isPublished', op: '==', value: true },
+    ])
 
     // Forum activity
-    const pinnedTopics = await db.forumTopic.count({ where: { isPinned: true } })
-    const resolvedTopics = await db.forumTopic.count({ where: { isResolved: true } })
+    const pinnedTopics = await countDocs('forum_topics', [{ field: 'isPinned', op: '==', value: true }])
+    const resolvedTopics = await countDocs('forum_topics', [{ field: 'isResolved', op: '==', value: true }])
 
     // Support tickets
-    const openTickets = await db.supportTicket.count({ where: { status: 'open' } })
-    const totalTickets = await db.supportTicket.count()
+    const openTickets = await countDocs('support_tickets', [{ field: 'status', op: '==', value: 'open' }])
+    const totalTickets = await countDocs('support_tickets')
 
-    // Recent activity (last 7 days approximation via total counts)
-    const recentPosts = await db.post.count({
-      where: { published: true },
-    })
+    // Recent activity
+    const recentPosts = totalPosts
 
     return NextResponse.json({
       success: true,

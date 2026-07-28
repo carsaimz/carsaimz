@@ -1298,7 +1298,7 @@ export const zhCN: TranslationObject = {
     faq27Q: 'Carsai的创始人是谁？',
     faq27A: 'Carsai Mozambique由Carimo Saide Mpinda创立并领导，他是CEO兼创始人，管理公司的所有领域——开发、设计、支持和战略。技术开发由CarsaiDev（carsaideveloper@gmail.com）完成。我们的团队虽小但能力卓越，专注于为莫桑比克提供真正的数字化转型和品质。',
     faq28Q: '你们使用哪些技术？',
-    faq28A: '我们使用国际知名的现代技术：Next.js、React、TypeScript用于前端和后端，Prisma ORM用于数据管理，MySQL和SQLite用于数据库，Tailwind CSS用于设计，Docker和云提供商（AWS、GCP）用于基础设施，以及AI API集成用于智能功能。我们优先考虑安全性、性能和可维护性。',
+    faq28A: '我们使用国际知名的现代技术：Next.js、React、TypeScript用于前端和后端，Firebase Firestore和Auth用于数据和认证用于数据库，Tailwind CSS用于设计，Docker和云提供商（AWS、GCP）用于基础设施，以及AI API集成用于智能功能。我们优先考虑安全性、性能和可维护性。',
     faq29Q: '我的数据在Carsai安全吗？',
     faq29A: '是的，数据安全是我们的最高优先级。我们实施：数据加密（SSL/TLS用于通信，哈希用于密码）、符合莫桑比克数据保护法规、自动备份和冗余、持续安全监控，以及透明的隐私政策。我们绝不会在未经明确同意的情况下与第三方分享数据。',
     faq30Q: '我可以申请定制项目吗？',

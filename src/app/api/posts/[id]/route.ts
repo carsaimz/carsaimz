@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDoc, queryDocs, getDocByField, deleteDoc, deleteMany, createDoc, updateDoc } from '@/lib/db'
 import { buildI18nJson } from '@/lib/i18n-content'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET(
   request: Request,
@@ -9,51 +10,7 @@ export async function GET(
   try {
     const { id } = await params
 
-    const post = await db.post.findUnique({
-      where: { id },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-          },
-        },
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        tags: {
-          include: {
-            tag: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              },
-            },
-          },
-        },
-        comments: {
-          where: { isApproved: true },
-          include: {
-            author: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                avatar: true,
-              },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    })
+    const post = await getDoc('posts', id)
 
     if (!post) {
       return NextResponse.json(
@@ -62,11 +19,62 @@ export async function GET(
       )
     }
 
-    // Transform tags to a cleaner format
-    const formattedPost = {
-      ...post,
-      tags: post.tags.map((pt) => pt.tag),
+    // Enrich with author, category, tags, and comments
+    let author: any = null
+    if (post.authorId) {
+      const authorDoc = await getDoc('users', post.authorId)
+      if (authorDoc) {
+        author = { id: authorDoc.id, name: authorDoc.name, email: authorDoc.email, avatar: authorDoc.avatar }
+      }
     }
+
+    let category: any = null
+    if (post.categoryId) {
+      const catDoc = await getDoc('categories', post.categoryId)
+      if (catDoc) {
+        category = { id: catDoc.id, name: catDoc.name, slug: catDoc.slug }
+      }
+    }
+
+    // Get post_tags and then the actual tags
+    const postTags = await queryDocs('post_tags', [
+      { field: 'postId', op: '==', value: id },
+    ])
+
+    const tags = await Promise.all(
+      postTags.map(async (pt: any) => {
+        if (pt.tagId) {
+          const tagDoc = await getDoc('tags', pt.tagId)
+          if (tagDoc) return { id: tagDoc.id, name: tagDoc.name, slug: tagDoc.slug }
+        }
+        return null
+      }).filter(Boolean)
+    )
+
+    // Get approved comments with authors
+    const commentsRaw = await queryDocs('comments', [
+      { field: 'postId', op: '==', value: id },
+      { field: 'isApproved', op: '==', value: true },
+    ], 'createdAt', 'desc')
+
+    const comments = await Promise.all(
+      commentsRaw.map(async (c: any) => {
+        let commentAuthor: any = null
+        if (c.authorId) {
+          const a = await getDoc('users', c.authorId)
+          if (a) commentAuthor = { id: a.id, name: a.name, email: a.email, avatar: a.avatar }
+        }
+        return serializeFirestore({ ...c, author: commentAuthor })
+      })
+    )
+
+    const formattedPost = serializeFirestore({
+      ...post,
+      author,
+      category,
+      tags,
+      comments,
+    })
 
     return NextResponse.json({
       success: true,
@@ -94,7 +102,7 @@ export async function PUT(
     const body = await request.json()
 
     // Check that the post exists
-    const existing = await db.post.findUnique({ where: { id } })
+    const existing = await getDoc('posts', id)
     if (!existing) {
       return NextResponse.json(
         { success: false, message: 'Post not found' },
@@ -118,7 +126,7 @@ export async function PUT(
 
     // If slug is being changed, check for duplicates
     if (slug && slug !== existing.slug) {
-      const duplicate = await db.post.findUnique({ where: { slug } })
+      const duplicate = await getDocByField('posts', 'slug', slug)
       if (duplicate) {
         return NextResponse.json(
           {
@@ -147,7 +155,7 @@ export async function PUT(
         : contentI18n
 
     // Build update data object with only provided fields
-    const updateData: Record<string, unknown> = {}
+    const updateData: Record<string, any> = {}
     if (title !== undefined) updateData.title = title
     if (titleI18nValue !== undefined) updateData.titleI18n = titleI18nValue
     if (slug !== undefined) updateData.slug = slug
@@ -159,55 +167,56 @@ export async function PUT(
     if (published !== undefined) updateData.published = published
     if (categoryId !== undefined) updateData.categoryId = categoryId
 
+    await updateDoc('posts', id, updateData)
+
     // Handle tag updates separately - replace all existing tags
     if (tagIds && Array.isArray(tagIds)) {
       // Delete existing tag connections and create new ones
-      await db.postTag.deleteMany({ where: { postId: id } })
-      updateData.tags = {
-        create: tagIds.map((tagId: string) => ({
-          tag: { connect: { id: tagId } },
-        })),
+      await deleteMany('post_tags', [{ field: 'postId', op: '==', value: id }])
+      for (const tagId of tagIds) {
+        await createDoc('post_tags', { postId: id, tagId })
       }
     }
 
-    const post = await db.post.update({
-      where: { id },
-      data: updateData,
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-          },
-        },
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        tags: {
-          include: {
-            tag: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              },
-            },
-          },
-        },
-      },
-    })
+    // Fetch updated post with enriched data
+    const updatedPost = await getDoc('posts', id)
 
-    // Transform tags to a cleaner format
-    const formattedPost = {
-      ...post,
-      tags: post.tags.map((pt) => pt.tag),
+    let author: any = null
+    if (updatedPost?.authorId) {
+      const authorDoc = await getDoc('users', updatedPost.authorId)
+      if (authorDoc) {
+        author = { id: authorDoc.id, name: authorDoc.name, email: authorDoc.email, avatar: authorDoc.avatar }
+      }
     }
+
+    let category: any = null
+    if (updatedPost?.categoryId) {
+      const catDoc = await getDoc('categories', updatedPost.categoryId)
+      if (catDoc) {
+        category = { id: catDoc.id, name: catDoc.name, slug: catDoc.slug }
+      }
+    }
+
+    // Get tags
+    const postTags = await queryDocs('post_tags', [
+      { field: 'postId', op: '==', value: id },
+    ])
+    const tags = await Promise.all(
+      postTags.map(async (pt: any) => {
+        if (pt.tagId) {
+          const tagDoc = await getDoc('tags', pt.tagId)
+          if (tagDoc) return { id: tagDoc.id, name: tagDoc.name, slug: tagDoc.slug }
+        }
+        return null
+      }).filter(Boolean)
+    )
+
+    const formattedPost = serializeFirestore({
+      ...updatedPost,
+      author,
+      category,
+      tags,
+    })
 
     return NextResponse.json({
       success: true,
@@ -234,7 +243,7 @@ export async function DELETE(
     const { id } = await params
 
     // Check that the post exists
-    const existing = await db.post.findUnique({ where: { id } })
+    const existing = await getDoc('posts', id)
     if (!existing) {
       return NextResponse.json(
         { success: false, message: 'Post not found' },
@@ -243,9 +252,9 @@ export async function DELETE(
     }
 
     // Delete related records first (tags, comments)
-    await db.postTag.deleteMany({ where: { postId: id } })
-    await db.comment.deleteMany({ where: { postId: id } })
-    await db.post.delete({ where: { id } })
+    await deleteMany('post_tags', [{ field: 'postId', op: '==', value: id }])
+    await deleteMany('comments', [{ field: 'postId', op: '==', value: id }])
+    await deleteDoc('posts', id)
 
     return NextResponse.json({
       success: true,

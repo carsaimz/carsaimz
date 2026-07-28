@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDocByField, createDoc, updateDoc, getDoc, createDocWithId } from '@/lib/db'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,9 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if email already exists
-    const existingSubscriber = await db.subscriber.findUnique({
-      where: { email },
-    })
+    const existingSubscriber = await getDocByField('subscribers', 'email', email)
 
     if (existingSubscriber) {
       if (existingSubscriber.isActive) {
@@ -40,29 +39,24 @@ export async function POST(request: NextRequest) {
       }
 
       // Reactivate previously unsubscribed email
-      const reactivated = await db.subscriber.update({
-        where: { email },
-        data: { isActive: true },
-      })
+      await updateDoc('subscribers', existingSubscriber.id, { isActive: true })
 
       return NextResponse.json({
         success: true,
-        data: { email: reactivated.email, isActive: reactivated.isActive },
+        data: { email, isActive: true },
         message: 'Email subscription reactivated successfully',
       })
     }
 
     // Add new subscriber
-    const subscriber = await db.subscriber.create({
-      data: {
-        email,
-        isActive: true,
-      },
+    const subscriberId = await createDoc('subscribers', {
+      email,
+      isActive: true,
     })
 
     return NextResponse.json({
       success: true,
-      data: { email: subscriber.email, isActive: subscriber.isActive },
+      data: { email, isActive: true },
       message: 'Successfully subscribed to the newsletter',
     }, { status: 201 })
   } catch (error) {

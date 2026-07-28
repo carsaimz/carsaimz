@@ -1,49 +1,49 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { queryDocs, getDocs, countDocs } from '@/lib/db'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET() {
   try {
-    // Get all payments ordered by date for revenue history
-    const payments = await db.payment.findMany({
-      where: { status: 'confirmed' },
-      orderBy: { createdAt: 'asc' },
-      select: { amount: true, createdAt: true },
-    })
+    // Get all confirmed payments ordered by date for revenue history
+    const payments = await queryDocs('payments', [
+      { field: 'status', op: '==', value: 'confirmed' },
+    ], 'createdAt', 'asc')
 
     // Get all users ordered by date for growth history
-    const users = await db.user.findMany({
-      orderBy: { createdAt: 'asc' },
-      select: { id: true, createdAt: true },
-    })
+    const users = await queryDocs('users', [], 'createdAt', 'asc')
 
-    // Get post categories with counts
-    const categories = await db.category.findMany({
-      include: {
-        _count: {
-          select: { posts: true },
-        },
-      },
-    })
+    // Get all categories
+    const categories = await getDocs('categories')
+
+    // Count posts per category
+    const categoriesWithCount = await Promise.all(
+      categories.map(async (cat: any) => {
+        const postCount = await countDocs('posts', [
+          { field: 'categoryId', op: '==', value: cat.id },
+        ])
+        return { ...cat, _count: { posts: postCount } }
+      })
+    )
 
     // Build monthly revenue data (last 12 months)
     const now = new Date()
     const revenueByMonth: Record<string, number> = {}
-    const targetByMonth: Record<string, number> = {}
 
     for (let i = 11; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-      const monthName = date.toLocaleDateString('en', { month: 'short' })
       revenueByMonth[key] = 0
-      targetByMonth[key] = 0
     }
 
     // Populate revenue data
-    payments.forEach((payment) => {
-      const date = new Date(payment.createdAt)
-      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-      if (key in revenueByMonth) {
-        revenueByMonth[key] += payment.amount
+    payments.forEach((payment: any) => {
+      const createdAt = serializeFirestore(payment.createdAt)
+      if (createdAt) {
+        const date = new Date(createdAt)
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+        if (key in revenueByMonth) {
+          revenueByMonth[key] += payment.amount || 0
+        }
       }
     })
 
@@ -51,7 +51,6 @@ export async function GET() {
     const revenueData = Object.entries(revenueByMonth).map(([key, revenue]) => {
       const date = new Date(key + '-01')
       const monthName = date.toLocaleDateString('en', { month: 'short' })
-      // Target is roughly 80% of revenue as a baseline goal
       const target = Math.round(revenue * 0.8 + 50000)
       return { month: monthName, revenue, target }
     })
@@ -73,8 +72,10 @@ export async function GET() {
       const monthStart = new Date(key + '-01')
       const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0, 23, 59, 59)
 
-      const newInMonth = users.filter((u) => {
-        const d = new Date(u.createdAt)
+      const newInMonth = users.filter((u: any) => {
+        const createdAt = serializeFirestore(u.createdAt)
+        if (!createdAt) return false
+        const d = new Date(createdAt)
         return d >= monthStart && d <= monthEnd
       }).length
 
@@ -94,7 +95,7 @@ export async function GET() {
     })
 
     // Build posts by category data
-    const postsByCategoryData = categories.map((cat) => ({
+    const postsByCategoryData = categoriesWithCount.map((cat: any) => ({
       name: cat.name,
       value: cat._count.posts,
     }))

@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { queryDocs, getDocByField, createDoc, updateDoc, getDoc, deleteDoc } from '@/lib/db'
+import { serializeFirestore } from '@/lib/serialize'
 
 // GET all services (including unpublished) for admin
 export async function GET() {
   try {
-    const services = await db.service.findMany({
-      orderBy: { order: 'asc' },
-    })
-    return NextResponse.json({ success: true, data: services })
+    const services = await queryDocs('services', [], 'order', 'asc')
+    return NextResponse.json({ success: true, data: serializeFirestore(services) })
   } catch (error) {
     console.error('Admin services fetch error:', error)
     return NextResponse.json(
@@ -24,7 +23,7 @@ export async function POST(request: NextRequest) {
     const { title, titleI18n, slug, description, descriptionI18n, icon, basePrice, isFeatured, isPublished, order } = body
 
     // Check if slug already exists
-    const existing = await db.service.findUnique({ where: { slug } })
+    const existing = await getDocByField('services', 'slug', slug)
     if (existing) {
       return NextResponse.json(
         { success: false, message: 'Slug already exists' },
@@ -32,21 +31,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const service = await db.service.create({
-      data: {
-        title,
-        titleI18n: titleI18n || null,
-        slug,
-        description: description || null,
-        descriptionI18n: descriptionI18n || null,
-        icon: icon || null,
-        basePrice: basePrice || null,
-        isFeatured: isFeatured || false,
-        isPublished: isPublished || false,
-        order: order || 0,
-      },
+    const serviceId = await createDoc('services', {
+      title,
+      titleI18n: titleI18n || null,
+      slug,
+      description: description || null,
+      descriptionI18n: descriptionI18n || null,
+      icon: icon || null,
+      basePrice: basePrice || null,
+      isFeatured: isFeatured || false,
+      isPublished: isPublished || false,
+      order: order || 0,
     })
-    return NextResponse.json({ success: true, data: service })
+
+    const service = await getDoc('services', serviceId)
+    return NextResponse.json({ success: true, data: serializeFirestore(service) })
   } catch (error) {
     console.error('Admin service create error:', error)
     return NextResponse.json(
@@ -71,7 +70,7 @@ export async function PUT(request: NextRequest) {
 
     // Check if slug is taken by another service
     if (slug) {
-      const existing = await db.service.findUnique({ where: { slug } })
+      const existing = await getDocByField('services', 'slug', slug)
       if (existing && existing.id !== id) {
         return NextResponse.json(
           { success: false, message: 'Slug already exists' },
@@ -80,22 +79,21 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    const service = await db.service.update({
-      where: { id },
-      data: {
-        title,
-        titleI18n: titleI18n || null,
-        slug,
-        description: description || null,
-        descriptionI18n: descriptionI18n || null,
-        icon: icon || null,
-        basePrice: basePrice || null,
-        isFeatured: isFeatured || false,
-        isPublished: isPublished || false,
-        order: order || 0,
-      },
-    })
-    return NextResponse.json({ success: true, data: service })
+    const updateData: Record<string, any> = {}
+    if (title !== undefined) updateData.title = title
+    if (titleI18n !== undefined) updateData.titleI18n = titleI18n || null
+    if (slug !== undefined) updateData.slug = slug
+    if (description !== undefined) updateData.description = description || null
+    if (descriptionI18n !== undefined) updateData.descriptionI18n = descriptionI18n || null
+    if (icon !== undefined) updateData.icon = icon || null
+    if (basePrice !== undefined) updateData.basePrice = basePrice || null
+    if (isFeatured !== undefined) updateData.isFeatured = isFeatured || false
+    if (isPublished !== undefined) updateData.isPublished = isPublished || false
+    if (order !== undefined) updateData.order = order || 0
+
+    await updateDoc('services', id, updateData)
+    const service = await getDoc('services', id)
+    return NextResponse.json({ success: true, data: serializeFirestore(service) })
   } catch (error) {
     console.error('Admin service update error:', error)
     return NextResponse.json(
@@ -118,7 +116,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    await db.service.delete({ where: { id } })
+    await deleteDoc('services', id)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Admin service delete error:', error)

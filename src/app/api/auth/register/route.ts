@@ -1,15 +1,12 @@
 /**
  * Carsai Mozambique — Registration API Route
- * Uses Prisma + MySQL directly (no Supabase dependency).
+ * Firebase Auth — supports email/password registration.
+ * Google/other provider sign-ups go through /api/auth/social route.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-import { createHash } from 'crypto'
-
-function hashPassword(password: string): string {
-  return createHash('sha256').update(password).digest('hex')
-}
+import { getAdminAuth } from '@/lib/firebase-admin'
+import { createDoc, createDocWithId, getDocByField } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,8 +30,8 @@ export async function POST(request: NextRequest) {
 
     const emailLower = email.toLowerCase().trim()
 
-    // ── Check if user already exists ──
-    const existingUser = await db.user.findUnique({ where: { email: emailLower } })
+    // ── Check if user already exists in Firestore ──
+    const existingUser = await getDocByField('users', 'email', emailLower)
     if (existingUser) {
       return NextResponse.json(
         { error: 'Este email já está registado.' },
@@ -42,51 +39,66 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // ── Find default "user" role ──
-    const userRole = await db.role.findUnique({ where: { name: 'user' } })
-
-    // ── Create user ──
-    const newUser = await db.user.create({
-      data: {
-        name: name || emailLower.split('@')[0],
-        email: emailLower,
-        passwordHash: hashPassword(password),
-        phone: phone || null,
-        company: company || null,
-        roleId: userRole?.id || null,
-        isActive: true,
-        emailVerified: false,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        isActive: true,
-        roleId: true,
-        createdAt: true,
-      },
+    // ── Create user in Firebase Auth ──
+    const auth = getAdminAuth()
+    const userRecord = await auth.createUser({
+      email: emailLower,
+      password,
+      displayName: name || emailLower.split('@')[0],
+      emailVerified: false,
     })
 
-    // ── Fetch role name for response ──
-    const role = userRole
-      ? { id: userRole.id, name: userRole.name }
-      : null
+    // ── Find default "user" role ──
+    const userRole = await getDocByField('roles', 'name', 'user')
 
+    // ── Create user profile in Firestore ──
+    await createDocWithId('users', userRecord.uid, {
+      name: name || emailLower.split('@')[0],
+      email: emailLower,
+      phone: phone || null,
+      company: company || null,
+      avatar: null,
+      bio: null,
+      address: null,
+      roleId: userRole?.id || null,
+      isActive: true,
+      emailVerified: false,
+      authProvider: 'email',
+    })
+
+    // ── Return user data ──
     return NextResponse.json(
       {
         message: 'Conta criada com sucesso!',
         user: {
-          ...newUser,
-          role,
+          id: userRecord.uid,
+          name: userRecord.displayName,
+          email: userRecord.email,
+          role: userRole ? { id: userRole.id, name: userRole.name } : null,
+          isActive: true,
+          emailVerified: false,
+          authProvider: 'email',
         },
       },
       { status: 201 }
     )
   } catch (error: any) {
     console.error('[REGISTER ERROR]', error)
-    return NextResponse.json(
-      { error: 'Falha ao criar conta. Verifique a sua ligação e tente novamente.' },
-      { status: 500 }
-    )
+
+    // Translate Firebase Auth error codes
+    const errorCode = error.errorInfo?.code || error.code || ''
+    let errorMsg = 'Falha ao criar conta. Verifique a sua ligação e tente novamente.'
+
+    if (errorCode === 'auth/email-already-exists') {
+      errorMsg = 'Este email já está registado.'
+    } else if (errorCode === 'auth/invalid-email') {
+      errorMsg = 'Email inválido.'
+    } else if (errorCode === 'auth/weak-password') {
+      errorMsg = 'Senha demasiado fraca. Use pelo menos 6 caracteres.'
+    } else if (errorCode.includes('not configured') || errorCode.includes('credential')) {
+      errorMsg = 'Serviço de autenticação não configurado. Contacte o administrador.'
+    }
+
+    return NextResponse.json({ error: errorMsg }, { status: 500 })
   }
 }

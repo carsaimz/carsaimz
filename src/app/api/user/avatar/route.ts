@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDoc, updateDoc } from '@/lib/db'
+import { serializeFirestore } from '@/lib/serialize'
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,9 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check user exists
-    const existingUser = await db.user.findUnique({
-      where: { id: userId },
-    })
+    const existingUser = await getDoc('users', userId)
 
     if (!existingUser) {
       return NextResponse.json(
@@ -41,27 +40,29 @@ export async function POST(request: NextRequest) {
     }
 
     // Update avatar
-    const updatedUser = await db.user.update({
-      where: { id: userId },
-      data: { avatar: dataUri },
-      include: {
-        role: true,
-      },
-    })
+    await updateDoc('users', userId, { avatar: dataUri })
+
+    // Fetch updated user with role
+    const updatedUser = await getDoc('users', userId)
+    let roleName = 'user'
+    if (updatedUser?.roleId) {
+      const roleDoc = await getDoc('roles', updatedUser.roleId)
+      if (roleDoc) roleName = roleDoc.name
+    }
 
     return NextResponse.json({
       user: {
-        id: updatedUser.id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        avatar: updatedUser.avatar,
-        phone: updatedUser.phone,
-        company: updatedUser.company,
-        bio: updatedUser.bio,
-        address: updatedUser.address,
-        role: updatedUser.role?.name || 'user',
-        isActive: updatedUser.isActive,
-        emailVerified: updatedUser.emailVerified,
+        id: updatedUser!.id,
+        name: updatedUser!.name,
+        email: updatedUser!.email,
+        avatar: updatedUser!.avatar,
+        phone: updatedUser!.phone,
+        company: updatedUser!.company,
+        bio: updatedUser!.bio,
+        address: updatedUser!.address,
+        role: roleName,
+        isActive: updatedUser!.isActive,
+        emailVerified: updatedUser!.emailVerified,
       },
     })
   } catch (error) {
