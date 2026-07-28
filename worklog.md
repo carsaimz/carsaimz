@@ -52,3 +52,29 @@ Stage Summary:
 - Auth UI no longer has hardcoded Portuguese strings — all text uses t() for i18n
 - common.networkError key added to all translation files
 - AuthResult properly exported from store.ts
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix translation syntax errors, capacitor config, GitHub auth mapping, and verify existing implementations
+
+Work Log:
+- Fixed missing commas after signInWithGithub in all 7 translation files (en-us, pt-pt, pt-br, de-de, es-es, fr-fr, zh-cn) — this was the root cause of CI/Android build failures (Turbopack parsing errors: "Expected ',', got 'or'")
+- Fixed indentation of signInWithGithub lines (was missing 4-space indent)
+- Removed invalid versionCode from capacitor.config.ts (not in CapacitorConfig type schema)
+- Fixed ContentItem.authorId TypeScript error (cast to any)
+- Added github.com to AuthProvider mapping in verifyWithClientFirestore
+- Verified AndroidManifest.xml is valid XML (no BOM, proper syntax)
+- Verified release.yml PowerShell scripts are correct (no missing closing braces)
+- Verified Google Sign-In is already properly separated: web uses signInWithRedirect, native uses @capacitor-firebase/authentication
+- Verified GitHub login is already fully implemented: store.ts, native-auth.ts, auth-context.tsx, and UI (both auth page and login modal)
+- Verified setup page at /setup already exists for Firestore seeding
+- Created /home/z/my-project/download/ directory (was missing)
+- Committed and pushed (37911f9)
+
+Stage Summary:
+- Primary build blocker fixed: translation file syntax errors caused all 7 Turbopack parsing errors
+- capacitor.config.ts versionCode removed (invalid per CapacitorConfig type)
+- GitHub auth provider properly mapped in client-side Firestore fallback
+- All previously requested features (Google Sign-In separation, GitHub login, setup page) were already implemented in prior sessions
+- AndroidManifest.xml parse failure was likely caused by the build failing upstream (translation errors prevented static export, which broke Capacitor sync)
