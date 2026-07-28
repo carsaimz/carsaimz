@@ -116,14 +116,17 @@ jobs:
 
       - name: Add Android platform
         run: |
-          # Add Android platform (required for sync)
-          bunx cap add android
-          # Verify the android directory was created
-          if [ ! -d "android" ]; then
-            echo "❌ Android platform failed to initialize"
-            exit 1
+          # Add Android platform if not already present
+          if [ -d "android" ]; then
+            echo "✅ Android platform already exists — skipping add"
+          else
+            bunx cap add android
+            if [ ! -d "android" ]; then
+              echo "❌ Android platform failed to initialize"
+              exit 1
+            fi
+            echo "✅ Android platform added successfully"
           fi
-          echo "✅ Android platform added successfully"
 
       - name: Sync Capacitor
         run: bunx cap sync android

@@ -4,6 +4,10 @@
 # Triggers on push to main and on tag push (v*).
 # Builds a portable Windows EXE using Electron + electron-builder,
 # and uploads as GitHub artifact.
+#
+# NOTE: The project uses output: "export" in next.config.ts for Android/Capacitor,
+# but Electron requires output: "standalone". This workflow temporarily switches
+# to standalone mode before building, then restores the original config.
 # =============================================================================
 
 name: Windows Build
@@ -52,37 +56,93 @@ jobs:
         run: bun run db:generate
 
       # -----------------------------------------------------------------------
-      # Build Next.js Standalone
+      # Build Next.js Standalone (for Electron)
       # -----------------------------------------------------------------------
-      - name: Build Next.js standalone
-        run: bun run build
-
-      - name: Verify standalone output
+      - name: Switch to standalone output and build
         shell: pwsh
         run: |
-          $standalonePath = ".next\standalone\server.js"
-          if (Test-Path $standalonePath) {
-            Write-Host "✅ Standalone server.js found at $standalonePath"
+          $configFile = "next.config.ts"
+          
+          # Read the original config
+          $originalContent = Get-Content -Path $configFile -Raw
+          Write-Host "Original next.config.ts content:"
+          Write-Host $originalContent
+          
+          # Replace output: "export" with output: "standalone"
+          $modifiedContent = $originalContent -replace 'output:\s*"export"', 'output: "standalone"'
+          Set-Content -Path $configFile -Value $modifiedContent -NoNewline
+          
+          Write-Host ""
+          Write-Host "Modified next.config.ts (standalone mode):"
+          Write-Host $modifiedContent
+
+      - name: Run Next.js build
+        shell: pwsh
+        run: |
+          try {
+            bun run build
+            Write-Host "✅ Next.js build completed"
+          } catch {
+            Write-Host "❌ Next.js build failed: $_"
+            exit 1
+          }
+
+      - name: Verify standalone output and copy assets
+        shell: pwsh
+        run: |
+          $standaloneDir = ".next\standalone"
+          $standaloneServer = ".next\standalone\server.js"
+          
+          if (Test-Path $standaloneServer) {
+            Write-Host "✅ Standalone server.js found at $standaloneServer"
           } else {
             Write-Host "❌ Standalone server.js NOT found — build may have failed"
-            Get-ChildItem -Path ".next\standalone" -Recurse -Depth 1 | Select-Object FullName
+            if (Test-Path $standaloneDir) {
+              Get-ChildItem -Path $standaloneDir -Recurse -Depth 1 | Select-Object FullName
+            } else {
+              Write-Host "❌ .next\standalone directory does not exist"
+            }
             exit 1
           }
           
-          # Verify static and public were copied
-          if (Test-Path ".next\standalone\.next\static") {
-            Write-Host "✅ Static files copied"
+          # Copy static files into standalone directory
+          $staticSource = ".next\static"
+          $staticDest = ".next\standalone\.next\static"
+          if (Test-Path $staticDest) {
+            Write-Host "✅ Static files already present in standalone"
           } else {
-            Write-Host "⚠️ Static files not copied — copying manually"
-            Copy-Item -Path ".next\static" -Destination ".next\standalone\.next\static" -Recurse -Force
+            if (Test-Path $staticSource) {
+              Copy-Item -Path $staticSource -Destination $staticDest -Recurse -Force
+              Write-Host "✅ Static files copied to standalone"
+            } else {
+              Write-Host "⚠️ Static files source not found"
+            }
           }
           
-          if (Test-Path ".next\standalone\public") {
-            Write-Host "✅ Public directory copied"
+          # Copy public directory into standalone
+          $publicDest = ".next\standalone\public"
+          if (Test-Path $publicDest) {
+            Write-Host "✅ Public directory already present in standalone"
           } else {
-            Write-Host "⚠️ Public directory not copied — copying manually"
-            Copy-Item -Path "public" -Destination ".next\standalone\public" -Recurse -Force
+            if (Test-Path "public") {
+              Copy-Item -Path "public" -Destination $publicDest -Recurse -Force
+              Write-Host "✅ Public directory copied to standalone"
+            } else {
+              Write-Host "⚠️ Public directory not found"
+            }
           }
+
+      - name: Restore original next.config.ts
+        shell: pwsh
+        run: |
+          $configFile = "next.config.ts"
+          $content = Get-Content -Path $configFile -Raw
+          
+          # Restore output: "export"
+          $restoredContent = $content -replace 'output:\s*"standalone"', 'output: "export"'
+          Set-Content -Path $configFile -Value $restoredContent -NoNewline
+          
+          Write-Host "✅ next.config.ts restored to export mode"
 
       # -----------------------------------------------------------------------
       # Build Electron Portable EXE

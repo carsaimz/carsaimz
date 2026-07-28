@@ -4,14 +4,14 @@
  * Carsai Mozambique - Loading Overlay Component
  *
  * Full-screen overlay displayed during app initialization/loading.
- * Features the Carsai logo (text-based "CARSAI" in bold red letters),
- * animated spinner, localized loading text, and Mozambique flag stripe.
- * Uses framer-motion for fade in/out animation.
+ * Features the Carsai logo image, animated spinner, localized loading text,
+ * and Mozambique flag stripe. Uses framer-motion for fade in/out animation.
  *
  * Usage:
  *   <LoadingOverlay isVisible={isInitializing} />
  */
 
+import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/language-context';
 
@@ -53,11 +53,16 @@ export function LoadingOverlay({ isVisible }: LoadingOverlayProps) {
 
           {/* Content */}
           <div className="relative z-10 flex flex-col items-center gap-6">
-            {/* Logo - text-based "CARSAI" in bold red */}
-            <div className="relative">
-              <h1 className="text-5xl sm:text-6xl font-extrabold tracking-wider">
-                <span className="text-red-600 dark:text-red-500">CARSAI</span>
-              </h1>
+            {/* Logo image */}
+            <div className="relative flex items-center justify-center">
+              <Image
+                src="/logo.png"
+                alt="Carsai Mozambique"
+                width={180}
+                height={180}
+                priority
+                className="object-contain drop-shadow-lg"
+              />
               {/* Subtle glow behind logo */}
               <div className="absolute inset-0 -z-10 blur-2xl bg-red-600/20 dark:bg-red-500/20 scale-150" />
             </div>

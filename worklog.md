@@ -519,3 +519,25 @@ Stage Summary:
 - CI updated for export mode
 - PUSHED: commit 3d06b96 to main branch
 - Known: NEXT_PUBLIC_SUPABASE_ANON_KEY must be set for Supabase client auth
+
+---
+Task ID: 11
+Agent: Super Z (Main)
+Task: Fix loading overlay logo, Android CI, Windows CI, and auth routes (replace Prisma with Supabase JS client)
+
+Work Log:
+- Fixed loading-overlay.tsx: replaced text "CARSAI" with actual logo.png image using Next.js Image component (180x180, priority loading, object-contain + drop-shadow-lg)
+- Fixed Android CI (android-build.yml): changed "Add Android platform" step to check if android directory already exists before running `bunx cap add android` — gracefully skips if platform already present instead of failing with "already exists" error
+- Fixed Windows CI (windows-build.yml): rewrote entire workflow to temporarily switch next.config.ts from `output: "export"` to `output: "standalone"` before building (Electron needs standalone server.js), then restores original config after build. Added proper PowerShell-based config switching, build, verification, asset copying, and config restoration steps.
+- Rewrote /api/auth/register/route.ts: completely replaced Prisma with Supabase JS client (HTTPS). Uses service role key for admin.createUser + users table insert, falls back to anon key signUp if service key unavailable. All operations via HTTPS — no direct Postgres connection needed. Auto-seeds roles via PostgREST.
+- Rewrote /api/auth/login/route.ts: same approach — Supabase auth.signInWithPassword via HTTPS for authentication, then PostgREST for profile/role lookup. Handles phone login by looking up email from users table first.
+- Updated .env: added proper placeholders and documentation for NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, DATABASE_URL (with instructions to use Session Pooler URL, not direct connection). Added comments explaining how to get values from Supabase dashboard.
+- Verified build: bun run build succeeds (34 HTML pages, 403 files)
+
+Stage Summary:
+- Loading overlay: now shows logo.png image instead of "CARSAI" text
+- Android CI: handles "platform already exists" gracefully
+- Windows CI: properly switches to standalone mode for Electron, builds, and restores config
+- Auth routes: both register and login now use Supabase JS client (HTTPS) instead of Prisma (direct Postgres which was blocked)
+- .env: proper documentation for all required Supabase keys
+- Build: ✅ successful
