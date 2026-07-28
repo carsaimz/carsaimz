@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 /**
- * Carsai Mozambique - Database Seed Script
+ * Carsai Mozambique - Database Seed Script (MySQL)
  * 
- * Seeds the local SQLite database with essential roles, permissions,
+ * Seeds the MySQL database with essential roles, permissions,
  * super_admin user, and site settings.
  * 
- * Run: node scripts/seed.js
+ * Run: bun run db:seed
  */
 
 const { PrismaClient } = require('@prisma/client')
@@ -19,39 +19,149 @@ function hashPassword(password) {
 }
 
 async function seed() {
-  console.log('[Seed] Starting database seed...')
+  console.log('[Seed] Starting MySQL database seed...')
 
   // ── 1. Create essential roles ──
-  const roles = ['super_admin', 'admin', 'partner', 'user']
-  for (const roleName of roles) {
-    const existing = await db.role.findFirst({ where: { name: roleName } })
+  const roleDefs = [
+    { name: 'super_admin', description: 'Super administrador com acesso total e irrestrito ao sistema' },
+    { name: 'admin', description: 'Administrador com acesso total ao sistema' },
+    { name: 'partner', description: 'Parceiro comercial com acesso a funcionalidades de gestão' },
+    { name: 'user', description: 'Utilizador padrão com acesso básico' },
+  ]
+  
+  const roles = {}
+  for (const def of roleDefs) {
+    const existing = await db.role.findFirst({ where: { name: def.name } })
     if (!existing) {
-      await db.role.create({
-        data: { name: roleName, description: `${roleName} role` },
-      })
-      console.log(`[Seed] Created role: ${roleName}`)
+      const created = await db.role.create({ data: def })
+      roles[def.name] = created
+      console.log(`[Seed] Created role: ${def.name}`)
     } else {
-      console.log(`[Seed] Role already exists: ${roleName}`)
+      roles[def.name] = existing
+      console.log(`[Seed] Role already exists: ${def.name}`)
     }
   }
 
-  // ── 2. Create super_admin user ──
-  const superAdminRole = await db.role.findFirst({ where: { name: 'super_admin' } })
-  
+  // ── 2. Create permissions ──
+  const permissionDefs = [
+    { name: 'manage_posts', description: 'Create, edit, delete blog posts' },
+    { name: 'manage_pages', description: 'Create, edit, delete site pages' },
+    { name: 'manage_services', description: 'Create, edit, delete services' },
+    { name: 'manage_projects', description: 'Create, edit, delete projects' },
+    { name: 'manage_testimonials', description: 'Create, edit, delete testimonials' },
+    { name: 'manage_users', description: 'Create, edit, delete users and assign roles' },
+    { name: 'view_users', description: 'View user profiles and lists' },
+    { name: 'manage_quotes', description: 'Create, review, and manage quotes' },
+    { name: 'manage_proposals', description: 'Create, edit, send proposals' },
+    { name: 'manage_payments', description: 'Record, confirm, and manage payments' },
+    { name: 'manage_invoices', description: 'Create, edit, and manage invoices' },
+    { name: 'manage_forum', description: 'Moderate forum topics and replies' },
+    { name: 'post_in_forum', description: 'Create forum topics and reply to posts' },
+    { name: 'manage_settings', description: 'Edit site settings and configuration' },
+    { name: 'view_logs', description: 'View system audit logs' },
+    { name: 'manage_roles', description: 'Create, edit roles and assign permissions' },
+    { name: 'manage_permissions', description: 'Create, edit, delete permissions' },
+    { name: 'manage_support', description: 'Handle support tickets and replies' },
+    { name: 'create_tickets', description: 'Create support tickets' },
+    { name: 'manage_affiliates', description: 'Manage affiliate clicks and commissions' },
+    { name: 'view_affiliates', description: 'View affiliate statistics' },
+    { name: 'manage_files', description: 'Upload, edit, delete file attachments' },
+    { name: 'manage_subscribers', description: 'Manage newsletter subscribers' },
+  ]
+
+  const permissions = {}
+  for (const def of permissionDefs) {
+    const existing = await db.permission.findFirst({ where: { name: def.name } })
+    if (!existing) {
+      const created = await db.permission.create({ data: def })
+      permissions[def.name] = created
+    } else {
+      permissions[def.name] = existing
+    }
+  }
+  console.log(`[Seed] Permissions ready: ${Object.keys(permissions).length}`)
+
+  // ── 3. Assign permissions to roles ──
+  // super_admin: all permissions
+  for (const perm of Object.values(permissions)) {
+    const existing = await db.rolePermission.findFirst({
+      where: { roleId: roles.super_admin.id, permissionId: perm.id },
+    })
+    if (!existing) {
+      await db.rolePermission.create({
+        data: { roleId: roles.super_admin.id, permissionId: perm.id },
+      })
+    }
+  }
+  console.log('[Seed] Assigned all permissions to super_admin')
+
+  // admin: all permissions
+  for (const perm of Object.values(permissions)) {
+    const existing = await db.rolePermission.findFirst({
+      where: { roleId: roles.admin.id, permissionId: perm.id },
+    })
+    if (!existing) {
+      await db.rolePermission.create({
+        data: { roleId: roles.admin.id, permissionId: perm.id },
+      })
+    }
+  }
+  console.log('[Seed] Assigned all permissions to admin')
+
+  // partner: specific permissions
+  const partnerPermNames = [
+    'manage_posts', 'manage_pages', 'manage_services', 'manage_projects',
+    'manage_testimonials', 'view_users', 'manage_quotes', 'manage_proposals',
+    'manage_payments', 'manage_invoices', 'post_in_forum', 'create_tickets',
+    'view_affiliates', 'manage_files',
+  ]
+  for (const permName of partnerPermNames) {
+    const perm = permissions[permName]
+    if (perm) {
+      const existing = await db.rolePermission.findFirst({
+        where: { roleId: roles.partner.id, permissionId: perm.id },
+      })
+      if (!existing) {
+        await db.rolePermission.create({
+          data: { roleId: roles.partner.id, permissionId: perm.id },
+        })
+      }
+    }
+  }
+  console.log('[Seed] Assigned partner permissions')
+
+  // user: basic permissions
+  const userPermNames = ['post_in_forum', 'create_tickets', 'manage_files']
+  for (const permName of userPermNames) {
+    const perm = permissions[permName]
+    if (perm) {
+      const existing = await db.rolePermission.findFirst({
+        where: { roleId: roles.user.id, permissionId: perm.id },
+      })
+      if (!existing) {
+        await db.rolePermission.create({
+          data: { roleId: roles.user.id, permissionId: perm.id },
+        })
+      }
+    }
+  }
+  console.log('[Seed] Assigned user permissions')
+
+  // ── 4. Create super_admin user ──
   const superAdminEmail = 'carsaimozambique@gmail.com'
   const existingAdmin = await db.user.findUnique({ where: { email: superAdminEmail } })
   
   if (!existingAdmin) {
     await db.user.create({
       data: {
-        name: 'Carimo Saide Mpinda',
+        name: 'Carsai Admin',
         email: superAdminEmail,
         passwordHash: hashPassword('Carnanda23'),
         phone: '847545020',
         company: 'Carsai Mozambique',
         bio: 'CEO & Founder of Carsai Mozambique',
         address: 'Montepuez, Cabo Delgado, Mozambique',
-        roleId: superAdminRole.id,
+        roleId: roles.super_admin.id,
         isActive: true,
         emailVerified: true,
       },
@@ -61,9 +171,7 @@ async function seed() {
     console.log('[Seed] super_admin user already exists')
   }
 
-  // ── 3. Create admin user ──
-  const adminRole = await db.role.findFirst({ where: { name: 'admin' } })
-  
+  // ── 5. Create admin user ──
   const adminEmail = 'suporte.carsaimz@gmail.com'
   const existingAdminUser = await db.user.findUnique({ where: { email: adminEmail } })
   
@@ -75,7 +183,7 @@ async function seed() {
         passwordHash: hashPassword('CarsaiAdmin2025'),
         phone: '874512581',
         company: 'Carsai Mozambique',
-        roleId: adminRole.id,
+        roleId: roles.admin.id,
         isActive: true,
         emailVerified: true,
       },
@@ -85,87 +193,34 @@ async function seed() {
     console.log('[Seed] admin user already exists')
   }
 
-  // ── 4. Create site settings ──
+  // ── 6. Create site settings ──
   const settings = [
-    { key: 'site_name', value: 'Carsai Mozambique' },
-    { key: 'site_email', value: 'carsaimozambique@gmail.com' },
+    { key: 'company_name', value: 'Carsai Mozambique' },
+    { key: 'contact_email', value: 'carsaimozambique@gmail.com' },
     { key: 'support_email', value: 'suporte.carsaimz@gmail.com' },
-    { key: 'phone_mpesa', value: '847545020' },
-    { key: 'phone_support', value: '874512581' },
-    { key: 'whatsapp', value: 'https://wa.me/258847545020' },
-    { key: 'address', value: 'Montepuez, Cabo Delgado, Mozambique' },
-    { key: 'currency', value: 'MT (Mozambican Metical)' },
-    { key: 'website', value: 'https://carsai.mz' },
-    { key: 'github', value: 'https://github.com/carsaimz' },
-    { key: 'facebook', value: 'https://facebook.com/carsaimz' },
-    { key: 'instagram', value: 'https://instagram.com/carsaimz' },
-    { key: 'twitter', value: 'https://twitter.com/carsaimz' },
-    { key: 'linkedin', value: 'https://linkedin.com/company/carsaimz' },
-    { key: 'youtube', value: 'https://youtube.com/@carsaimz' },
-    { key: 'tiktok', value: 'https://tiktok.com/@carsaimz' },
+    { key: 'developer_email', value: 'carsaideveloper@gmail.com' },
+    { key: 'contact_phone', value: '847545020 / 874512581 / 84246463 / 835020143' },
+    { key: 'contact_address', value: 'Montepuez, Cabo Delgado, Mozambique' },
+    { key: 'website_url', value: 'https://carsai.mz' },
+    { key: 'ceo_name', value: 'Carimo Saide Mpinda' },
+    { key: 'developer_name', value: 'CarsaiDev' },
+    { key: 'social_whatsapp', value: '847545020' },
+    { key: 'social_facebook', value: 'carsaimz' },
+    { key: 'social_instagram', value: 'carsaimz' },
+    { key: 'social_tiktok', value: 'carsaimz' },
+    { key: 'social_youtube', value: 'carsaimz' },
+    { key: 'social_discord', value: 'carsaimz' },
+    { key: 'social_github', value: 'carsaimz' },
+    { key: 'mpesa_number', value: '847545020' },
   ]
 
   for (const setting of settings) {
     const existing = await db.setting.findFirst({ where: { key: setting.key } })
     if (!existing) {
       await db.setting.create({ data: setting })
-      console.log(`[Seed] Created setting: ${setting.key}`)
     }
   }
-
-  // ── 5. Create basic permissions ──
-  const permissions = [
-    { name: 'manage_users', description: 'Create, edit, delete users' },
-    { name: 'manage_content', description: 'Create, edit, delete content (posts, pages, services)' },
-    { name: 'manage_settings', description: 'Edit site settings' },
-    { name: 'manage_financial', description: 'View and manage quotes, proposals, invoices, payments' },
-    { name: 'manage_forum', description: 'Moderate forum topics and replies' },
-    { name: 'manage_support', description: 'Handle support tickets' },
-    { name: 'view_analytics', description: 'View dashboard analytics and stats' },
-    { name: 'manage_ai_providers', description: 'Configure AI providers for chatbot' },
-  ]
-
-  for (const perm of permissions) {
-    const existing = await db.permission.findFirst({ where: { name: perm.name } })
-    if (!existing) {
-      await db.permission.create({ data: perm })
-    }
-  }
-
-  // ── 6. Assign all permissions to super_admin ──
-  const allPermissions = await db.permission.findMany()
-  const superAdminRoleWithPerms = await db.role.findFirst({ where: { name: 'super_admin' } })
-  
-  for (const perm of allPermissions) {
-    const existing = await db.rolePermission.findFirst({
-      where: { roleId: superAdminRoleWithPerms.id, permissionId: perm.id },
-    })
-    if (!existing) {
-      await db.rolePermission.create({
-        data: { roleId: superAdminRoleWithPerms.id, permissionId: perm.id },
-      })
-    }
-  }
-  console.log('[Seed] Assigned all permissions to super_admin')
-
-  // ── 7. Assign basic permissions to admin ──
-  const adminRoleWithPerms = await db.role.findFirst({ where: { name: 'admin' } })
-  const adminPermNames = ['manage_users', 'manage_content', 'manage_settings', 'manage_financial', 'manage_forum', 'manage_support', 'view_analytics']
-  
-  for (const permName of adminPermNames) {
-    const perm = await db.permission.findFirst({ where: { name: permName } })
-    if (perm) {
-      const existing = await db.rolePermission.findFirst({
-        where: { roleId: adminRoleWithPerms.id, permissionId: perm.id },
-      })
-      if (!existing) {
-        await db.rolePermission.create({
-          data: { roleId: adminRoleWithPerms.id, permissionId: perm.id },
-        })
-      }
-    }
-  }
-  console.log('[Seed] Assigned permissions to admin')
+  console.log('[Seed] Settings created')
 
   // ── Summary ──
   const userCount = await db.user.count()
@@ -173,12 +228,12 @@ async function seed() {
   const permCount = await db.permission.count()
   const settingCount = await db.setting.count()
 
-  console.log('\n[Seed] ========================================')
+  console.log('\n[Seed] ============================')
   console.log(`[Seed] Users:    ${userCount}`)
   console.log(`[Seed] Roles:    ${roleCount}`)
   console.log(`[Seed] Perms:    ${permCount}`)
   console.log(`[Seed] Settings: ${settingCount}`)
-  console.log('[Seed] ========================================')
+  console.log('[Seed] ============================')
   console.log('[Seed] super_admin: carsaimozambique@gmail.com / Carnanda23')
   console.log('[Seed] admin:       suporte.carsaimz@gmail.com / CarsaiAdmin2025')
   console.log('[Seed] Done!')

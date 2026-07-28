@@ -1,78 +1,77 @@
 // Carsai Mozambique - Database Schema
-// Prisma with SQLite (local development)
-// To switch to MySQL for production, change provider to "mysql" and update DATABASE_URL
+// Prisma with MySQL (infinityfree remote database)
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 // === Core User & Auth ===
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  name          String?
-  avatar        String?  // base64 data URI or URL
-  phone         String?
-  company       String?
-  bio           String?
-  address       String?
-  passwordHash  String?
-  roleId        String?
-  role          Role?    @relation(fields: [roleId], references: [id])
-  isActive      Boolean  @default(true)
-  emailVerified Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id            String    @id @default(cuid()) @db.VarChar(30)
+  email         String    @unique @db.VarChar(255)
+  name          String?   @db.VarChar(255)
+  avatar        String?   @db.LongText     // base64 data URI or URL — can be very large
+  phone         String?   @db.VarChar(50)
+  company       String?   @db.VarChar(255)
+  bio           String?   @db.Text
+  address       String?   @db.Text
+  passwordHash  String?   @db.VarChar(255)
+  roleId        String?   @db.VarChar(30)
+  role          Role?     @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  isActive      Boolean   @default(true)
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  posts         Post[]
-  comments      Comment[]
-  forumTopics   ForumTopic[]
-  forumPosts    ForumPost[]
-  quotes        Quote[]
-  payments      Payment[]
-  notifications Notification[]
-  supportTickets SupportTicket[]
-  ticketReplies  TicketReply[]
-  affiliateClicks AffiliateClick[]
+  posts              Post[]
+  comments           Comment[]
+  forumTopics        ForumTopic[]
+  forumPosts         ForumPost[]
+  quotes             Quote[]
+  payments           Payment[]
+  notifications      Notification[]
+  supportTickets     SupportTicket[]
+  ticketReplies      TicketReply[]
+  affiliateClicks    AffiliateClick[]
   affiliateCommissions AffiliateCommission[]
 
   @@map("users")
 }
 
 model Role {
-  id          String   @id @default(cuid())
-  name        String   @unique // admin, partner, user, super_admin
-  description String?
+  id          String    @id @default(cuid()) @db.VarChar(30)
+  name        String    @unique @db.VarChar(50)
+  description String?   @db.Text
   users       User[]
   permissions RolePermission[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@map("roles")
 }
 
 model Permission {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String?
+  id              String          @id @default(cuid()) @db.VarChar(30)
+  name            String          @unique @db.VarChar(100)
+  description     String?         @db.Text
   rolePermissions RolePermission[]
-  createdAt   DateTime @default(now())
+  createdAt       DateTime        @default(now())
 
   @@map("permissions")
 }
 
 model RolePermission {
-  id           String     @id @default(cuid())
-  roleId       String
-  permissionId String
-  role         Role       @relation(fields: [roleId], references: [id])
-  permission   Permission @relation(fields: [permissionId], references: [id])
+  id           String     @id @default(cuid()) @db.VarChar(30)
+  roleId       String     @db.VarChar(30)
+  permissionId String     @db.VarChar(30)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   @@unique([roleId, permissionId])
   @@map("role_permissions")
@@ -81,65 +80,65 @@ model RolePermission {
 // === Public Content ===
 
 model Page {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  title       String
-  content     String?
-  isPublished Boolean  @default(true)
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          String    @id @default(cuid()) @db.VarChar(30)
+  slug        String    @unique @db.VarChar(255)
+  title       String    @db.VarChar(255)
+  content     String?   @db.LongText
+  isPublished Boolean   @default(true)
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@map("pages")
 }
 
 model Service {
-  id              String   @id @default(cuid())
-  slug            String   @unique
-  title           String
-  titleI18n       String?  // JSON object: {"pt-pt":"Serviços Web","en-us":"Web Services","fr-fr":"Services Web",...}
-  description     String?
-  descriptionI18n String?  // JSON object with translations per language code
-  icon            String?  // base64 data URI or icon name
+  id              String    @id @default(cuid()) @db.VarChar(30)
+  slug            String    @unique @db.VarChar(255)
+  title           String    @db.VarChar(255)
+  titleI18n       String?   @db.LongText    // JSON object with translations
+  description     String?   @db.Text
+  descriptionI18n String?   @db.LongText    // JSON object with translations
+  icon            String?   @db.LongText    // base64 data URI or icon name
   basePrice       Float?
-  isFeatured      Boolean  @default(false)
-  isPublished     Boolean  @default(true)
-  order           Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  isFeatured      Boolean   @default(false)
+  isPublished     Boolean   @default(true)
+  order           Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@map("services")
 }
 
 model Project {
-  id            String   @id @default(cuid())
-  slug          String   @unique
-  title         String
-  titleI18n     String?  // JSON object with translations per language code
-  description   String?
-  descriptionI18n String?  // JSON object with translations per language code
-  client        String?
-  technologies  String?
-  demoUrl       String?
-  images        String?  // JSON array of base64 data URIs
-  isPublished   Boolean  @default(true)
-  isFeatured    Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id              String    @id @default(cuid()) @db.VarChar(30)
+  slug            String    @unique @db.VarChar(255)
+  title           String    @db.VarChar(255)
+  titleI18n       String?   @db.LongText    // JSON object with translations
+  description     String?   @db.Text
+  descriptionI18n String?   @db.LongText    // JSON object with translations
+  client          String?   @db.VarChar(255)
+  technologies    String?   @db.Text
+  demoUrl         String?   @db.VarChar(500)
+  images          String?   @db.LongText    // JSON array of base64 data URIs
+  isPublished     Boolean   @default(true)
+  isFeatured      Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@map("projects")
 }
 
 model Testimonial {
-  id          String   @id @default(cuid())
-  name        String
-  company     String?
-  content     String
-  contentI18n String?  // JSON object with translations per language code
-  rating      Int      @default(5)
-  avatar      String?  // base64 data URI for avatar image
-  isPublished Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  id          String    @id @default(cuid()) @db.VarChar(30)
+  name        String    @db.VarChar(255)
+  company     String?   @db.VarChar(255)
+  content     String    @db.Text
+  contentI18n String?   @db.LongText    // JSON object with translations
+  rating      Int       @default(5)
+  avatar      String?   @db.LongText    // base64 data URI for avatar image
+  isPublished Boolean   @default(true)
+  createdAt   DateTime  @default(now())
 
   @@map("testimonials")
 }
@@ -147,9 +146,9 @@ model Testimonial {
 // === Blog ===
 
 model Category {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  slug      String   @unique
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  name      String   @unique @db.VarChar(255)
+  slug      String   @unique @db.VarChar(255)
   posts     Post[]
   createdAt DateTime @default(now())
 
@@ -157,9 +156,9 @@ model Category {
 }
 
 model Tag {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  slug      String   @unique
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  name      String   @unique @db.VarChar(255)
+  slug      String   @unique @db.VarChar(255)
   posts     PostTag[]
   createdAt DateTime @default(now())
 
@@ -167,20 +166,20 @@ model Tag {
 }
 
 model Post {
-  id            String    @id @default(cuid())
-  title         String
-  titleI18n     String?   // JSON object with translations per language code
-  slug          String    @unique
-  excerpt       String?
-  excerptI18n   String?   // JSON object with translations per language code
-  content       String?
-  contentI18n   String?   // JSON object with translations per language code
-  featuredImage String?  // base64 data URI for post featured image
+  id            String    @id @default(cuid()) @db.VarChar(30)
+  title         String    @db.VarChar(255)
+  titleI18n     String?   @db.LongText    // JSON object with translations
+  slug          String    @unique @db.VarChar(255)
+  excerpt       String?   @db.Text
+  excerptI18n   String?   @db.LongText    // JSON object with translations
+  content       String?   @db.LongText
+  contentI18n   String?   @db.LongText    // JSON object with translations
+  featuredImage String?   @db.LongText    // base64 data URI
   published     Boolean   @default(false)
-  authorId      String
-  author        User      @relation(fields: [authorId], references: [id])
-  categoryId    String?
-  category      Category? @relation(fields: [categoryId], references: [id])
+  authorId      String    @db.VarChar(30)
+  author        User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  categoryId    String?   @db.VarChar(30)
+  category      Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -191,23 +190,23 @@ model Post {
 }
 
 model PostTag {
-  id     String @id @default(cuid())
-  postId String
-  tagId  String
-  post   Post   @relation(fields: [postId], references: [id])
-  tag    Tag    @relation(fields: [tagId], references: [id])
+  id     String @id @default(cuid()) @db.VarChar(30)
+  postId String @db.VarChar(30)
+  tagId  String @db.VarChar(30)
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@unique([postId, tagId])
   @@map("post_tags")
 }
 
 model Comment {
-  id        String   @id @default(cuid())
-  content   String
-  postId    String
-  post      Post     @relation(fields: [postId], references: [id])
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  content   String   @db.Text
+  postId    String   @db.VarChar(30)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String   @db.VarChar(30)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   isApproved Boolean @default(false)
   createdAt DateTime @default(now())
 
@@ -215,8 +214,8 @@ model Comment {
 }
 
 model Subscriber {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  email     String   @unique @db.VarChar(255)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 
@@ -226,12 +225,12 @@ model Subscriber {
 // === Forum ===
 
 model ForumCategory {
-  id             String       @id @default(cuid())
-  name           String
-  nameI18n       String?      // JSON object with translations per language code
-  slug           String       @unique
-  description    String?
-  descriptionI18n String?     // JSON object with translations per language code
+  id             String       @id @default(cuid()) @db.VarChar(30)
+  name           String       @db.VarChar(255)
+  nameI18n       String?      @db.LongText    // JSON object with translations
+  slug           String       @unique @db.VarChar(255)
+  description    String?      @db.Text
+  descriptionI18n String?     @db.LongText    // JSON object with translations
   order          Int          @default(0)
   topics         ForumTopic[]
   createdAt      DateTime     @default(now())
@@ -240,21 +239,21 @@ model ForumCategory {
 }
 
 model ForumTopic {
-  id           String         @id @default(cuid())
-  title        String
-  titleI18n    String?        // JSON object with translations per language code
-  slug         String         @unique
-  content      String?
-  contentI18n  String?        // JSON object with translations per language code
-  categoryId   String
-  category     ForumCategory  @relation(fields: [categoryId], references: [id])
-  authorId     String
-  author       User           @relation(fields: [authorId], references: [id])
-  isPinned     Boolean        @default(false)
-  isLocked     Boolean        @default(false)
-  isResolved   Boolean        @default(false)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  id           String        @id @default(cuid()) @db.VarChar(30)
+  title        String        @db.VarChar(255)
+  titleI18n    String?       @db.LongText    // JSON object with translations
+  slug         String        @unique @db.VarChar(255)
+  content      String?       @db.LongText
+  contentI18n  String?       @db.LongText    // JSON object with translations
+  categoryId   String        @db.VarChar(30)
+  category     ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  authorId     String        @db.VarChar(30)
+  author       User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  isPinned     Boolean       @default(false)
+  isLocked     Boolean       @default(false)
+  isResolved   Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   replies      ForumPost[]
   likes        ForumLike[]
@@ -263,22 +262,22 @@ model ForumTopic {
 }
 
 model ForumPost {
-  id        String      @id @default(cuid())
-  content   String
-  topicId   String
-  topic     ForumTopic  @relation(fields: [topicId], references: [id])
-  authorId  String
-  author    User        @relation(fields: [authorId], references: [id])
+  id        String      @id @default(cuid()) @db.VarChar(30)
+  content   String      @db.LongText
+  topicId   String      @db.VarChar(30)
+  topic     ForumTopic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  authorId  String      @db.VarChar(30)
+  author    User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
   createdAt DateTime    @default(now())
 
   @@map("forum_posts")
 }
 
 model ForumLike {
-  id      String     @id @default(cuid())
-  topicId String
-  topic   ForumTopic @relation(fields: [topicId], references: [id])
-  userId  String
+  id      String     @id @default(cuid()) @db.VarChar(30)
+  topicId String     @db.VarChar(30)
+  topic   ForumTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  userId  String     @db.VarChar(30)
   createdAt DateTime @default(now())
 
   @@unique([topicId, userId])
@@ -288,15 +287,15 @@ model ForumLike {
 // === Financial ===
 
 model Quote {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  attachments String?  // JSON array of base64 data URIs
-  status      String   @default("pending") // pending, reviewed, proposed, accepted, rejected
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          String    @id @default(cuid()) @db.VarChar(30)
+  title       String    @db.VarChar(255)
+  description String?   @db.Text
+  attachments String?   @db.LongText    // JSON array of base64 data URIs
+  status      String    @default("pending") @db.VarChar(50)
+  userId      String    @db.VarChar(30)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   proposals   Proposal[]
 
@@ -304,17 +303,17 @@ model Quote {
 }
 
 model Proposal {
-  id          String   @id @default(cuid())
-  quoteId     String
-  quote       Quote    @relation(fields: [quoteId], references: [id])
-  title       String
-  description String?
-  items       String?  // JSON array of line items
+  id          String    @id @default(cuid()) @db.VarChar(30)
+  quoteId     String    @db.VarChar(30)
+  quote       Quote     @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  title       String    @db.VarChar(255)
+  description String?   @db.Text
+  items       String?   @db.LongText    // JSON array of line items
   totalAmount Float?
   validUntil  DateTime?
-  status      String   @default("sent") // sent, accepted, rejected
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status      String    @default("sent") @db.VarChar(50)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   payments    Payment[]
   invoices    Invoice[]
@@ -323,31 +322,31 @@ model Proposal {
 }
 
 model Payment {
-  id            String    @id @default(cuid())
-  proposalId    String?
-  proposal      Proposal? @relation(fields: [proposalId], references: [id])
-  userId        String
-  user          User      @relation(fields: [userId], references: [id])
+  id            String     @id @default(cuid()) @db.VarChar(30)
+  proposalId    String?    @db.VarChar(30)
+  proposal      Proposal?  @relation(fields: [proposalId], references: [id], onDelete: SetNull)
+  userId        String     @db.VarChar(30)
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   amount        Float
-  method        String    // mpesa, transfer, deposit
-  status        String    @default("pending") // pending, confirmed, failed
-  reference     String?
-  receiptUrl    String?  // base64 data URI for payment receipt
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  method        String     @db.VarChar(50)
+  status        String     @default("pending") @db.VarChar(50)
+  reference     String?    @db.VarChar(255)
+  receiptUrl    String?    @db.LongText     // base64 data URI for payment receipt
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   @@map("payments")
 }
 
 model Invoice {
-  id          String     @id @default(cuid())
-  proposalId  String
-  proposal    Proposal   @relation(fields: [proposalId], references: [id])
-  number      String     @unique
+  id          String       @id @default(cuid()) @db.VarChar(30)
+  proposalId  String       @db.VarChar(30)
+  proposal    Proposal     @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  number      String       @unique @db.VarChar(50)
   totalAmount Float
-  status      String     @default("issued") // issued, paid, overdue
+  status      String       @default("issued") @db.VarChar(50)
   dueDate     DateTime?
-  createdAt   DateTime   @default(now())
+  createdAt   DateTime     @default(now())
 
   items       InvoiceItem[]
 
@@ -355,10 +354,10 @@ model Invoice {
 }
 
 model InvoiceItem {
-  id          String   @id @default(cuid())
-  invoiceId   String
-  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
-  description String
+  id          String   @id @default(cuid()) @db.VarChar(30)
+  invoiceId   String   @db.VarChar(30)
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description String   @db.Text
   quantity    Int      @default(1)
   unitPrice   Float
   total       Float
@@ -369,22 +368,22 @@ model InvoiceItem {
 // === Affiliate / Partner ===
 
 model AffiliateClick {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  linkCode  String
-  ip        String?
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  userId    String   @db.VarChar(30)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  linkCode  String   @db.VarChar(255)
+  ip        String?   @db.VarChar(50)
   createdAt DateTime @default(now())
 
   @@map("affiliate_clicks")
 }
 
 model AffiliateCommission {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  userId    String   @db.VarChar(30)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   amount    Float
-  status    String   @default("pending") // pending, approved, paid
+  status    String   @default("pending") @db.VarChar(50)
   createdAt DateTime @default(now())
 
   @@map("affiliate_commissions")
@@ -393,12 +392,12 @@ model AffiliateCommission {
 // === Notifications ===
 
 model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  title     String
-  message   String
-  type      String   @default("info") // info, success, warning, error
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  userId    String   @db.VarChar(30)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String   @db.VarChar(255)
+  message   String   @db.Text
+  type      String   @default("info") @db.VarChar(50)
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 
@@ -408,14 +407,14 @@ model Notification {
 // === Support ===
 
 model SupportTicket {
-  id        String        @id @default(cuid())
-  userId    String
-  user      User          @relation(fields: [userId], references: [id])
-  subject   String
-  status    String        @default("open") // open, in_progress, resolved, closed
-  priority  String        @default("medium") // low, medium, high, urgent
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id        String         @id @default(cuid()) @db.VarChar(30)
+  userId    String         @db.VarChar(30)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   String         @db.VarChar(255)
+  status    String         @default("open") @db.VarChar(50)
+  priority  String         @default("medium") @db.VarChar(50)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
 
   replies   TicketReply[]
 
@@ -423,12 +422,12 @@ model SupportTicket {
 }
 
 model TicketReply {
-  id        String         @id @default(cuid())
-  ticketId  String
-  ticket    SupportTicket  @relation(fields: [ticketId], references: [id])
-  authorId  String
-  author    User           @relation(fields: [authorId], references: [id])
-  content   String
+  id        String         @id @default(cuid()) @db.VarChar(30)
+  ticketId  String         @db.VarChar(30)
+  ticket    SupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId  String         @db.VarChar(30)
+  author    User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content   String         @db.Text
   createdAt DateTime       @default(now())
 
   @@map("ticket_replies")
@@ -437,13 +436,13 @@ model TicketReply {
 // === File Storage (Base64) ===
 
 model FileAttachment {
-  id          String   @id @default(cuid())
-  name        String   // original filename
-  mimeType    String   // MIME type
-  size        Int      // file size in bytes
-  data        String   // base64 encoded content with data URI prefix
-  category    String   // image, document, avatar, receipt, etc.
-  userId      String?  // who uploaded it
+  id          String   @id @default(cuid()) @db.VarChar(30)
+  name        String   @db.VarChar(255)
+  mimeType    String   @db.VarChar(100)
+  size        Int
+  data        String   @db.LongText     // base64 encoded content
+  category    String   @db.VarChar(50)
+  userId      String?  @db.VarChar(30)
   createdAt   DateTime @default(now())
 
   @@map("file_attachments")
@@ -452,9 +451,9 @@ model FileAttachment {
 // === Settings ===
 
 model Setting {
-  id    String @id @default(cuid())
-  key   String @unique
-  value String?
+  id    String @id @default(cuid()) @db.VarChar(30)
+  key   String @unique @db.VarChar(255)
+  value String? @db.LongText
 
   @@map("settings")
 }
@@ -462,17 +461,17 @@ model Setting {
 // === AI Providers (Multi-provider failover) ===
 
 model AiProvider {
-  id          String   @id @default(cuid())
-  name        String   @unique  // z_ai, groq, deepseek, gemini, openrouter
-  displayName String?            // Display name for admin UI
-  apiKey      String?            // Encrypted API key
-  baseUrl     String?            // Provider API base URL
-  model       String?            // Default model for this provider
-  priority    Int      @default(0)  // Lower = tried first
-  isActive    Boolean  @default(true)
-  config      String?            // JSON config (max_tokens, temperature, etc.)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          String    @id @default(cuid()) @db.VarChar(30)
+  name        String    @unique @db.VarChar(50)
+  displayName String?   @db.VarChar(255)
+  apiKey      String?   @db.VarChar(500)
+  baseUrl     String?   @db.VarChar(500)
+  model       String?   @db.VarChar(100)
+  priority    Int       @default(0)
+  isActive    Boolean   @default(true)
+  config      String?   @db.LongText     // JSON config
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@map("ai_providers")
 }
@@ -480,10 +479,10 @@ model AiProvider {
 // === Logs ===
 
 model Log {
-  id        String   @id @default(cuid())
-  action    String
-  details   String?
-  userId    String?
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  action    String   @db.VarChar(100)
+  details   String?  @db.Text
+  userId    String?  @db.VarChar(30)
   createdAt DateTime @default(now())
 
   @@map("logs")

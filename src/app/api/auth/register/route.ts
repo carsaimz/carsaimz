@@ -1,103 +1,92 @@
+/**
+ * Carsai Mozambique — Registration API Route
+ * Uses Prisma + MySQL directly (no Supabase dependency).
+ */
+
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { createHash } from 'crypto'
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Registration API Route — Uses Prisma with local SQLite database
-// ──────────────────────────────────────────────────────────────────────────────
-// SQLite is always accessible locally (no external connection needed).
-// No Supabase dependency — works without any cloud service.
-// ──────────────────────────────────────────────────────────────────────────────
 
 function hashPassword(password: string): string {
   return createHash('sha256').update(password).digest('hex')
 }
 
-export const maxDuration = 30;
-
 export async function POST(request: NextRequest) {
   try {
-    // ── Auto-seed essential roles ──
-    const requiredRoles = ['super_admin', 'admin', 'partner', 'user']
-    for (const roleName of requiredRoles) {
-      const existing = await db.role.findFirst({ where: { name: roleName } })
-      if (!existing) {
-        await db.role.create({
-          data: { name: roleName, description: `${roleName} role` },
-        })
-      }
-    }
-
     const body = await request.json()
-    const { name, email, password, phone } = body
+    const { name, email, password, phone, company } = body
 
-    // ── Validate required fields (Portuguese error messages) ──
-    if (!name || !name.trim()) {
-      return NextResponse.json({ error: 'Nome é obrigatório' }, { status: 400 })
+    // ── Validation ──
+    if (!email || !password) {
+      return NextResponse.json(
+        { error: 'Email e senha são obrigatórios.' },
+        { status: 400 }
+      )
     }
 
-    if (!email || !email.trim()) {
-      return NextResponse.json({ error: 'E-mail é obrigatório' }, { status: 400 })
+    if (password.length < 6) {
+      return NextResponse.json(
+        { error: 'A senha deve ter pelo menos 6 caracteres.' },
+        { status: 400 }
+      )
     }
 
-    if (!password || password.length < 8) {
-      return NextResponse.json({ error: 'Palavra-passe deve ter pelo menos 8 caracteres' }, { status: 400 })
-    }
+    const emailLower = email.toLowerCase().trim()
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      return NextResponse.json({ error: 'Introduza um e-mail válido' }, { status: 400 })
-    }
-
-    const normalizedEmail = email.trim().toLowerCase()
-
-    // ── Check if email already exists ──
-    const existingUser = await db.user.findUnique({
-      where: { email: normalizedEmail },
-    })
-
+    // ── Check if user already exists ──
+    const existingUser = await db.user.findUnique({ where: { email: emailLower } })
     if (existingUser) {
-      return NextResponse.json({ error: 'Já existe uma conta com este e-mail' }, { status: 409 })
+      return NextResponse.json(
+        { error: 'Este email já está registado.' },
+        { status: 409 }
+      )
     }
 
-    // ── Find the 'user' role ──
-    const userRole = await db.role.findFirst({ where: { name: 'user' } })
+    // ── Find default "user" role ──
+    const userRole = await db.role.findUnique({ where: { name: 'user' } })
 
-    if (!userRole) {
-      return NextResponse.json({ error: 'Erro interno do servidor. Tente novamente mais tarde.' }, { status: 500 })
-    }
-
-    // ── Create the user ──
+    // ── Create user ──
     const newUser = await db.user.create({
       data: {
-        name: name.trim(),
-        email: normalizedEmail,
+        name: name || emailLower.split('@')[0],
+        email: emailLower,
         passwordHash: hashPassword(password),
-        phone: phone?.trim() || null,
-        roleId: userRole.id,
+        phone: phone || null,
+        company: company || null,
+        roleId: userRole?.id || null,
+        isActive: true,
+        emailVerified: false,
       },
-      include: { role: true },
-    })
-
-    // ── Return user data (without password hash) ──
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        phone: newUser.phone,
-        role: newUser.role?.name || 'user',
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isActive: true,
+        roleId: true,
+        createdAt: true,
       },
     })
 
-  } catch (error) {
-    console.error('[Register] Error:', error)
+    // ── Fetch role name for response ──
+    const role = userRole
+      ? { id: userRole.id, name: userRole.name }
+      : null
 
-    const errorMessage = error instanceof Error
-      ? `Erro: ${error.message}. Por favor, tente novamente.`
-      : 'Falha ao criar conta. Por favor, tente novamente ou contacte-nos via carsaimozambique@gmail.com.'
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 })
+    return NextResponse.json(
+      {
+        message: 'Conta criada com sucesso!',
+        user: {
+          ...newUser,
+          role,
+        },
+      },
+      { status: 201 }
+    )
+  } catch (error: any) {
+    console.error('[REGISTER ERROR]', error)
+    return NextResponse.json(
+      { error: 'Falha ao criar conta. Verifique a sua ligação e tente novamente.' },
+      { status: 500 }
+    )
   }
 }

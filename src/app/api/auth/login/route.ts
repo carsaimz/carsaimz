@@ -1,103 +1,87 @@
+/**
+ * Carsai Mozambique — Login API Route
+ * Uses Prisma + MySQL directly (no Supabase dependency).
+ */
+
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { createHash } from 'crypto'
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Login API Route — Uses Prisma with local SQLite database
-// ──────────────────────────────────────────────────────────────────────────────
-// SQLite is always accessible locally (no external connection needed).
-// No Supabase dependency — works without any cloud service.
-// ──────────────────────────────────────────────────────────────────────────────
 
 function hashPassword(password: string): string {
   return createHash('sha256').update(password).digest('hex')
 }
 
-export const maxDuration = 30;
-
 export async function POST(request: NextRequest) {
   try {
-    // ── Auto-seed essential roles ──
-    const requiredRoles = ['super_admin', 'admin', 'partner', 'user']
-    for (const roleName of requiredRoles) {
-      const existing = await db.role.findFirst({ where: { name: roleName } })
-      if (!existing) {
-        await db.role.create({
-          data: { name: roleName, description: `${roleName} role` },
-        })
-      }
-    }
-
     const body = await request.json()
-    const { login, password } = body
+    const { email, password } = body
 
-    if (!login || !login.trim()) {
-      return NextResponse.json({ error: 'E-mail ou telefone é obrigatório' }, { status: 400 })
+    // ── Validation ──
+    if (!email || !password) {
+      return NextResponse.json(
+        { error: 'Email e senha são obrigatórios.' },
+        { status: 400 }
+      )
     }
 
-    if (!password) {
-      return NextResponse.json({ error: 'Palavra-passe é obrigatória' }, { status: 400 })
-    }
+    const emailLower = email.toLowerCase().trim()
 
-    const loginValue = login.trim()
-    const isEmail = loginValue.includes('@')
-
-    // ── Find user by email or phone ──
-    const user = isEmail
-      ? await db.user.findUnique({
-          where: { email: loginValue.toLowerCase() },
-          include: { role: true },
-        })
-      : await db.user.findFirst({
-          where: { phone: loginValue },
-          include: { role: true },
-        })
+    // ── Find user ──
+    const user = await db.user.findUnique({
+      where: { email: emailLower },
+      include: { role: true },
+    })
 
     if (!user) {
-      return NextResponse.json({ error: 'Credenciais inválidas' }, { status: 401 })
-    }
-
-    if (!user.passwordHash) {
       return NextResponse.json(
-        { error: 'Esta conta não tem palavra-passe definida. Contacte o suporte via carsaimozambique@gmail.com' },
+        { error: 'Email ou senha incorretos.' },
         { status: 401 }
       )
     }
 
-    const hashedInput = hashPassword(password)
-    if (hashedInput !== user.passwordHash) {
-      return NextResponse.json({ error: 'Credenciais inválidas' }, { status: 401 })
+    // ── Verify password ──
+    if (!user.passwordHash || user.passwordHash !== hashPassword(password)) {
+      return NextResponse.json(
+        { error: 'Email ou senha incorretos.' },
+        { status: 401 }
+      )
     }
 
+    // ── Check if user is active ──
     if (!user.isActive) {
       return NextResponse.json(
-        { error: 'Conta desactivada. Contacte o suporte via carsaimozambique@gmail.com' },
+        { error: 'A sua conta está desactivada. Contacte o suporte.' },
         { status: 403 }
       )
     }
 
-    const userRole = user.role?.name || 'user'
-
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        avatar: user.avatar,
-        company: user.company,
-        bio: user.bio,
-        address: user.address,
-        role: userRole,
-      },
-    })
-
-  } catch (error) {
-    console.error('[Login] Error:', error)
+    // ── Return user data (without password hash) ──
+    const userData = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+      phone: user.phone,
+      company: user.company,
+      isActive: user.isActive,
+      emailVerified: user.emailVerified,
+      role: user.role
+        ? { id: user.role.id, name: user.role.name }
+        : null,
+      createdAt: user.createdAt,
+    }
 
     return NextResponse.json(
-      { error: 'Falha ao entrar. Por favor, tente novamente ou contacte-nos via carsaimozambique@gmail.com' },
+      {
+        message: 'Login realizado com sucesso!',
+        user: userData,
+      },
+      { status: 200 }
+    )
+  } catch (error: any) {
+    console.error('[LOGIN ERROR]', error)
+    return NextResponse.json(
+      { error: 'Falha ao fazer login. Verifique a sua ligação e tente novamente.' },
       { status: 500 }
     )
   }
