@@ -16,8 +16,8 @@ export const APP_CONFIG = {
   description: 'Soluções Digitais e Hospedagem Web Gratuita',
   website: SITE_URL,
   github: GITHUB_URL,
-  contactEmail: 'info@carsai.mz',
-  contactPhone: '+258 21 000 000',
+  contactEmail: 'carsaimozambique@gmail.com',
+  contactPhone: '847545020',
   primaryColor: '#D32F2F',   // Red
   secondaryColor: '#1976D2',  // Blue
 };

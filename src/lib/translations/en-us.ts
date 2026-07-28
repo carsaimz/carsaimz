@@ -895,7 +895,7 @@ export const enUS: TranslationObject = {
       sections: {
         general: {
           title: 'General Terms',
-          content: 'These Terms and Conditions ("Terms") govern the use of technology services provided by Carsai Mozambique Lda., including our website, digital platform, mobile applications, cloud solutions, and artificial intelligence services. By accessing or using any of our services, you accept these Terms in their entirety. If you do not agree with any part of the Terms, you should not use our services. Carsai Mozambique is registered in Maputo, Mozambique, and operates in accordance with Mozambican commercial and technology legislation. These Terms constitute a legal contract between you ("User") and Carsai Mozambique Lda. ("Company").',
+          content: 'These Terms and Conditions ("Terms") govern the use of technology services provided by Carsai Mozambique Lda., including our website, digital platform, mobile applications, cloud solutions, and artificial intelligence services. By accessing or using any of our services, you accept these Terms in their entirety. If you do not agree with any part of the Terms, you should not use our services. Carsai Mozambique is registered in Montepuez, Cabo Delgado, Mozambique, and operates in accordance with Mozambican commercial and technology legislation. These Terms constitute a legal contract between you ("User") and Carsai Mozambique Lda. ("Company").',
         },
         services: {
           title: 'Services Provided',
@@ -919,7 +919,7 @@ export const enUS: TranslationObject = {
         },
         law: {
           title: 'Applicable Law and Jurisdiction',
-          content: 'These Terms are governed and interpreted in accordance with the legislation of the Republic of Mozambique, including the Commercial Code, data protection legislation, and applicable technology regulations. Any disputes related to these Terms shall preferably be resolved through direct negotiation between the parties. If negotiation is not possible within 60 days, the dispute shall be submitted to arbitration in accordance with the rules of the Arbitration Center of Mozambique, or to the courts of the city of Maputo, Mozambique, as exclusive jurisdiction. The parties recognize the exclusive competence of Mozambican courts to resolve conflicts arising from these Terms.',
+          content: 'These Terms are governed and interpreted in accordance with the legislation of the Republic of Mozambique, including the Commercial Code, data protection legislation, and applicable technology regulations. Any disputes related to these Terms shall preferably be resolved through direct negotiation between the parties. If negotiation is not possible within 60 days, the dispute shall be submitted to arbitration in accordance with the rules of the Arbitration Center of Mozambique, or to the courts of the city of Montepuez, Cabo Delgado, Mozambique, as exclusive jurisdiction. The parties recognize the exclusive competence of Mozambican courts to resolve conflicts arising from these Terms.',
         },
       },
     },
@@ -933,7 +933,7 @@ export const enUS: TranslationObject = {
       sections: {
         introduction: {
           title: 'Introduction',
-          content: 'Carsai Mozambique Lda. ("Carsai", "we", "the company") respects the privacy of all users of our digital services. This Privacy Policy describes how we collect, use, store, and protect your personal data when you use our technology platform, website, and related services. Our headquarters is located in Maputo, Mozambique, and we are registered in accordance with Mozambican legislation. This policy applies to all services provided by Carsai, including web development, mobile applications, cloud solutions, and artificial intelligence services.',
+          content: 'Carsai Mozambique Lda. ("Carsai", "we", "the company") respects the privacy of all users of our digital services. This Privacy Policy describes how we collect, use, store, and protect your personal data when you use our technology platform, website, and related services. Our headquarters is located in Montepuez, Cabo Delgado, Mozambique, and we are registered in accordance with Mozambican legislation. This policy applies to all services provided by Carsai, including web development, mobile applications, cloud solutions, and artificial intelligence services.',
         },
         dataCollection: {
           title: 'Data Collection',
@@ -995,6 +995,11 @@ export const enUS: TranslationObject = {
         },
       },
     },
+  },
+
+  social: {
+    title: 'Follow Us on Social Media',
+    subtitle: 'Connect with Carsai Mozambique on social platforms',
   },
 
   meta: {

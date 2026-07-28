@@ -23,8 +23,8 @@ export function AdminSettings() {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     siteName: 'Carsai Mozambique',
-    siteEmail: 'admin@carsai.mz',
-    sitePhone: '+258 21 000 000',
+    siteEmail: 'carsaimozambique@gmail.com',
+    sitePhone: '847545020',
     maintenanceMode: false,
   });
 
@@ -38,8 +38,8 @@ export function AdminSettings() {
           const map = data.data.map;
           setFormData({
             siteName: map.siteName || 'Carsai Mozambique',
-            siteEmail: map.siteEmail || 'admin@carsai.mz',
-            sitePhone: map.sitePhone || '+258 21 000 000',
+            siteEmail: map.siteEmail || 'carsaimozambique@gmail.com',
+            sitePhone: map.sitePhone || '847545020',
             maintenanceMode: map.maintenanceMode === 'true',
           });
         }

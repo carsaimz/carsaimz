@@ -17,16 +17,25 @@ import { db } from '@/lib/db'
 
 async function callZai(messages: Array<{ role: string; content: string }>): Promise<string | null> {
   try {
-    const ZAI = (await import('z-ai-web-dev-sdk')).default
-    const zai = await ZAI.create()
+    // Dynamic import — z-ai-web-dev-sdk is optional and may not be available in all environments
+    let ZAI;
+    try {
+      const sdkModule = await import('z-ai-web-dev-sdk');
+      ZAI = sdkModule.default || sdkModule.ZAI || sdkModule;
+    } catch (importErr) {
+      console.warn('[Z.ai] SDK not available in this environment:', (importErr as Error).message);
+      return null;
+    }
+
+    const zai = await ZAI.create();
     const completion = await zai.chat.completions.create({
       model: 'default',
       messages,
-    })
-    return completion.choices?.[0]?.message?.content || null
+    });
+    return completion.choices?.[0]?.message?.content || null;
   } catch (err) {
-    console.error('[Z.ai] Provider error:', err)
-    return null
+    console.error('[Z.ai] Provider error:', err);
+    return null;
   }
 }
 
@@ -176,9 +185,9 @@ ${pagesList}
 
 SITE SETTINGS:
 - Company: ${settingsMap['company_name'] || 'Carsai Mozambique'}
-- Email: ${settingsMap['contact_email'] || 'info@carsai.mz'}
-- Phone: ${settingsMap['contact_phone'] || '+258 21 000 000'}
-- Address: ${settingsMap['contact_address'] || 'Maputo, Mozambique'}
+- Email: ${settingsMap['contact_email'] || 'carsaimozambique@gmail.com'}
+- Phone: ${settingsMap['contact_phone'] || '847545020'}
+- Address: ${settingsMap['contact_address'] || 'Montepuez, Cabo Delgado, Mozambique'}
 - Website: ${settingsMap['website_url'] || 'https://carsai.mz'}
 - Free Hosting: Yes, provided by ifastnet/byet (Apache shared hosting)
 

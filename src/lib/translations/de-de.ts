@@ -1484,7 +1484,7 @@ export const deDE: TranslationObject = {
       sections: {
         general: {
           title: 'Allgemeine Bedingungen',
-          content: 'Diese Allgemeinen Geschäftsbedingungen ("AGB") regeln die Nutzung der technologischen Services von Carsai Mosambik Lda., einschließlich unserer Website, digitalen Plattform, mobilen Apps, Cloud-Lösungen und KI-Services. Durch den Zugriff oder die Nutzung eines unserer Services akzeptieren Sie diese AGB vollständig. Wenn Sie mit einem Teil der AGB nicht einverstanden sind, sollten Sie unsere Services nicht nutzen. Carsai Mosambik ist in Maputo, Mosambik, registriert und operiert gemäß der mosambikischen Handels- und Technologielawsgebung. Diese AGB stellen einen rechtlichen Vertrag zwischen Ihnen ("Nutzer") und Carsai Mosambik Lda. ("Unternehmen") dar.',
+          content: 'Diese Allgemeinen Geschäftsbedingungen ("AGB") regeln die Nutzung der technologischen Services von Carsai Mosambik Lda., einschließlich unserer Website, digitalen Plattform, mobilen Apps, Cloud-Lösungen und KI-Services. Durch den Zugriff oder die Nutzung eines unserer Services akzeptieren Sie diese AGB vollständig. Wenn Sie mit einem Teil der AGB nicht einverstanden sind, sollten Sie unsere Services nicht nutzen. Carsai Mosambik ist in Montepuez, Cabo Delgado, Mosambik, registriert und operiert gemäß der mosambikischen Handels- und Technologielawsgebung. Diese AGB stellen einen rechtlichen Vertrag zwischen Ihnen ("Nutzer") und Carsai Mosambik Lda. ("Unternehmen") dar.',
         },
         services: {
           title: 'Erbrachte Services',
@@ -1508,7 +1508,7 @@ export const deDE: TranslationObject = {
         },
         law: {
           title: 'Anwendbares Recht und Gerichtsbarkeit',
-          content: 'Diese AGB werden gemäß der Lawsgebung der Republik Mosambik geregelt und interpretiert, einschließlich des Handelscodex, der Datenschutzlawsgebung und der anwendbaren Technologieregulierungen. Streitigkeiten im Zusammenhang mit diesen AGB werden bevorzugt durch direkte Verhandlung zwischen den Parteien gelöst. Wenn eine Verhandlung innerhalb von 60 Tagen nicht möglich ist, wird der Streit gemäß den Regeln des Arbitragezentrums von Mosambik arbitriert oder an die Gerichte der Stadt Maputo, Mosambik, als ausschließliche Gerichtsbarkeit verwiesen. Die Parteien erkennen die ausschließliche Kompetenz der mosambikischen Gerichte zur Lösung von Konflikten aus diesen AGB.',
+          content: 'Diese AGB werden gemäß der Lawsgebung der Republik Mosambik geregelt und interpretiert, einschließlich des Handelscodex, der Datenschutzlawsgebung und der anwendbaren Technologieregulierungen. Streitigkeiten im Zusammenhang mit diesen AGB werden bevorzugt durch direkte Verhandlung zwischen den Parteien gelöst. Wenn eine Verhandlung innerhalb von 60 Tagen nicht möglich ist, wird der Streit gemäß den Regeln des Arbitragezentrums von Mosambik arbitriert oder an die Gerichte der Stadt Montepuez, Cabo Delgado, Mosambik, als ausschließliche Gerichtsbarkeit verwiesen. Die Parteien erkennen die ausschließliche Kompetenz der mosambikischen Gerichte zur Lösung von Konflikten aus diesen AGB.',
         },
       },
     },
@@ -1522,7 +1522,7 @@ export const deDE: TranslationObject = {
       sections: {
         introduction: {
           title: 'Einleitung',
-          content: 'Carsai Mosambik Lda. ("Carsai", "wir", "das Unternehmen") respektiert die Privatsphäre aller Nutzer unserer digitalen Services. Diese Datenschutzrichtlinie beschreibt, wie wir Ihre persönlichen Daten erfassen, nutzen, speichern und schützen, wenn Sie unsere Technologiplattform, Website und zugehörige Services nutzen. Unser Hauptsitz befindet sich in Maputo, Mosambik, und wir sind gemäß mosambikischer Lawsgebung registriert. Diese Richtlinie gilt für alle von Carsai erbrachten Services, einschließlich Web-Entwicklung, mobile Apps, Cloud-Lösungen und KI-Services.',
+          content: 'Carsai Mosambik Lda. ("Carsai", "wir", "das Unternehmen") respektiert die Privatsphäre aller Nutzer unserer digitalen Services. Diese Datenschutzrichtlinie beschreibt, wie wir Ihre persönlichen Daten erfassen, nutzen, speichern und schützen, wenn Sie unsere Technologiplattform, Website und zugehörige Services nutzen. Unser Hauptsitz befindet sich in Montepuez, Cabo Delgado, Mosambik, und wir sind gemäß mosambikischer Lawsgebung registriert. Diese Richtlinie gilt für alle von Carsai erbrachten Services, einschließlich Web-Entwicklung, mobile Apps, Cloud-Lösungen und KI-Services.',
         },
         dataCollection: {
           title: 'Datenerfassung',
@@ -1584,6 +1584,11 @@ export const deDE: TranslationObject = {
         },
       },
     },
+  },
+
+  social: {
+    title: 'Folgen uns auf Social Media',
+    subtitle: 'Verbinden Sie sich mit Carsai Mozambique auf Social-Media-Plattformen',
   },
 
   meta: {

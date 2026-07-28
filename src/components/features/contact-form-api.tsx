@@ -348,10 +348,10 @@ export function ContactFormApi() {
                   <div>
                     <p className="font-medium">{t('contact.address')}</p>
                     <p className="text-muted-foreground text-sm">
-                      Av. 24 de Julho, 1234
+                      Montepuez, Cabo Delgado
                     </p>
                     <p className="text-muted-foreground text-sm">
-                      Maputo, Mozambique
+                      Mozambique
                     </p>
                   </div>
                 </div>
@@ -361,7 +361,7 @@ export function ContactFormApi() {
                   <div>
                     <p className="font-medium">{t('contact.phone')}</p>
                     <p className="text-muted-foreground text-sm">
-                      +258 84 123 4567
+                      847545020 / 874512581
                     </p>
                   </div>
                 </div>
@@ -371,7 +371,7 @@ export function ContactFormApi() {
                   <div>
                     <p className="font-medium">{t('contact.email')}</p>
                     <p className="text-muted-foreground text-sm">
-                      info@carsai.mz
+                      carsaimozambique@gmail.com
                     </p>
                   </div>
                 </div>
@@ -416,10 +416,10 @@ export function ContactFormApi() {
                   <div className="text-center z-10">
                     <MapPin className="h-8 w-8 text-emerald-600 mb-2" />
                     <p className="font-semibold text-emerald-800">
-                      Maputo, Mozambique
+                      Montepuez, Cabo Delgado, Mozambique
                     </p>
                     <p className="text-sm text-emerald-600">
-                      Av. 24 de Julho, 1234
+                      Operação Online
                     </p>
                   </div>
                 </div>

@@ -168,7 +168,7 @@ export async function seedDatabase() {
   const adminUser = await db.user.create({
     data: {
       name: 'Admin Test',
-      email: 'admin@carsai.mz',
+      email: 'carsaimozambique@gmail.com',
       passwordHash: hashPassword('Admin12345'),
       roleId: adminRole.id,
       isActive: true,

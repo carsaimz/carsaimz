@@ -1484,7 +1484,7 @@ export const esES: TranslationObject = {
       sections: {
         general: {
           title: 'Términos Generales',
-          content: 'Los presentes Términos y Condiciones ("Términos") regulan el uso de los servicios tecnológicos proporcionados por Carsai Mozambique Lda., incluyendo nuestro sitio web, plataforma digital, aplicaciones móviles, soluciones cloud y servicios de inteligencia artificial. Al acceder o utilizar cualquiera de nuestros servicios, usted acepta estos Términos en su totalidad. Si no está de acuerdo con alguna parte de los Términos, no deberá utilizar nuestros servicios. Carsai Mozambique está registrada en Maputo, Mozambique, y opera conforme a la legislación comercial y tecnológica mozambiqueña. Estos Términos constituyen un contrato legal entre usted ("Usuario") y Carsai Mozambique Lda. ("Empresa").',
+          content: 'Los presentes Términos y Condiciones ("Términos") regulan el uso de los servicios tecnológicos proporcionados por Carsai Mozambique Lda., incluyendo nuestro sitio web, plataforma digital, aplicaciones móviles, soluciones cloud y servicios de inteligencia artificial. Al acceder o utilizar cualquiera de nuestros servicios, usted acepta estos Términos en su totalidad. Si no está de acuerdo con alguna parte de los Términos, no deberá utilizar nuestros servicios. Carsai Mozambique está registrada en Montepuez, Cabo Delgado, Mozambique, y opera conforme a la legislación comercial y tecnológica mozambiqueña. Estos Términos constituyen un contrato legal entre usted ("Usuario") y Carsai Mozambique Lda. ("Empresa").',
         },
         services: {
           title: 'Servicios Proporcionados',
@@ -1508,7 +1508,7 @@ export const esES: TranslationObject = {
         },
         law: {
           title: 'Legislación Aplicable y Jurisdicción',
-          content: 'Estos Términos se rigen e interpretan conforme a la legislación de la República de Mozambique, incluyendo el Código Comercial, la legislación de protección de datos y las regulaciones tecnológicas aplicables. Las disputas relacionadas con estos Términos se resolverán preferentemente mediante negociación directa entre las partes. Si la negociación no es posible en 60 días, la disputa se someterá a arbitraje conforme a las normas del Centro de Arbitraje de Mozambique, o a los tribunales de la ciudad de Maputo, Mozambique, como jurisdicción exclusiva. Las partes reconocen la competencia exclusiva de los tribunales mozambiqueños para resolver conflictos derivados de estos Términos.',
+          content: 'Estos Términos se rigen e interpretan conforme a la legislación de la República de Mozambique, incluyendo el Código Comercial, la legislación de protección de datos y las regulaciones tecnológicas aplicables. Las disputas relacionadas con estos Términos se resolverán preferentemente mediante negociación directa entre las partes. Si la negociación no es posible en 60 días, la disputa se someterá a arbitraje conforme a las normas del Centro de Arbitraje de Mozambique, o a los tribunales de la ciudad de Montepuez, Cabo Delgado, Mozambique, como jurisdicción exclusiva. Las partes reconocen la competencia exclusiva de los tribunales mozambiqueños para resolver conflictos derivados de estos Términos.',
         },
       },
     },
@@ -1522,7 +1522,7 @@ export const esES: TranslationObject = {
       sections: {
         introduction: {
           title: 'Introducción',
-          content: 'Carsai Mozambique Lda. ("Carsai", "nosotros", "la empresa") respeta la privacidad de todos los usuarios de nuestros servicios digitales. Esta Política de Privacidad describe cómo recogemos, utilizamos, almacenamos y protegemos sus datos personales cuando utiliza nuestra plataforma tecnológica, sitio web y servicios relacionados. Nuestra sede se encuentra en Maputo, Mozambique, y estamos registrados conforme a la legislación mozambiqueña. Esta política se aplica a todos los servicios proporcionados por Carsai, incluyendo desarrollo web, aplicaciones móviles, soluciones cloud y servicios de inteligencia artificial.',
+          content: 'Carsai Mozambique Lda. ("Carsai", "nosotros", "la empresa") respeta la privacidad de todos los usuarios de nuestros servicios digitales. Esta Política de Privacidad describe cómo recogemos, utilizamos, almacenamos y protegemos sus datos personales cuando utiliza nuestra plataforma tecnológica, sitio web y servicios relacionados. Nuestra sede se encuentra en Montepuez, Cabo Delgado, Mozambique, y estamos registrados conforme a la legislación mozambiqueña. Esta política se aplica a todos los servicios proporcionados por Carsai, incluyendo desarrollo web, aplicaciones móviles, soluciones cloud y servicios de inteligencia artificial.',
         },
         dataCollection: {
           title: 'Recogida de Datos',
@@ -1584,6 +1584,11 @@ export const esES: TranslationObject = {
         },
       },
     },
+  },
+
+  social: {
+    title: 'Síguenos en Redes Sociales',
+    subtitle: 'Conéctate con Carsai Mozambique en las redes sociales',
   },
 
   meta: {

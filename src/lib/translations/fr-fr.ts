@@ -1480,7 +1480,7 @@ export const frFR: TranslationObject = {
       sections: {
         general: {
           title: 'Conditions Générales',
-          content: 'Les présentes Conditions Générales ("Conditions") régissent l’utilisation des services technologiques fournis par Carsai Mozambique Lda., y compris notre site web, plateforme numérique, applications mobiles, solutions cloud et services d’intelligence artificielle. En accédant ou utilisant l’un de nos services, vous acceptez ces Conditions dans leur intégralité. Si vous n’êtes pas d’accord avec une partie des Conditions, vous ne devez pas utiliser nos services. Carsai Mozambique est immatriculée à Maputo, Mozambique, et opère conformément à la législation commerciale et technologique mozambicienne. Ces Conditions constituent un contrat juridique entre vous ("Utilisateur") et Carsai Mozambique Lda. ("Société").',
+          content: 'Les présentes Conditions Générales ("Conditions") régissent l’utilisation des services technologiques fournis par Carsai Mozambique Lda., y compris notre site web, plateforme numérique, applications mobiles, solutions cloud et services d’intelligence artificielle. En accédant ou utilisant l’un de nos services, vous acceptez ces Conditions dans leur intégralité. Si vous n’êtes pas d’accord avec une partie des Conditions, vous ne devez pas utiliser nos services. Carsai Mozambique est immatriculée à Montepuez, Cabo Delgado, Mozambique, et opère conformément à la législation commerciale et technologique mozambicienne. Ces Conditions constituent un contrat juridique entre vous ("Utilisateur") et Carsai Mozambique Lda. ("Société").',
         },
         services: {
           title: 'Services Fournis',
@@ -1504,7 +1504,7 @@ export const frFR: TranslationObject = {
         },
         law: {
           title: 'Loi Applicable et Juridiction',
-          content: 'Ces Conditions sont régies et interprétées conformément à la législation de la République du Mozambique, y compris le Code Commercial, la législation sur la protection des données et les réglementations technologiques applicables. Tout litige relatif à ces Conditions sera résolu préférentiellement par négociation directe entre les parties. Si la négociation n’est pas possible dans les 60 jours, le litige sera soumis à l’arbitrage conformément aux règles du Centre d’Arbitrage du Mozambique, ou aux tribunaux de la ville de Maputo, Mozambique, comme juridiction exclusive. Les parties reconnaissent la compétence exclusive des tribunaux mozambiciens pour résoudre les conflits découlant de ces Conditions.',
+          content: 'Ces Conditions sont régies et interprétées conformément à la législation de la République du Mozambique, y compris le Code Commercial, la législation sur la protection des données et les réglementations technologiques applicables. Tout litige relatif à ces Conditions sera résolu préférentiellement par négociation directe entre les parties. Si la négociation n’est pas possible dans les 60 jours, le litige sera soumis à l’arbitrage conformément aux règles du Centre d’Arbitrage du Mozambique, ou aux tribunaux de la ville de Montepuez, Cabo Delgado, Mozambique, comme juridiction exclusive. Les parties reconnaissent la compétence exclusive des tribunaux mozambiciens pour résoudre les conflits découlant de ces Conditions.',
         },
       },
     },
@@ -1518,7 +1518,7 @@ export const frFR: TranslationObject = {
       sections: {
         introduction: {
           title: 'Introduction',
-          content: 'Carsai Mozambique Lda. ("Carsai", "nous", "la société") respecte la vie privée de tous les utilisateurs de nos services numériques. Cette Politique de Confidentialité décrit comment nous collectons, utilisons, stockons et protégeons vos données personnelles lorsque vous utilisez notre plateforme technologique, site web et services associés. Notre siège est situé à Maputo, Mozambique, et nous sommes immatriculés conformément à la législation mozambicienne. Cette politique s’applique à tous les services fournis par Carsai, y compris le développement web, les applications mobiles, les solutions cloud et les services d’intelligence artificielle.',
+          content: 'Carsai Mozambique Lda. ("Carsai", "nous", "la société") respecte la vie privée de tous les utilisateurs de nos services numériques. Cette Politique de Confidentialité décrit comment nous collectons, utilisons, stockons et protégeons vos données personnelles lorsque vous utilisez notre plateforme technologique, site web et services associés. Notre siège est situé à Montepuez, Cabo Delgado, Mozambique, et nous sommes immatriculés conformément à la législation mozambicienne. Cette politique s’applique à tous les services fournis par Carsai, y compris le développement web, les applications mobiles, les solutions cloud et les services d’intelligence artificielle.',
         },
         dataCollection: {
           title: 'Collecte de Données',
@@ -1538,7 +1538,7 @@ export const frFR: TranslationObject = {
         },
         userRights: {
           title: 'Droits de l’Utilisateur',
-          content: 'Conformément à la législation mozambicienne sur la protection des données, vous disposez des droits suivants : droit d’accès à vos données personnelles, droit de rectification des données incorrectes, droit de suppression de vos données ("droit à l’oubli"), droit de portabilité de vos données, droit d’opposition au traitement, droit de retirer votre consentement à tout moment. Pour exercer l’un de ces droits, contactez-nous à privacy@carsai.mz ou à l’adresse physique : Av. 24 de Julho, 1234, Maputo, Mozambique. Nous répondrons dans les 30 jours conformément à la législation applicable.',
+          content: 'Conformément à la législation mozambicienne sur la protection des données, vous disposez des droits suivants : droit d’accès à vos données personnelles, droit de rectification des données incorrectes, droit de suppression de vos données ("droit à l’oubli"), droit de portabilité de vos données, droit d’opposition au traitement, droit de retirer votre consentement à tout moment. Pour exercer l’un de ces droits, contactez-nous à suporte.carsaimz@gmail.com ou à l’adresse physique : Montepuez, Cabo Delgado, Mozambique (opération en ligne). Nous répondrons dans les 30 jours conformément à la législation applicable.',
         },
         contact: {
           title: 'Contact et Mises à Jour',
@@ -1580,6 +1580,11 @@ export const frFR: TranslationObject = {
         },
       },
     },
+  },
+
+  social: {
+    title: 'Suivez-nous sur les Réseaux Sociaux',
+    subtitle: 'Connectez-vous avec Carsai Mozambique sur les réseaux sociaux',
   },
 
   meta: {

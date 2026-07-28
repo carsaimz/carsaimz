@@ -9,6 +9,7 @@ import { TestimonialsSection } from './testimonials-section';
 import { AboutSection } from './about-section';
 import { ContactSection } from './contact-section';
 import { FaqSection } from './faq-section';
+import { SocialSection } from './social-section';
 import { GradientWaveSVG } from '@/components/common/decorative-svg';
 
 // Dynamic imports for decorative/animation elements (client-side only)
@@ -81,6 +82,9 @@ export function HomePage() {
         </Suspense>
         <FaqSection />
       </div>
+
+      {/* Social Media Section */}
+      <SocialSection />
     </>
   );
 }

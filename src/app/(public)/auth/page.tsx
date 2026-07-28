@@ -243,7 +243,7 @@ export default function AuthPage() {
                       <Input
                         id="login-phone"
                         type="tel"
-                        placeholder="+258 84 123 4567"
+                        placeholder="+258 847545020"
                         value={loginIdentifier}
                         onChange={(e) => setLoginIdentifier(e.target.value)}
                         autoComplete="tel"
@@ -406,7 +406,7 @@ export default function AuthPage() {
                     <Input
                       id="register-phone"
                       type="tel"
-                      placeholder="+258 84 123 4567"
+                      placeholder="+258 847545020"
                       value={registerPhone}
                       onChange={(e) => setRegisterPhone(e.target.value)}
                       autoComplete="tel"

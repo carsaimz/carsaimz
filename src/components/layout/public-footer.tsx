@@ -100,15 +100,15 @@ export function PublicFooter({ className }: { className?: string }) {
             <div className="flex flex-col gap-3 text-sm text-muted-foreground">
               <div className="flex items-start gap-2">
                 <MapPin className="size-4 shrink-0 mt-0.5" />
-                <span>{t('footer.address')}: Av. Julius Nyerere, Maputo</span>
+                <span>{t('footer.address')}: Montepuez, Cabo Delgado, Mozambique</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="size-4 shrink-0" />
-                <span>info@carsai.mz</span>
+                <span>carsaimozambique@gmail.com</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="size-4 shrink-0" />
-                <span>+258 21 000 000</span>
+                <span>847545020 / 874512581</span>
               </div>
             </div>
           </div>

@@ -20,6 +20,8 @@ async function ensureRolesExist() {
   }
 }
 
+export const maxDuration = 30; // Allow up to 30s for DB operations
+
 export async function POST(request: NextRequest) {
   try {
     // ── Auto-seed roles on every registration attempt ──
@@ -109,9 +111,13 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Registration error:', error)
+    console.error('Registration error details:', error)
+    // Provide more specific error message based on the error type
+    const errorMessage = error instanceof Error 
+      ? `Erro: ${error.message}. Por favor, tente novamente.` 
+      : 'Falha ao criar conta. Por favor, tente novamente.';
     return NextResponse.json(
-      { error: 'Falha ao criar conta. Por favor, tente novamente.' },
+      { error: errorMessage },
       { status: 500 }
     )
   }
