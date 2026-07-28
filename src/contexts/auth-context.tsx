@@ -116,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Backward-compatible login method ──
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
