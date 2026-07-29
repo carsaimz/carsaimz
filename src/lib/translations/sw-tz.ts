@@ -980,6 +980,7 @@ export const swTZ: TranslationObject = {
     poweredBy: 'Inayotumia Carsai AI',
     online: 'Mtandaoni',
     frequentQuestions: 'Maswali ya kawaida:',
+    suggestions: 'Mapendekezo',
   },
 
   // ============================================================================

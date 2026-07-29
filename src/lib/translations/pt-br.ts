@@ -995,6 +995,7 @@ export const ptBR: TranslationObject = {
     poweredBy: 'Powered by Carsai AI',
     online: 'Online',
     frequentQuestions: 'Perguntas frequentes:',
+    suggestions: 'Sugestões',
   },
 
   // ============================================================================

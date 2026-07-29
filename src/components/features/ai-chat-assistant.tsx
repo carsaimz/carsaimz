@@ -328,6 +328,8 @@ interface ChatInputBarProps {
   isLoading: boolean;
   placeholder: string;
   poweredBy: string;
+  showSuggestionsToggle?: boolean;
+  onToggleSuggestions?: () => void;
 }
 
 const ChatInputBar = memo(function ChatInputBar({
@@ -338,7 +340,10 @@ const ChatInputBar = memo(function ChatInputBar({
   isLoading,
   placeholder,
   poweredBy,
+  showSuggestionsToggle,
+  onToggleSuggestions,
 }: ChatInputBarProps) {
+  const { t } = useLanguage();
   return (
     <div
       className="border-t border-red-200/40 dark:border-red-800/40 p-3 bg-gradient-to-r from-red-50/60 to-blue-50/60 dark:from-red-950/40 dark:to-blue-950/40"
@@ -361,9 +366,21 @@ const ChatInputBar = memo(function ChatInputBar({
           <Send className="size-4" />
         </Button>
       </form>
-      <p className="text-[10px] text-muted-foreground/50 mt-1 text-center">
-        {poweredBy}
-      </p>
+      <div className="flex items-center justify-between mt-1">
+        <p className="text-[10px] text-muted-foreground/50">
+          {poweredBy}
+        </p>
+        {showSuggestionsToggle && onToggleSuggestions && (
+          <button
+            type="button"
+            className="text-[10px] text-red-500/70 hover:text-red-500 transition-colors flex items-center gap-0.5"
+            onClick={onToggleSuggestions}
+          >
+            <MessageCircle className="size-2.5" />
+            {t('chat.suggestions')}
+          </button>
+        )}
+      </div>
     </div>
   );
 });
@@ -391,6 +408,7 @@ export function AiChatAssistant() {
   const [sessionId, setSessionId] = useState('');
   const [hasError, setHasError] = useState(false);
   const [hasUnread, setHasUnread] = useState(false);
+  const [showQuickQuestions, setShowQuickQuestions] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const prevMessageCountRef = useRef(0);
@@ -462,10 +480,26 @@ export function AiChatAssistant() {
   }, [windowState]);
 
   // ── Auto-scroll to bottom ──
+  // Radix ScrollArea uses a Viewport element as the actual scroll container.
+  // The inner div (scrollRef) is a child of that Viewport, so we must target
+  // the Viewport to control scrolling.
   const scrollToBottom = useCallback(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    // Use a micro-delay to ensure DOM has updated before measuring scrollHeight
+    requestAnimationFrame(() => {
+      if (scrollRef.current) {
+        const viewport = scrollRef.current.closest(
+          '[data-radix-scroll-area-viewport]'
+        ) as HTMLElement | null;
+        if (viewport) {
+          viewport.scrollTop = viewport.scrollHeight;
+        } else {
+          const parent = scrollRef.current.parentElement;
+          if (parent) {
+            parent.scrollTop = parent.scrollHeight;
+          }
+        }
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -612,6 +646,7 @@ export function AiChatAssistant() {
 
   // ── Handle quick question click ──
   const handleQuickQuestion = (question: string) => {
+    setShowQuickQuestions(false);
     sendMessage(question);
   };
 
@@ -620,6 +655,7 @@ export function AiChatAssistant() {
     setMessages([]);
     clearMessages();
     setSessionId(getOrCreateSessionId());
+    setShowQuickQuestions(true);
     // Add fresh greeting
     const greeting: ChatMessage = {
       id: 'greeting-new',
@@ -807,17 +843,11 @@ export function AiChatAssistant() {
 
   // ── Render Messages Area ──
   const renderMessages = () => {
-    // Dynamic height calculation based on window state
-    const scrollHeight =
-      windowState === 'fullscreen'
-        ? 'h-[calc(100vh-200px)] sm:h-[calc(100vh-220px)]'
-        : 'h-[calc(70vh-180px)] lg:h-[420px]';
-
     return (
       <div
-        className="flex-1 overflow-hidden bg-gradient-to-b from-background to-muted/10"
+        className="flex-1 min-h-0 flex flex-col bg-gradient-to-b from-background to-muted/10"
       >
-        <ScrollArea className={`${scrollHeight} px-4 py-3`}>
+        <ScrollArea className="flex-1 min-h-0 px-4 py-3">
           <div ref={scrollRef} className="flex flex-col gap-3">
             {messages.map((msg) => (
               <motion.div
@@ -934,14 +964,24 @@ export function AiChatAssistant() {
         </ScrollArea>
 
         {/* ── Quick Questions ── */}
-        {messages.length <= 2 && !isLoading && (
-          <div className="px-4 pb-2">
+        {showQuickQuestions && !isLoading && (
+          <div className="shrink-0 px-4 pb-2 pt-1">
             <Separator
               className="mb-2 bg-red-200/40 dark:bg-red-800/40"
             />
-            <p className="text-xs text-muted-foreground mb-2 font-medium">
-              {t('chat.frequentQuestions')}
-            </p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-muted-foreground font-medium">
+                {t('chat.frequentQuestions')}
+              </p>
+              <button
+                type="button"
+                className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                onClick={() => setShowQuickQuestions(false)}
+                aria-label="Hide suggestions"
+              >
+                <X className="size-3" />
+              </button>
+            </div>
             <div className="flex flex-wrap gap-1.5">
               {quickQuestions.map((question, idx) => (
                 <button
@@ -1072,6 +1112,8 @@ export function AiChatAssistant() {
                 isLoading={isLoading}
                 placeholder={t('chat.placeholder')}
                 poweredBy={t('chat.poweredBy')}
+                showSuggestionsToggle={!showQuickQuestions}
+                onToggleSuggestions={() => setShowQuickQuestions(true)}
               />
             </div>
           </motion.div>
@@ -1101,6 +1143,8 @@ export function AiChatAssistant() {
                 isLoading={isLoading}
                 placeholder={t('chat.placeholder')}
                 poweredBy={t('chat.poweredBy')}
+                showSuggestionsToggle={!showQuickQuestions}
+                onToggleSuggestions={() => setShowQuickQuestions(true)}
               />
             </div>
           </motion.div>

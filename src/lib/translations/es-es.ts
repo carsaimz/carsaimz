@@ -972,6 +972,7 @@ export const esES: TranslationObject = {
     newMessage: 'Nuevo mensaje del asistente',
     online: 'Online',
     frequentQuestions: 'Preguntas frecuentes:',
+    suggestions: 'Sugerencias',
     poweredBy: 'Desarrollado por Carsai AI',
   },
 

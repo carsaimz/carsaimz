@@ -972,6 +972,7 @@ export const zhCN: TranslationObject = {
     newMessage: '助手新消息',
     online: 'Online',
     frequentQuestions: '常见问题：',
+    suggestions: '建议',
     poweredBy: '由 Carsai AI 提供支持',
   },
 

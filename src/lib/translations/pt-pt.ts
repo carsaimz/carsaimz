@@ -981,6 +981,7 @@ export const ptPT: TranslationObject = {
     poweredBy: 'Com tecnologia Carsai AI',
     online: 'Online',
     frequentQuestions: 'Perguntas frequentes:',
+    suggestions: 'Sugestões',
   },
 
   // ============================================================================

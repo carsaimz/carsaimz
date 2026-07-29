@@ -366,3 +366,26 @@ Stage Summary:
 - Admin can configure AI providers via dashboard (ai_providers collection)
 - z-ai SDK works with full config (baseUrl + apiKey + token required)
 - Build passes successfully
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix chatbot bugs — quick questions hidden, auto-scroll broken, verify social section
+
+Work Log:
+- Investigated the chatbot component (ai-chat-assistant.tsx) thoroughly
+- Diagnosed Issue 1: Quick questions were hidden because the parent div had `overflow-hidden` and the ScrollArea used a fixed height, pushing the quick questions out of view
+- Diagnosed Issue 2: Auto-scroll was targeting the wrong element — `scrollRef` was on the inner div, but Radix ScrollArea uses a Viewport as the real scroll container
+- Verified social section: SocialSection is properly imported and rendered in home-page.tsx, already committed
+- Fix 1: Changed messages area layout from fixed-height ScrollArea + overflow-hidden to flex-based layout (`flex-1 min-h-0 flex flex-col`), making quick questions always visible
+- Fix 2: Updated `scrollToBottom` to target the Radix ScrollArea viewport via `closest('[data-radix-scroll-area-viewport]')` with `requestAnimationFrame` for DOM reliability
+- Enhancement: Added `showQuickQuestions` state (default true) — quick questions now persist until dismissed, not tied to message count
+- Enhancement: Added dismiss button (X) on quick questions section
+- Enhancement: Added "Suggestions" toggle button in the input bar when quick questions are hidden
+- Enhancement: Reset `showQuickQuestions` on clear history
+- Added `chat.suggestions` translation key to all 8 language files
+
+Stage Summary:
+- Build successful after all changes
+- Files modified: ai-chat-assistant.tsx, 8 translation files
+- Social section confirmed present in repo (already committed)

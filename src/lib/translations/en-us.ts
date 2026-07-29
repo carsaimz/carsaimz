@@ -974,6 +974,7 @@ export const enUS: TranslationObject = {
     poweredBy: 'Powered by Carsai AI',
     online: 'Online',
     frequentQuestions: 'Frequent questions:',
+    suggestions: 'Suggestions',
   },
 
   // ============================================================================
