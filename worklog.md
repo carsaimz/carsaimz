@@ -151,3 +151,23 @@ Stage Summary:
 - Database-setup overlay no longer shows mixed languages
 - Card spacing issue fixed by using plain divs instead of Card components
 - All setup.* and common.skip/continue keys added to all translation files
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Fix Android build error - generateStaticParams for dynamic routes with output: "export"
+
+Work Log:
+- Diagnosed root cause: Next.js with output: "export" requires generateStaticParams to return at least 1 param
+- Blog/[slug] and forum/[slug] pages had generateStaticParams returning [] — no static HTML could be generated
+- CI script tried to remove [slug] directories before build, but find -name '[slug]' doesn't match literal [slug] (interpreted as character class)
+- Fixed both pages: generateStaticParams now returns [{ slug: '__dynamic__' }]
+- Removed dynamicParams: true (not compatible with output: "export")
+- Simplified CI export script: no longer removes [slug] directories (generateStaticParams handles them)
+- Both Capacitor (static export) and web (server) builds verified passing
+- 37 static HTML pages generated successfully
+
+Stage Summary:
+- generateStaticParams returns placeholder slug '__dynamic__' instead of empty array
+- CI export script simplified — no directory removal needed for [slug] routes
+- Android build should now succeed in CI
