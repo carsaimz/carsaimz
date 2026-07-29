@@ -6,11 +6,11 @@
  * Works on Windows, macOS, and Linux — uses only Node.js APIs
  * (no bash-specific commands like `if [ -d ]` or `cp -r`).
  *
- * Supports two output modes controlled by next.config.ts:
- *   - output: "export"  → generates `out/` directory (Capacitor mobile)
- *   - output: "standalone" → generates `.next/standalone/` (web deployment)
+ * Supports two output modes controlled by BUILD_TARGET env var:
+ *   - BUILD_TARGET=capacitor → output: "export" → generates `out/` directory
+ *   - (default)              → output: undefined → generates `.next/` for server
  *
- * When output is "export", API routes and dynamic [slug] routes are
+ * When output is "export", API routes and dynamic [slug]/[id] routes are
  * temporarily moved aside (they require a server and can't be statically
  * exported), then restored after the build completes.
  *
@@ -31,13 +31,12 @@ const backupDir = path.join(projectRoot, ".build-backup");
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 /**
- * Read the output mode from next.config.ts
+ * Determine if we're building for Capacitor (static export).
+ * Checks BUILD_TARGET env var directly — this is the source of truth,
+ * matching next.config.ts logic.
  */
-function getOutputMode() {
-  const configPath = path.join(projectRoot, "next.config.ts");
-  const content = fs.readFileSync(configPath, "utf-8");
-  const match = content.match(/output:\s*["'](\w+)["']/);
-  return match ? match[1] : null;
+function isCapacitorBuild() {
+  return process.env.BUILD_TARGET === "capacitor";
 }
 
 /**
@@ -57,31 +56,48 @@ function moveAsideForExport() {
     console.log(`[build] Moved aside: ${path.relative(projectRoot, apiDir)}`);
   }
 
-  // 2. Move dynamic [slug] directories recursively
-  moveDynamicRoutes(appDir, moved);
+  // 2. Move dynamic [slug]/[id] directories that DON'T have generateStaticParams
+  //    (pages with generateStaticParams are fine for static export)
+  moveDynamicRoutesWithoutGSP(appDir, moved);
 
   return moved;
 }
 
 /**
- * Recursively find and move [slug] directories.
+ * Recursively find and move dynamic route directories that lack generateStaticParams.
+ * Pages WITH generateStaticParams are kept (they work with static export).
  */
-function moveDynamicRoutes(dir, moved) {
+function moveDynamicRoutesWithoutGSP(dir, moved) {
   if (!fs.existsSync(dir)) return;
 
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   for (const entry of entries) {
     if (entry.isDirectory() && entry.name.startsWith("[") && entry.name.endsWith("]")) {
-      const original = path.join(dir, entry.name);
-      const relativePath = path.relative(projectRoot, original);
-      const backup = path.join(backupDir, relativePath.replace(/\//g, "_").replace(/\\/g, "_"));
-      fs.mkdirSync(backupDir, { recursive: true });
-      fs.renameSync(original, backup);
-      moved.push({ original, backup });
-      console.log(`[build] Moved aside: ${relativePath}`);
+      const routeDir = path.join(dir, entry.name);
+      const pageFile = path.join(routeDir, "page.tsx");
+
+      // Check if this dynamic route has generateStaticParams
+      let hasGSP = false;
+      if (fs.existsSync(pageFile)) {
+        const content = fs.readFileSync(pageFile, "utf-8");
+        hasGSP = content.includes("generateStaticParams");
+      }
+
+      if (hasGSP) {
+        console.log(`[build] Keeping dynamic route (has generateStaticParams): ${path.relative(projectRoot, routeDir)}`);
+      } else {
+        // Move it aside — no generateStaticParams means it can't be statically exported
+        const original = routeDir;
+        const relativePath = path.relative(projectRoot, original);
+        const backup = path.join(backupDir, relativePath.replace(/\//g, "_").replace(/\\/g, "_"));
+        fs.mkdirSync(backupDir, { recursive: true });
+        fs.renameSync(original, backup);
+        moved.push({ original, backup });
+        console.log(`[build] Moved aside (no generateStaticParams): ${relativePath}`);
+      }
     } else if (entry.isDirectory() && entry.name !== "api") {
       // Recurse into subdirectories (but not api, already handled)
-      moveDynamicRoutes(path.join(dir, entry.name), moved);
+      moveDynamicRoutesWithoutGSP(path.join(dir, entry.name), moved);
     }
   }
 }
@@ -137,21 +153,22 @@ function countFilesRecursive(dir, ext) {
 
 // ── Main Build ──────────────────────────────────────────────────────────────
 
-const outputMode = getOutputMode();
-console.log(`[build] Output mode: ${outputMode || "(default)"}`);
+const isExport = isCapacitorBuild();
+console.log(`[build] BUILD_TARGET=${process.env.BUILD_TARGET || "(unset)"}`);
+console.log(`[build] Output mode: ${isExport ? "export (static)" : "default (server)"}`);
 
 let movedItems = [];
 
 // If output is "export", temporarily move API routes and dynamic routes aside
-if (outputMode === "export") {
-  console.log("[build] Export mode — moving API routes and dynamic routes aside...");
+if (isExport) {
+  console.log("[build] Export mode — moving API routes and dynamic routes without generateStaticParams aside...");
   movedItems = moveAsideForExport();
 }
 
 // Run next build
 try {
   console.log("[build] Running next build...");
-  execSync("next build", { stdio: "inherit", cwd: projectRoot });
+  execSync("npx next build", { stdio: "inherit", cwd: projectRoot });
   console.log("[build] next build completed.");
 } catch (err) {
   // Restore moved items even if build fails
