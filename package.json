@@ -1,6 +1,6 @@
 {
   "name": "com.carsaimz",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "private": true,
   "description": "Carsai Mozambique - Business services platform for Mozambique",
   "author": "Carsai Mozambique",
@@ -35,24 +35,32 @@
       {
         "from": ".next/standalone",
         "to": ".next/standalone",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": ".next/static",
         "to": ".next/static",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "public",
         "to": "public",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "win": {
       "target": [
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "public/logo.png",
