@@ -323,7 +323,10 @@ export function UserDashboard() {
                 setError(null);
                 setLoading(true);
                 apiFetch(`/api/dashboard?role=user&userId=${user?.id}`)
-                  .then((res) => res.json())
+                  .then((res) => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                  })
                   .then((json) => {
                     if (json.success && json.data) setData(json.data as DashboardData);
                     else setError(json.message || 'Failed to load');
