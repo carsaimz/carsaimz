@@ -22,6 +22,12 @@ export async function POST(request: NextRequest) {
 
     // ── Verify the ID token ──
     const auth = getAdminAuth()
+    if (!auth) {
+      return NextResponse.json(
+        { error: 'Serviço de autenticação não configurado.' },
+        { status: 503 }
+      )
+    }
     const decodedToken = await auth.verifyIdToken(idToken)
     const uid = decodedToken.uid
 

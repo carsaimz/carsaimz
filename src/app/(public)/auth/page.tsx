@@ -117,7 +117,8 @@ export default function AuthPage() {
     try {
       const result = await store.loginWithEmailPassword(loginIdentifier, loginPassword);
       if (result.success) {
-        const role = useAuthStore.getState().user?.role;
+        // Use result.user.role directly — avoids race condition where store hasn't hydrated
+        const role = result.user?.role || useAuthStore.getState().user?.role;
         toast.success(t('auth.loginSuccess'));
         if (role === 'super_admin' || role === 'admin') router.push('/admin');
         else if (role === 'partner') router.push('/partner');
@@ -216,7 +217,7 @@ export default function AuthPage() {
                           const result = await store.loginWithGoogle();
                           if (result.success) {
                             toast.success(t('auth.loginSuccess'));
-                            const role = useAuthStore.getState().user?.role;
+                            const role = result.user?.role || useAuthStore.getState().user?.role;
                             if (role === 'super_admin' || role === 'admin') router.push('/admin');
                             else if (role === 'partner') router.push('/partner');
                             else router.push('/user');
@@ -245,7 +246,7 @@ export default function AuthPage() {
                             const result = await store.loginWithGithub();
                             if (result.success) {
                               toast.success(t('auth.loginSuccess'));
-                              const role = useAuthStore.getState().user?.role;
+                              const role = result.user?.role || useAuthStore.getState().user?.role;
                               if (role === 'super_admin' || role === 'admin') router.push('/admin');
                               else if (role === 'partner') router.push('/partner');
                               else router.push('/user');

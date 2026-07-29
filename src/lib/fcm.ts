@@ -38,6 +38,10 @@ export async function sendPushNotification(
     }
 
     const messaging = getAdminMessaging()
+    if (!messaging) {
+      console.warn('[FCM] Firebase Admin Messaging not configured, skipping push notification')
+      return false
+    }
 
     // Send to all registered tokens for this user
     const results = await Promise.allSettled(

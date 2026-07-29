@@ -20,6 +20,12 @@ export async function POST(request: NextRequest) {
     // ── Mode 1: ID token verification (client already authenticated with Firebase) ──
     if (idToken) {
       const auth = getAdminAuth()
+      if (!auth) {
+        return NextResponse.json(
+          { error: 'Serviço de autenticação não configurado.' },
+          { status: 503 }
+        )
+      }
       const decodedToken = await auth.verifyIdToken(idToken)
       const uid = decodedToken.uid
 

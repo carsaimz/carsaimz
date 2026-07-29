@@ -92,15 +92,25 @@ export async function apiFetch(
   // ── String URL ──
   const path = input;
 
-  // Capacitor: always use external server URL (no local server available)
+  // If we already know we need the external server → use it directly
   if (needsExternalServer() && API_BASE_URL) {
     const externalUrl = `${API_BASE_URL.replace(/\/$/, '')}${path}`;
     return fetch(externalUrl, init);
   }
 
-  // Web / Electron: use relative paths — the Next.js server handles /api/* natively
-  // No external URL needed. The server serves both the HTML and the API.
-  return fetch(path, init);
+  // Web / Electron: try relative path first
+  const res = await fetch(path, init);
+
+  // If the response is HTML (e.g. SPA fallback from static export),
+  // cache this fact and retry with the external server URL
+  if (isHtmlResponse(res) && API_BASE_URL) {
+    console.warn(`[apiFetch] HTML response for ${path} — retrying with external URL`);
+    _needsExternalServer = true;
+    const externalUrl = `${API_BASE_URL.replace(/\/$/, '')}${path}`;
+    return fetch(externalUrl, init);
+  }
+
+  return res;
 }
 
 /**

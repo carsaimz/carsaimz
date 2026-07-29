@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
+import { useLanguage } from '@/contexts/language-context';
 import { AppUpdateCheck } from '@/components/common/app-update-check';
 
 export default function DashboardLayout({
@@ -12,6 +13,7 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useLanguage();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const hasHydrated = useAuthStore((s) => s.hasHydrated);
   const user = useAuthStore((s) => s.user);
@@ -84,7 +86,7 @@ export default function DashboardLayout({
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-3">
           <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-          <p className="text-muted-foreground">Checking authentication...</p>
+          <p className="text-muted-foreground">{t('auth.checkingAuth') || 'Checking authentication...'}</p>
         </div>
       </div>
     );
@@ -94,7 +96,7 @@ export default function DashboardLayout({
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <p className="text-muted-foreground">Redirecting...</p>
+          <p className="text-muted-foreground">{t('auth.redirecting') || 'Redirecting...'}</p>
         </div>
       </div>
     );

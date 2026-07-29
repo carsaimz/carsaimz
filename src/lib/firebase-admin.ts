@@ -91,7 +91,7 @@ function decryptPrivateKey(encryptedBlob: string, secret: string): string | null
   }
 }
 
-function getAdminApp(): FirebaseAdminApp {
+function getAdminApp(): FirebaseAdminApp | null {
   if (adminApp) return adminApp
 
   // Resolve credentials with hardcoded fallbacks for non-secret values
@@ -165,7 +165,7 @@ function getAdminApp(): FirebaseAdminApp {
 
   // No credentials available
   initError = 'Firebase Admin SDK not configured. Set FIREBASE_ADMIN_KEY_SECRET + FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED (encrypted) or FIREBASE_ADMIN_PRIVATE_KEY (plain) as environment variables. PROJECT_ID and CLIENT_EMAIL have hardcoded fallbacks.'
-  throw new Error(initError)
+  return null
 }
 
 /**
@@ -178,24 +178,30 @@ export function getAdminInitError(): string | null {
 
 // ─── Lazy getters (initialize on first use) ───
 
-export function getAdminAuth(): FirebaseAdminAuth {
+export function getAdminAuth(): FirebaseAdminAuth | null {
   if (!adminAuth) {
-    adminAuth = getAuth(getAdminApp())
+    const app = getAdminApp()
+    if (!app) return null
+    adminAuth = getAuth(app)
   }
-  return adminAuth!
+  return adminAuth
 }
 
-export function getAdminFirestore(): FirebaseAdminFirestore {
+export function getAdminFirestore(): FirebaseAdminFirestore | null {
   if (!adminFirestore) {
-    adminFirestore = getFirestore(getAdminApp())
+    const app = getAdminApp()
+    if (!app) return null
+    adminFirestore = getFirestore(app)
     adminFirestore.settings({ ignoreUndefinedProperties: true })
   }
-  return adminFirestore!
+  return adminFirestore
 }
 
-export function getAdminMessaging(): FirebaseAdminMessaging {
+export function getAdminMessaging(): FirebaseAdminMessaging | null {
   if (!adminMessaging) {
-    adminMessaging = getMessaging(getAdminApp())
+    const app = getAdminApp()
+    if (!app) return null
+    adminMessaging = getMessaging(app)
   }
-  return adminMessaging!
+  return adminMessaging
 }

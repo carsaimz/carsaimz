@@ -82,6 +82,7 @@ export const zhCN: TranslationObject = {
     loginFailed: '登录失败',
     registerFailed: '注册失败',
     redirecting: '正在跳转...',
+    checkingAuth: '正在验证身份...',
     hidePassword: '隐藏密码',
     showPassword: '显示密码',
   },
@@ -970,7 +971,7 @@ export const zhCN: TranslationObject = {
     newMessage: '助手新消息',
     online: 'Online',
     frequentQuestions: '常见问题：',
-    poweredBy: 'Carsai AI',
+    poweredBy: '由 Carsai AI 提供支持',
   },
 
   // ============================================================================

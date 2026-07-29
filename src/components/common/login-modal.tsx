@@ -84,6 +84,14 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
   const [githubLoading, setGithubLoading] = useState(false);
   const [anonymousLoading, setAnonymousLoading] = useState(false);
 
+  // Helper: redirect based on role — prefer result.user.role (authoritative)
+  // over store user (may not be hydrated yet due to race condition)
+  const redirectByRole = (role?: string) => {
+    if (role === 'admin' || role === 'super_admin') router.push('/admin');
+    else if (role === 'partner') router.push('/partner');
+    else router.push('/user');
+  };
+
   const handleLogin = async () => {
     setLoginError('');
     if (!loginEmail) {
@@ -98,11 +106,11 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
     try {
       const result = await store.loginWithEmailPassword(loginEmail, loginPassword);
       if (result.success) {
-        const role = useAuthStore.getState().user?.role;
+        // Use result.user.role directly — avoids race condition where
+        // store user hasn't been hydrated yet
+        const role = result.user?.role || useAuthStore.getState().user?.role;
         toast.success(t('auth.loginSuccess'));
-        if (role === 'admin' || role === 'super_admin') router.push('/admin');
-        else if (role === 'partner') router.push('/partner');
-        else router.push('/user');
+        redirectByRole(role);
         onOpenChange(false);
         setLoginEmail('');
         setLoginPassword('');
@@ -152,11 +160,9 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
     try {
       const result = await store.verifyPhoneCode(verificationId, otpCode);
       if (result.success) {
-        const role = useAuthStore.getState().user?.role;
+        const role = result.user?.role || useAuthStore.getState().user?.role;
         toast.success(t('auth.loginSuccess'));
-        if (role === 'admin' || role === 'super_admin') router.push('/admin');
-        else if (role === 'partner') router.push('/partner');
-        else router.push('/user');
+        redirectByRole(role);
         onOpenChange(false);
         setPhoneNumber('');
         setOtpCode('');
@@ -175,11 +181,9 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
     try {
       const result = await store.loginWithGoogle();
       if (result.success) {
-        const role = useAuthStore.getState().user?.role;
+        const role = result.user?.role || useAuthStore.getState().user?.role;
         toast.success(t('auth.loginSuccess'));
-        if (role === 'admin' || role === 'super_admin') router.push('/admin');
-        else if (role === 'partner') router.push('/partner');
-        else router.push('/user');
+        redirectByRole(role);
         onOpenChange(false);
       } else {
         toast.error(result.error || t('auth.loginFailed'));
@@ -195,11 +199,9 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
     try {
       const result = await store.loginWithGithub();
       if (result.success) {
-        const role = useAuthStore.getState().user?.role;
+        const role = result.user?.role || useAuthStore.getState().user?.role;
         toast.success(t('auth.loginSuccess'));
-        if (role === 'admin' || role === 'super_admin') router.push('/admin');
-        else if (role === 'partner') router.push('/partner');
-        else router.push('/user');
+        redirectByRole(role);
         onOpenChange(false);
       } else {
         toast.error(result.error || t('auth.loginFailed'));

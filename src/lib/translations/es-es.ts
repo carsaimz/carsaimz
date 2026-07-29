@@ -82,6 +82,7 @@ export const esES: TranslationObject = {
     loginFailed: 'Error al iniciar sesión',
     registerFailed: 'Error al registrarse',
     redirecting: 'Redirigiendo...',
+    checkingAuth: 'Verificando autenticación...',
     hidePassword: 'Ocultar contraseña',
     showPassword: 'Mostrar contraseña',
   },
@@ -970,7 +971,7 @@ export const esES: TranslationObject = {
     newMessage: 'Nuevo mensaje del asistente',
     online: 'Online',
     frequentQuestions: 'Preguntas frecuentes:',
-    poweredBy: 'Carsai AI',
+    poweredBy: 'Desarrollado por Carsai AI',
   },
 
   // ============================================================================

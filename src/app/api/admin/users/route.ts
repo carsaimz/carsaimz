@@ -188,6 +188,12 @@ export async function POST(request: NextRequest) {
 
     // Create Firebase Auth user
     const adminAuth = getAdminAuth()
+    if (!adminAuth) {
+      return NextResponse.json(
+        { success: false, message: 'Firebase Admin Auth not configured' },
+        { status: 503 }
+      )
+    }
     const userRecord = await adminAuth.createUser({
       email,
       password,
@@ -322,7 +328,11 @@ export async function PUT(request: NextRequest) {
     if (Object.keys(authUpdate).length > 0) {
       try {
         const adminAuth = getAdminAuth()
-        await adminAuth.updateUser(userId, authUpdate)
+        if (!adminAuth) {
+          console.warn('Firebase Admin Auth not configured, skipping Auth update')
+        } else {
+          await adminAuth.updateUser(userId, authUpdate)
+        }
       } catch (authError: any) {
         console.error('Firebase Auth update error:', authError)
         // Roll back Firestore update if Auth update fails critically
@@ -410,7 +420,11 @@ export async function DELETE(request: NextRequest) {
     // Optionally disable the Firebase Auth account as well
     try {
       const adminAuth = getAdminAuth()
-      await adminAuth.updateUser(userId, { disabled: true })
+      if (!adminAuth) {
+        console.warn('Firebase Admin Auth not configured, skipping Auth disable')
+      } else {
+        await adminAuth.updateUser(userId, { disabled: true })
+      }
     } catch (authError: any) {
       // If the user doesn't exist in Auth, just skip
       if (authError?.code === 'auth/user-not-found') {

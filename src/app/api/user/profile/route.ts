@@ -96,7 +96,11 @@ export async function PUT(request: NextRequest) {
     if (name) {
       try {
         const auth = getAdminAuth()
-        await auth.updateUser(userId, { displayName: name })
+        if (!auth) {
+          console.warn('[Profile] Firebase Admin Auth not configured, skipping displayName update')
+        } else {
+          await auth.updateUser(userId, { displayName: name })
+        }
       } catch (authErr) {
         console.warn('[Profile] Could not update Firebase Auth displayName:', authErr)
       }
@@ -106,7 +110,11 @@ export async function PUT(request: NextRequest) {
     if (newPassword && newPassword.length >= 6) {
       try {
         const auth = getAdminAuth()
-        await auth.updateUser(userId, { password: newPassword })
+        if (!auth) {
+          console.warn('[Profile] Firebase Admin Auth not configured, skipping password update')
+        } else {
+          await auth.updateUser(userId, { password: newPassword })
+        }
       } catch (authErr: any) {
         console.error('[Profile] Password update failed:', authErr)
         const errorCode = authErr.errorInfo?.code || authErr.code || ''

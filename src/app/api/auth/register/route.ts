@@ -41,6 +41,12 @@ export async function POST(request: NextRequest) {
 
     // ── Create user in Firebase Auth ──
     const auth = getAdminAuth()
+    if (!auth) {
+      return NextResponse.json(
+        { error: 'Serviço de autenticação não configurado.' },
+        { status: 503 }
+      )
+    }
     const userRecord = await auth.createUser({
       email: emailLower,
       password,

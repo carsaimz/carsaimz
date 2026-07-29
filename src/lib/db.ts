@@ -58,9 +58,11 @@ let db: Firestore | undefined = undefined
 
 export function getDb(): Firestore {
   if (!db) {
-    db = getAdminFirestore()
+    const firestore = getAdminFirestore()
+    if (!firestore) throw new Error('Firebase Admin Firestore not configured')
+    db = firestore
   }
-  return db!
+  return db
 }
 
 // ─── Timestamp helpers ───

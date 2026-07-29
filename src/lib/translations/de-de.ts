@@ -82,6 +82,7 @@ export const deDE: TranslationObject = {
     loginFailed: 'Anmeldung fehlgeschlagen',
     registerFailed: 'Registrierung fehlgeschlagen',
     redirecting: 'Umleitung...',
+    checkingAuth: 'Authentifizierung wird überprüft...',
     hidePassword: 'Passwort verbergen',
     showPassword: 'Passwort anzeigen',
   },
@@ -970,7 +971,7 @@ export const deDE: TranslationObject = {
     newMessage: 'Neue Nachricht vom Assistent',
     online: 'Online',
     frequentQuestions: 'Häufige Fragen:',
-    poweredBy: 'Carsai AI',
+    poweredBy: 'Angetrieben von Carsai AI',
   },
 
   // ============================================================================

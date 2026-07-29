@@ -24,41 +24,46 @@ export async function GET() {
   try {
     const { getAdminFirestore, getAdminInitError } = await import('@/lib/firebase-admin')
     const db = getAdminFirestore()
+    if (!db) {
+      diagnostics.firebaseAdminInit = 'FAILED'
+      diagnostics.initError = getAdminInitError() || 'Firebase Admin Firestore not configured'
+    } else {
     const initErr = getAdminInitError()
-    diagnostics.firebaseAdminInit = initErr ? 'OK_WITH_WARNINGS' : 'OK'
-    if (initErr) diagnostics.initWarning = initErr
+      diagnostics.firebaseAdminInit = initErr ? 'OK_WITH_WARNINGS' : 'OK'
+      if (initErr) diagnostics.initWarning = initErr
 
-    // Test Firestore read
-    try {
-      const snap = await db.collection('roles').limit(1).get()
-      diagnostics.firestoreRead = 'OK'
-      diagnostics.rolesCount = snap.size
-      if (!snap.empty) {
-        diagnostics.sampleRole = { id: snap.docs[0].id, ...snap.docs[0].data() }
-      }
-    } catch (fsErr: any) {
-      diagnostics.firestoreRead = 'FAILED'
-      diagnostics.firestoreError = fsErr.message
-    }
-
-    // Test users collection
-    try {
-      const usersSnap = await db.collection('users').limit(1).get()
-      diagnostics.usersRead = 'OK'
-      diagnostics.usersCount = usersSnap.size
-      if (!usersSnap.empty) {
-        const userData = usersSnap.docs[0].data()
-        diagnostics.sampleUser = {
-          id: usersSnap.docs[0].id,
-          hasRoleId: !!userData.roleId,
-          hasRole: !!userData.role,
-          role: userData.role || null,
-          roleId: userData.roleId || null,
+      // Test Firestore read
+      try {
+        const snap = await db.collection('roles').limit(1).get()
+        diagnostics.firestoreRead = 'OK'
+        diagnostics.rolesCount = snap.size
+        if (!snap.empty) {
+          diagnostics.sampleRole = { id: snap.docs[0].id, ...snap.docs[0].data() }
         }
+      } catch (fsErr: any) {
+        diagnostics.firestoreRead = 'FAILED'
+        diagnostics.firestoreError = fsErr.message
       }
-    } catch (uErr: any) {
-      diagnostics.usersRead = 'FAILED'
-      diagnostics.usersError = uErr.message
+
+      // Test users collection
+      try {
+        const usersSnap = await db.collection('users').limit(1).get()
+        diagnostics.usersRead = 'OK'
+        diagnostics.usersCount = usersSnap.size
+        if (!usersSnap.empty) {
+          const userData = usersSnap.docs[0].data()
+          diagnostics.sampleUser = {
+            id: usersSnap.docs[0].id,
+            hasRoleId: !!userData.roleId,
+            hasRole: !!userData.role,
+            role: userData.role || null,
+            roleId: userData.roleId || null,
+          }
+        }
+      } catch (uErr: any) {
+        diagnostics.usersRead = 'FAILED'
+        diagnostics.usersError = uErr.message
+      }
     }
   } catch (initErr: any) {
     diagnostics.firebaseAdminInit = 'FAILED'

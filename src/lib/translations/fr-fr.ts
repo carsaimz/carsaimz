@@ -82,6 +82,7 @@ export const frFR: TranslationObject = {
     loginFailed: 'Échec de la connexion',
     registerFailed: 'Échec de l\'inscription',
     redirecting: 'Redirection...',
+    checkingAuth: 'Vérification de l\'authentification...',
     hidePassword: 'Masquer le mot de passe',
     showPassword: 'Afficher le mot de passe',
   },
@@ -970,7 +971,7 @@ export const frFR: TranslationObject = {
     newMessage: 'Nouveau message de l\'assistant',
     online: 'Online',
     frequentQuestions: 'Questions fréquentes',
-    poweredBy: 'Carsai AI',
+    poweredBy: 'Propulsé par Carsai AI',
   },
 
   // ============================================================================
