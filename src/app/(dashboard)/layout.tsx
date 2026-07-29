@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
+import { AppUpdateCheck } from '@/components/common/app-update-check';
 
 export default function DashboardLayout({
   children,
@@ -10,8 +11,13 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const hasHydrated = useAuthStore((s) => s.hasHydrated);
+  const isAdmin = useAuthStore((s) => s.isAdmin);
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin);
+  const isPartner = useAuthStore((s) => s.isPartner);
+  const isUser = useAuthStore((s) => s.isUser);
 
   // ── Only redirect after rehydration is complete ──
   // Zustand persist rehydrates from localStorage asynchronously.
@@ -19,8 +25,40 @@ export default function DashboardLayout({
   useEffect(() => {
     if (hasHydrated && !isAuthenticated) {
       router.replace('/home');
+      return;
     }
-  }, [hasHydrated, isAuthenticated, router]);
+
+    if (hasHydrated && isAuthenticated) {
+      const isPrivileged = isAdmin || isSuperAdmin;
+
+      // ── Default dashboard redirect ──
+      // If user lands on the bare /dashboard path, redirect to their default dashboard.
+      // admin/super_admin → /admin, partner → /partner, user → /user
+      if (pathname === '/dashboard' || pathname === '/dashboard/') {
+        if (isPrivileged) {
+          router.replace('/admin');
+        } else if (isPartner) {
+          router.replace('/partner');
+        } else if (isUser) {
+          router.replace('/user');
+        } else {
+          router.replace('/home');
+        }
+        return;
+      }
+
+      // ── Access control ──
+      // admin/super_admin can access ALL dashboard areas
+      // Non-privileged users cannot access /admin routes
+      if (!isPrivileged && pathname.startsWith('/admin')) {
+        router.replace('/home');
+      }
+      // Non-partner, non-privileged users cannot access /partner routes
+      if (!isPartner && !isPrivileged && pathname.startsWith('/partner')) {
+        router.replace('/home');
+      }
+    }
+  }, [hasHydrated, isAuthenticated, isAdmin, isSuperAdmin, isPartner, isUser, pathname, router]);
 
   // ── Show "Checking authentication..." during rehydration ──
   if (!hasHydrated) {
@@ -44,5 +82,10 @@ export default function DashboardLayout({
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <AppUpdateCheck />
+      {children}
+    </>
+  );
 }

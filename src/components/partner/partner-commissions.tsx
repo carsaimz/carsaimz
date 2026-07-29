@@ -52,9 +52,9 @@ export function PartnerCommissions() {
       </motion.div>
       <motion.div variants={itemVariants}>
         <Card>
-          <CardHeader><div className="flex items-center justify-between"><CardTitle className="flex items-center gap-2"><DollarSign className="h-5 w-5 text-emerald-600" />Commission History</CardTitle><Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{commissions.length} total</Badge></div></CardHeader>
+          <CardHeader><div className="flex items-center justify-between"><CardTitle className="flex items-center gap-2"><DollarSign className="h-5 w-5 text-emerald-600" />{t('partner.commissionHistory')}</CardTitle><Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{commissions.length} {t('common.total')}</Badge></div></CardHeader>
           <CardContent className="p-0">
-            {commissions.length === 0 ? <div className="text-center py-12"><DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-3" /><p className="text-muted-foreground">{t('common.noData') || 'No commissions yet'}</p></div> :
+            {commissions.length === 0 ? <div className="text-center py-12"><DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-3" /><p className="text-muted-foreground">{t('partner.noCommissions')}</p></div> :
             <Table><TableHeader><TableRow className="bg-emerald-50/50"><TableHead>ID</TableHead><TableHead>{t('financial.amount')}</TableHead><TableHead>{t('common.status')}</TableHead><TableHead>{t('common.createdAt')}</TableHead></TableRow></TableHeader>
             <TableBody>{commissions.map((c) => <TableRow key={c.id}><TableCell className="font-medium">{c.id.slice(0,8)}</TableCell><TableCell className="font-semibold">{formatCurrency(c.amount)}</TableCell><TableCell>{statusBadge(c.status)}</TableCell><TableCell className="text-muted-foreground">{formatDate(c.createdAt)}</TableCell></TableRow>)}</TableBody></Table>}
           </CardContent>

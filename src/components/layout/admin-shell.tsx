@@ -6,12 +6,18 @@ import { useAuthStore, useNotificationStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
 import { AiChatAssistant } from '@/components/features/ai-chat-assistant';
 import { RealTimeNotifications } from '@/components/features/real-time-notifications';
+import { AppUpdateCheck } from '@/components/common/app-update-check';
 import { useState } from 'react';
 import {
   Sun, Moon, Bell, LogOut, ChevronDown,
   LayoutDashboard, Users, FileText, BarChart3, Settings, ScrollText,
   Shield, Scale, Cookie, HelpCircle,
   Globe, FolderOpen, MessageSquare,
+  Database,
+  // User menu icons
+  UserCircle, ClipboardList, CreditCard, Headphones,
+  // Partner menu icons
+  Link2, Percent, Banknote, Wallet,
 } from 'lucide-react';
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
@@ -43,6 +49,23 @@ const ADMIN_MENU_ITEMS: SidebarLink[] = [
   { path: '/admin/reports', labelKey: 'admin.reports', icon: BarChart3 },
   { path: '/admin/analytics', labelKey: 'admin.systemLogs', icon: ScrollText },
   { path: '/admin/settings', labelKey: 'admin.systemSettings', icon: Settings },
+  { path: '/admin/db-manager', labelKey: 'admin.dbManager', icon: Database },
+];
+
+const USER_MENU_ITEMS: SidebarLink[] = [
+  { path: '/user', labelKey: 'dashboard.profile', icon: UserCircle },
+  { path: '/user/quotes', labelKey: 'dashboard.quotes', icon: ClipboardList },
+  { path: '/user/payments', labelKey: 'dashboard.payments', icon: CreditCard },
+  { path: '/user/invoices', labelKey: 'dashboard.invoices', icon: FileText },
+  { path: '/user/support', labelKey: 'dashboard.support', icon: Headphones },
+  { path: '/user/settings', labelKey: 'dashboard.settings', icon: Settings },
+];
+
+const PARTNER_MENU_ITEMS: SidebarLink[] = [
+  { path: '/partner', labelKey: 'partner.portfolio', icon: FolderOpen },
+  { path: '/partner/affiliate', labelKey: 'partner.affiliate', icon: Link2 },
+  { path: '/partner/commissions', labelKey: 'partner.commissions', icon: Percent },
+  { path: '/partner/withdrawals', labelKey: 'partner.withdrawals', icon: Banknote },
 ];
 
 const LEGAL_LINKS: SidebarLink[] = [
@@ -58,8 +81,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout } = useAuthStore();
+  const { user, logout, isAdmin, isSuperAdmin } = useAuthStore();
   const { unreadCount, notifications, markAllAsRead } = useNotificationStore();
+
+  const isPrivileged = isAdmin || isSuperAdmin;
 
   const currentFlag = LANGUAGE_FLAGS[language] || '🌐';
   const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) : 'A';
@@ -78,6 +103,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </SidebarHeader>
           <SidebarSeparator />
           <SidebarContent>
+            {/* ── Admin section (always shown) ── */}
             <SidebarGroup>
               <SidebarGroupLabel>{t('admin.title')}</SidebarGroupLabel>
               <SidebarGroupContent>
@@ -93,6 +119,45 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
+
+            {/* ── User section (shown for admin/super_admin) ── */}
+            {isPrivileged && (
+              <SidebarGroup>
+                <SidebarGroupLabel>{t('dashboard.title')}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {USER_MENU_ITEMS.map((item) => (
+                      <SidebarMenuItem key={item.path}>
+                        <SidebarMenuButton isActive={pathname === item.path} onClick={() => router.push(item.path)} tooltip={t(item.labelKey)}>
+                          <item.icon className="size-4" />
+                          <span>{t(item.labelKey)}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            )}
+
+            {/* ── Partner section (shown for admin/super_admin) ── */}
+            {isPrivileged && (
+              <SidebarGroup>
+                <SidebarGroupLabel>{t('partner.title')}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {PARTNER_MENU_ITEMS.map((item) => (
+                      <SidebarMenuItem key={item.path}>
+                        <SidebarMenuButton isActive={pathname === item.path} onClick={() => router.push(item.path)} tooltip={t(item.labelKey)}>
+                          <item.icon className="size-4" />
+                          <span>{t(item.labelKey)}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            )}
+
             <SidebarGroup>
               <SidebarGroupLabel>Legal</SidebarGroupLabel>
               <SidebarGroupContent>
@@ -163,6 +228,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       </SidebarProvider>
       <AiChatAssistant />
       <RealTimeNotifications />
+      <AppUpdateCheck />
     </>
   );
 }

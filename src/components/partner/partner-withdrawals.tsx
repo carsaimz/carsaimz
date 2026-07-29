@@ -53,8 +53,8 @@ export function PartnerWithdrawals() {
           <CardHeader><CardTitle className="flex items-center gap-2"><Wallet className="h-5 w-5 text-emerald-600" />{t('partner.withdrawalsRequest')}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2"><Label htmlFor="withdraw-amount">{t('financial.amount')} (MT)</Label><Input id="withdraw-amount" type="number" placeholder="e.g. 5000" value={withdrawAmount} onChange={(e) => setWithdrawAmount(e.target.value)} /></div>
-              <div className="space-y-2"><Label>{t('financial.paymentMethod')}</Label><Select value={withdrawMethod} onValueChange={setWithdrawMethod}><SelectTrigger className="w-full"><SelectValue placeholder="Select method" /></SelectTrigger><SelectContent><SelectItem value="mpesa">{t('financial.mpesa')}</SelectItem><SelectItem value="transfer">{t('financial.transfer')}</SelectItem></SelectContent></Select></div>
+              <div className="space-y-2"><Label htmlFor="withdraw-amount">{t('financial.amount')} (MT)</Label><Input id="withdraw-amount" type="number" placeholder={t('partner.amountPlaceholder')} value={withdrawAmount} onChange={(e) => setWithdrawAmount(e.target.value)} /></div>
+              <div className="space-y-2"><Label>{t('financial.paymentMethod')}</Label><Select value={withdrawMethod} onValueChange={setWithdrawMethod}><SelectTrigger className="w-full"><SelectValue placeholder={t('partner.selectMethod')} /></SelectTrigger><SelectContent><SelectItem value="mpesa">{t('financial.mpesa')}</SelectItem><SelectItem value="transfer">{t('financial.transfer')}</SelectItem></SelectContent></Select></div>
             </div>
             <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"><Banknote className="h-4 w-4 mr-2" />{t('partner.withdrawalsRequest')}</Button>
           </CardContent>
@@ -63,13 +63,13 @@ export function PartnerWithdrawals() {
 
       <motion.div variants={itemVariants}>
         <Card>
-          <CardHeader><CardTitle>{t('partner.withdrawalsHistory') || 'Withdrawal History'}</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t('partner.withdrawalHistory')}</CardTitle></CardHeader>
           <CardContent>
-            {withdrawals.length === 0 ? <div className="text-center py-8"><p className="text-sm text-muted-foreground">{t('common.noData') || 'No withdrawal history'}</p></div> :
+            {withdrawals.length === 0 ? <div className="text-center py-8"><p className="text-sm text-muted-foreground">{t('partner.noWithdrawals')}</p></div> :
             <div className="space-y-2">
               {withdrawals.slice(0, 5).map((w) => (
                 <div key={w.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" /><span className="text-sm">{formatCurrency(w.amount)} — Commission</span></div>
+                  <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" /><span className="text-sm">{formatCurrency(w.amount)} — {t('partner.commission')}</span></div>
                   <div className="text-right"><Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge><p className="text-xs text-muted-foreground mt-1">{formatDate(w.createdAt)}</p></div>
                 </div>
               ))}

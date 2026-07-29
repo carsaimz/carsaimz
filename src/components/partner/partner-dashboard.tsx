@@ -51,6 +51,7 @@ import {
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
 import { apiFetch } from '@/lib/api-fetch';
+import { API_BASE_URL } from '@/lib/client-config';
 
 // ── Animation variants ──
 const containerVariants = {
@@ -125,7 +126,7 @@ export function PartnerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [affiliateLink] = useState(`https://carsai.mz/ref/${user?.id || 'demo-partner-001'}`);
+  const [affiliateLink] = useState(`${API_BASE_URL}/ref/${user?.id || 'demo-partner-001'}`);
   const [copied, setCopied] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawMethod, setWithdrawMethod] = useState('');
@@ -148,14 +149,14 @@ export function PartnerDashboard() {
         if (dashboardJson.success && dashboardJson.data) {
           setData(dashboardJson.data as PartnerData);
         } else {
-          setError(dashboardJson.message || 'Failed to load dashboard');
+          setError(dashboardJson.message || t('dashboard.loadError'));
         }
         if (projectsJson.success && projectsJson.data) {
           setProjects(projectsJson.data as PortfolioProject[]);
         }
       })
       .catch((err) => {
-        setError(err.message || 'Network error');
+        setError(err.message || t('common.networkError'));
       })
       .finally(() => {
         setLoading(false);
@@ -182,24 +183,24 @@ export function PartnerDashboard() {
   const statsCards = [
     {
       icon: MousePointerClick,
-      label: 'Total Clicks',
+      label: t('partner.totalClicks'),
       value: totalClicks.toLocaleString(),
       color: 'emerald',
-      description: `${data?.recentActivity.clicks?.length ?? 0} recent`,
+      description: t('partner.recentClicks', { count: data?.recentActivity.clicks?.length ?? 0 }),
     },
     {
       icon: ArrowRightLeft,
-      label: 'Conversions',
+      label: t('partner.conversions'),
       value: totalCommissions,
       color: 'green',
-      description: `${conversionRate}% conversion rate`,
+      description: t('partner.conversionRateValue', { rate: conversionRate }),
     },
     {
       icon: DollarSign,
       label: t('partner.commissionsEarned'),
       value: formatCurrency(commissionsEarned),
       color: 'teal',
-      description: `${approvedCommissions} approved, ${paidCommissions} paid`,
+      description: t('partner.approvedAndPaid', { approved: approvedCommissions, paid: paidCommissions }),
     },
     {
       icon: Clock,
@@ -208,7 +209,7 @@ export function PartnerDashboard() {
         commissions.filter((c) => c.status === 'pending').reduce((s, c) => s + c.amount, 0)
       ),
       color: 'yellow',
-      description: `${pendingCommissions} pending conversions`,
+      description: t('partner.pendingConversions', { count: pendingCommissions }),
     },
   ];
 
@@ -290,7 +291,7 @@ export function PartnerDashboard() {
             <div className="flex items-center gap-3">
               <AlertCircle className="h-6 w-6 text-red-500" />
               <div>
-                <h3 className="font-semibold text-red-700">Failed to load dashboard</h3>
+                <h3 className="font-semibold text-red-700">{t('dashboard.loadError')}</h3>
                 <p className="text-sm text-muted-foreground">{error}</p>
               </div>
             </div>
@@ -347,17 +348,17 @@ export function PartnerDashboard() {
                   className="bg-yellow-400 hover:bg-yellow-300 text-emerald-900 font-semibold rounded-lg"
                 >
                   <Copy className="h-4 w-4 mr-2" />
-                  {copied ? 'Copied!' : t('common.copy')}
+                  {copied ? t('common.copied') : t('common.copy')}
                 </Button>
               </div>
               <div className="flex gap-3 mt-3">
                 <Button variant="ghost" size="sm" className="text-emerald-200 hover:text-white hover:bg-white/10">
                   <Share2 className="h-4 w-4 mr-1" />
-                  Share
+                  {t('common.share')}
                 </Button>
                 <Button variant="ghost" size="sm" className="text-emerald-200 hover:text-white hover:bg-white/10">
                   <ExternalLink className="h-4 w-4 mr-1" />
-                  QR Code
+                  {t('common.qrCode')}
                 </Button>
               </div>
             </div>
@@ -397,7 +398,7 @@ export function PartnerDashboard() {
                 {t('partner.commissions')}
               </CardTitle>
               <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
-                {totalCommissions} total
+                {totalCommissions} {t('common.total')}
               </Badge>
             </div>
           </CardHeader>
@@ -405,8 +406,8 @@ export function PartnerDashboard() {
             {commissions.length === 0 ? (
               <div className="text-center py-12">
                 <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">{t('common.noData') || 'No commissions yet'}</p>
-                <p className="text-sm text-muted-foreground mt-1">Share your affiliate link to start earning</p>
+                <p className="text-muted-foreground">{t('partner.noCommissions')}</p>
+                <p className="text-sm text-muted-foreground mt-1">{t('partner.shareAffiliateLink')}</p>
               </div>
             ) : (
               <Table>
@@ -462,7 +463,7 @@ export function PartnerDashboard() {
                         ? "bg-emerald-100 text-emerald-700 border-emerald-200"
                         : "bg-yellow-100 text-yellow-700 border-yellow-200"
                       }>
-                        {project.isFeatured ? 'Featured' : 'Published'}
+                        {project.isFeatured ? t('common.featured') : t('common.published')}
                       </Badge>
                     </div>
                     {project.description && (
@@ -491,7 +492,7 @@ export function PartnerDashboard() {
               {t('partner.withdrawalsRequest')}
             </CardTitle>
             <CardDescription>
-              Available balance: {formatCurrency(commissionsEarned)}
+              {t('partner.availableBalance')} {formatCurrency(commissionsEarned)}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -502,7 +503,7 @@ export function PartnerDashboard() {
                   <Input
                     id="withdraw-amount"
                     type="number"
-                    placeholder="e.g. 5000"
+                    placeholder={t('partner.amountPlaceholder')}
                     value={withdrawAmount}
                     onChange={(e) => setWithdrawAmount(e.target.value)}
                   />
@@ -511,7 +512,7 @@ export function PartnerDashboard() {
                   <Label>{t('financial.paymentMethod')}</Label>
                   <Select value={withdrawMethod} onValueChange={setWithdrawMethod}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select method" />
+                      <SelectValue placeholder={t('partner.selectMethod')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="mpesa">
@@ -529,7 +530,7 @@ export function PartnerDashboard() {
                       <SelectItem value="deposit">
                         <div className="flex items-center gap-2">
                           <BanknoteIcon className="h-4 w-4 text-emerald-600" />
-                          Deposit
+                          {t('financial.deposit')}
                         </div>
                       </SelectItem>
                     </SelectContent>
@@ -553,7 +554,7 @@ export function PartnerDashboard() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="account-number">{t('financial.transferAccount')}</Label>
-                    <Input id="account-number" placeholder="Account number" />
+                    <Input id="account-number" placeholder={t('partner.accountNumber')} />
                   </div>
                 </div>
               )}
@@ -564,7 +565,7 @@ export function PartnerDashboard() {
                   {t('partner.withdrawalsRequest')}
                 </Button>
                 <p className="text-sm text-muted-foreground">
-                  Processing time: 1-3 business days
+                  {t('partner.processingTime')}
                 </p>
               </div>
 
@@ -574,7 +575,7 @@ export function PartnerDashboard() {
                 <h4 className="font-medium text-sm mb-3">{t('partner.withdrawalsHistory')}</h4>
                 {commissions.filter((c) => c.status === 'paid').length === 0 ? (
                   <div className="text-center py-4">
-                    <p className="text-sm text-muted-foreground">{t('common.noData') || 'No withdrawal history'}</p>
+                    <p className="text-sm text-muted-foreground">{t('partner.noWithdrawals')}</p>
                   </div>
                 ) : (
                   <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -585,7 +586,7 @@ export function PartnerDashboard() {
                         <div key={commission.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                           <div className="flex items-center gap-2">
                             <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                            <span className="text-sm">{formatCurrency(commission.amount)} — Commission</span>
+                            <span className="text-sm">{formatCurrency(commission.amount)} — {t('partner.commission')}</span>
                           </div>
                           <div className="text-right">
                             <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>

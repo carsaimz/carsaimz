@@ -57,6 +57,18 @@ import {
   Shield,
   Scale,
   Cookie,
+  // Admin menu icons
+  LayoutDashboard,
+  Users,
+  BarChart3,
+  ScrollText,
+  Globe,
+  FolderOpen,
+  MessageSquare,
+  // Partner menu icons
+  Link2,
+  Percent,
+  Banknote,
 } from 'lucide-react';
 
 // ──────────────────────────────────────────────
@@ -88,6 +100,25 @@ const USER_MENU_ITEMS: SidebarLink[] = [
   { path: '/user/settings', labelKey: 'dashboard.settings', icon: Settings },
 ];
 
+const ADMIN_MENU_ITEMS: SidebarLink[] = [
+  { path: '/admin', labelKey: 'admin.dashboard', icon: LayoutDashboard },
+  { path: '/admin/services', labelKey: 'admin.services', icon: Globe },
+  { path: '/admin/projects', labelKey: 'admin.projects', icon: FolderOpen },
+  { path: '/admin/blog', labelKey: 'admin.posts', icon: FileText },
+  { path: '/admin/testimonials', labelKey: 'admin.testimonials', icon: MessageSquare },
+  { path: '/admin/users', labelKey: 'admin.users', icon: Users },
+  { path: '/admin/reports', labelKey: 'admin.reports', icon: BarChart3 },
+  { path: '/admin/analytics', labelKey: 'admin.systemLogs', icon: ScrollText },
+  { path: '/admin/settings', labelKey: 'admin.systemSettings', icon: Settings },
+];
+
+const PARTNER_MENU_ITEMS: SidebarLink[] = [
+  { path: '/partner', labelKey: 'partner.portfolio', icon: FolderOpen },
+  { path: '/partner/affiliate', labelKey: 'partner.affiliate', icon: Link2 },
+  { path: '/partner/commissions', labelKey: 'partner.commissions', icon: Percent },
+  { path: '/partner/withdrawals', labelKey: 'partner.withdrawals', icon: Banknote },
+];
+
 const LEGAL_LINKS: SidebarLink[] = [
   { path: '/about', labelKey: 'nav.about', icon: HelpCircle },
   { path: '/faq', labelKey: 'nav.faq', icon: HelpCircle },
@@ -105,9 +136,11 @@ export function UserShell({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout } = useAuthStore();
+  const { user, logout, isAdmin, isSuperAdmin } = useAuthStore();
   const { unreadCount, notifications, markAllAsRead } = useNotificationStore();
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+
+  const isPrivileged = isAdmin || isSuperAdmin;
 
   const currentFlag = LANGUAGE_FLAGS[language] || '🌐';
 
@@ -132,6 +165,30 @@ export function UserShell({ children }: { children: React.ReactNode }) {
           <SidebarSeparator />
 
           <SidebarContent>
+            {/* ── Admin section (shown for admin/super_admin) ── */}
+            {isPrivileged && (
+              <SidebarGroup>
+                <SidebarGroupLabel>{t('admin.title')}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {ADMIN_MENU_ITEMS.map((item) => (
+                      <SidebarMenuItem key={item.path}>
+                        <SidebarMenuButton
+                          isActive={pathname === item.path}
+                          onClick={() => router.push(item.path)}
+                          tooltip={t(item.labelKey)}
+                        >
+                          <item.icon className="size-4" />
+                          <span>{t(item.labelKey)}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            )}
+
+            {/* ── User section (always shown) ── */}
             <SidebarGroup>
               <SidebarGroupLabel>{t('dashboard.title')}</SidebarGroupLabel>
               <SidebarGroupContent>
@@ -151,6 +208,29 @@ export function UserShell({ children }: { children: React.ReactNode }) {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
+
+            {/* ── Partner section (shown for admin/super_admin) ── */}
+            {isPrivileged && (
+              <SidebarGroup>
+                <SidebarGroupLabel>{t('partner.title')}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {PARTNER_MENU_ITEMS.map((item) => (
+                      <SidebarMenuItem key={item.path}>
+                        <SidebarMenuButton
+                          isActive={pathname === item.path}
+                          onClick={() => router.push(item.path)}
+                          tooltip={t(item.labelKey)}
+                        >
+                          <item.icon className="size-4" />
+                          <span>{t(item.labelKey)}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            )}
 
             <SidebarGroup>
               <SidebarGroupLabel>Legal</SidebarGroupLabel>
@@ -292,7 +372,7 @@ export function UserShell({ children }: { children: React.ReactNode }) {
 
       <AiChatAssistant />
       <RealTimeNotifications />
-      {loginModalOpen && <LoginModal open={loginModalOpen} onClose={() => setLoginModalOpen(false)} />}
+      {loginModalOpen && <LoginModal open={loginModalOpen} onOpenChange={(v) => setLoginModalOpen(v)} />}
     </>
   );
 }

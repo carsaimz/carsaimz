@@ -220,3 +220,36 @@ Stage Summary:
 - Google Sign-In now supports Web OAuth Client ID (client-config.ts + native-auth.ts)
 - All auth methods pass native auth result to fallback (store.ts) — robust 3-tier fallback
 - Build passes successfully with middleware enabled
+
+---
+Task ID: comprehensive-fixes
+Agent: Main Agent
+Task: Comprehensive fixes for Carsai Mozambique — role access, CRUD, translations, db-manager, loading, affiliate, app update
+
+Work Log:
+- Fixed role-based access: super_admin/admin can now access /admin, /user, /partner dashboards
+- Updated all 3 shell components to show cross-section navigation for privileged users
+- Added full CRUD for admin users API (POST/PUT/DELETE endpoints)
+- Rewrote admin-users component with search, create, edit, deactivate dialogs
+- Fixed admin-settings save format (was sending object, API expects array of {key,value})
+- Fixed all hardcoded English strings in partner components (25+ strings replaced with t() calls)
+- Added 20+ new translation keys across all 7 language files
+- Renamed "Perfil" → "Dashboard"/"Painel" in all translation files
+- Created admin db-manager page with collection browsing, document viewing, delete, export
+- Created db-manager API route (GET collections, GET documents, DELETE document)
+- Added db-manager to admin shell sidebar menu
+- Fixed loading overlay: replaced 2.5s timer with requestAnimationFrame + 3s safety timeout
+- Fixed affiliate link to use API_BASE_URL instead of hardcoded carsai.mz
+- Created AppUpdateCheck component for mobile app update detection via GitHub API
+- Added AppUpdateCheck to dashboard layout
+- Fixed LoginModal prop mismatch in user-shell.tsx
+- Added CORS middleware to API routes for Capacitor WebView compatibility
+- Added GOOGLE_WEB_CLIENT_ID support for native Google Sign-In on Android
+
+Stage Summary:
+- All major features implemented and build passes
+- 11 major areas addressed: role access, CRUD, translations, db-manager, loading, affiliate, app update, settings, auth, CORS, navigation
+- New pages: /admin/db-manager
+- New API routes: /api/admin/db-manager, /api/admin/users (POST/PUT/DELETE)
+- New components: AppUpdateCheck, AdminDbManager
+- Translation files updated with 50+ new keys across 7 languages

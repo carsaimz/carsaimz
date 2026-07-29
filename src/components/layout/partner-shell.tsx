@@ -11,6 +11,11 @@ import {
   Sun, Moon, Bell, LogOut, ChevronDown,
   FolderOpen, Link2, Percent, Banknote, Wallet,
   Shield, Scale, Cookie, HelpCircle,
+  // Admin menu icons
+  LayoutDashboard, Users, FileText, BarChart3, Settings, ScrollText,
+  Globe, MessageSquare,
+  // User menu icons
+  UserCircle, ClipboardList, CreditCard, Headphones,
 } from 'lucide-react';
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
@@ -39,6 +44,27 @@ const PARTNER_MENU_ITEMS: SidebarLink[] = [
   { path: '/partner/withdrawals', labelKey: 'partner.withdrawals', icon: Banknote },
 ];
 
+const ADMIN_MENU_ITEMS: SidebarLink[] = [
+  { path: '/admin', labelKey: 'admin.dashboard', icon: LayoutDashboard },
+  { path: '/admin/services', labelKey: 'admin.services', icon: Globe },
+  { path: '/admin/projects', labelKey: 'admin.projects', icon: FolderOpen },
+  { path: '/admin/blog', labelKey: 'admin.posts', icon: FileText },
+  { path: '/admin/testimonials', labelKey: 'admin.testimonials', icon: MessageSquare },
+  { path: '/admin/users', labelKey: 'admin.users', icon: Users },
+  { path: '/admin/reports', labelKey: 'admin.reports', icon: BarChart3 },
+  { path: '/admin/analytics', labelKey: 'admin.systemLogs', icon: ScrollText },
+  { path: '/admin/settings', labelKey: 'admin.systemSettings', icon: Settings },
+];
+
+const USER_MENU_ITEMS: SidebarLink[] = [
+  { path: '/user', labelKey: 'dashboard.profile', icon: UserCircle },
+  { path: '/user/quotes', labelKey: 'dashboard.quotes', icon: ClipboardList },
+  { path: '/user/payments', labelKey: 'dashboard.payments', icon: CreditCard },
+  { path: '/user/invoices', labelKey: 'dashboard.invoices', icon: FileText },
+  { path: '/user/support', labelKey: 'dashboard.support', icon: Headphones },
+  { path: '/user/settings', labelKey: 'dashboard.settings', icon: Settings },
+];
+
 const LEGAL_LINKS: SidebarLink[] = [
   { path: '/about', labelKey: 'nav.about', icon: HelpCircle },
   { path: '/faq', labelKey: 'nav.faq', icon: HelpCircle },
@@ -52,8 +78,10 @@ export function PartnerShell({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout } = useAuthStore();
+  const { user, logout, isAdmin, isSuperAdmin } = useAuthStore();
   const { unreadCount, notifications, markAllAsRead } = useNotificationStore();
+
+  const isPrivileged = isAdmin || isSuperAdmin;
 
   const currentFlag = LANGUAGE_FLAGS[language] || '🌐';
   const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) : 'P';
@@ -72,6 +100,26 @@ export function PartnerShell({ children }: { children: React.ReactNode }) {
           </SidebarHeader>
           <SidebarSeparator />
           <SidebarContent>
+            {/* ── Admin section (shown for admin/super_admin) ── */}
+            {isPrivileged && (
+              <SidebarGroup>
+                <SidebarGroupLabel>{t('admin.title')}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {ADMIN_MENU_ITEMS.map((item) => (
+                      <SidebarMenuItem key={item.path}>
+                        <SidebarMenuButton isActive={pathname === item.path} onClick={() => router.push(item.path)} tooltip={t(item.labelKey)}>
+                          <item.icon className="size-4" />
+                          <span>{t(item.labelKey)}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            )}
+
+            {/* ── Partner section (always shown) ── */}
             <SidebarGroup>
               <SidebarGroupLabel>{t('partner.title')}</SidebarGroupLabel>
               <SidebarGroupContent>
@@ -87,8 +135,28 @@ export function PartnerShell({ children }: { children: React.ReactNode }) {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
+
+            {/* ── User section (shown for admin/super_admin) ── */}
+            {isPrivileged && (
+              <SidebarGroup>
+                <SidebarGroupLabel>{t('dashboard.title')}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {USER_MENU_ITEMS.map((item) => (
+                      <SidebarMenuItem key={item.path}>
+                        <SidebarMenuButton isActive={pathname === item.path} onClick={() => router.push(item.path)} tooltip={t(item.labelKey)}>
+                          <item.icon className="size-4" />
+                          <span>{t(item.labelKey)}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            )}
+
             <SidebarGroup>
-              <SidebarGroupLabel>Legal</SidebarGroupLabel>
+              <SidebarGroupLabel>{t('common.legal')}</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {LEGAL_LINKS.map((item) => (
@@ -141,7 +209,7 @@ export function PartnerShell({ children }: { children: React.ReactNode }) {
                 <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" className="gap-1 h-7"><Avatar className="size-5"><AvatarFallback className="text-xs">{initials}</AvatarFallback></Avatar><ChevronDown className="size-3 opacity-50" /></Button></DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel><div className="flex flex-col"><span>{user?.name}</span><span className="text-xs text-muted-foreground">{user?.email}</span></div></DropdownMenuLabel><DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => router.push('/home')}>← Back to site</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/home')}>← {t('common.backToSite')}</DropdownMenuItem>
                   <DropdownMenuItem onClick={logout} variant="destructive"><LogOut className="mr-2 size-4" />{t('auth.logout')}</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -151,7 +219,7 @@ export function PartnerShell({ children }: { children: React.ReactNode }) {
           <main className="flex-1 p-4 md:p-6">{children}</main>
 
           <footer className="border-t px-4 py-3 text-center text-xs text-muted-foreground">
-            © 2026 Carsai Mozambique · <Link href="/privacy" className="hover:text-foreground">Privacy</Link> · <Link href="/terms" className="hover:text-foreground">Terms</Link> · <Link href="/cookies" className="hover:text-foreground">Cookies</Link>
+            © 2026 Carsai Mozambique · <Link href="/privacy" className="hover:text-foreground">{t('common.privacy')}</Link> · <Link href="/terms" className="hover:text-foreground">{t('common.terms')}</Link> · <Link href="/cookies" className="hover:text-foreground">{t('common.cookies')}</Link>
           </footer>
         </SidebarInset>
       </SidebarProvider>

@@ -56,27 +56,28 @@ export function AdminSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Convert formData object to array format expected by the API
+      const settingsArray = [
+        { key: 'siteName', value: formData.siteName },
+        { key: 'siteEmail', value: formData.siteEmail },
+        { key: 'sitePhone', value: formData.sitePhone },
+        { key: 'maintenanceMode', value: String(formData.maintenanceMode) },
+      ];
+
       const res = await apiFetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          settings: {
-            siteName: formData.siteName,
-            siteEmail: formData.siteEmail,
-            sitePhone: formData.sitePhone,
-            maintenanceMode: String(formData.maintenanceMode),
-          },
-        }),
+        body: JSON.stringify({ settings: settingsArray }),
       });
       const data = await res.json();
       if (data.success) {
-        toast({ title: t('admin.systemSettings'), description: 'Configurações guardadas!' });
+        toast({ title: t('admin.settingsSaved'), description: t('admin.settingsSavedDesc') });
       } else {
-        toast({ title: 'Erro', description: data.message || 'Falha ao guardar', variant: 'destructive' });
+        toast({ title: t('admin.error'), description: data.message || t('admin.settingsSaveFailed'), variant: 'destructive' });
       }
     } catch (err) {
       console.error('Settings save error:', err);
-      toast({ title: 'Erro', description: 'Falha ao guardar', variant: 'destructive' });
+      toast({ title: t('admin.error'), description: t('admin.settingsSaveFailed'), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -107,30 +108,30 @@ export function AdminSettings() {
         <TabsList>
           <TabsTrigger value="general" className="gap-1">
             <Settings className="size-4" />
-            Geral
+            {t('admin.general') || 'Geral'}
           </TabsTrigger>
           <TabsTrigger value="ai-providers" className="gap-1">
             <Bot className="size-4" />
-            Provedores de IA
+            {t('admin.aiProviders') || 'Provedores de IA'}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
           <motion.div variants={itemVariants}>
             <Card>
-              <CardHeader><CardTitle>{t('admin.systemSettings') || 'Configurações Gerais'}</CardTitle></CardHeader>
+              <CardHeader><CardTitle>{t('admin.generalSettings') || 'Configurações Gerais'}</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="siteName">{t('admin.title') || 'Nome do Site'}</Label>
+                    <Label htmlFor="siteName">{t('admin.siteName') || 'Nome do Site'}</Label>
                     <Input id="siteName" value={formData.siteName} onChange={handleChange} className="focus-visible:ring-red-500" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="siteEmail">{t('admin.systemSettings') || 'E-mail Admin'}</Label>
+                    <Label htmlFor="siteEmail">{t('admin.siteEmail') || 'E-mail Admin'}</Label>
                     <Input id="siteEmail" type="email" value={formData.siteEmail} onChange={handleChange} className="focus-visible:ring-red-500" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="sitePhone">{t('admin.systemSettings') || 'Telefone'}</Label>
+                    <Label htmlFor="sitePhone">{t('admin.sitePhone') || 'Telefone'}</Label>
                     <Input id="sitePhone" value={formData.sitePhone} onChange={handleChange} className="focus-visible:ring-red-500" />
                   </div>
                 </div>
@@ -142,7 +143,7 @@ export function AdminSettings() {
                     checked={formData.maintenanceMode}
                     onCheckedChange={(checked) => setFormData(prev => ({ ...prev, maintenanceMode: checked }))}
                   />
-                  <Label className="text-sm">Modo de Manutenção</Label>
+                  <Label className="text-sm">{t('admin.maintenanceMode') || 'Modo de Manutenção'}</Label>
                 </div>
 
                 <Separator />
