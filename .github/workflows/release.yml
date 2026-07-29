@@ -189,31 +189,33 @@ jobs:
             LOG=$(git log --pretty=format:"- %s (%h)" --no-merges -10)
           fi
 
-          # Categorize commits
-          FEATURES=$(echo "${LOG}" | grep -iE "feat|add|new" || true)
-          FIXES=$(echo "${LOG}" | grep -iE "fix|patch|hotfix|repair" || true)
-          CHORES=$(echo "${LOG}" | grep -iE "chore|build|ci|deps" || true)
-          OTHER=$(echo "${LOG}" | grep -viE "feat|add|new|fix|patch|hotfix|repair|chore|build|ci|deps" || true)
+          # Categorize commits using conventional commit prefixes (feat:, fix:, chore:, etc.)
+          # Format: "- subject (hash)" — match prefix at start of subject after "- "
+          FEATURES=$(echo "${LOG}" | grep -iE "^- (feat|add|new)\b" || true)
+          FIXES=$(echo "${LOG}" | grep -iE "^- (fix|patch|hotfix|repair)\b" || true)
+          CHORES=$(echo "${LOG}" | grep -iE "^- (chore|build|ci|deps|bump)\b" || true)
+          # Other = commits NOT matching conventional prefixes above
+          OTHER=$(echo "${LOG}" | grep -viE "^- (feat|add|new|fix|patch|hotfix|repair|chore|build|ci|deps|bump)\b" || true)
 
-          # Build formatted changelog
-          cat > /tmp/changelog.txt << EOF
-          ### What's New
-          ${FEATURES:-_No new features in this release._}
-
-          ### Bug Fixes
-          ${FIXES:-_No bug fixes in this release._}
-
-          ### Maintenance
-          ${CHORES:-_No maintenance changes in this release._}
-
-          ### Other Changes
-          ${OTHER:-_No other changes._}
-          EOF
+          # Build formatted changelog using printf (avoids heredoc indentation issues)
+          {
+            printf '## 🚀 What'\''s New\n'
+            if [ -n "${FEATURES}" ]; then printf '%s\n' "${FEATURES}"; else printf '_No new features in this release._\n'; fi
+            printf '\n'
+            printf '## 🐛 Bug Fixes\n'
+            if [ -n "${FIXES}" ]; then printf '%s\n' "${FIXES}"; else printf '_No bug fixes in this release._\n'; fi
+            printf '\n'
+            printf '## 🔧 Maintenance\n'
+            if [ -n "${CHORES}" ]; then printf '%s\n' "${CHORES}"; else printf '_No maintenance changes in this release._\n'; fi
+            printf '\n'
+            printf '## 📋 Other Changes\n'
+            if [ -n "${OTHER}" ]; then printf '%s\n' "${OTHER}"; else printf '_No other changes._\n'; fi
+          } > /tmp/changelog.txt
 
           # Multi-line output via heredoc
-          echo "changelog<<EOF" >> "$GITHUB_OUTPUT"
+          echo "changelog<<DELIM" >> "$GITHUB_OUTPUT"
           cat /tmp/changelog.txt >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          echo "DELIM" >> "$GITHUB_OUTPUT"
 
   # ---------------------------------------------------------------------------
   # Build: Web (standalone Next.js server)

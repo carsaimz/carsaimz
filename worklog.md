@@ -343,3 +343,26 @@ Stage Summary:
 - MIT License added
 - DMCA policy page and legal documents created
 - Build passes successfully
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix release changelog formatting, configure z.ai API with database support
+
+Work Log:
+- Fixed release.yml changelog generation: replaced heredoc with printf to avoid indentation issues
+- Changed ### headers to ## headers with emojis for proper GitHub markdown rendering
+- Fixed commit categorization: now uses conventional commit prefixes (feat:, fix:, chore:) to avoid duplicates
+- Added z-ai as preset provider in ai-providers admin API
+- Updated chat API route with 3-tier config priority: database → .z-ai-config file → env vars
+- Added Firestore ai_providers collection as primary config source (admin-configurable)
+- Added auth error handling (401/missing X-Token) for expired tokens
+- Added config caching with key-based invalidation (DB provider changes trigger reinit)
+- Fixed import: checkFirebaseAdmin from db-helpers, not firebase-admin
+
+Stage Summary:
+- Release changelog now renders correctly on GitHub (no more code-block formatting)
+- Chat API now supports database-driven AI provider configuration
+- Admin can configure AI providers via dashboard (ai_providers collection)
+- z-ai SDK works with full config (baseUrl + apiKey + token required)
+- Build passes successfully

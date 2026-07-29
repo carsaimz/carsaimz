@@ -65,6 +65,11 @@ export async function POST(request: NextRequest) {
 
     // Predefined defaults for common providers
     const defaults: Record<string, { baseUrl: string; model: string; displayName: string }> = {
+      'z-ai': {
+        baseUrl: 'https://internal-api.z.ai/v1',
+        model: 'glm-4-plus',
+        displayName: 'Z.ai (GLM-4 Plus)',
+      },
       groq: {
         baseUrl: 'https://api.groq.com/openai/v1',
         model: 'llama-3.3-70b-versatile',

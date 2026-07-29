@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import ZAI from 'z-ai-web-dev-sdk'
+import { getAdminFirestore } from '@/lib/firebase-admin'
+import { checkFirebaseAdmin } from '@/lib/db-helpers'
 
 /**
  * Carsai Mozambique - AI Chat API Endpoint
  *
- * Uses z-ai-web-dev-sdk as the primary AI provider.
+ * Uses z-ai-web-dev-sdk as the AI provider.
  *
- * Configuration priority:
- * 1. .z-ai-config file (auto-detected by SDK)
- * 2. Environment variables (ZAI_BASE_URL, ZAI_API_KEY, etc.)
- *
- * On Vercel/serverless: set ZAI_BASE_URL and ZAI_API_KEY env vars.
- * On local dev: the SDK auto-detects /etc/.z-ai-config or ./.z-ai-config.
+ * Configuration priority (first available wins):
+ * 1. Database (Firestore `ai_providers` collection — active, highest priority)
+ * 2. .z-ai-config file (auto-detected by SDK — local dev)
+ * 3. Environment variables (ZAI_BASE_URL, ZAI_API_KEY, ZAI_TOKEN — Vercel)
+ * 4. Hardcoded fallback (z.ai internal API — works in this environment)
  *
  * IMPORTANT: z-ai-web-dev-sdk MUST be used in backend code only.
  * System prompts use role: 'assistant' (not 'system') per SDK convention.
@@ -52,10 +53,12 @@ const CARSAI_CONTEXT = `You are the Carsai Mozambique assistant — a knowledgea
 10. The FREE hosting is provided by ifastnet/byet (Apache shared hosting), not by Carsai directly.
 `
 
-// ── Singleton ZAI instance (reuse across requests) ──
+// ── ZAI Instance Cache ──
+// Cache key = config source, so we reinitialize when config changes.
 
 let zaiInstance: InstanceType<typeof ZAI> | null = null
 let zaiInitPromise: Promise<InstanceType<typeof ZAI>> | null = null
+let cachedConfigKey: string | null = null
 
 /**
  * Build ZAI config from environment variables.
@@ -76,31 +79,112 @@ function buildConfigFromEnv() {
   }
 }
 
-async function getZaiInstance() {
-  if (zaiInstance) return zaiInstance
+/**
+ * Try to load AI provider config from Firestore (ai_providers collection).
+ * Returns the first active provider sorted by priority, or null if not available.
+ */
+async function loadProviderFromDatabase(): Promise<{
+  config: { baseUrl: string; apiKey: string; chatId: string; userId: string; token: string; model?: string }
+  key: string
+} | null> {
+  try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) return null
 
-  // Prevent concurrent initialization
+    const db = getAdminFirestore()
+    if (!db) return null
+
+    const snapshot = await db
+      .collection('ai_providers')
+      .where('isActive', '==', true)
+      .orderBy('priority', 'asc')
+      .limit(1)
+      .get()
+
+    if (snapshot.empty) return null
+
+    const doc = snapshot.docs[0]
+    const data = doc.data()
+
+    if (!data.baseUrl || !data.apiKey) return null
+
+    // Parse extra config if available
+    let extraConfig: Record<string, string> = {}
+    if (data.config) {
+      try {
+        extraConfig = typeof data.config === 'string' ? JSON.parse(data.config) : data.config
+      } catch {
+        extraConfig = {}
+      }
+    }
+
+    return {
+      config: {
+        baseUrl: data.baseUrl,
+        apiKey: data.apiKey,
+        chatId: extraConfig.chatId || '',
+        userId: extraConfig.userId || '',
+        token: extraConfig.token || '',
+        model: data.model || undefined,
+      },
+      key: `db:${doc.id}:${data.priority}`,
+    }
+  } catch (error) {
+    // Database not available — fall through to other methods
+    console.warn('[Chat] Could not load provider from database:', error instanceof Error ? error.message : error)
+    return null
+  }
+}
+
+async function getZaiInstance() {
+  // ── Try 1: Database provider (highest priority, admin-configurable) ──
+  const dbProvider = await loadProviderFromDatabase()
+
+  if (dbProvider) {
+    // If the config hasn't changed, reuse the cached instance
+    if (zaiInstance && cachedConfigKey === dbProvider.key) {
+      return zaiInstance
+    }
+
+    // Create new instance with DB config
+    try {
+      const zai = new ZAI(dbProvider.config)
+      zaiInstance = zai
+      cachedConfigKey = dbProvider.key
+      return zai
+    } catch (err) {
+      console.warn('[Chat] DB provider config failed, falling back:', err instanceof Error ? err.message : err)
+    }
+  }
+
+  // ── Reuse cached instance if available and DB had no provider ──
+  if (zaiInstance && cachedConfigKey?.startsWith('fallback:')) {
+    return zaiInstance
+  }
+
+  // ── Prevent concurrent initialization ──
   if (zaiInitPromise) return zaiInitPromise
 
   zaiInitPromise = (async () => {
     try {
-      // Try 1: Use SDK's auto-detection (.z-ai-config file)
+      // ── Try 2: Use SDK's auto-detection (.z-ai-config file) ──
       const zai = await ZAI.create()
       zaiInstance = zai
+      cachedConfigKey = 'fallback:file'
       return zai
     } catch {
-      // Try 2: Use environment variables (for Vercel/serverless)
+      // ── Try 3: Use environment variables (for Vercel/serverless) ──
       const envConfig = buildConfigFromEnv()
       if (envConfig) {
-        // Directly instantiate ZAI with config (bypass file-based config)
         const zai = new ZAI(envConfig)
         zaiInstance = zai
+        cachedConfigKey = 'fallback:env'
         return zai
       }
 
       // No config available — throw descriptive error
       throw new Error(
-        'ZAI SDK not configured. Either create .z-ai-config file or set ZAI_BASE_URL and ZAI_API_KEY environment variables.'
+        'ZAI SDK not configured. Configure an AI provider in the admin dashboard, create .z-ai-config file, or set ZAI_BASE_URL and ZAI_API_KEY environment variables.'
       )
     }
   })()
@@ -180,6 +264,7 @@ export async function POST(request: NextRequest) {
     // Reset ZAI instance on error (might be stale)
     zaiInstance = null
     zaiInitPromise = null
+    cachedConfigKey = null
 
     const errorMessage = error instanceof Error
       ? error.message
@@ -191,7 +276,18 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: 'O assistente de IA não está configurado. Por favor, contacte o administrador.',
-          debug: 'Set ZAI_BASE_URL and ZAI_API_KEY env vars, or create .z-ai-config file.',
+          debug: 'Configure an AI provider in the admin dashboard, or set ZAI_BASE_URL/ZAI_API_KEY env vars.',
+        },
+        { status: 503 }
+      )
+    }
+
+    // Auth error (expired token, etc.)
+    if (errorMessage.includes('401') || errorMessage.includes('Unauthorized') || errorMessage.includes('missing X-Token')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'A autenticação do assistente de IA expirou. Por favor, contacte o administrador.',
         },
         { status: 503 }
       )
