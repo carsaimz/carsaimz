@@ -42,6 +42,9 @@ interface UserData {
   phone?: string;
   role: string;
   isActive?: boolean;
+  bio?: string;
+  company?: string;
+  address?: string;
   createdAt: string;
 }
 
@@ -267,9 +270,9 @@ export function AdminUsers() {
       phone: u.phone || '',
       role: u.role,
       isActive: u.isActive !== false,
-      bio: (u as any).bio || '',
-      company: (u as any).company || '',
-      address: (u as any).address || '',
+      bio: u.bio || '',
+      company: u.company || '',
+      address: u.address || '',
     });
     setEditOpen(true);
   };

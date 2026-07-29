@@ -9,7 +9,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDoc, updateDoc, getDocByField } from '@/lib/db'
 import { getAdminAuth } from '@/lib/firebase-admin'
-import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET(request: NextRequest) {
   try {

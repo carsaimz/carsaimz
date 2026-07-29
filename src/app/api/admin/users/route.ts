@@ -104,6 +104,9 @@ export async function GET(request: NextRequest) {
         roleId: u.roleId,
         avatar: u.avatar,
         isActive: u.isActive,
+        bio: u.bio || '',
+        company: u.company || '',
+        address: u.address || '',
         createdAt,
       }
     })

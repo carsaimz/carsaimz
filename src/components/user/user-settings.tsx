@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Save, User, Mail, Phone, MapPin, Building2, FileText, Eye, EyeOff } from 'lucide-react';
+import { Settings, Save, User, Mail, Phone, MapPin, Building2, FileText, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,7 @@ export function UserSettings() {
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -31,6 +32,32 @@ export function UserSettings() {
     bio: user?.bio || '',
     address: user?.address || '',
   });
+
+  // Fetch fresh profile data from API on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user?.id) { setLoading(false); return; }
+      try {
+        const res = await apiFetch(`/api/user/profile?userId=${user.id}`);
+        const data = await safeJson(res);
+        if (data && data.success && data.user) {
+          setFormData({
+            name: data.user.name || '',
+            email: data.user.email || '',
+            phone: data.user.phone || '',
+            company: data.user.company || '',
+            bio: data.user.bio || '',
+            address: data.user.address || '',
+          });
+        }
+      } catch (err) {
+        console.error('Profile fetch error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [user?.id]);
 
   // Password change state
   const [newPassword, setNewPassword] = useState('');
@@ -49,34 +76,43 @@ export function UserSettings() {
     try {
       // Validate password if provided
       if (newPassword) {
-        if (newPassword.length < 8) {
+        if (newPassword.length < 6) {
           setPasswordError(t('auth.passwordMinLength'));
-          setSaving(false);
           return;
         }
         if (newPassword !== confirmNewPassword) {
           setPasswordError(t('auth.passwordsDoNotMatch'));
-          setSaving(false);
           return;
         }
       }
 
-      // Save profile data
+      // Save profile data + password in a single API call
+      // (the backend PUT handler supports both profile fields and newPassword)
+      const requestBody: Record<string, any> = {
+        userId: user?.id,
+        name: formData.name,
+        phone: formData.phone,
+        company: formData.company,
+        bio: formData.bio,
+        address: formData.address,
+      };
+
+      // Include password if user wants to change it
+      if (newPassword) {
+        requestBody.newPassword = newPassword;
+      }
+
       const res = await apiFetch('/api/user/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user?.id,
-          name: formData.name,
-          phone: formData.phone,
-          company: formData.company,
-          bio: formData.bio,
-          address: formData.address,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await safeJson(res);
-      if (!data) { toast.error(t('common.serverNonJson')); return; }
+      if (!data) {
+        toast.error(t('common.serverNonJson'));
+        return;
+      }
 
       if (data.user) {
         // Update the store with the new user data
@@ -92,23 +128,6 @@ export function UserSettings() {
           address: data.user.address || null,
         });
 
-        // If password change was requested, update password separately
-        if (newPassword) {
-          const passRes = await apiFetch('/api/user/profile', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              userId: user?.id,
-              newPassword,
-            }),
-          });
-          const passData = await safeJson(passRes);
-          if (!passData) { toast.error(t('common.serverNonJson')); return; }
-          if (!passData.user) {
-            toast.error(t('auth.passwordUpdateFailed'));
-          }
-        }
-
         toast.success(t('dashboard.profileSaved'));
         setNewPassword('');
         setConfirmNewPassword('');
@@ -118,9 +137,18 @@ export function UserSettings() {
     } catch (err) {
       console.error('Profile save error:', err);
       toast.error(t('common.error'));
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+      </div>
+    );
+  }
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
