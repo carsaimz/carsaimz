@@ -15,6 +15,7 @@ import {
   LogOut,
   User,
   ChevronDown,
+  Briefcase,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -77,9 +78,8 @@ import {
 // ──────────────────────────────────────────────
 
 const LANGUAGE_FLAGS: Record<string, string> = {
-  'pt-pt': '🇲🇿',
-  'en-us': '🇺🇸',
-  'pt-br': '🇧🇷',
+  'pt-pt': '🇲🇿', 'en-us': '🇺🇸', 'pt-br': '🇧🇷',
+  'fr-fr': '🇫🇷', 'es-es': '🇪🇸', 'zh-cn': '🇨🇳', 'de-de': '🇩🇪',
 };
 
 // ──────────────────────────────────────────────
@@ -346,8 +346,21 @@ export function UserShell({ children }: { children: React.ReactNode }) {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  {canAccessAll && (
+                    <>
+                      <DropdownMenuItem onClick={() => router.push('/admin')}>
+                        <Shield className="mr-2 size-4" />
+                        {t('admin.title')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => router.push('/partner')}>
+                        <Briefcase className="mr-2 size-4" />
+                        {t('partner.title')}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
                   <DropdownMenuItem onClick={() => router.push('/home')}>
-                    ← Back to site
+                    ← {t('common.backToSite')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={logout} variant="destructive">
                     <LogOut className="mr-2 size-4" />

@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { safeGetDoc, safeGetDocs, safeCountDocs, safeQueryDocs, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { getDoc, queryDocs, getDocs, countDocs, getDocByField } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET(request: NextRequest) {
   try {
+    // Check if Firebase Admin SDK is configured
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const role = searchParams.get('role')
     const userId = searchParams.get('userId')
@@ -16,7 +26,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify the user exists and get their role
-    const user = await getDoc('users', userId)
+    const user = await safeGetDoc('users', userId)
 
     if (!user) {
       return NextResponse.json(
@@ -27,18 +37,18 @@ export async function GET(request: NextRequest) {
 
     // Resolve role name
     let roleName = 'user'
-    if (user.roleId) {
-      const roleDoc = await getDoc('roles', user.roleId)
-      if (roleDoc) roleName = roleDoc.name
+    if ((user as any).roleId) {
+      const roleDoc = await safeGetDoc('roles', (user as any).roleId)
+      if (roleDoc) roleName = (roleDoc as any).name
     }
     const effectiveRole = role || roleName
 
     // === ADMIN / SUPER_ADMIN DASHBOARD ===
     if (effectiveRole === 'admin' || effectiveRole === 'super_admin') {
-      // Fetch all data needed for admin dashboard
-      const allUsers = await getDocs('users')
-      const roles = await getDocs('roles')
-      const roleMap = new Map(roles.map(r => [r.id, r]))
+      // Fetch all data needed for admin dashboard — using safe helpers
+      const allUsers = await safeGetDocs('users')
+      const roles = await safeGetDocs('roles')
+      const roleMap = new Map(roles.map((r: any) => [r.id, r]))
 
       // Filter out super_admin users
       const nonSuperAdminUsers = allUsers.filter((u: any) => {
@@ -47,11 +57,11 @@ export async function GET(request: NextRequest) {
       })
 
       const totalUsers = nonSuperAdminUsers.length
-      const totalPosts = await countDocs('posts', [{ field: 'published', op: '==', value: true }])
-      const totalQuotes = await countDocs('quotes')
-      const totalPayments = await countDocs('payments')
-      const totalTickets = await countDocs('support_tickets')
-      const totalForumTopics = await countDocs('forum_topics')
+      const totalPosts = await safeCountDocs('posts', [{ field: 'published', op: '==', value: true }])
+      const totalQuotes = await safeCountDocs('quotes')
+      const totalPayments = await safeCountDocs('payments')
+      const totalTickets = await safeCountDocs('support_tickets')
+      const totalForumTopics = await safeCountDocs('forum_topics')
 
       // Recent users (last 5, exclude super_admin, sorted by createdAt desc)
       const recentUsersRaw = nonSuperAdminUsers
@@ -70,45 +80,45 @@ export async function GET(request: NextRequest) {
         }))
 
       // Recent quotes with user data
-      const recentQuotesRaw = await queryDocs('quotes', [], 'createdAt', 'desc', 5)
+      const recentQuotesRaw = await safeQueryDocs('quotes', [], 'createdAt', 'desc', 5)
       const recentQuotes = await Promise.all(
         recentQuotesRaw.map(async (q: any) => {
-          const quoteUser = q.userId ? await getDoc('users', q.userId) : null
+          const quoteUser = q.userId ? await safeGetDoc('users', q.userId) : null
           return serializeFirestore({
             ...q,
-            user: quoteUser ? { id: quoteUser.id, name: quoteUser.name, email: quoteUser.email } : null,
+            user: quoteUser ? { id: (quoteUser as any).id, name: (quoteUser as any).name, email: (quoteUser as any).email } : null,
           })
         })
       )
 
       // Recent payments with user and proposal data
-      const recentPaymentsRaw = await queryDocs('payments', [], 'createdAt', 'desc', 5)
+      const recentPaymentsRaw = await safeQueryDocs('payments', [], 'createdAt', 'desc', 5)
       const recentPayments = await Promise.all(
         recentPaymentsRaw.map(async (p: any) => {
-          const paymentUser = p.userId ? await getDoc('users', p.userId) : null
-          const proposal = p.proposalId ? await getDoc('proposals', p.proposalId) : null
+          const paymentUser = p.userId ? await safeGetDoc('users', p.userId) : null
+          const proposal = p.proposalId ? await safeGetDoc('proposals', p.proposalId) : null
           return serializeFirestore({
             ...p,
-            user: paymentUser ? { id: paymentUser.id, name: paymentUser.name, email: paymentUser.email } : null,
-            proposal: proposal ? { id: proposal.id, title: proposal.title } : null,
+            user: paymentUser ? { id: (paymentUser as any).id, name: (paymentUser as any).name, email: (paymentUser as any).email } : null,
+            proposal: proposal ? { id: (proposal as any).id, title: (proposal as any).title } : null,
           })
         })
       )
 
       // Recent tickets with user data
-      const recentTicketsRaw = await queryDocs('support_tickets', [], 'createdAt', 'desc', 5)
+      const recentTicketsRaw = await safeQueryDocs('support_tickets', [], 'createdAt', 'desc', 5)
       const recentTickets = await Promise.all(
         recentTicketsRaw.map(async (t: any) => {
-          const ticketUser = t.userId ? await getDoc('users', t.userId) : null
+          const ticketUser = t.userId ? await safeGetDoc('users', t.userId) : null
           return serializeFirestore({
             ...t,
-            user: ticketUser ? { id: ticketUser.id, name: ticketUser.name, email: ticketUser.email } : null,
+            user: ticketUser ? { id: (ticketUser as any).id, name: (ticketUser as any).name, email: (ticketUser as any).email } : null,
           })
         })
       )
 
       // Quote status breakdown
-      const allQuotes = await getDocs('quotes')
+      const allQuotes = await safeGetDocs('quotes')
       const quoteStatsMap: Record<string, number> = {}
       allQuotes.forEach((q: any) => {
         const status = q.status || 'pending'
@@ -117,7 +127,7 @@ export async function GET(request: NextRequest) {
       const quoteStats = Object.entries(quoteStatsMap).map(([status, count]) => ({ status, count }))
 
       // Payment status breakdown with sum
-      const allPayments = await getDocs('payments')
+      const allPayments = await safeGetDocs('payments')
       const paymentStatsMap: Record<string, { count: number; total: number }> = {}
       let confirmedRevenue = 0
       allPayments.forEach((p: any) => {
@@ -134,7 +144,7 @@ export async function GET(request: NextRequest) {
       }))
 
       // Ticket status breakdown
-      const allTickets = await getDocs('support_tickets')
+      const allTickets = await safeGetDocs('support_tickets')
       const ticketStatsMap: Record<string, number> = {}
       allTickets.forEach((t: any) => {
         const status = t.status || 'open'
@@ -143,14 +153,14 @@ export async function GET(request: NextRequest) {
       const ticketStats = Object.entries(ticketStatsMap).map(([status, count]) => ({ status, count }))
 
       // Recent published posts
-      const recentPostsRaw = await queryDocs('posts', [{ field: 'published', op: '==', value: true }], 'createdAt', 'desc', 5)
+      const recentPostsRaw = await safeQueryDocs('posts', [{ field: 'published', op: '==', value: true }], 'createdAt', 'desc', 5)
       const recentPosts = await Promise.all(
         recentPostsRaw.map(async (p: any) => {
-          const author = p.authorId ? await getDoc('users', p.authorId) : null
-          const commentCount = await countDocs('comments', [{ field: 'postId', op: '==', value: p.id }])
+          const author = p.authorId ? await safeGetDoc('users', p.authorId) : null
+          const commentCount = await safeCountDocs('comments', [{ field: 'postId', op: '==', value: p.id }])
           return serializeFirestore({
             ...p,
-            author: author ? { id: author.id, name: author.name } : null,
+            author: author ? { id: (author as any).id, name: (author as any).name } : null,
             _count: { comments: commentCount },
           })
         })
@@ -161,10 +171,10 @@ export async function GET(request: NextRequest) {
         data: {
           role: 'admin',
           user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            avatar: user.avatar,
+            id: (user as any).id,
+            name: (user as any).name,
+            email: (user as any).email,
+            avatar: (user as any).avatar,
           },
           stats: {
             totalUsers,
@@ -193,31 +203,31 @@ export async function GET(request: NextRequest) {
 
     // === PARTNER DASHBOARD ===
     if (effectiveRole === 'partner') {
-      const totalClicks = await countDocs('affiliate_clicks', [{ field: 'userId', op: '==', value: userId }])
-      const totalCommissions = await countDocs('affiliate_commissions', [{ field: 'userId', op: '==', value: userId }])
-      const pendingCommissions = await countDocs('affiliate_commissions', [
+      const totalClicks = await safeCountDocs('affiliate_clicks', [{ field: 'userId', op: '==', value: userId }])
+      const totalCommissions = await safeCountDocs('affiliate_commissions', [{ field: 'userId', op: '==', value: userId }])
+      const pendingCommissions = await safeCountDocs('affiliate_commissions', [
         { field: 'userId', op: '==', value: userId },
         { field: 'status', op: '==', value: 'pending' },
       ])
-      const approvedCommissions = await countDocs('affiliate_commissions', [
+      const approvedCommissions = await safeCountDocs('affiliate_commissions', [
         { field: 'userId', op: '==', value: userId },
         { field: 'status', op: '==', value: 'approved' },
       ])
-      const paidCommissions = await countDocs('affiliate_commissions', [
+      const paidCommissions = await safeCountDocs('affiliate_commissions', [
         { field: 'userId', op: '==', value: userId },
         { field: 'status', op: '==', value: 'paid' },
       ])
 
-      const userCommissions = await queryDocs('affiliate_commissions', [
+      const userCommissions = await safeQueryDocs('affiliate_commissions', [
         { field: 'userId', op: '==', value: userId },
       ])
       const totalCommissionAmount = userCommissions.reduce((sum: number, c: any) => sum + (c.amount || 0), 0)
 
-      const recentClicks = await queryDocs('affiliate_clicks', [
+      const recentClicks = await safeQueryDocs('affiliate_clicks', [
         { field: 'userId', op: '==', value: userId },
       ], 'createdAt', 'desc', 10)
 
-      const recentCommissions = await queryDocs('affiliate_commissions', [
+      const recentCommissions = await safeQueryDocs('affiliate_commissions', [
         { field: 'userId', op: '==', value: userId },
       ], 'createdAt', 'desc', 10)
 
@@ -226,10 +236,10 @@ export async function GET(request: NextRequest) {
         data: {
           role: 'partner',
           user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            avatar: user.avatar,
+            id: (user as any).id,
+            name: (user as any).name,
+            email: (user as any).email,
+            avatar: (user as any).avatar,
           },
           stats: {
             totalClicks,
@@ -248,13 +258,13 @@ export async function GET(request: NextRequest) {
     }
 
     // === USER DASHBOARD ===
-    const userQuotesRaw = await queryDocs('quotes', [
+    const userQuotesRaw = await safeQueryDocs('quotes', [
       { field: 'userId', op: '==', value: userId },
     ], 'createdAt', 'desc', 5)
 
     const userQuotes = await Promise.all(
       userQuotesRaw.map(async (q: any) => {
-        const proposals = await queryDocs('proposals', [
+        const proposals = await safeQueryDocs('proposals', [
           { field: 'quoteId', op: '==', value: q.id },
         ])
         return serializeFirestore({
@@ -269,31 +279,31 @@ export async function GET(request: NextRequest) {
       })
     )
 
-    const userPaymentsRaw = await queryDocs('payments', [
+    const userPaymentsRaw = await safeQueryDocs('payments', [
       { field: 'userId', op: '==', value: userId },
     ], 'createdAt', 'desc', 5)
 
     const userPayments = await Promise.all(
       userPaymentsRaw.map(async (p: any) => {
-        const proposal = p.proposalId ? await getDoc('proposals', p.proposalId) : null
+        const proposal = p.proposalId ? await safeGetDoc('proposals', p.proposalId) : null
         return serializeFirestore({
           ...p,
           proposal: proposal ? {
-            id: proposal.id,
-            title: proposal.title,
-            totalAmount: proposal.totalAmount,
+            id: (proposal as any).id,
+            title: (proposal as any).title,
+            totalAmount: (proposal as any).totalAmount,
           } : null,
         })
       })
     )
 
-    const userTicketsRaw = await queryDocs('support_tickets', [
+    const userTicketsRaw = await safeQueryDocs('support_tickets', [
       { field: 'userId', op: '==', value: userId },
     ], 'createdAt', 'desc', 5)
 
     const userTickets = await Promise.all(
       userTicketsRaw.map(async (t: any) => {
-        const replyCount = await countDocs('ticket_replies', [{ field: 'ticketId', op: '==', value: t.id }])
+        const replyCount = await safeCountDocs('ticket_replies', [{ field: 'ticketId', op: '==', value: t.id }])
         return serializeFirestore({
           ...t,
           _count: { replies: replyCount },
@@ -301,15 +311,15 @@ export async function GET(request: NextRequest) {
       })
     )
 
-    const userNotifications = await queryDocs('notifications', [
+    const userNotifications = await safeQueryDocs('notifications', [
       { field: 'userId', op: '==', value: userId },
       { field: 'isRead', op: '==', value: false },
     ], 'createdAt', 'desc', 10)
 
-    const quoteCount = await countDocs('quotes', [{ field: 'userId', op: '==', value: userId }])
-    const paymentCount = await countDocs('payments', [{ field: 'userId', op: '==', value: userId }])
-    const ticketCount = await countDocs('support_tickets', [{ field: 'userId', op: '==', value: userId }])
-    const unreadNotifications = await countDocs('notifications', [
+    const quoteCount = await safeCountDocs('quotes', [{ field: 'userId', op: '==', value: userId }])
+    const paymentCount = await safeCountDocs('payments', [{ field: 'userId', op: '==', value: userId }])
+    const ticketCount = await safeCountDocs('support_tickets', [{ field: 'userId', op: '==', value: userId }])
+    const unreadNotifications = await safeCountDocs('notifications', [
       { field: 'userId', op: '==', value: userId },
       { field: 'isRead', op: '==', value: false },
     ])
@@ -319,11 +329,11 @@ export async function GET(request: NextRequest) {
       data: {
         role: 'user',
         user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar,
-          phone: user.phone,
+          id: (user as any).id,
+          name: (user as any).name,
+          email: (user as any).email,
+          avatar: (user as any).avatar,
+          phone: (user as any).phone,
         },
         stats: {
           totalQuotes: quoteCount,

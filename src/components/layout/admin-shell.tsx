@@ -18,6 +18,7 @@ import {
   UserCircle, ClipboardList, CreditCard, Headphones,
   // Partner menu icons
   Link2, Percent, Banknote, Wallet,
+  Briefcase,
 } from 'lucide-react';
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
@@ -35,6 +36,7 @@ import Link from 'next/link';
 
 const LANGUAGE_FLAGS: Record<string, string> = {
   'pt-pt': '🇲🇿', 'en-us': '🇺🇸', 'pt-br': '🇧🇷',
+  'fr-fr': '🇫🇷', 'es-es': '🇪🇸', 'zh-cn': '🇨🇳', 'de-de': '🇩🇪',
 };
 
 interface SidebarLink { path: string; labelKey: string; icon: React.ComponentType<{ className?: string }> }
@@ -212,7 +214,20 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" className="gap-1 h-7"><Avatar className="size-5"><AvatarFallback className="text-xs">{initials}</AvatarFallback></Avatar><ChevronDown className="size-3 opacity-50" /></Button></DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel><div className="flex flex-col"><span>{user?.name}</span><span className="text-xs text-muted-foreground">{user?.email}</span></div></DropdownMenuLabel><DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => router.push('/home')}>← Back to site</DropdownMenuItem>
+                  {isPrivileged && (
+                    <>
+                      <DropdownMenuItem onClick={() => router.push('/user')}>
+                        <UserCircle className="mr-2 size-4" />
+                        {t('dashboard.title')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => router.push('/partner')}>
+                        <Briefcase className="mr-2 size-4" />
+                        {t('partner.title')}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  <DropdownMenuItem onClick={() => router.push('/home')}>← {t('common.backToSite')}</DropdownMenuItem>
                   <DropdownMenuItem onClick={logout} variant="destructive"><LogOut className="mr-2 size-4" />{t('auth.logout')}</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

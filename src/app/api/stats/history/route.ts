@@ -1,24 +1,33 @@
 import { NextResponse } from 'next/server'
-import { queryDocs, getDocs, countDocs } from '@/lib/db'
+import { safeQueryDocs, safeGetDocs, safeCountDocs, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET() {
   try {
+    // Check if Firebase Admin SDK is configured
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
     // Get all confirmed payments ordered by date for revenue history
-    const payments = await queryDocs('payments', [
+    const payments = await safeQueryDocs('payments', [
       { field: 'status', op: '==', value: 'confirmed' },
     ], 'createdAt', 'asc')
 
     // Get all users ordered by date for growth history
-    const users = await queryDocs('users', [], 'createdAt', 'asc')
+    const users = await safeQueryDocs('users', [], 'createdAt', 'asc')
 
     // Get all categories
-    const categories = await getDocs('categories')
+    const categories = await safeGetDocs('categories')
 
     // Count posts per category
     const categoriesWithCount = await Promise.all(
       categories.map(async (cat: any) => {
-        const postCount = await countDocs('posts', [
+        const postCount = await safeCountDocs('posts', [
           { field: 'categoryId', op: '==', value: cat.id },
         ])
         return { ...cat, _count: { posts: postCount } }

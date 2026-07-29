@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb, getDocs, getDoc, deleteDoc, countDocs } from '@/lib/db'
+import { safeCountDocs, safeGetDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
+import { getDoc, deleteDoc, countDocs, getDocs } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 
 // Known Firestore collections (from the db.ts schema)
@@ -19,6 +20,15 @@ const KNOWN_COLLECTIONS = [
 // GET — list collections, browse documents, or view a single document
 export async function GET(request: NextRequest) {
   try {
+    // Check if Firebase Admin SDK is configured
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const collectionName = searchParams.get('collection')
     const docId = searchParams.get('docId')
@@ -27,7 +37,7 @@ export async function GET(request: NextRequest) {
 
     // ── Get a single document ──
     if (collectionName && docId) {
-      const doc = await getDoc(collectionName, docId)
+      const doc = await safeGetDoc(collectionName, docId)
       if (!doc) {
         return NextResponse.json(
           { success: false, message: 'Document not found' },
@@ -39,7 +49,7 @@ export async function GET(request: NextRequest) {
 
     // ── Get documents in a collection (paginated) ──
     if (collectionName) {
-      const allDocs = await getDocs(collectionName)
+      const allDocs = await safeGetDocs(collectionName)
       const total = allDocs.length
       const start = (page - 1) * limit
       const paginatedDocs = allDocs.slice(start, start + limit)
@@ -60,27 +70,19 @@ export async function GET(request: NextRequest) {
     const collections: Array<{ name: string; count: number }> = []
 
     for (const name of KNOWN_COLLECTIONS) {
-      try {
-        const count = await countDocs(name)
-        collections.push({ name, count })
-      } catch {
-        // Collection might not exist yet — count as 0
-        collections.push({ name, count: 0 })
-      }
+      const count = await safeCountDocs(name)
+      collections.push({ name, count })
     }
 
     // Also try to discover any additional collections via listCollections
     try {
+      const { getDb } = await import('@/lib/db')
       const db = getDb()
       const existingCollections = await db.listCollections()
       for (const col of existingCollections) {
         if (!KNOWN_COLLECTIONS.includes(col.id)) {
-          try {
-            const count = await countDocs(col.id)
-            collections.push({ name: col.id, count })
-          } catch {
-            collections.push({ name: col.id, count: 0 })
-          }
+          const count = await safeCountDocs(col.id)
+          collections.push({ name: col.id, count })
         }
       }
     } catch {
@@ -97,7 +99,11 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('DB Manager GET error:', error)
     return NextResponse.json(
-      { success: false, message: 'Failed to fetch data' },
+      {
+        success: false,
+        message: 'Failed to fetch data',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
     )
   }
@@ -106,6 +112,15 @@ export async function GET(request: NextRequest) {
 // DELETE — delete a document
 export async function DELETE(request: NextRequest) {
   try {
+    // Check if Firebase Admin SDK is configured
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const collectionName = searchParams.get('collection')
     const docId = searchParams.get('docId')
@@ -118,7 +133,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Verify document exists
-    const doc = await getDoc(collectionName, docId)
+    const doc = await safeGetDoc(collectionName, docId)
     if (!doc) {
       return NextResponse.json(
         { success: false, message: 'Document not found' },
@@ -131,7 +146,11 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error('DB Manager DELETE error:', error)
     return NextResponse.json(
-      { success: false, message: 'Failed to delete document' },
+      {
+        success: false,
+        message: 'Failed to delete document',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
     )
   }

@@ -1,14 +1,22 @@
 import { NextResponse } from 'next/server'
-import { countDocs, getDocs, queryDocs } from '@/lib/db'
+import { safeCountDocs, safeGetDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET() {
   try {
-    // Total counts — Firestore doesn't support relation-based filtering,
-    // so we filter in JS where needed
-    const allUsers = await getDocs('users')
-    const roles = await getDocs('roles')
-    const roleMap = new Map(roles.map(r => [r.id, r]))
+    // Check if Firebase Admin SDK is configured
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
+    // Total counts — each wrapped in safe helpers
+    const allUsers = await safeGetDocs('users')
+    const roles = await safeGetDocs('roles')
+    const roleMap = new Map(roles.map((r: any) => [r.id, r]))
 
     // Exclude super_admin from user count
     const nonSuperAdminUsers = allUsers.filter((u: any) => {
@@ -17,17 +25,17 @@ export async function GET() {
     })
 
     const totalUsers = nonSuperAdminUsers.length
-    const totalPosts = await countDocs('posts', [{ field: 'published', op: '==', value: true }])
-    const totalProjects = await countDocs('projects', [{ field: 'isPublished', op: '==', value: true }])
-    const totalServices = await countDocs('services', [{ field: 'isPublished', op: '==', value: true }])
-    const totalForumTopics = await countDocs('forum_topics')
-    const totalTestimonials = await countDocs('testimonials', [{ field: 'isPublished', op: '==', value: true }])
-    const totalNotifications = await countDocs('notifications')
-    const totalCategories = await countDocs('categories')
-    const totalTags = await countDocs('tags')
+    const totalPosts = await safeCountDocs('posts', [{ field: 'published', op: '==', value: true }])
+    const totalProjects = await safeCountDocs('projects', [{ field: 'isPublished', op: '==', value: true }])
+    const totalServices = await safeCountDocs('services', [{ field: 'isPublished', op: '==', value: true }])
+    const totalForumTopics = await safeCountDocs('forum_topics')
+    const totalTestimonials = await safeCountDocs('testimonials', [{ field: 'isPublished', op: '==', value: true }])
+    const totalNotifications = await safeCountDocs('notifications')
+    const totalCategories = await safeCountDocs('categories')
+    const totalTags = await safeCountDocs('tags')
 
     // Revenue stats (from payments)
-    const payments = await getDocs('payments')
+    const payments = await safeGetDocs('payments')
     const totalRevenue = payments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0)
     const confirmedPayments = payments.filter((p: any) => p.status === 'confirmed')
     const confirmedRevenue = confirmedPayments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0)
@@ -57,25 +65,25 @@ export async function GET() {
     const activeUsers = nonSuperAdminUsers.filter((u: any) => u.isActive).length
 
     // Unread notifications
-    const unreadNotifications = await countDocs('notifications', [{ field: 'isRead', op: '==', value: false }])
+    const unreadNotifications = await safeCountDocs('notifications', [{ field: 'isRead', op: '==', value: false }])
 
     // Featured projects & services
-    const featuredProjects = await countDocs('projects', [
+    const featuredProjects = await safeCountDocs('projects', [
       { field: 'isFeatured', op: '==', value: true },
       { field: 'isPublished', op: '==', value: true },
     ])
-    const featuredServices = await countDocs('services', [
+    const featuredServices = await safeCountDocs('services', [
       { field: 'isFeatured', op: '==', value: true },
       { field: 'isPublished', op: '==', value: true },
     ])
 
     // Forum activity
-    const pinnedTopics = await countDocs('forum_topics', [{ field: 'isPinned', op: '==', value: true }])
-    const resolvedTopics = await countDocs('forum_topics', [{ field: 'isResolved', op: '==', value: true }])
+    const pinnedTopics = await safeCountDocs('forum_topics', [{ field: 'isPinned', op: '==', value: true }])
+    const resolvedTopics = await safeCountDocs('forum_topics', [{ field: 'isResolved', op: '==', value: true }])
 
     // Support tickets
-    const openTickets = await countDocs('support_tickets', [{ field: 'status', op: '==', value: 'open' }])
-    const totalTickets = await countDocs('support_tickets')
+    const openTickets = await safeCountDocs('support_tickets', [{ field: 'status', op: '==', value: 'open' }])
+    const totalTickets = await safeCountDocs('support_tickets')
 
     // Recent activity
     const recentPosts = totalPosts

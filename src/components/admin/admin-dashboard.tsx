@@ -62,7 +62,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } },
 };
 
 // ── Chart Colors (Emerald theme) ──
@@ -86,6 +86,25 @@ interface StatsData {
     partners: number;
     regular: number;
   };
+  content?: {
+    publishedPosts: number;
+    categories: number;
+    tags: number;
+    recentPosts: number;
+  };
+  projects?: {
+    total: number;
+    featured: number;
+  };
+  services?: {
+    total: number;
+    featured: number;
+  };
+  forum?: {
+    topics: number;
+    pinned: number;
+    resolved: number;
+  };
   payments: {
     total: number;
     totalRevenue: number;
@@ -93,6 +112,14 @@ interface StatsData {
     mpesa: number;
     transfer: number;
     deposit: number;
+  };
+  notifications?: {
+    total: number;
+    unread: number;
+  };
+  support?: {
+    totalTickets: number;
+    openTickets: number;
   };
 }
 

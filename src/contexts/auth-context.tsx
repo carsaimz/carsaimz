@@ -6,8 +6,23 @@ import {
   type User,
   type AuthProvider as AuthProviderType,
   type AuthResult,
+  type UserRole,
 } from '@/lib/store';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
+
+/**
+ * Resolve role from server API response.
+ * Server returns role as either:
+ *   - A string: 'admin', 'super_admin', 'partner', 'user'
+ *   - An object: { id: 'xxx', name: 'super_admin' }
+ *   - null/undefined (fallback to 'user')
+ * This MUST match the mapRole logic in store.ts.
+ */
+function resolveRole(roleData: any): UserRole {
+  if (typeof roleData === 'string') return roleData as UserRole;
+  if (roleData && typeof roleData === 'object' && roleData.name) return roleData.name as UserRole;
+  return 'user';
+}
 
 // ──────────────────────────────────────────────
 // Context Interface
@@ -86,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (!data) return;
 
             if (data.user) {
-              const userRole = data.user.role || 'user';
+              const userRole = resolveRole(data.user.role);
               const user: User = {
                 id: data.user.id || result.user.uid,
                 name: data.user.name || result.user.displayName || 'Utilizador',
@@ -118,11 +133,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             if (userSnap.exists()) {
               const profile = userSnap.data();
+              // Resolve role from roleId reference — look up roles collection
+              let resolvedRole: UserRole = 'user';
+              try {
+                const rolesRef = collection(firestoreClient, 'roles');
+                if (profile.roleId) {
+                  const roleDocRef = doc(firestoreClient, 'roles', profile.roleId);
+                  const roleSnap = await getDoc(roleDocRef);
+                  if (roleSnap.exists()) resolvedRole = (roleSnap.data().name as UserRole) || 'user';
+                }
+              } catch {}
               const user: User = {
                 id: uid,
                 name: profile.name || result.user.displayName || 'Utilizador',
                 email: profile.email || result.user.email,
-                role: profile.roleId ? 'user' : 'user',
+                role: resolvedRole,
                 avatar: profile.avatar || result.user.photoURL || null,
                 phone: profile.phone || result.user.phoneNumber || null,
                 authProvider: (result.user.providerData[0]?.providerId as AuthProviderType) || 'unknown',
@@ -231,7 +256,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   if (!data) return;
 
                   if (data.user) {
-                    const userRole = data.user.role || 'user';
+                    const userRole = resolveRole(data.user.role);
                     const user: User = {
                       id: data.user.id || firebaseUser.uid,
                       name: data.user.name || firebaseUser.displayName || 'Utilizador',
@@ -264,11 +289,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                     if (userSnap.exists()) {
                       const profile = userSnap.data();
+                      // Resolve role from roleId reference
+                      let resolvedRole: UserRole = 'user';
+                      try {
+                        if (profile.roleId) {
+                          const roleDocRef = doc(firestoreClient, 'roles', profile.roleId);
+                          const roleSnap = await getDoc(roleDocRef);
+                          if (roleSnap.exists()) resolvedRole = (roleSnap.data().name as UserRole) || 'user';
+                        }
+                      } catch {}
                       const user: User = {
                         id: uid,
                         name: profile.name || firebaseUser.displayName || 'Utilizador',
                         email: profile.email || firebaseUser.email,
-                        role: 'user',
+                        role: resolvedRole,
                         avatar: profile.avatar || firebaseUser.photoURL || null,
                         phone: profile.phone || firebaseUser.phoneNumber || null,
                         authProvider: (firebaseUser.providerData[0]?.providerId as AuthProviderType) || 'unknown',
