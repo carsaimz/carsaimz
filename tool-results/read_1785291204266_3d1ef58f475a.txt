@@ -599,232 +599,301 @@
    599→
    600→          const idToken = await credential.user.getIdToken()
    601→
-   602→          // Send to server to create Firestore profile
-   603→          const res = await fetch(buildApiUrl('/api/auth/register'), {
-   604→            method: 'POST',
-   605→            headers: { 'Content-Type': 'application/json' },
-   606→            body: JSON.stringify({ name, email, phone }),
-   607→          })
-   608→
-   609→          const data = await res.json()
+   602→          // Try server API first to create Firestore profile
+   603→          let serverProfileCreated = false
+   604→          try {
+   605→            const res = await fetch(buildApiUrl('/api/auth/register'), {
+   606→              method: 'POST',
+   607→              headers: { 'Content-Type': 'application/json' },
+   608→              body: JSON.stringify({ name, email, phone }),
+   609→            })
    610→
-   611→          if (data.user) {
-   612→            const userRole = mapRole(data.user.role)
-   613→            const user: User = {
-   614→              id: data.user.id || credential.user.uid,
-   615→              name: data.user.name || name,
-   616→              email: data.user.email || email,
-   617→              role: userRole,
-   618→              avatar: null,
-   619→              phone: data.user.phone || phone || null,
-   620→              authProvider: 'email',
-   621→              isAnonymous: false,
-   622→              emailVerified: false,
-   623→            }
-   624→            setUserInStore(set, user)
-   625→            set({ idToken, lastRegisterError: null })
-   626→            return { success: true, user }
-   627→          } else {
-   628→            // Firebase Auth user was created but Firestore profile failed
-   629→            // Still set the user with basic info
-   630→            const user: User = {
-   631→              id: credential.user.uid,
-   632→              name: name,
-   633→              email: email,
-   634→              role: 'user',
-   635→              avatar: null,
-   636→              authProvider: 'email',
-   637→              isAnonymous: false,
-   638→              emailVerified: false,
-   639→            }
-   640→            setUserInStore(set, user)
-   641→            set({ idToken })
-   642→            return { success: true, user }
-   643→          }
-   644→        } catch (err: any) {
-   645→          console.error('Register error:', err)
-   646→          let errorMsg = 'Falha ao criar conta.'
-   647→
-   648→          if (err.code === 'auth/email-already-in-use') {
-   649→            errorMsg = 'Este email já está registado.'
-   650→          } else if (err.code === 'auth/weak-password') {
-   651→            errorMsg = 'Senha demasiado fraca. Use pelo menos 6 caracteres.'
-   652→          } else if (err.code === 'auth/invalid-email') {
-   653→            errorMsg = 'Email inválido.'
-   654→          } else if (err.message?.includes('not configured')) {
-   655→            errorMsg = 'Firebase não configurado. Contacte o administrador.'
-   656→          }
-   657→
-   658→          set({ isLoading: false, lastRegisterError: errorMsg })
-   659→          return { success: false, error: errorMsg }
-   660→        }
-   661→      },
-   662→
-   663→      logout: async () => {
-   664→        try {
-   665→          if (shouldUseNativeAuth()) {
-   666→            await nativeSignOut()
-   667→          } else {
-   668→            const { signOut, auth } = await getFirebaseAuth()
-   669→            await signOut(auth)
-   670→          }
-   671→        } catch (err) {
-   672→          console.warn('Firebase signOut failed (non-critical):', err)
-   673→        }
-   674→
-   675→        set({
-   676→          user: null,
-   677→          isAuthenticated: false,
-   678→          isAdmin: false,
-   679→          isPartner: false,
-   680→          isUser: false,
-   681→          isSuperAdmin: false,
-   682→          idToken: null,
-   683→          phoneVerificationId: null,
-   684→          lastLoginError: null,
-   685→          lastRegisterError: null,
-   686→        })
-   687→      },
-   688→
-   689→      setUser: (user: User) => {
-   690→        setUserInStore(set, user)
-   691→      },
-   692→
-   693→      updateAvatar: (avatar: string) => {
-   694→        const currentUser = get().user
-   695→        if (currentUser) {
-   696→          set({ user: { ...currentUser, avatar } })
-   697→        }
-   698→      },
-   699→
-   700→      setIdToken: (token: string) => {
-   701→        set({ idToken: token })
-   702→      },
-   703→    }),
-   704→    {
-   705→      name: 'carsai-auth',
-   706→      partialize: (state) => ({
-   707→        user: state.user,
-   708→        isAuthenticated: state.isAuthenticated,
-   709→        isAdmin: state.isAdmin,
-   710→        isPartner: state.isPartner,
-   711→        isUser: state.isUser,
-   712→        isSuperAdmin: state.isSuperAdmin,
-   713→        idToken: state.idToken,
-   714→      }),
-   715→      onRehydrateStorage: () => (state) => {
-   716→        if (state) {
-   717→          state.hasHydrated = true
-   718→        }
-   719→      },
-   720→    }
-   721→  )
-   722→)
-   723→
-   724→// ──────────────────────────────────────────────
-   725→// Notification Store
-   726→// ──────────────────────────────────────────────
-   727→
-   728→interface NotificationState {
-   729→  notifications: Notification[]
-   730→  unreadCount: number
-   731→  addNotification: (type: NotificationType, title: string, message: string) => void
-   732→  markAsRead: (id: string) => void
-   733→  markAllAsRead: () => void
-   734→  removeNotification: (id: string) => void
-   735→  clearAll: () => void
-   736→}
-   737→
-   738→export const useNotificationStore = create<NotificationState>((set, get) => ({
-   739→  notifications: [],
-   740→  unreadCount: 0,
-   741→
-   742→  addNotification: (type: NotificationType, title: string, message: string) => {
-   743→    const id = `notif-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
-   744→    const newNotification: Notification = {
-   745→      id,
-   746→      type,
-   747→      title,
-   748→      message,
-   749→      read: false,
-   750→      createdAt: new Date(),
-   751→    }
-   752→    const updated = [newNotification, ...get().notifications]
-   753→    set({
-   754→      notifications: updated,
-   755→      unreadCount: updated.filter((n) => !n.read).length,
-   756→    })
-   757→  },
-   758→
-   759→  markAsRead: (id: string) => {
-   760→    const updated = get().notifications.map((n) =>
-   761→      n.id === id ? { ...n, read: true } : n
-   762→    )
-   763→    set({
-   764→      notifications: updated,
-   765→      unreadCount: updated.filter((n) => !n.read).length,
-   766→    })
-   767→  },
+   611→            // Check if response is JSON (not HTML from static export)
+   612→            const contentType = res.headers.get('content-type') || ''
+   613→            if (contentType.includes('application/json')) {
+   614→              const data = await res.json()
+   615→
+   616→              if (data.user) {
+   617→                const userRole = mapRole(data.user.role)
+   618→                const user: User = {
+   619→                  id: data.user.id || credential.user.uid,
+   620→                  name: data.user.name || name,
+   621→                  email: data.user.email || email,
+   622→                  role: userRole,
+   623→                  avatar: null,
+   624→                  phone: data.user.phone || phone || null,
+   625→                  authProvider: 'email',
+   626→                  isAnonymous: false,
+   627→                  emailVerified: false,
+   628→                }
+   629→                setUserInStore(set, user)
+   630→                set({ idToken, lastRegisterError: null })
+   631→                return { success: true, user }
+   632→              }
+   633→            }
+   634→            // If not JSON or no user data, fall through to client-side Firestore
+   635→          } catch (apiErr) {
+   636→            console.warn('[Auth] Server API unavailable for registration, falling back to client-side Firestore:', apiErr)
+   637→          }
+   638→
+   639→          // Fallback: Create Firestore profile directly using client SDK
+   640→          if (!serverProfileCreated) {
+   641→            try {
+   642→              const { firestoreClient } = await import('@/lib/firebase-client')
+   643→              if (firestoreClient) {
+   644→                const { doc, setDoc, getDoc, getDocs, collection, query, where } = await import('firebase/firestore')
+   645→                const uid = credential.user.uid
+   646→
+   647→                // Find the "user" role
+   648→                let roleId: string | null = null
+   649→                try {
+   650→                  const rolesRef = collection(firestoreClient, 'roles')
+   651→                  const q = query(rolesRef, where('name', '==', 'user'))
+   652→                  const roleSnap = await getDocs(q)
+   653→                  if (!roleSnap.empty) {
+   654→                    roleId = roleSnap.docs[0].id
+   655→                  }
+   656→                } catch (e) {
+   657→                  console.warn('[Auth] Could not find user role:', e)
+   658→                }
+   659→
+   660→                // Create user profile in Firestore
+   661→                const userRef = doc(firestoreClient, 'users', uid)
+   662→                await setDoc(userRef, {
+   663→                  name: name || email.split('@')[0],
+   664→                  email: email.toLowerCase().trim(),
+   665→                  phone: phone || null,
+   666→                  company: null,
+   667→                  avatar: null,
+   668→                  bio: null,
+   669→                  address: null,
+   670→                  roleId: roleId,
+   671→                  isActive: true,
+   672→                  emailVerified: false,
+   673→                  authProvider: 'email',
+   674→                  createdAt: new Date(),
+   675→                  updatedAt: new Date(),
+   676→                })
+   677→
+   678→                const user: User = {
+   679→                  id: uid,
+   680→                  name: name,
+   681→                  email: email,
+   682→                  role: 'user',
+   683→                  avatar: null,
+   684→                  phone: phone || null,
+   685→                  authProvider: 'email',
+   686→                  isAnonymous: false,
+   687→                  emailVerified: false,
+   688→                }
+   689→                setUserInStore(set, user)
+   690→                set({ idToken, lastRegisterError: null })
+   691→                return { success: true, user }
+   692→              }
+   693→            } catch (fsErr) {
+   694→              console.error('[Auth] Client-side Firestore profile creation failed:', fsErr)
+   695→            }
+   696→          }
+   697→
+   698→          // Last resort: Firebase Auth user was created but Firestore profile failed
+   699→          // Still set the user with basic info so the UI works
+   700→          const user: User = {
+   701→            id: credential.user.uid,
+   702→            name: name,
+   703→            email: email,
+   704→            role: 'user',
+   705→            avatar: null,
+   706→            authProvider: 'email',
+   707→            isAnonymous: false,
+   708→            emailVerified: false,
+   709→          }
+   710→          setUserInStore(set, user)
+   711→          set({ idToken })
+   712→          return { success: true, user }
+   713→        } catch (err: any) {
+   714→          console.error('Register error:', err)
+   715→          let errorMsg = 'Falha ao criar conta.'
+   716→
+   717→          if (err.code === 'auth/email-already-in-use') {
+   718→            errorMsg = 'Este email já está registado.'
+   719→          } else if (err.code === 'auth/weak-password') {
+   720→            errorMsg = 'Senha demasiado fraca. Use pelo menos 6 caracteres.'
+   721→          } else if (err.code === 'auth/invalid-email') {
+   722→            errorMsg = 'Email inválido.'
+   723→          } else if (err.message?.includes('not configured')) {
+   724→            errorMsg = 'Firebase não configurado. Contacte o administrador.'
+   725→          }
+   726→
+   727→          set({ isLoading: false, lastRegisterError: errorMsg })
+   728→          return { success: false, error: errorMsg }
+   729→        }
+   730→      },
+   731→
+   732→      logout: async () => {
+   733→        try {
+   734→          if (shouldUseNativeAuth()) {
+   735→            await nativeSignOut()
+   736→          } else {
+   737→            const { signOut, auth } = await getFirebaseAuth()
+   738→            await signOut(auth)
+   739→          }
+   740→        } catch (err) {
+   741→          console.warn('Firebase signOut failed (non-critical):', err)
+   742→        }
+   743→
+   744→        set({
+   745→          user: null,
+   746→          isAuthenticated: false,
+   747→          isAdmin: false,
+   748→          isPartner: false,
+   749→          isUser: false,
+   750→          isSuperAdmin: false,
+   751→          idToken: null,
+   752→          phoneVerificationId: null,
+   753→          lastLoginError: null,
+   754→          lastRegisterError: null,
+   755→        })
+   756→      },
+   757→
+   758→      setUser: (user: User) => {
+   759→        setUserInStore(set, user)
+   760→      },
+   761→
+   762→      updateAvatar: (avatar: string) => {
+   763→        const currentUser = get().user
+   764→        if (currentUser) {
+   765→          set({ user: { ...currentUser, avatar } })
+   766→        }
+   767→      },
    768→
-   769→  markAllAsRead: () => {
-   770→    const updated = get().notifications.map((n) => ({ ...n, read: true }))
-   771→    set({
-   772→      notifications: updated,
-   773→      unreadCount: 0,
-   774→    })
-   775→  },
-   776→
-   777→  removeNotification: (id: string) => {
-   778→    const updated = get().notifications.filter((n) => n.id !== id)
-   779→    set({
-   780→      notifications: updated,
-   781→      unreadCount: updated.filter((n) => !n.read).length,
-   782→    })
-   783→  },
-   784→
-   785→  clearAll: () => {
-   786→    set({ notifications: [], unreadCount: 0 })
-   787→  },
-   788→}))
-   789→
-   790→// ──────────────────────────────────────────────
-   791→// App Store
-   792→// ──────────────────────────────────────────────
-   793→
-   794→interface AppState {
-   795→  currentView: AppView
-   796→  sidebarOpen: boolean
-   797→  searchQuery: string
-   798→  searchOpen: boolean
-   799→  language: Language
-   800→  selectedPostSlug: string | null
-   801→  selectedTopicSlug: string | null
-   802→  setCurrentView: (view: AppView) => void
-   803→  setSidebarOpen: (open: boolean) => void
-   804→  toggleSidebar: () => void
-   805→  setSearchQuery: (query: string) => void
-   806→  setSearchOpen: (open: boolean) => void
-   807→  setLanguage: (language: Language) => void
-   808→  setSelectedPostSlug: (slug: string | null) => void
-   809→  setSelectedTopicSlug: (slug: string | null) => void
-   810→}
-   811→
-   812→export const useAppStore = create<AppState>((set, get) => ({
-   813→  currentView: 'home',
-   814→  sidebarOpen: true,
-   815→  searchQuery: '',
-   816→  searchOpen: false,
-   817→  language: 'pt',
-   818→  selectedPostSlug: null,
-   819→  selectedTopicSlug: null,
-   820→
-   821→  setCurrentView: (view: AppView) => set({ currentView: view }),
-   822→  setSidebarOpen: (open: boolean) => set({ sidebarOpen: open }),
-   823→  toggleSidebar: () => set({ sidebarOpen: !get().sidebarOpen }),
-   824→  setSearchQuery: (query: string) => set({ searchQuery: query }),
-   825→  setSearchOpen: (open: boolean) => set({ searchOpen: open }),
-   826→  setLanguage: (language: Language) => set({ language }),
-   827→  setSelectedPostSlug: (slug: string | null) => set({ selectedPostSlug: slug }),
-   828→  setSelectedTopicSlug: (slug: string | null) => set({ selectedTopicSlug: slug }),
-   829→}))
-   830→
+   769→      setIdToken: (token: string) => {
+   770→        set({ idToken: token })
+   771→      },
+   772→    }),
+   773→    {
+   774→      name: 'carsai-auth',
+   775→      partialize: (state) => ({
+   776→        user: state.user,
+   777→        isAuthenticated: state.isAuthenticated,
+   778→        isAdmin: state.isAdmin,
+   779→        isPartner: state.isPartner,
+   780→        isUser: state.isUser,
+   781→        isSuperAdmin: state.isSuperAdmin,
+   782→        idToken: state.idToken,
+   783→      }),
+   784→      onRehydrateStorage: () => (state) => {
+   785→        if (state) {
+   786→          state.hasHydrated = true
+   787→        }
+   788→      },
+   789→    }
+   790→  )
+   791→)
+   792→
+   793→// ──────────────────────────────────────────────
+   794→// Notification Store
+   795→// ──────────────────────────────────────────────
+   796→
+   797→interface NotificationState {
+   798→  notifications: Notification[]
+   799→  unreadCount: number
+   800→  addNotification: (type: NotificationType, title: string, message: string) => void
+   801→  markAsRead: (id: string) => void
+   802→  markAllAsRead: () => void
+   803→  removeNotification: (id: string) => void
+   804→  clearAll: () => void
+   805→}
+   806→
+   807→export const useNotificationStore = create<NotificationState>((set, get) => ({
+   808→  notifications: [],
+   809→  unreadCount: 0,
+   810→
+   811→  addNotification: (type: NotificationType, title: string, message: string) => {
+   812→    const id = `notif-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+   813→    const newNotification: Notification = {
+   814→      id,
+   815→      type,
+   816→      title,
+   817→      message,
+   818→      read: false,
+   819→      createdAt: new Date(),
+   820→    }
+   821→    const updated = [newNotification, ...get().notifications]
+   822→    set({
+   823→      notifications: updated,
+   824→      unreadCount: updated.filter((n) => !n.read).length,
+   825→    })
+   826→  },
+   827→
+   828→  markAsRead: (id: string) => {
+   829→    const updated = get().notifications.map((n) =>
+   830→      n.id === id ? { ...n, read: true } : n
+   831→    )
+   832→    set({
+   833→      notifications: updated,
+   834→      unreadCount: updated.filter((n) => !n.read).length,
+   835→    })
+   836→  },
+   837→
+   838→  markAllAsRead: () => {
+   839→    const updated = get().notifications.map((n) => ({ ...n, read: true }))
+   840→    set({
+   841→      notifications: updated,
+   842→      unreadCount: 0,
+   843→    })
+   844→  },
+   845→
+   846→  removeNotification: (id: string) => {
+   847→    const updated = get().notifications.filter((n) => n.id !== id)
+   848→    set({
+   849→      notifications: updated,
+   850→      unreadCount: updated.filter((n) => !n.read).length,
+   851→    })
+   852→  },
+   853→
+   854→  clearAll: () => {
+   855→    set({ notifications: [], unreadCount: 0 })
+   856→  },
+   857→}))
+   858→
+   859→// ──────────────────────────────────────────────
+   860→// App Store
+   861→// ──────────────────────────────────────────────
+   862→
+   863→interface AppState {
+   864→  currentView: AppView
+   865→  sidebarOpen: boolean
+   866→  searchQuery: string
+   867→  searchOpen: boolean
+   868→  language: Language
+   869→  selectedPostSlug: string | null
+   870→  selectedTopicSlug: string | null
+   871→  setCurrentView: (view: AppView) => void
+   872→  setSidebarOpen: (open: boolean) => void
+   873→  toggleSidebar: () => void
+   874→  setSearchQuery: (query: string) => void
+   875→  setSearchOpen: (open: boolean) => void
+   876→  setLanguage: (language: Language) => void
+   877→  setSelectedPostSlug: (slug: string | null) => void
+   878→  setSelectedTopicSlug: (slug: string | null) => void
+   879→}
+   880→
+   881→export const useAppStore = create<AppState>((set, get) => ({
+   882→  currentView: 'home',
+   883→  sidebarOpen: true,
+   884→  searchQuery: '',
+   885→  searchOpen: false,
+   886→  language: 'pt',
+   887→  selectedPostSlug: null,
+   888→  selectedTopicSlug: null,
+   889→
+   890→  setCurrentView: (view: AppView) => set({ currentView: view }),
+   891→  setSidebarOpen: (open: boolean) => set({ sidebarOpen: open }),
+   892→  toggleSidebar: () => set({ sidebarOpen: !get().sidebarOpen }),
+   893→  setSearchQuery: (query: string) => set({ searchQuery: query }),
+   894→  setSearchOpen: (open: boolean) => set({ searchOpen: open }),
+   895→  setLanguage: (language: Language) => set({ language }),
+   896→  setSelectedPostSlug: (slug: string | null) => set({ selectedPostSlug: slug }),
+   897→  setSelectedTopicSlug: (slug: string | null) => set({ selectedTopicSlug: slug }),
+   898→}))
+   899→
