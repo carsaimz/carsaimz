@@ -81,6 +81,7 @@ export const zhCN: TranslationObject = {
     signingIn: '登录中...',
     loginFailed: '登录失败',
     registerFailed: '注册失败',
+    redirecting: '正在跳转...',
   },
 
   // ============================================================================
@@ -164,6 +165,9 @@ export const zhCN: TranslationObject = {
     without: '不含',
     about: '关于',
     approximately: '大约',
+    noData: '暂无数据',
+    send: '发送',
+    total: '合计',
   
     continue: '继续',
     skip: '跳过',
@@ -573,6 +577,7 @@ export const zhCN: TranslationObject = {
     currency: '货币',
     metical: '梅蒂卡尔 (MT)',
     usd: '美元 ($)',
+    real: '真实',
     exchangeRate: '汇率',
     price: '价格',
     unitPrice: '单价',
@@ -649,6 +654,7 @@ export const zhCN: TranslationObject = {
     socialMedia: '社交媒体',
     onlineNote: '线上运营 — 无实体办公室',
     address: '位置',
+    addressValue: '蒙特普兹, 卡波德尔加多, 莫桑比克',
     emailPlaceholder: 'example@email.com',
   },
 
@@ -663,6 +669,7 @@ export const zhCN: TranslationObject = {
     answer: '回答',
     noResults: '未找到相关问题',
     searchPlaceholder: '搜索问题...',
+    categoryAll: '全部',
     categoryGeneral: '综合',
     categoryServices: '服务',
     categoryPayment: '付款',

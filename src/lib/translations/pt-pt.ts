@@ -88,6 +88,7 @@ export const ptPT: TranslationObject = {
     signingIn: 'A entrar...',
     loginFailed: 'Falha no login',
     registerFailed: 'Falha ao criar conta',
+    redirecting: 'A redirecionar...',
   },
 
   // ============================================================================
@@ -171,6 +172,9 @@ export const ptPT: TranslationObject = {
     without: 'sem',
     about: 'cerca de',
     approximately: 'aproximadamente',
+    noData: 'Sem dados disponíveis',
+    send: 'Enviar',
+    total: 'Total',
   
     continue: 'Continuar',
     skip: 'Saltar',
@@ -580,6 +584,7 @@ export const ptPT: TranslationObject = {
     currency: 'Moeda',
     metical: 'Metical (MT)',
     usd: 'Dólar Americano ($)',
+    real: 'Real',
     exchangeRate: 'Taxa de câmbio',
     price: 'Preço',
     unitPrice: 'Preço unitário',

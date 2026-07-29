@@ -24,8 +24,8 @@ SPLASH_SIZES = {
 # Also create the default drawable
 SPLASH_SIZES["drawable"] = (480, 320)
 
-# Background color: Carsai red
-BG_COLOR = (211, 47, 47)  # #D32F2F
+# Background color: Carsai blue (logo is red, so blue provides contrast)
+BG_COLOR = (21, 101, 192)  # #1565C0
 
 # Path to the logo
 LOGO_PATH = os.path.join(os.path.dirname(__file__), "..", "public", "logo.png")
@@ -45,11 +45,14 @@ def generate_splash():
         logo_size = int(min(width, height) * scale)
 
         # Resize logo maintaining aspect ratio
-        logo_resized = logo.resize((logo_size, logo_size), Image.LANCZOS)
+        logo_ratio = logo.size[0] / logo.size[1]  # width / height
+        logo_w = int(logo_size * logo_ratio) if logo_ratio != 1 else logo_size
+        logo_h = logo_size
+        logo_resized = logo.resize((logo_w, logo_h), Image.LANCZOS)
 
         # Center the logo
-        x = (width - logo_size) // 2
-        y = (height - logo_size) // 2
+        x = (width - logo_w) // 2
+        y = (height - logo_h) // 2
 
         # Paste logo onto background
         splash.paste(logo_resized, (x, y), logo_resized)

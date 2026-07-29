@@ -81,6 +81,7 @@ export const enUS: TranslationObject = {
     signingIn: 'Signing in...',
     loginFailed: 'Login failed',
     registerFailed: 'Registration failed',
+    redirecting: 'Redirecting...',
   },
 
   // ============================================================================
@@ -164,6 +165,9 @@ export const enUS: TranslationObject = {
     without: 'without',
     about: 'about',
     approximately: 'approximately',
+    noData: 'No data available',
+    send: 'Send',
+    total: 'Total',
   
     continue: 'Continue',
     skip: 'Skip',
@@ -573,6 +577,7 @@ export const enUS: TranslationObject = {
     currency: 'Currency',
     metical: 'Metical (MT)',
     usd: 'US Dollar ($)',
+    real: 'Real',
     exchangeRate: 'Exchange rate',
     price: 'Price',
     unitPrice: 'Unit price',

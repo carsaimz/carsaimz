@@ -49,7 +49,7 @@ export function LoadingOverlay({ isVisible }: LoadingOverlayProps) {
           <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-red-600 via-yellow-400 to-green-600" />
 
           {/* Semi-transparent background */}
-          <div className="absolute inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-blue-50/80 dark:bg-blue-950/80 backdrop-blur-sm" />
 
           {/* Content */}
           <div className="relative z-10 flex flex-col items-center gap-6">
@@ -64,16 +64,16 @@ export function LoadingOverlay({ isVisible }: LoadingOverlayProps) {
                 className="object-contain drop-shadow-lg"
               />
               {/* Subtle glow behind logo */}
-              <div className="absolute inset-0 -z-10 blur-2xl bg-red-600/20 dark:bg-red-500/20 scale-150" />
+              <div className="absolute inset-0 -z-10 blur-2xl bg-blue-600/20 dark:bg-blue-500/20 scale-150" />
             </div>
 
             {/* Animated spinner */}
             <div className="relative flex items-center justify-center">
-              <div className="size-12 rounded-full border-4 border-red-200 dark:border-red-800 border-t-red-600 dark:border-t-red-400 animate-spin" />
+              <div className="size-12 rounded-full border-4 border-blue-200 dark:border-blue-800 border-t-blue-600 dark:border-t-blue-400 animate-spin" />
             </div>
 
             {/* Loading text - localized */}
-            <p className="text-lg font-medium text-red-700 dark:text-red-300 tracking-wide">
+            <p className="text-lg font-medium text-blue-700 dark:text-blue-300 tracking-wide">
               {t('loading.title')}
             </p>
           </div>

@@ -29,8 +29,9 @@ export const APP_BUILD = process.env.NEXT_PUBLIC_APP_BUILD || '1'
 // ─── API base URL ───
 // For Capacitor mobile app, set NEXT_PUBLIC_API_URL to your deployed server.
 // For local development, leave empty (relative URLs work on same-origin).
+// Hardcoded fallback: the Vercel deployment URL (used when env var is not set in mobile builds).
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://carsaimz.vercel.app'
 
 // ─── Site URLs ───
 

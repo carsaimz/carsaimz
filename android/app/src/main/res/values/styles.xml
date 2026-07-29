@@ -15,7 +15,7 @@
         <item name="android:background">@null</item>
     </style>
 
-
+    <!-- Splash screen theme — blue background matches brand identity -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
     </style>

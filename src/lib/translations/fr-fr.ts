@@ -81,6 +81,7 @@ export const frFR: TranslationObject = {
     signingIn: 'Connexion en cours...',
     loginFailed: 'Échec de la connexion',
     registerFailed: 'Échec de l\'inscription',
+    redirecting: 'Redirection...',
   },
 
   // ============================================================================
@@ -164,6 +165,9 @@ export const frFR: TranslationObject = {
     without: 'sans',
     about: 'à propos',
     approximately: 'environ',
+    noData: 'Pas de données disponibles',
+    send: 'Envoyer',
+    total: 'Total',
   
     continue: 'Continuer',
     skip: 'Passer',
@@ -573,6 +577,7 @@ export const frFR: TranslationObject = {
     currency: 'Devise',
     metical: 'Metical (MT)',
     usd: 'Dollar américain ($)',
+    real: 'Réel',
     exchangeRate: 'Taux de change',
     price: 'Prix',
     unitPrice: 'Prix unitaire',
@@ -649,6 +654,7 @@ export const frFR: TranslationObject = {
     socialMedia: 'Réseaux Sociaux',
     onlineNote: 'Opération en ligne — pas de bureau physique',
     address: 'Localisation',
+    addressValue: 'Montepuez, Cabo Delgado, Mozambique',
     emailPlaceholder: 'exemple@email.com',
   },
 
@@ -663,6 +669,7 @@ export const frFR: TranslationObject = {
     answer: 'Réponse',
     noResults: 'Aucune question trouvée',
     searchPlaceholder: 'Rechercher des questions...',
+    categoryAll: 'Toutes',
     categoryGeneral: 'Général',
     categoryServices: 'Services',
     categoryPayment: 'Paiements',
@@ -850,6 +857,10 @@ export const frFR: TranslationObject = {
     close: 'Fermer le chat',
     open: 'Ouvrir l\'assistant chat',
     newMessage: 'Nouveau message de l\'assistant',
+    dbConnected: 'Base de données connectée',
+    frequentQuestions: 'Questions fréquentes',
+    messagesInMemory: 'Messages en mémoire',
+    poweredBy: 'Propulsé par',
   },
 
   // ============================================================================

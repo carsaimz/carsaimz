@@ -81,6 +81,7 @@ export const esES: TranslationObject = {
     signingIn: 'Iniciando sesión...',
     loginFailed: 'Error al iniciar sesión',
     registerFailed: 'Error al registrarse',
+    redirecting: 'Redirigiendo...',
   },
 
   // ============================================================================
@@ -164,6 +165,9 @@ export const esES: TranslationObject = {
     without: 'sin',
     about: 'acerca de',
     approximately: 'aproximadamente',
+    noData: 'Sin datos disponibles',
+    send: 'Enviar',
+    total: 'Total',
   
     continue: 'Continuar',
     skip: 'Saltar',
@@ -573,6 +577,7 @@ export const esES: TranslationObject = {
     currency: 'Moneda',
     metical: 'Metical (MT)',
     usd: 'Dólar estadounidense ($)',
+    real: 'Real',
     exchangeRate: 'Tasa de cambio',
     price: 'Precio',
     unitPrice: 'Precio unitario',
@@ -649,6 +654,7 @@ export const esES: TranslationObject = {
     socialMedia: 'Redes Sociales',
     onlineNote: 'Operación online — sin oficina física',
     address: 'Ubicación',
+    addressValue: 'Montepuez, Cabo Delgado, Mozambique',
     emailPlaceholder: 'ejemplo@email.com',
   },
 
@@ -663,6 +669,7 @@ export const esES: TranslationObject = {
     answer: 'Respuesta',
     noResults: 'No se encontraron preguntas',
     searchPlaceholder: 'Buscar preguntas...',
+    categoryAll: 'Todas',
     categoryGeneral: 'General',
     categoryServices: 'Servicios',
     categoryPayment: 'Pagos',

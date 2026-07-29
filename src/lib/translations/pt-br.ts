@@ -102,6 +102,7 @@ export const ptBR: TranslationObject = {
     signingIn: 'Entrando...',
     loginFailed: 'Falha no login',
     registerFailed: 'Falha ao criar conta',
+    redirecting: 'Redirecionando...',
   },
 
   // ============================================================================
@@ -185,6 +186,9 @@ export const ptBR: TranslationObject = {
     without: 'sem',
     about: 'cerca de',
     approximately: 'aproximadamente',
+    noData: 'Sem dados disponíveis',
+    send: 'Enviar',
+    total: 'Total',
   
     continue: 'Continuar',
     skip: 'Pular',
