@@ -1,0 +1,736 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect } from 'react';
+     4→import { motion } from 'framer-motion';
+     5→import {
+     6→  FileText,
+     7→  CreditCard,
+     8→  HeadphonesIcon,
+     9→  ArrowRight,
+    10→  User,
+    11→  Mail,
+    12→  Phone,
+    13→  MapPin,
+    14→  Building2,
+    15→  Clock,
+    16→  CheckCircle2,
+    17→  XCircle,
+    18→  AlertCircle,
+    19→  TrendingUp,
+    20→  Eye,
+    21→  Download,
+    22→  MessageSquare,
+    23→  Star,
+    24→  Bell,
+    25→  Inbox,
+    26→} from 'lucide-react';
+    27→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+    28→import { Badge } from '@/components/ui/badge';
+    29→import { Button } from '@/components/ui/button';
+    30→import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+    31→import {
+    32→  Table,
+    33→  TableBody,
+    34→  TableCell,
+    35→  TableHead,
+    36→  TableHeader,
+    37→  TableRow,
+    38→} from '@/components/ui/table';
+    39→import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+    40→import { Separator } from '@/components/ui/separator';
+    41→import { Skeleton } from '@/components/ui/skeleton';
+    42→import { useAuthStore } from '@/lib/store';
+    43→import { useLanguage } from '@/contexts/language-context';
+    44→import { apiFetch, safeJson } from '@/lib/api-fetch';
+    45→
+    46→// ── Animation variants ──
+    47→const containerVariants = {
+    48→  hidden: { opacity: 0 },
+    49→  visible: {
+    50→    opacity: 1,
+    51→    transition: { staggerChildren: 0.1, delayChildren: 0.05 },
+    52→  },
+    53→};
+    54→
+    55→const itemVariants = {
+    56→  hidden: { opacity: 0, y: 20 },
+    57→  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+    58→};
+    59→
+    60→// ── Types for API data ──
+    61→interface DashboardQuote {
+    62→  id: string;
+    63→  title: string;
+    64→  description: string | null;
+    65→  status: string;
+    66→  createdAt: string;
+    67→  proposals?: { id: string; title: string; totalAmount: number | null; status: string }[];
+    68→}
+    69→
+    70→interface DashboardPayment {
+    71→  id: string;
+    72→  amount: number;
+    73→  method: string;
+    74→  status: string;
+    75→  createdAt: string;
+    76→  proposal?: { id: string; title: string; totalAmount: number | null; status: string };
+    77→}
+    78→
+    79→interface DashboardTicket {
+    80→  id: string;
+    81→  subject: string;
+    82→  status: string;
+    83→  priority: string;
+    84→  createdAt: string;
+    85→  _count?: { replies: number };
+    86→}
+    87→
+    88→interface DashboardNotification {
+    89→  id: string;
+    90→  title: string;
+    91→  message: string;
+    92→  type: string;
+    93→  isRead: boolean;
+    94→  createdAt: string;
+    95→}
+    96→
+    97→interface DashboardData {
+    98→  role: string;
+    99→  user: {
+   100→    id: string;
+   101→    name: string;
+   102→    email: string;
+   103→    avatar: string | null;
+   104→    phone: string | null;
+   105→  };
+   106→  stats: {
+   107→    totalQuotes: number;
+   108→    totalPayments: number;
+   109→    totalTickets: number;
+   110→    unreadNotifications: number;
+   111→  };
+   112→  recentActivity: {
+   113→    quotes: DashboardQuote[];
+   114→    payments: DashboardPayment[];
+   115→    tickets: DashboardTicket[];
+   116→    notifications: DashboardNotification[];
+   117→  };
+   118→}
+   119→
+   120→export function UserDashboard() {
+   121→  const { t, formatCurrency, formatDate } = useLanguage();
+   122→  const user = useAuthStore((s) => s.user);
+   123→
+   124→  const [activeTab, setActiveTab] = useState('overview');
+   125→  const [data, setData] = useState<DashboardData | null>(null);
+   126→  const [loading, setLoading] = useState(true);
+   127→  const [error, setError] = useState<string | null>(null);
+   128→
+   129→  useEffect(() => {
+   130→    if (!user?.id) return;
+   131→
+   132→    apiFetch(`/api/dashboard?role=user&userId=${user.id}`)
+   133→      .then((res) => {
+   134→        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+   135→        return safeJson(res);
+   136→      })
+   137→      .then((json) => {
+   138→        if (!json) { setError(t('common.serverNonJson')); return; }
+   139→        if (json.success && json.data) {
+   140→          setData(json.data as DashboardData);
+   141→        } else {
+   142→          setError(json.message || t('dashboard.loadError'));
+   143→        }
+   144→      })
+   145→      .catch((err) => {
+   146→        setError(err.message || t('common.networkError'));
+   147→      })
+   148→      .finally(() => {
+   149→        setLoading(false);
+   150→      });
+   151→  }, [user?.id]);
+   152→
+   153→  const quotes = data?.recentActivity.quotes ?? [];
+   154→  const payments = data?.recentActivity.payments ?? [];
+   155→  const tickets = data?.recentActivity.tickets ?? [];
+   156→  const notifications = data?.recentActivity.notifications ?? [];
+   157→
+   158→  const totalQuotes = data?.stats.totalQuotes ?? 0;
+   159→  const totalPaymentsCount = data?.stats.totalPayments ?? 0;
+   160→  const totalTicketsCount = data?.stats.totalTickets ?? 0;
+   161→  const unreadNotifications = data?.stats.unreadNotifications ?? 0;
+   162→
+   163→  const approvedQuotes = quotes.filter((q) => q.status === 'accepted' || q.status === 'approved').length;
+   164→  const confirmedPayments = payments.filter((p) => p.status === 'confirmed').length;
+   165→  const openTickets = tickets.filter((tk) => tk.status === 'open' || tk.status === 'in_progress').length;
+   166→  const totalPaymentsAmount = payments.reduce((sum, p) => sum + p.amount, 0);
+   167→
+   168→  const statusBadge = (status: string) => {
+   169→    switch (status) {
+   170→      case 'accepted':
+   171→      case 'approved':
+   172→      case 'confirmed':
+   173→      case 'resolved':
+   174→      case 'closed':
+   175→        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>;
+   176→      case 'pending':
+   177→      case 'open':
+   178→      case 'in_progress':
+   179→        return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{t('common.pending')}</Badge>;
+   180→      case 'rejected':
+   181→      case 'failed':
+   182→        return <Badge className="bg-red-100 text-red-700 border-red-200">{t('common.rejected')}</Badge>;
+   183→      default:
+   184→        return <Badge variant="outline">{status}</Badge>;
+   185→    }
+   186→  };
+   187→
+   188→  const priorityBadge = (priority: string) => {
+   189→    switch (priority) {
+   190→      case 'high':
+   191→      case 'urgent':
+   192→        return <Badge className="bg-red-100 text-red-700 border-red-200">{t('common.required')}</Badge>;
+   193→      case 'medium':
+   194→        return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{priority}</Badge>;
+   195→      case 'low':
+   196→        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{priority}</Badge>;
+   197→      default:
+   198→        return <Badge variant="outline">{priority}</Badge>;
+   199→    }
+   200→  };
+   201→
+   202→  const methodLabel = (method: string) => {
+   203→    switch (method) {
+   204→      case 'mpesa':
+   205→        return t('financial.mpesa');
+   206→      case 'transfer':
+   207→        return t('financial.transfer');
+   208→      case 'deposit':
+   209→        return t('financial.deposit');
+   210→      default:
+   211→        return method;
+   212→    }
+   213→  };
+   214→
+   215→  const statsCards = [
+   216→    {
+   217→      icon: FileText,
+   218→      label: t('dashboard.quotes'),
+   219→      value: totalQuotes,
+   220→      accent: 'emerald',
+   221→      description: `${approvedQuotes} ${t('common.approved')}`,
+   222→    },
+   223→    {
+   224→      icon: CreditCard,
+   225→      label: t('dashboard.payments'),
+   226→      value: formatCurrency(totalPaymentsAmount),
+   227→      accent: 'green',
+   228→      description: `${confirmedPayments} ${t('financial.paymentSuccess')}`,
+   229→    },
+   230→    {
+   231→      icon: HeadphonesIcon,
+   232→      label: t('dashboard.support'),
+   233→      value: openTickets,
+   234→      accent: 'teal',
+   235→      description: `${totalTicketsCount} ${t('common.total')}`,
+   236→    },
+   237→  ];
+   238→
+   239→  const quickActions = [
+   240→    { icon: FileText, label: t('dashboard.quoteRequest'), color: 'bg-emerald-600 hover:bg-emerald-700' },
+   241→    { icon: CreditCard, label: t('dashboard.paymentHistory'), color: 'bg-green-600 hover:bg-green-700' },
+   242→    { icon: HeadphonesIcon, label: t('dashboard.supportCreate'), color: 'bg-teal-600 hover:bg-teal-700' },
+   243→  ];
+   244→
+   245→  // ── Loading skeletons ──
+   246→  if (loading) {
+   247→    return (
+   248→      <motion.div
+   249→        variants={containerVariants}
+   250→        initial="hidden"
+   251→        animate="visible"
+   252→        className="space-y-6"
+   253→      >
+   254→        <Card className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-green-600 border-0 text-white overflow-hidden">
+   255→          <CardContent className="p-6">
+   256→            <div className="flex items-center gap-4">
+   257→              <Skeleton className="h-14 w-14 rounded-full bg-white/20" />
+   258→              <div className="flex-1">
+   259→                <Skeleton className="h-8 w-48 bg-white/20" />
+   260→                <Skeleton className="h-4 w-32 bg-white/20 mt-2" />
+   261→              </div>
+   262→            </div>
+   263→          </CardContent>
+   264→        </Card>
+   265→
+   266→        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+   267→          {[1, 2, 3].map((i) => (
+   268→            <Card key={i} className="border-l-4 border-l-emerald-500">
+   269→              <CardContent className="p-4 sm:p-6">
+   270→                <Skeleton className="h-4 w-20 mb-2" />
+   271→                <Skeleton className="h-8 w-24 mb-1" />
+   272→                <Skeleton className="h-3 w-16" />
+   273→              </CardContent>
+   274→            </Card>
+   275→          ))}
+   276→        </div>
+   277→
+   278→        <Card>
+   279→          <CardContent className="p-6">
+   280→            <Skeleton className="h-6 w-40 mb-4" />
+   281→            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+   282→              {[1, 2, 3].map((i) => (
+   283→                <Skeleton key={i} className="h-12 rounded-xl" />
+   284→              ))}
+   285→            </div>
+   286→          </CardContent>
+   287→        </Card>
+   288→
+   289→        <Card>
+   290→          <CardContent className="p-6">
+   291→            <Skeleton className="h-6 w-32 mb-4" />
+   292→            <div className="space-y-3">
+   293→              {[1, 2, 3].map((i) => (
+   294→                <Skeleton key={i} className="h-16 rounded-lg" />
+   295→              ))}
+   296→            </div>
+   297→          </CardContent>
+   298→        </Card>
+   299→      </motion.div>
+   300→    );
+   301→  }
+   302→
+   303→  // ── Error state ──
+   304→  if (error) {
+   305→    return (
+   306→      <motion.div
+   307→        variants={containerVariants}
+   308→        initial="hidden"
+   309→        animate="visible"
+   310→        className="space-y-6"
+   311→      >
+   312→        <Card className="border-l-4 border-l-red-500">
+   313→          <CardContent className="p-6">
+   314→            <div className="flex items-center gap-3">
+   315→              <AlertCircle className="h-6 w-6 text-red-500" />
+   316→              <div>
+   317→                <h3 className="font-semibold text-red-700">{t('dashboard.loadError')}</h3>
+   318→                <p className="text-sm text-muted-foreground">{error}</p>
+   319→              </div>
+   320→            </div>
+   321→            <Button
+   322→              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white"
+   323→              onClick={() => {
+   324→                setError(null);
+   325→                setLoading(true);
+   326→                apiFetch(`/api/dashboard?role=user&userId=${user?.id}`)
+   327→                  .then((res) => {
+   328→                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+   329→                    return safeJson(res);
+   330→                  })
+   331→                  .then((json) => {
+   332→                    if (!json) { setError(t('common.serverNonJson')); return; }
+   333→                    if (json.success && json.data) setData(json.data as DashboardData);
+   334→                    else setError(json.message || t('dashboard.loadError'));
+   335→                  })
+   336→                  .catch((err) => setError(err.message))
+   337→                  .finally(() => setLoading(false));
+   338→              }}
+   339→            >
+   340→              {t('common.retry')}
+   341→            </Button>
+   342→          </CardContent>
+   343→        </Card>
+   344→      </motion.div>
+   345→    );
+   346→  }
+   347→
+   348→  return (
+   349→    <motion.div
+   350→      variants={containerVariants}
+   351→      initial="hidden"
+   352→      animate="visible"
+   353→      className="space-y-6"
+   354→    >
+   355→      {/* ── Welcome Section ── */}
+   356→      <motion.div variants={itemVariants}>
+   357→        <Card className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-green-600 border-0 text-white overflow-hidden">
+   358→          <CardContent className="p-6">
+   359→            <div className="flex items-center gap-4">
+   360→              <Avatar className="h-14 w-14 border-2 border-yellow-400 shadow-lg">
+   361→                <AvatarFallback className="bg-emerald-600 text-white text-lg font-bold">
+   362→                  {data?.user?.name?.charAt(0) || user?.name?.charAt(0) || 'U'}
+   363→                </AvatarFallback>
+   364→              </Avatar>
+   365→              <div className="flex-1">
+   366→                <h1 className="text-2xl sm:text-3xl font-bold">
+   367→                  {t('dashboard.welcome', { name: data?.user?.name || user?.name || 'Utilizador' })}
+   368→                </h1>
+   369→                <p className="text-emerald-200 mt-1">
+   370→                  {t('dashboard.lastLogin', { date: formatDate(new Date()) })}
+   371→                </p>
+   372→              </div>
+   373→              <div className="hidden sm:flex items-center gap-2">
+   374→                <Star className="h-5 w-5 text-yellow-400" />
+   375→                <span className="text-sm text-emerald-200">{t('partner.tierSilver')}</span>
+   376→              </div>
+   377→            </div>
+   378→          </CardContent>
+   379→        </Card>
+   380→      </motion.div>
+   381→
+   382→      {/* ── Stats Cards ── */}
+   383→      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+   384→        {statsCards.map((stat) => (
+   385→          <motion.div key={stat.label} variants={itemVariants}>
+   386→            <Card className="hover:shadow-md transition-shadow border-l-4 border-l-emerald-500">
+   387→              <CardContent className="p-4 sm:p-6">
+   388→                <div className="flex items-center justify-between">
+   389→                  <div>
+   390→                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+   391→                    <p className="text-2xl font-bold mt-1">{stat.value}</p>
+   392→                    <p className="text-xs text-emerald-600 mt-1">{stat.description}</p>
+   393→                  </div>
+   394→                  <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+   395→                    <stat.icon className="h-6 w-6" />
+   396→                  </div>
+   397→                </div>
+   398→              </CardContent>
+   399→            </Card>
+   400→          </motion.div>
+   401→        ))}
+   402→      </motion.div>
+   403→
+   404→      {/* ── Quick Actions ── */}
+   405→      <motion.div variants={itemVariants}>
+   406→        <Card>
+   407→          <CardHeader>
+   408→            <CardTitle className="text-lg">{t('dashboard.quickActions')}</CardTitle>
+   409→          </CardHeader>
+   410→          <CardContent>
+   411→            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+   412→              {quickActions.map((action) => (
+   413→                <Button
+   414→                  key={action.label}
+   415→                  className={`${action.color} text-white rounded-xl h-12 font-semibold shadow-sm transition-all`}
+   416→                >
+   417→                  <action.icon className="h-5 w-5 mr-2" />
+   418→                  {action.label}
+   419→                  <ArrowRight className="h-4 w-4 ml-2" />
+   420→                </Button>
+   421→              ))}
+   422→            </div>
+   423→          </CardContent>
+   424→        </Card>
+   425→      </motion.div>
+   426→
+   427→      {/* ── Main Content Tabs ── */}
+   428→      <motion.div variants={itemVariants}>
+   429→        <Tabs value={activeTab} onValueChange={setActiveTab}>
+   430→          <TabsList className="w-full sm:w-auto bg-emerald-50">
+   431→            <TabsTrigger value="overview" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+   432→              {t('dashboard.overview')}
+   433→            </TabsTrigger>
+   434→            <TabsTrigger value="quotes" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+   435→              {t('dashboard.quotes')}
+   436→            </TabsTrigger>
+   437→            <TabsTrigger value="payments" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+   438→              {t('dashboard.payments')}
+   439→            </TabsTrigger>
+   440→            <TabsTrigger value="support" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+   441→              {t('dashboard.support')}
+   442→            </TabsTrigger>
+   443→          </TabsList>
+   444→
+   445→          {/* ── Overview Tab ── */}
+   446→          <TabsContent value="overview" className="space-y-6 mt-4">
+   447→            {/* Recent Quotes Summary */}
+   448→            <Card>
+   449→              <CardHeader>
+   450→                <CardTitle className="text-lg flex items-center gap-2">
+   451→                  <FileText className="h-5 w-5 text-emerald-600" />
+   452→                  {t('dashboard.quotesHistory')}
+   453→                </CardTitle>
+   454→              </CardHeader>
+   455→              <CardContent>
+   456→                {quotes.length === 0 ? (
+   457→                  <div className="text-center py-8">
+   458→                    <Inbox className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+   459→                    <p className="text-sm text-muted-foreground">{t('common.noData')}</p>
+   460→                  </div>
+   461→                ) : (
+   462→                  <div className="space-y-3 max-h-64 overflow-y-auto">
+   463→                    {quotes.slice(0, 3).map((quote) => (
+   464→                      <div key={quote.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors">
+   465→                        <div className="flex items-center gap-3">
+   466→                          <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+   467→                            <FileText className="h-4 w-4" />
+   468→                          </div>
+   469→                          <div>
+   470→                            <p className="font-medium text-sm">{quote.title}</p>
+   471→                            <p className="text-xs text-muted-foreground">{quote.id.slice(0, 8)} · {formatDate(quote.createdAt)}</p>
+   472→                          </div>
+   473→                        </div>
+   474→                        <div className="text-right">
+   475→                          {quote.proposals?.[0]?.totalAmount && (
+   476→                            <p className="font-semibold text-sm">{formatCurrency(quote.proposals[0].totalAmount)}</p>
+   477→                          )}
+   478→                          {statusBadge(quote.status)}
+   479→                        </div>
+   480→                      </div>
+   481→                    ))}
+   482→                  </div>
+   483→                )}
+   484→              </CardContent>
+   485→            </Card>
+   486→
+   487→            {/* Recent Payments Summary */}
+   488→            <Card>
+   489→              <CardHeader>
+   490→                <CardTitle className="text-lg flex items-center gap-2">
+   491→                  <CreditCard className="h-5 w-5 text-emerald-600" />
+   492→                  {t('dashboard.paymentHistory')}
+   493→                </CardTitle>
+   494→              </CardHeader>
+   495→              <CardContent>
+   496→                {payments.length === 0 ? (
+   497→                  <div className="text-center py-8">
+   498→                    <Inbox className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+   499→                    <p className="text-sm text-muted-foreground">{t('common.noData')}</p>
+   500→                  </div>
+   501→                ) : (
+   502→                  <div className="space-y-3 max-h-64 overflow-y-auto">
+   503→                    {payments.slice(0, 3).map((payment) => (
+   504→                      <div key={payment.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors">
+   505→                        <div className="flex items-center gap-3">
+   506→                          <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+   507→                            <CreditCard className="h-4 w-4" />
+   508→                          </div>
+   509→                          <div>
+   510→                            <p className="font-medium text-sm">
+   511→                              {payment.proposal?.title || t('dashboard.paymentFallback', { id: payment.id.slice(0, 8) })}
+   512→                            </p>
+   513→                            <p className="text-xs text-muted-foreground">{methodLabel(payment.method)} · {formatDate(payment.createdAt)}</p>
+   514→                          </div>
+   515→                        </div>
+   516→                        <div className="text-right">
+   517→                          <p className="font-semibold text-sm">{formatCurrency(payment.amount)}</p>
+   518→                          {statusBadge(payment.status)}
+   519→                        </div>
+   520→                      </div>
+   521→                    ))}
+   522→                  </div>
+   523→                )}
+   524→              </CardContent>
+   525→            </Card>
+   526→
+   527→            {/* Profile Summary */}
+   528→            <Card className="border-l-4 border-l-emerald-500">
+   529→              <CardHeader>
+   530→                <CardTitle className="text-lg flex items-center gap-2">
+   531→                  <User className="h-5 w-5 text-emerald-600" />
+   532→                  {t('dashboard.profile')}
+   533→                </CardTitle>
+   534→              </CardHeader>
+   535→              <CardContent>
+   536→                <div className="flex items-start gap-4">
+   537→                  <Avatar className="h-16 w-16 border-2 border-emerald-500">
+   538→                    <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xl font-bold">
+   539→                      {data?.user?.name?.charAt(0) || user?.name?.charAt(0) || 'U'}
+   540→                    </AvatarFallback>
+   541→                  </Avatar>
+   542→                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+   543→                    <div className="flex items-center gap-2 text-sm">
+   544→                      <User className="h-4 w-4 text-emerald-500" />
+   545→                      <span className="text-muted-foreground">{t('auth.fullName')}:</span>
+   546→                      <span className="font-medium">{data?.user?.name || user?.name || '—'}</span>
+   547→                    </div>
+   548→                    <div className="flex items-center gap-2 text-sm">
+   549→                      <Mail className="h-4 w-4 text-emerald-500" />
+   550→                      <span className="text-muted-foreground">{t('auth.email')}:</span>
+   551→                      <span className="font-medium">{data?.user?.email || user?.email || '—'}</span>
+   552→                    </div>
+   553→                    <div className="flex items-center gap-2 text-sm">
+   554→                      <Phone className="h-4 w-4 text-emerald-500" />
+   555→                      <span className="text-muted-foreground">{t('auth.phone')}:</span>
+   556→                      <span className="font-medium">{data?.user?.phone || '—'}</span>
+   557→                    </div>
+   558→                    <div className="flex items-center gap-2 text-sm">
+   559→                      <Bell className="h-4 w-4 text-emerald-500" />
+   560→                      <span className="text-muted-foreground">{t('dashboard.notifications')}:</span>
+   561→                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+   562→                        {unreadNotifications} {t('common.unread')}
+   563→                      </Badge>
+   564→                    </div>
+   565→                  </div>
+   566→                </div>
+   567→              </CardContent>
+   568→            </Card>
+   569→          </TabsContent>
+   570→
+   571→          {/* ── Quotes Tab ── */}
+   572→          <TabsContent value="quotes" className="mt-4">
+   573→            <Card>
+   574→              <CardHeader>
+   575→                <div className="flex items-center justify-between">
+   576→                  <CardTitle className="text-lg flex items-center gap-2">
+   577→                    <FileText className="h-5 w-5 text-emerald-600" />
+   578→                    {t('dashboard.quotesHistory')}
+   579→                  </CardTitle>
+   580→                  <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
+   581→                    <FileText className="h-4 w-4 mr-2" />
+   582→                    {t('dashboard.quoteRequest')}
+   583→                  </Button>
+   584→                </div>
+   585→              </CardHeader>
+   586→              <CardContent>
+   587→                {quotes.length === 0 ? (
+   588→                  <div className="text-center py-12">
+   589→                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+   590→                    <p className="text-muted-foreground">{t('common.noData')}</p>
+   591→                    <p className="text-sm text-muted-foreground mt-1">{t('dashboard.quoteRequest')}</p>
+   592→                  </div>
+   593→                ) : (
+   594→                  <Table>
+   595→                    <TableHeader>
+   596→                      <TableRow>
+   597→                        <TableHead>{t('common.id')}</TableHead>
+   598→                        <TableHead>{t('financial.item')}</TableHead>
+   599→                        <TableHead>{t('financial.description')}</TableHead>
+   600→                        <TableHead>{t('common.status')}</TableHead>
+   601→                        <TableHead>{t('common.createdAt')}</TableHead>
+   602→                        <TableHead>{t('common.actions')}</TableHead>
+   603→                      </TableRow>
+   604→                    </TableHeader>
+   605→                    <TableBody>
+   606→                      {quotes.map((quote) => (
+   607→                        <TableRow key={quote.id}>
+   608→                          <TableCell className="font-medium">{quote.id.slice(0, 8)}</TableCell>
+   609→                          <TableCell>{quote.title}</TableCell>
+   610→                          <TableCell className="max-w-[200px] truncate">{quote.description || '—'}</TableCell>
+   611→                          <TableCell>{statusBadge(quote.status)}</TableCell>
+   612→                          <TableCell>{formatDate(quote.createdAt)}</TableCell>
+   613→                          <TableCell>
+   614→                            <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+   615→                              <Eye className="h-4 w-4" />
+   616→                            </Button>
+   617→                          </TableCell>
+   618→                        </TableRow>
+   619→                      ))}
+   620→                    </TableBody>
+   621→                  </Table>
+   622→                )}
+   623→              </CardContent>
+   624→            </Card>
+   625→          </TabsContent>
+   626→
+   627→          {/* ── Payments Tab ── */}
+   628→          <TabsContent value="payments" className="mt-4">
+   629→            <Card>
+   630→              <CardHeader>
+   631→                <CardTitle className="text-lg flex items-center gap-2">
+   632→                  <CreditCard className="h-5 w-5 text-emerald-600" />
+   633→                  {t('dashboard.paymentHistory')}
+   634→                </CardTitle>
+   635→              </CardHeader>
+   636→              <CardContent>
+   637→                {payments.length === 0 ? (
+   638→                  <div className="text-center py-12">
+   639→                    <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+   640→                    <p className="text-muted-foreground">{t('common.noData')}</p>
+   641→                  </div>
+   642→                ) : (
+   643→                  <Table>
+   644→                    <TableHeader>
+   645→                      <TableRow>
+   646→                        <TableHead>{t('common.id')}</TableHead>
+   647→                        <TableHead>{t('financial.description')}</TableHead>
+   648→                        <TableHead>{t('financial.paymentMethod')}</TableHead>
+   649→                        <TableHead>{t('financial.amount')}</TableHead>
+   650→                        <TableHead>{t('common.status')}</TableHead>
+   651→                        <TableHead>{t('common.createdAt')}</TableHead>
+   652→                      </TableRow>
+   653→                    </TableHeader>
+   654→                    <TableBody>
+   655→                      {payments.map((payment) => (
+   656→                        <TableRow key={payment.id}>
+   657→                          <TableCell className="font-medium">{payment.id.slice(0, 8)}</TableCell>
+   658→                          <TableCell>{payment.proposal?.title || t('dashboard.paymentFallback', { id: payment.id.slice(0, 8) })}</TableCell>
+   659→                          <TableCell>
+   660→                            <Badge variant="outline" className="text-emerald-600 border-emerald-200">
+   661→                              {methodLabel(payment.method)}
+   662→                            </Badge>
+   663→                          </TableCell>
+   664→                          <TableCell className="font-semibold">{formatCurrency(payment.amount)}</TableCell>
+   665→                          <TableCell>{statusBadge(payment.status)}</TableCell>
+   666→                          <TableCell>{formatDate(payment.createdAt)}</TableCell>
+   667→                        </TableRow>
+   668→                      ))}
+   669→                    </TableBody>
+   670→                  </Table>
+   671→                )}
+   672→              </CardContent>
+   673→            </Card>
+   674→          </TabsContent>
+   675→
+   676→          {/* ── Support Tab ── */}
+   677→          <TabsContent value="support" className="mt-4">
+   678→            <Card>
+   679→              <CardHeader>
+   680→                <div className="flex items-center justify-between">
+   681→                  <CardTitle className="text-lg flex items-center gap-2">
+   682→                    <HeadphonesIcon className="h-5 w-5 text-emerald-600" />
+   683→                    {t('dashboard.supportHistory')}
+   684→                  </CardTitle>
+   685→                  <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
+   686→                    <MessageSquare className="h-4 w-4 mr-2" />
+   687→                    {t('dashboard.supportCreate')}
+   688→                  </Button>
+   689→                </div>
+   690→              </CardHeader>
+   691→              <CardContent>
+   692→                {tickets.length === 0 ? (
+   693→                  <div className="text-center py-12">
+   694→                    <HeadphonesIcon className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+   695→                    <p className="text-muted-foreground">{t('common.noData')}</p>
+   696→                    <p className="text-sm text-muted-foreground mt-1">{t('dashboard.supportCreate')}</p>
+   697→                  </div>
+   698→                ) : (
+   699→                  <Table>
+   700→                    <TableHeader>
+   701→                      <TableRow>
+   702→                        <TableHead>{t('common.id')}</TableHead>
+   703→                        <TableHead>{t('contact.subject')}</TableHead>
+   704→                        <TableHead>{t('common.status')}</TableHead>
+   705→                        <TableHead>{t('dashboard.priority')}</TableHead>
+   706→                        <TableHead>{t('common.createdAt')}</TableHead>
+   707→                        <TableHead>{t('common.actions')}</TableHead>
+   708→                      </TableRow>
+   709→                    </TableHeader>
+   710→                    <TableBody>
+   711→                      {tickets.map((ticket) => (
+   712→                        <TableRow key={ticket.id}>
+   713→                          <TableCell className="font-medium">{ticket.id.slice(0, 8)}</TableCell>
+   714→                          <TableCell>{ticket.subject}</TableCell>
+   715→                          <TableCell>{statusBadge(ticket.status)}</TableCell>
+   716→                          <TableCell>{priorityBadge(ticket.priority)}</TableCell>
+   717→                          <TableCell>{formatDate(ticket.createdAt)}</TableCell>
+   718→                          <TableCell>
+   719→                            <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+   720→                              <Eye className="h-4 w-4" />
+   721→                            </Button>
+   722→                          </TableCell>
+   723→                        </TableRow>
+   724→                      ))}
+   725→                    </TableBody>
+   726→                  </Table>
+   727→                )}
+   728→              </CardContent>
+   729→            </Card>
+   730→          </TabsContent>
+   731→        </Tabs>
+   732→      </motion.div>
+   733→    </motion.div>
+   734→  );
+   735→}
+   736→
