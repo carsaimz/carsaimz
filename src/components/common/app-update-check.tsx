@@ -216,10 +216,10 @@ export function AppUpdateCheck() {
   // ── Download button text based on state ──
   const getDownloadButtonText = () => {
     switch (downloadState) {
-      case 'downloading': return t('update.downloading') || 'Downloading...';
-      case 'complete': return t('update.downloadComplete') || 'Download Complete';
-      case 'failed': return t('update.installFailed') || 'Installation Failed';
-      default: return t('update.downloadApk') || 'Download APK';
+      case 'downloading': return t('update.downloading');
+      case 'complete': return t('update.downloadComplete');
+      case 'failed': return t('update.installFailed');
+      default: return t('update.downloadApk');
     }
   };
 
@@ -302,18 +302,18 @@ export function AppUpdateCheck() {
             {downloadState === 'downloading' && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="size-4 animate-spin" />
-                {t('update.downloading') || 'Downloading...'}
+                {t('update.downloading')}
               </div>
             )}
             {downloadState === 'complete' && (
               <div className="flex items-center gap-2 text-sm text-emerald-600">
                 <CheckCircle2 className="size-4" />
-                {t('update.downloadComplete') || 'Download Complete'}
+                {t('update.downloadComplete')}
               </div>
             )}
             {downloadState === 'failed' && (
               <div className="flex items-center gap-2 text-sm text-destructive">
-                {t('update.installFailed') || 'Installation Failed'}
+                {t('update.installFailed')}
               </div>
             )}
           </div>

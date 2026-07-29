@@ -13,12 +13,28 @@ import { APP_PUBLIC_URL } from '@/lib/client-config';
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
 const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
 
+/**
+ * Get the base URL for affiliate links.
+ * Uses the detected window.location.origin if it's a production URL,
+ * otherwise falls back to the hardcoded APP_PUBLIC_URL.
+ */
+function getAffiliateBaseUrl(): string {
+  if (typeof window === 'undefined') return APP_PUBLIC_URL;
+  const origin = window.location.origin;
+  // If we're on a known production URL, use it
+  if (origin.includes('carsaimz.vercel.app') || origin.includes('carsai.mz')) {
+    return origin;
+  }
+  // Fallback to hardcoded production URL
+  return APP_PUBLIC_URL;
+}
+
 export function PartnerAffiliate() {
   const { t } = useLanguage();
   const user = useAuthStore((s) => s.user);
   const [copied, setCopied] = useState(false);
 
-  const affiliateLink = `${APP_PUBLIC_URL}/ref/${user?.id || 'demo-partner-001'}`;
+  const affiliateLink = `${getAffiliateBaseUrl()}/ref/${user?.id || 'demo-partner-001'}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(affiliateLink).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
