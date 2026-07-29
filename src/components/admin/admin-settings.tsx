@@ -71,7 +71,7 @@ export function AdminSettings() {
         body: JSON.stringify({ settings: settingsArray }),
       });
       const data = await safeJson(res);
-      if (!data) { toast({ title: t('admin.error'), description: 'Server returned non-JSON response', variant: 'destructive' }); return; }
+      if (!data) { toast({ title: t('admin.error'), description: t('common.serverNonJson'), variant: 'destructive' }); return; }
       if (data.success) {
         toast({ title: t('admin.settingsSaved'), description: t('admin.settingsSavedDesc') });
       } else {
@@ -102,7 +102,7 @@ export function AdminSettings() {
       <motion.div variants={itemVariants}>
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <Settings className="h-6 w-6 text-red-600" />
-          {t('admin.systemSettings') || 'Configurações do Sistema'}
+          {t('admin.systemSettings')}
         </h2>
       </motion.div>
 
@@ -110,30 +110,30 @@ export function AdminSettings() {
         <TabsList>
           <TabsTrigger value="general" className="gap-1">
             <Settings className="size-4" />
-            {t('admin.general') || 'Geral'}
+            {t('admin.general')}
           </TabsTrigger>
           <TabsTrigger value="ai-providers" className="gap-1">
             <Bot className="size-4" />
-            {t('admin.aiProviders') || 'Provedores de IA'}
+            {t('admin.aiProviders')}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
           <motion.div variants={itemVariants}>
             <Card>
-              <CardHeader><CardTitle>{t('admin.generalSettings') || 'Configurações Gerais'}</CardTitle></CardHeader>
+              <CardHeader><CardTitle>{t('admin.generalSettings')}</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="siteName">{t('admin.siteName') || 'Nome do Site'}</Label>
+                    <Label htmlFor="siteName">{t('admin.siteName')}</Label>
                     <Input id="siteName" value={formData.siteName} onChange={handleChange} className="focus-visible:ring-red-500" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="siteEmail">{t('admin.siteEmail') || 'E-mail Admin'}</Label>
+                    <Label htmlFor="siteEmail">{t('admin.siteEmail')}</Label>
                     <Input id="siteEmail" type="email" value={formData.siteEmail} onChange={handleChange} className="focus-visible:ring-red-500" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="sitePhone">{t('admin.sitePhone') || 'Telefone'}</Label>
+                    <Label htmlFor="sitePhone">{t('admin.sitePhone')}</Label>
                     <Input id="sitePhone" value={formData.sitePhone} onChange={handleChange} className="focus-visible:ring-red-500" />
                   </div>
                 </div>
@@ -145,7 +145,7 @@ export function AdminSettings() {
                     checked={formData.maintenanceMode}
                     onCheckedChange={(checked) => setFormData(prev => ({ ...prev, maintenanceMode: checked }))}
                   />
-                  <Label className="text-sm">{t('admin.maintenanceMode') || 'Modo de Manutenção'}</Label>
+                  <Label className="text-sm">{t('admin.maintenanceMode')}</Label>
                 </div>
 
                 <Separator />
@@ -157,7 +157,7 @@ export function AdminSettings() {
                     disabled={saving}
                   >
                     {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                    {t('admin.save') || 'Guardar'}
+                    {t('admin.save')}
                   </Button>
                 </div>
               </CardContent>

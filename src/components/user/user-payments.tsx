@@ -27,7 +27,7 @@ export function UserPayments() {
   useEffect(() => {
     apiFetch(`/api/payments?userId=${user?.id || 'demo-user-001'}`)
       .then((res) => safeJson(res))
-      .then((data) => { if (!data) { setError('Server returned non-JSON response'); return; } if (data.success) setPayments(data.data); else setError(data.message); })
+      .then((data) => { if (!data) { setError(t('common.serverNonJson')); return; } if (data.success) setPayments(data.data); else setError(data.message); })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [user?.id]);
@@ -47,12 +47,12 @@ export function UserPayments() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants}>
-        <h2 className="text-2xl font-bold flex items-center gap-2"><CreditCard className="h-6 w-6 text-emerald-600" />{t('dashboard.payments') || 'My Payments'}</h2>
+        <h2 className="text-2xl font-bold flex items-center gap-2"><CreditCard className="h-6 w-6 text-emerald-600" />{t('dashboard.payments')}</h2>
       </motion.div>
       <motion.div variants={itemVariants}>
         <Card><CardContent className="p-0">
-          {payments.length === 0 ? <div className="text-center py-12"><CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-3" /><p className="text-muted-foreground">{t('common.noData') || 'No payments yet'}</p></div> :
-          <Table><TableHeader><TableRow className="bg-emerald-50/50"><TableHead>{t('financial.amount')}</TableHead><TableHead>{t('common.status')}</TableHead><TableHead>Method</TableHead><TableHead>Date</TableHead></TableRow></TableHeader>
+          {payments.length === 0 ? <div className="text-center py-12"><CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-3" /><p className="text-muted-foreground">{t('common.noData')}</p></div> :
+          <Table><TableHeader><TableRow className="bg-emerald-50/50"><TableHead>{t('financial.amount')}</TableHead><TableHead>{t('common.status')}</TableHead><TableHead>{t('financial.paymentMethod')}</TableHead><TableHead>{t('common.date')}</TableHead></TableRow></TableHeader>
           <TableBody>{payments.map((p) => <TableRow key={p.id}><TableCell className="font-semibold">{formatCurrency(p.amount)}</TableCell><TableCell>{statusBadge(p.status)}</TableCell><TableCell>{p.method}</TableCell><TableCell className="text-muted-foreground">{formatDate(p.createdAt)}</TableCell></TableRow>)}</TableBody></Table>}
         </CardContent></Card>
       </motion.div>

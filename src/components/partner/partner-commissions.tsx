@@ -27,7 +27,7 @@ export function PartnerCommissions() {
   useEffect(() => {
     apiFetch(`/api/dashboard?role=partner&userId=${user?.id || 'demo-partner-001'}`)
       .then((res) => safeJson(res))
-      .then((data) => { if (!data) { setError('Server returned non-JSON response'); return; } if (data.success && data.data) setCommissions(data.data.recentActivity?.commissions || []); else setError(data.message); })
+      .then((data) => { if (!data) { setError(t('common.serverNonJson')); return; } if (data.success && data.data) setCommissions(data.data.recentActivity?.commissions || []); else setError(data.message); })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [user?.id]);
@@ -48,14 +48,14 @@ export function PartnerCommissions() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants}>
-        <h2 className="text-2xl font-bold flex items-center gap-2"><Percent className="h-6 w-6 text-emerald-600" />{t('partner.commissions') || 'Commissions'}</h2>
+        <h2 className="text-2xl font-bold flex items-center gap-2"><Percent className="h-6 w-6 text-emerald-600" />{t('partner.commissions')}</h2>
       </motion.div>
       <motion.div variants={itemVariants}>
         <Card>
           <CardHeader><div className="flex items-center justify-between"><CardTitle className="flex items-center gap-2"><DollarSign className="h-5 w-5 text-emerald-600" />{t('partner.commissionHistory')}</CardTitle><Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{commissions.length} {t('common.total')}</Badge></div></CardHeader>
           <CardContent className="p-0">
             {commissions.length === 0 ? <div className="text-center py-12"><DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-3" /><p className="text-muted-foreground">{t('partner.noCommissions')}</p></div> :
-            <Table><TableHeader><TableRow className="bg-emerald-50/50"><TableHead>ID</TableHead><TableHead>{t('financial.amount')}</TableHead><TableHead>{t('common.status')}</TableHead><TableHead>{t('common.createdAt')}</TableHead></TableRow></TableHeader>
+            <Table><TableHeader><TableRow className="bg-emerald-50/50"><TableHead>{t('common.id')}</TableHead><TableHead>{t('financial.amount')}</TableHead><TableHead>{t('common.status')}</TableHead><TableHead>{t('common.createdAt')}</TableHead></TableRow></TableHeader>
             <TableBody>{commissions.map((c) => <TableRow key={c.id}><TableCell className="font-medium">{c.id.slice(0,8)}</TableCell><TableCell className="font-semibold">{formatCurrency(c.amount)}</TableCell><TableCell>{statusBadge(c.status)}</TableCell><TableCell className="text-muted-foreground">{formatDate(c.createdAt)}</TableCell></TableRow>)}</TableBody></Table>}
           </CardContent>
         </Card>

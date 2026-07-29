@@ -27,7 +27,7 @@ export function PartnerAffiliate() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants}>
-        <h2 className="text-2xl font-bold flex items-center gap-2"><Link2 className="h-6 w-6 text-emerald-600" />{t('partner.affiliate') || 'Affiliate Program'}</h2>
+        <h2 className="text-2xl font-bold flex items-center gap-2"><Link2 className="h-6 w-6 text-emerald-600" />{t('partner.affiliate')}</h2>
       </motion.div>
 
       <motion.div variants={itemVariants}>
@@ -51,8 +51,8 @@ export function PartnerAffiliate() {
           <CardHeader><CardTitle>{t('partner.affiliateDetails')}</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="text-center p-4 rounded-xl bg-emerald-50"><p className="text-2xl font-bold text-emerald-700">10%</p><p className="text-sm text-muted-foreground">{t('partner.commissionRate')}</p></div>
-              <div className="text-center p-4 rounded-xl bg-emerald-50"><p className="text-2xl font-bold text-emerald-700">30 days</p><p className="text-sm text-muted-foreground">{t('partner.cookieDuration')}</p></div>
+              <div className="text-center p-4 rounded-xl bg-emerald-50"><p className="text-2xl font-bold text-emerald-700">{t('partner.commissionRateValue')}</p><p className="text-sm text-muted-foreground">{t('partner.commissionRate')}</p></div>
+              <div className="text-center p-4 rounded-xl bg-emerald-50"><p className="text-2xl font-bold text-emerald-700">{t('partner.cookieDurationValue')}</p><p className="text-sm text-muted-foreground">{t('partner.cookieDuration')}</p></div>
               <div className="text-center p-4 rounded-xl bg-emerald-50"><Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{t('partner.goldTier')}</Badge><p className="text-sm text-muted-foreground mt-1">{t('partner.currentLevel')}</p></div>
             </div>
           </CardContent>

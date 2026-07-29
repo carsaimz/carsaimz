@@ -187,19 +187,19 @@ export function AdminDashboard() {
       apiFetch('/api/stats').then(async (res) => {
         if (!res.ok) throw new Error(`Stats: HTTP ${res.status}`);
         const data = await safeJson(res);
-        if (!data) throw new Error('Stats: Server returned non-JSON response');
+        if (!data) throw new Error(t('common.serverNonJson'));
         return data;
       }),
       apiFetch('/api/stats/history').then(async (res) => {
         if (!res.ok) throw new Error(`History: HTTP ${res.status}`);
         const data = await safeJson(res);
-        if (!data) throw new Error('History: Server returned non-JSON response');
+        if (!data) throw new Error(t('common.serverNonJson'));
         return data;
       }),
       apiFetch(`/api/dashboard?role=${user?.role || 'admin'}&userId=${user.id}`).then(async (res) => {
         if (!res.ok) throw new Error(`Dashboard: HTTP ${res.status}`);
         const data = await safeJson(res);
-        if (!data) throw new Error('Dashboard: Server returned non-JSON response');
+        if (!data) throw new Error(t('common.serverNonJson'));
         return data;
       }),
     ])
@@ -215,7 +215,7 @@ export function AdminDashboard() {
         }
       })
       .catch((err) => {
-        setError(err.message || 'Network error');
+        setError(err.message || t('common.networkError'));
       })
       .finally(() => {
         setLoading(false);
@@ -307,15 +307,15 @@ export function AdminDashboard() {
       icon: Users,
       label: t('admin.usersTotal'),
       value: totalUsers.toLocaleString(),
-      change: `${stats?.users.active ?? 0} active`,
+      change: t('admin.activeCount', { count: stats?.users.active ?? 0 }),
       up: true,
       color: 'emerald',
     },
     {
       icon: FileText,
-      label: 'Posts',
+      label: t('admin.posts'),
       value: totalPosts.toLocaleString(),
-      change: `${stats?.content?.publishedPosts ?? 0} published`,
+      change: t('admin.publishedCount', { count: stats?.content?.publishedPosts ?? 0 }),
       up: true,
       color: 'green',
     },
@@ -323,7 +323,7 @@ export function AdminDashboard() {
       icon: Briefcase,
       label: t('projects.title'),
       value: totalProjects.toLocaleString(),
-      change: `${stats?.projects?.featured ?? 0} featured`,
+      change: t('admin.featuredCount', { count: stats?.projects?.featured ?? 0 }),
       up: true,
       color: 'teal',
     },
@@ -331,7 +331,7 @@ export function AdminDashboard() {
       icon: DollarSign,
       label: t('admin.totalRevenue'),
       value: formatCurrency(totalRevenue),
-      change: `${formatCurrency(confirmedRevenue)} confirmed`,
+      change: t('admin.confirmedRevenue', { amount: formatCurrency(confirmedRevenue) }),
       up: true,
       color: 'yellow',
     },
@@ -355,7 +355,7 @@ export function AdminDashboard() {
     {
       icon: Briefcase,
       title: t('projects.title'),
-      description: 'Manage platform projects',
+      description: t('admin.manageProjects'),
       count: totalProjects,
       color: 'teal',
     },
@@ -428,7 +428,7 @@ export function AdminDashboard() {
             <div className="flex items-center gap-3">
               <AlertCircle className="h-6 w-6 text-red-500" />
               <div>
-                <h3 className="font-semibold text-red-700">Failed to load admin dashboard</h3>
+                <h3 className="font-semibold text-red-700">{t('dashboard.loadError')}</h3>
                 <p className="text-sm text-muted-foreground">{error}</p>
               </div>
             </div>
@@ -436,7 +436,7 @@ export function AdminDashboard() {
               className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white"
               onClick={() => window.location.reload()}
             >
-              {t('common.retry') || 'Retry'}
+              {t('common.retry')}
             </Button>
           </CardContent>
         </Card>
@@ -512,7 +512,7 @@ export function AdminDashboard() {
                 {revenueData.length === 0 ? (
                   <div className="text-center py-12">
                     <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-muted-foreground">{t('common.noData') || 'No revenue data available'}</p>
+                    <p className="text-muted-foreground">{t('common.noData')}</p>
                   </div>
                 ) : (
                   <ResponsiveContainer width="100%" height={300}>
@@ -528,7 +528,7 @@ export function AdminDashboard() {
                       <Line
                         type="monotone"
                         dataKey="revenue"
-                        name="Revenue"
+                        name={t('admin.revenue')}
                         stroke="#059669"
                         strokeWidth={3}
                         dot={{ fill: '#059669', strokeWidth: 2 }}
@@ -537,7 +537,7 @@ export function AdminDashboard() {
                       <Line
                         type="monotone"
                         dataKey="target"
-                        name="Target"
+                        name={t('admin.target')}
                         stroke="#6ee7b7"
                         strokeWidth={2}
                         strokeDasharray="5 5"
@@ -563,7 +563,7 @@ export function AdminDashboard() {
                 {usersGrowthData.length === 0 ? (
                   <div className="text-center py-12">
                     <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-muted-foreground">{t('common.noData') || 'No user data available'}</p>
+                    <p className="text-muted-foreground">{t('common.noData')}</p>
                   </div>
                 ) : (
                   <ResponsiveContainer width="100%" height={250}>
@@ -575,8 +575,8 @@ export function AdminDashboard() {
                         contentStyle={{ borderRadius: '8px', border: '1px solid #d1fae5' }}
                       />
                       <Legend />
-                      <Bar dataKey="newUsers" name="New Users" fill="#059669" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="totalUsers" name="Total Users" fill="#6ee7b7" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="newUsers" name={t('admin.newUsers')} fill="#059669" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="totalUsers" name={t('admin.totalUsers')} fill="#6ee7b7" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -588,14 +588,14 @@ export function AdminDashboard() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <PieChartIcon className="h-5 w-5 text-emerald-600" />
-                  Posts by Category
+                  {t('admin.postsByCategory')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {postsByCategoryData.length === 0 ? (
                   <div className="text-center py-12">
                     <PieChartIcon className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-muted-foreground">{t('common.noData') || 'No category data available'}</p>
+                    <p className="text-muted-foreground">{t('common.noData')}</p>
                   </div>
                 ) : (
                   <ResponsiveContainer width="100%" height={250}>
@@ -638,7 +638,7 @@ export function AdminDashboard() {
                 {recentActivityItems.length === 0 ? (
                   <div className="text-center py-12">
                     <Inbox className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-muted-foreground">{t('common.noData') || 'No recent activity'}</p>
+                    <p className="text-muted-foreground">{t('common.noData')}</p>
                   </div>
                 ) : (
                   <div className="space-y-3 max-h-80 overflow-y-auto">
@@ -674,7 +674,7 @@ export function AdminDashboard() {
               {revenueData.length === 0 ? (
                 <div className="text-center py-12">
                   <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground">{t('common.noData') || 'No revenue data available'}</p>
+                  <p className="text-muted-foreground">{t('common.noData')}</p>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={350}>
@@ -698,22 +698,22 @@ export function AdminDashboard() {
           {/* Payment methods breakdown */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Payment Methods Breakdown</CardTitle>
+              <CardTitle className="text-lg">{t('admin.paymentMethodsBreakdown')}</CardTitle>
             </CardHeader>
             <CardContent>
               {stats?.payments?.total === 0 ? (
                 <div className="text-center py-12">
                   <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground">{t('common.noData') || 'No payment data available'}</p>
+                  <p className="text-muted-foreground">{t('common.noData')}</p>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
                       data={[
-                        { name: 'M-Pesa', value: stats?.payments.mpesa ?? 0 },
-                        { name: 'Transfer', value: stats?.payments.transfer ?? 0 },
-                        { name: 'Deposit', value: stats?.payments.deposit ?? 0 },
+                        { name: t('financial.mpesa'), value: stats?.payments.mpesa ?? 0 },
+                        { name: t('financial.transfer'), value: stats?.payments.transfer ?? 0 },
+                        { name: t('financial.deposit'), value: stats?.payments.deposit ?? 0 },
                       ]}
                       cx="50%"
                       cy="50%"
@@ -784,26 +784,26 @@ export function AdminDashboard() {
                 <div className="p-4 rounded-lg bg-emerald-50/80">
                   <div className="flex items-center gap-2 mb-2">
                     <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                    <span className="font-medium">Server Status</span>
+                    <span className="font-medium">{t('admin.serverStatus')}</span>
                   </div>
-                  <p className="text-sm text-emerald-700">All systems operational</p>
+                  <p className="text-sm text-emerald-700">{t('admin.allSystemsOperational')}</p>
                 </div>
                 <div className="p-4 rounded-lg bg-emerald-50/80">
                   <div className="flex items-center gap-2 mb-2">
                     <Clock className="h-5 w-5 text-emerald-600" />
-                    <span className="font-medium">Uptime</span>
+                    <span className="font-medium">{t('admin.uptime')}</span>
                   </div>
                   <p className="text-sm text-emerald-700">
-                    {stats?.overview ? `${stats.overview.totalUsers} users active` : 'N/A'}
+                    {stats?.overview ? t('admin.activeCount', { count: stats.overview.totalUsers }) : t('common.na')}
                   </p>
                 </div>
                 <div className="p-4 rounded-lg bg-emerald-50/80">
                   <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                    <span className="font-medium">Support</span>
+                    <span className="font-medium">{t('dashboard.support')}</span>
                   </div>
                   <p className="text-sm text-yellow-700">
-                    {stats?.support ? `${stats.support.openTickets} open tickets` : '0 open tickets'}
+                    {stats?.support ? t('admin.openTickets', { count: stats.support.openTickets }) : t('admin.openTickets', { count: 0 })}
                   </p>
                 </div>
               </div>

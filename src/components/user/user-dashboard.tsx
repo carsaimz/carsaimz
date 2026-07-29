@@ -135,15 +135,15 @@ export function UserDashboard() {
         return safeJson(res);
       })
       .then((json) => {
-        if (!json) { setError('Server returned non-JSON response'); return; }
+        if (!json) { setError(t('common.serverNonJson')); return; }
         if (json.success && json.data) {
           setData(json.data as DashboardData);
         } else {
-          setError(json.message || 'Failed to load dashboard data');
+          setError(json.message || t('dashboard.loadError'));
         }
       })
       .catch((err) => {
-        setError(err.message || 'Network error');
+        setError(err.message || t('common.networkError'));
       })
       .finally(() => {
         setLoading(false);
@@ -206,7 +206,7 @@ export function UserDashboard() {
       case 'transfer':
         return t('financial.transfer');
       case 'deposit':
-        return 'Deposit';
+        return t('financial.deposit');
       default:
         return method;
     }
@@ -314,7 +314,7 @@ export function UserDashboard() {
             <div className="flex items-center gap-3">
               <AlertCircle className="h-6 w-6 text-red-500" />
               <div>
-                <h3 className="font-semibold text-red-700">Failed to load dashboard</h3>
+                <h3 className="font-semibold text-red-700">{t('dashboard.loadError')}</h3>
                 <p className="text-sm text-muted-foreground">{error}</p>
               </div>
             </div>
@@ -329,15 +329,15 @@ export function UserDashboard() {
                     return safeJson(res);
                   })
                   .then((json) => {
-                    if (!json) { setError('Server returned non-JSON response'); return; }
+                    if (!json) { setError(t('common.serverNonJson')); return; }
                     if (json.success && json.data) setData(json.data as DashboardData);
-                    else setError(json.message || 'Failed to load');
+                    else setError(json.message || t('dashboard.loadError'));
                   })
                   .catch((err) => setError(err.message))
                   .finally(() => setLoading(false));
               }}
             >
-              {t('common.retry') || 'Retry'}
+              {t('common.retry')}
             </Button>
           </CardContent>
         </Card>
@@ -456,7 +456,7 @@ export function UserDashboard() {
                 {quotes.length === 0 ? (
                   <div className="text-center py-8">
                     <Inbox className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">{t('common.noData') || 'No quotes yet'}</p>
+                    <p className="text-sm text-muted-foreground">{t('common.noData')}</p>
                   </div>
                 ) : (
                   <div className="space-y-3 max-h-64 overflow-y-auto">
@@ -496,7 +496,7 @@ export function UserDashboard() {
                 {payments.length === 0 ? (
                   <div className="text-center py-8">
                     <Inbox className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">{t('common.noData') || 'No payments yet'}</p>
+                    <p className="text-sm text-muted-foreground">{t('common.noData')}</p>
                   </div>
                 ) : (
                   <div className="space-y-3 max-h-64 overflow-y-auto">
@@ -508,7 +508,7 @@ export function UserDashboard() {
                           </div>
                           <div>
                             <p className="font-medium text-sm">
-                              {payment.proposal?.title || `Payment ${payment.id.slice(0, 8)}`}
+                              {payment.proposal?.title || t('dashboard.paymentFallback', { id: payment.id.slice(0, 8) })}
                             </p>
                             <p className="text-xs text-muted-foreground">{methodLabel(payment.method)} · {formatDate(payment.createdAt)}</p>
                           </div>
@@ -557,9 +557,9 @@ export function UserDashboard() {
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <Bell className="h-4 w-4 text-emerald-500" />
-                      <span className="text-muted-foreground">{t('dashboard.notifications') || 'Notifications'}:</span>
+                      <span className="text-muted-foreground">{t('dashboard.notifications')}:</span>
                       <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
-                        {unreadNotifications} unread
+                        {unreadNotifications} {t('common.unread')}
                       </Badge>
                     </div>
                   </div>
@@ -587,14 +587,14 @@ export function UserDashboard() {
                 {quotes.length === 0 ? (
                   <div className="text-center py-12">
                     <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-muted-foreground">{t('common.noData') || 'No quotes found'}</p>
-                    <p className="text-sm text-muted-foreground mt-1">{t('dashboard.quoteRequest') || 'Request your first quote'}</p>
+                    <p className="text-muted-foreground">{t('common.noData')}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t('dashboard.quoteRequest')}</p>
                   </div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>ID</TableHead>
+                        <TableHead>{t('common.id')}</TableHead>
                         <TableHead>{t('financial.item')}</TableHead>
                         <TableHead>{t('financial.description')}</TableHead>
                         <TableHead>{t('common.status')}</TableHead>
@@ -637,13 +637,13 @@ export function UserDashboard() {
                 {payments.length === 0 ? (
                   <div className="text-center py-12">
                     <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-muted-foreground">{t('common.noData') || 'No payments found'}</p>
+                    <p className="text-muted-foreground">{t('common.noData')}</p>
                   </div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>ID</TableHead>
+                        <TableHead>{t('common.id')}</TableHead>
                         <TableHead>{t('financial.description')}</TableHead>
                         <TableHead>{t('financial.paymentMethod')}</TableHead>
                         <TableHead>{t('financial.amount')}</TableHead>
@@ -655,7 +655,7 @@ export function UserDashboard() {
                       {payments.map((payment) => (
                         <TableRow key={payment.id}>
                           <TableCell className="font-medium">{payment.id.slice(0, 8)}</TableCell>
-                          <TableCell>{payment.proposal?.title || `Payment ${payment.id.slice(0, 8)}`}</TableCell>
+                          <TableCell>{payment.proposal?.title || t('dashboard.paymentFallback', { id: payment.id.slice(0, 8) })}</TableCell>
                           <TableCell>
                             <Badge variant="outline" className="text-emerald-600 border-emerald-200">
                               {methodLabel(payment.method)}
@@ -692,17 +692,17 @@ export function UserDashboard() {
                 {tickets.length === 0 ? (
                   <div className="text-center py-12">
                     <HeadphonesIcon className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-muted-foreground">{t('common.noData') || 'No support tickets found'}</p>
-                    <p className="text-sm text-muted-foreground mt-1">{t('dashboard.supportCreate') || 'Create your first ticket'}</p>
+                    <p className="text-muted-foreground">{t('common.noData')}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t('dashboard.supportCreate')}</p>
                   </div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>ID</TableHead>
+                        <TableHead>{t('common.id')}</TableHead>
                         <TableHead>{t('contact.subject')}</TableHead>
                         <TableHead>{t('common.status')}</TableHead>
-                        <TableHead>Priority</TableHead>
+                        <TableHead>{t('dashboard.priority')}</TableHead>
                         <TableHead>{t('common.createdAt')}</TableHead>
                         <TableHead>{t('common.actions')}</TableHead>
                       </TableRow>

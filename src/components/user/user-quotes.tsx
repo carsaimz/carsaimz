@@ -43,9 +43,9 @@ export function UserQuotes() {
     apiFetch(`/api/quotes?userId=${user?.id || 'demo-user-001'}`)
       .then((res) => safeJson(res))
       .then((data) => {
-        if (!data) { setError('Server returned non-JSON response'); return; }
+        if (!data) { setError(t('common.serverNonJson')); return; }
         if (data.success) setQuotes(data.data);
-        else setError(data.message || 'Failed to load quotes');
+        else setError(data.message || t('dashboard.quotesLoadFailed'));
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -85,19 +85,19 @@ export function UserQuotes() {
       <motion.div variants={itemVariants}>
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <ClipboardList className="h-6 w-6 text-emerald-600" />
-          {t('dashboard.quotes') || 'My Quotes'}
+          {t('dashboard.quotes')}
         </h2>
-        <p className="text-muted-foreground mt-1">View and manage your service quotes</p>
+        <p className="text-muted-foreground mt-1">{t('dashboard.quotesSubtitle')}</p>
       </motion.div>
 
       <motion.div variants={itemVariants}>
         <Card>
           <CardContent className="p-0">
             {quotes.length === 0 ? (
-              <div className="text-center py-12"><ClipboardList className="h-12 w-12 text-muted-foreground mx-auto mb-3" /><p className="text-muted-foreground">{t('common.noData') || 'No quotes yet'}</p></div>
+              <div className="text-center py-12"><ClipboardList className="h-12 w-12 text-muted-foreground mx-auto mb-3" /><p className="text-muted-foreground">{t('common.noData')}</p></div>
             ) : (
               <Table>
-                <TableHeader><TableRow className="bg-emerald-50/50"><TableHead>Title</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow className="bg-emerald-50/50"><TableHead>{t('common.title')}</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {quotes.map((q) => (
                     <TableRow key={q.id}><TableCell className="font-medium">{q.title}</TableCell><TableCell>{statusBadge(q.status)}</TableCell><TableCell className="text-muted-foreground">{formatDate(q.createdAt)}</TableCell></TableRow>

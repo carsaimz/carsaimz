@@ -76,7 +76,7 @@ export function UserSettings() {
       });
 
       const data = await safeJson(res);
-      if (!data) { toast.error('Server returned non-JSON response'); return; }
+      if (!data) { toast.error(t('common.serverNonJson')); return; }
 
       if (data.user) {
         // Update the store with the new user data
@@ -103,21 +103,21 @@ export function UserSettings() {
             }),
           });
           const passData = await safeJson(passRes);
-          if (!passData) { toast.error('Server returned non-JSON response'); return; }
+          if (!passData) { toast.error(t('common.serverNonJson')); return; }
           if (!passData.user) {
-            toast.error(t('auth.passwordUpdateFailed') || 'Failed to update password');
+            toast.error(t('auth.passwordUpdateFailed'));
           }
         }
 
-        toast.success(t('dashboard.profileSaved') || 'Profile saved successfully');
+        toast.success(t('dashboard.profileSaved'));
         setNewPassword('');
         setConfirmNewPassword('');
       } else {
-        toast.error(data.error || t('common.error') || 'Failed to save profile');
+        toast.error(data.error || t('common.error'));
       }
     } catch (err) {
       console.error('Profile save error:', err);
-      toast.error(t('common.error') || 'Failed to save profile');
+      toast.error(t('common.error'));
     }
     setSaving(false);
   };
@@ -125,13 +125,13 @@ export function UserSettings() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants}>
-        <h2 className="text-2xl font-bold flex items-center gap-2"><Settings className="h-6 w-6 text-emerald-600" />{t('dashboard.settings') || 'Settings'}</h2>
-        <p className="text-muted-foreground mt-1">{t('dashboard.settingsDesc') || 'Manage your profile and preferences'}</p>
+        <h2 className="text-2xl font-bold flex items-center gap-2"><Settings className="h-6 w-6 text-emerald-600" />{t('dashboard.settings')}</h2>
+        <p className="text-muted-foreground mt-1">{t('dashboard.settingsDesc')}</p>
       </motion.div>
 
       <motion.div variants={itemVariants}>
         <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><User className="h-5 w-5 text-emerald-600" />{t('dashboard.profileInfo') || 'Profile Information'}</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><User className="h-5 w-5 text-emerald-600" />{t('dashboard.profileInfo')}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -147,16 +147,16 @@ export function UserSettings() {
                 <Input id="phone" value={formData.phone} onChange={handleChange} className="focus-visible:ring-emerald-500" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="company"><Building2 className="h-3.5 w-3.5 mr-1 inline" />{t('dashboard.company') || 'Company'}</Label>
+                <Label htmlFor="company"><Building2 className="h-3.5 w-3.5 mr-1 inline" />{t('dashboard.company')}</Label>
                 <Input id="company" value={formData.company} onChange={handleChange} className="focus-visible:ring-emerald-500" />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="bio"><FileText className="h-3.5 w-3.5 mr-1 inline" />{t('dashboard.bio') || 'Bio'}</Label>
+              <Label htmlFor="bio"><FileText className="h-3.5 w-3.5 mr-1 inline" />{t('dashboard.bio')}</Label>
               <Textarea id="bio" value={formData.bio} onChange={handleChange} className="focus-visible:ring-emerald-500 resize-none" rows={3} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="address"><MapPin className="h-3.5 w-3.5 mr-1 inline" />{t('dashboard.address') || 'Address'}</Label>
+              <Label htmlFor="address"><MapPin className="h-3.5 w-3.5 mr-1 inline" />{t('dashboard.address')}</Label>
               <Input id="address" value={formData.address} onChange={handleChange} className="focus-visible:ring-emerald-500" />
             </div>
 
@@ -164,7 +164,7 @@ export function UserSettings() {
 
             {/* Password Change Section */}
             <div className="space-y-3">
-              <h3 className="text-sm font-medium">{t('dashboard.changePassword') || 'Change Password'}</h3>
+              <h3 className="text-sm font-medium">{t('dashboard.changePassword')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="new-password">{t('auth.password')}</Label>
@@ -184,7 +184,7 @@ export function UserSettings() {
                       size="icon"
                       className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                      aria-label={showNewPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                     >
                       {showNewPassword ? <EyeOff className="size-4 text-muted-foreground" /> : <Eye className="size-4 text-muted-foreground" />}
                     </Button>
@@ -208,7 +208,7 @@ export function UserSettings() {
                       size="icon"
                       className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                      aria-label={showConfirmPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                     >
                       {showConfirmPassword ? <EyeOff className="size-4 text-muted-foreground" /> : <Eye className="size-4 text-muted-foreground" />}
                     </Button>
@@ -225,7 +225,7 @@ export function UserSettings() {
             <div className="flex items-center gap-3">
               <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={handleSave} disabled={saving}>
                 <Save className="h-4 w-4 mr-2" />
-                {saving ? (t('dashboard.saving') || 'Saving...') : (t('dashboard.saveChanges') || 'Save Changes')}
+                {saving ? t('dashboard.saving') : t('dashboard.saveChanges')}
               </Button>
             </div>
           </CardContent>

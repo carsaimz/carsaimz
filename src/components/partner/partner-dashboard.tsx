@@ -139,13 +139,13 @@ export function PartnerDashboard() {
       apiFetch(`/api/dashboard?role=partner&userId=${user.id}`).then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await safeJson(res);
-        if (!data) throw new Error('Server returned non-JSON response');
+        if (!data) throw new Error(t('common.serverNonJson'));
         return data;
       }),
       apiFetch('/api/projects').then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await safeJson(res);
-        if (!data) throw new Error('Server returned non-JSON response');
+        if (!data) throw new Error(t('common.serverNonJson'));
         return data;
       }),
     ])
@@ -303,7 +303,7 @@ export function PartnerDashboard() {
               className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white"
               onClick={() => window.location.reload()}
             >
-              {t('common.retry') || 'Retry'}
+              {t('common.retry')}
             </Button>
           </CardContent>
         </Card>
@@ -417,7 +417,7 @@ export function PartnerDashboard() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
+                    <TableHead>{t('common.id')}</TableHead>
                     <TableHead>{t('financial.amount')}</TableHead>
                     <TableHead>{t('common.status')}</TableHead>
                     <TableHead>{t('common.createdAt')}</TableHead>
@@ -452,7 +452,7 @@ export function PartnerDashboard() {
             {projects.length === 0 ? (
               <div className="text-center py-12">
                 <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">{t('common.noData') || 'No portfolio projects'}</p>
+                <p className="text-muted-foreground">{t('common.noData')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -554,7 +554,7 @@ export function PartnerDashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="bank-name">{t('financial.transferBank')}</Label>
-                    <Input id="bank-name" placeholder="e.g. Millennium BIM" />
+                    <Input id="bank-name" placeholder={t('partner.bankPlaceholder')} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="account-number">{t('financial.transferAccount')}</Label>

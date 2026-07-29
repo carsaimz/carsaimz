@@ -34,7 +34,7 @@ export function PartnerWithdrawals() {
   useEffect(() => {
     apiFetch(`/api/dashboard?role=partner&userId=${user?.id || 'demo-partner-001'}`)
       .then((res) => safeJson(res))
-      .then((data) => { if (!data) { setError('Server returned non-JSON response'); return; } if (data.success && data.data) { const paidCommissions = (data.data.recentActivity?.commissions || []).filter((c: any) => c.status === 'paid'); setWithdrawals(paidCommissions); } else setError(data.message); })
+      .then((data) => { if (!data) { setError(t('common.serverNonJson')); return; } if (data.success && data.data) { const paidCommissions = (data.data.recentActivity?.commissions || []).filter((c: any) => c.status === 'paid'); setWithdrawals(paidCommissions); } else setError(data.message); })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [user?.id]);
@@ -45,7 +45,7 @@ export function PartnerWithdrawals() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants}>
-        <h2 className="text-2xl font-bold flex items-center gap-2"><Banknote className="h-6 w-6 text-emerald-600" />{t('partner.withdrawals') || 'Withdrawals'}</h2>
+        <h2 className="text-2xl font-bold flex items-center gap-2"><Banknote className="h-6 w-6 text-emerald-600" />{t('partner.withdrawals')}</h2>
       </motion.div>
 
       <motion.div variants={itemVariants}>
