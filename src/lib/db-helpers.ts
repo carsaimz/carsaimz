@@ -71,19 +71,28 @@ export async function safeQueryDocs<T = Record<string, any>>(
  * Check if Firebase Admin SDK is available (env vars configured).
  * Returns an error message if not available, null if OK.
  *
- * Now also accepts project ID only (with applicationDefault() fallback)
- * or GOOGLE_APPLICATION_CREDENTIALS as alternatives to the full cert() path.
+ * Supports 3 authentication strategies:
+ * 1. Encrypted private key (FIREBASE_ADMIN_KEY_SECRET + FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED)
+ * 2. Plain private key (FIREBASE_ADMIN_PRIVATE_KEY)
+ * 3. Application Default Credentials (GOOGLE_APPLICATION_CREDENTIALS)
  */
 export function checkFirebaseAdmin(): string | null {
+  const encryptedKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED
+  const keySecret = process.env.FIREBASE_ADMIN_KEY_SECRET
   const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY
   const googleAppCreds = process.env.GOOGLE_APPLICATION_CREDENTIALS
 
-  // Strategy 1: cert() with private key (PROJECT_ID and CLIENT_EMAIL have hardcoded fallbacks)
+  // Strategy 1: Encrypted private key (preferred)
+  if (encryptedKey && keySecret) {
+    return null
+  }
+
+  // Strategy 2: Plain private key (legacy)
   if (privateKey) {
     return null
   }
 
-  // Strategy 2: applicationDefault() fallback — needs GOOGLE_APPLICATION_CREDENTIALS
+  // Strategy 3: Application Default Credentials
   if (googleAppCreds) {
     return null
   }
@@ -96,7 +105,7 @@ export function checkFirebaseAdmin(): string | null {
     return initErr
   } catch {}
 
-  return 'Firebase Admin SDK not configured. Set FIREBASE_ADMIN_PRIVATE_KEY as an environment variable. PROJECT_ID and CLIENT_EMAIL have hardcoded fallbacks in firebase-admin.ts.'
+  return 'Firebase Admin SDK not configured. Set FIREBASE_ADMIN_KEY_SECRET + FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED (encrypted) or FIREBASE_ADMIN_PRIVATE_KEY (plain) as environment variables. PROJECT_ID and CLIENT_EMAIL have hardcoded fallbacks.'
 }
 
 /**
