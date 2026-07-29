@@ -84,6 +84,8 @@ export function PrivacyPage() {
             <Link href="/terms" className="text-emerald-600 hover:underline">{t('legal.privacy.seeAlsoTerms')}</Link>
             {' · '}
             <Link href="/cookies" className="text-emerald-600 hover:underline">{t('legal.privacy.seeAlsoCookies')}</Link>
+            {' · '}
+            <Link href="/dmca" className="text-emerald-600 hover:underline">{t('footer.dmca')}</Link>
           </p>
         </div>
       </div>

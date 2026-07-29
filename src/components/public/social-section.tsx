@@ -1,18 +1,16 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import {
-  Youtube,
-  Github,
-  ExternalLink,
-} from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faWhatsapp,
   faFacebookF,
   faInstagram,
   faTiktok,
+  faYoutube,
   faDiscord,
+  faGithub,
 } from '@fortawesome/free-brands-svg-icons';
 import { GITHUB_URL } from '@/lib/client-config';
 import { useLanguage } from '@/contexts/language-context';
@@ -69,7 +67,7 @@ const socialLinks: SocialLink[] = [
     name: 'YouTube',
     handle: '@carsaimz',
     url: 'https://youtube.com/@carsaimz',
-    icon: <Youtube className="h-7 w-7" />,
+    icon: <FontAwesomeIcon icon={faYoutube} className="h-7 w-7" />,
     color: 'text-red-400',
     hoverColor: 'group-hover:text-red-300',
     bgColor: 'from-red-500/20 to-red-600/10',
@@ -87,7 +85,7 @@ const socialLinks: SocialLink[] = [
     name: 'GitHub',
     handle: 'carsaimz',
     url: GITHUB_URL,
-    icon: <Github className="h-7 w-7" />,
+    icon: <FontAwesomeIcon icon={faGithub} className="h-7 w-7" />,
     color: 'text-gray-300',
     hoverColor: 'group-hover:text-white',
     bgColor: 'from-gray-500/20 to-gray-600/10',

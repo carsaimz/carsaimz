@@ -5,7 +5,13 @@ import ZAI from 'z-ai-web-dev-sdk'
  * Carsai Mozambique - AI Chat API Endpoint
  *
  * Uses z-ai-web-dev-sdk as the primary AI provider.
- * The SDK auto-configures via ZAI.create() — no .z-ai-config file needed.
+ *
+ * Configuration priority:
+ * 1. .z-ai-config file (auto-detected by SDK)
+ * 2. Environment variables (ZAI_BASE_URL, ZAI_API_KEY, etc.)
+ *
+ * On Vercel/serverless: set ZAI_BASE_URL and ZAI_API_KEY env vars.
+ * On local dev: the SDK auto-detects /etc/.z-ai-config or ./.z-ai-config.
  *
  * IMPORTANT: z-ai-web-dev-sdk MUST be used in backend code only.
  * System prompts use role: 'assistant' (not 'system') per SDK convention.
@@ -48,13 +54,63 @@ const CARSAI_CONTEXT = `You are the Carsai Mozambique assistant — a knowledgea
 
 // ── Singleton ZAI instance (reuse across requests) ──
 
-let zaiInstance: Awaited<ReturnType<typeof ZAI.create>> | null = null
+let zaiInstance: InstanceType<typeof ZAI> | null = null
+let zaiInitPromise: Promise<InstanceType<typeof ZAI>> | null = null
+
+/**
+ * Build ZAI config from environment variables.
+ * Used as fallback when .z-ai-config file is not available (e.g. Vercel).
+ */
+function buildConfigFromEnv() {
+  const baseUrl = process.env.ZAI_BASE_URL
+  const apiKey = process.env.ZAI_API_KEY
+
+  if (!baseUrl || !apiKey) return null
+
+  return {
+    baseUrl,
+    apiKey,
+    chatId: process.env.ZAI_CHAT_ID || '',
+    userId: process.env.ZAI_USER_ID || '',
+    token: process.env.ZAI_TOKEN || '',
+  }
+}
 
 async function getZaiInstance() {
-  if (!zaiInstance) {
-    zaiInstance = await ZAI.create()
+  if (zaiInstance) return zaiInstance
+
+  // Prevent concurrent initialization
+  if (zaiInitPromise) return zaiInitPromise
+
+  zaiInitPromise = (async () => {
+    try {
+      // Try 1: Use SDK's auto-detection (.z-ai-config file)
+      const zai = await ZAI.create()
+      zaiInstance = zai
+      return zai
+    } catch {
+      // Try 2: Use environment variables (for Vercel/serverless)
+      const envConfig = buildConfigFromEnv()
+      if (envConfig) {
+        // Directly instantiate ZAI with config (bypass file-based config)
+        const zai = new ZAI(envConfig)
+        zaiInstance = zai
+        return zai
+      }
+
+      // No config available — throw descriptive error
+      throw new Error(
+        'ZAI SDK not configured. Either create .z-ai-config file or set ZAI_BASE_URL and ZAI_API_KEY environment variables.'
+      )
+    }
+  })()
+
+  try {
+    return await zaiInitPromise
+  } catch (err) {
+    zaiInitPromise = null
+    throw err
   }
-  return zaiInstance
 }
 
 // ── Route handler ──
@@ -123,10 +179,23 @@ export async function POST(request: NextRequest) {
 
     // Reset ZAI instance on error (might be stale)
     zaiInstance = null
+    zaiInitPromise = null
 
     const errorMessage = error instanceof Error
       ? error.message
       : 'Unknown error'
+
+    // Config not found — helpful message for developers
+    if (errorMessage.includes('not configured') || errorMessage.includes('Configuration file not found')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'O assistente de IA não está configurado. Por favor, contacte o administrador.',
+          debug: 'Set ZAI_BASE_URL and ZAI_API_KEY env vars, or create .z-ai-config file.',
+        },
+        { status: 503 }
+      )
+    }
 
     // Check if it's a connection/config error
     if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('timeout') || errorMessage.includes('network')) {

@@ -732,6 +732,7 @@ export const enUS: TranslationObject = {
     links: 'Links',
     legal: 'Legal',
     cookies: 'Cookie Policy',
+    dmca: 'DMCA Policy',
     sitemap: 'Sitemap',
     accessibility: 'Accessibility',
     addressValue: 'Montepuez, Cabo Delgado, Mozambique',
@@ -1127,6 +1128,41 @@ export const enUS: TranslationObject = {
         updates: {
           title: 'Policy Updates',
           content: 'This Cookie Policy was last updated in January 2026. Carsai Mozambique periodically reviews this policy to ensure it reflects current practices and relevant legislation. Significant changes will be communicated through our website and by email where applicable. Continued use of our services after policy changes constitutes acceptance of the new terms. For questions about cookies, contact: Email: suporte.carsaimz@gmail.com | Phone: 847545020 / 874512581 / 84246463 / 835020143 | Location: Montepuez, Cabo Delgado, Mozambique (online operation). To exercise your rights regarding data collected via cookies, please also refer to our Privacy Policy available at /privacy.',
+        },
+      },
+    },
+    dmca: {
+      pageTitle: 'DMCA Policy',
+      pageSubtitle: 'Carsai Mozambique — Copyright infringement and DMCA takedown procedures',
+      lastUpdate: 'Last updated: January 2026',
+      seeAlso: 'See also:',
+      seeAlsoTerms: 'Terms and Conditions',
+      seeAlsoPrivacy: 'Privacy Policy',
+      seeAlsoCookies: 'Cookie Policy',
+      sections: {
+        overview: {
+          title: 'Overview',
+          content: 'The Digital Millennium Copyright Act (DMCA) is a United States copyright law that implements the 1996 treaties of the World Intellectual Property Organization (WIPO). While Carsai Mozambique is based in Montepuez, Cabo Delgado, Mozambique, we voluntarily adhere to DMCA principles and procedures as a best practice for our global operations and to protect the rights of copyright holders worldwide. This policy outlines our procedures for responding to notices of alleged copyright infringement on our platform, website, and digital services. We are committed to respecting intellectual property rights and will respond promptly to notices of alleged infringement that comply with the requirements set forth in this policy. This DMCA policy applies to all content hosted on our platform, including but not limited to website content, user-generated content, digital assets, and any materials made available through our services at https://carsai.mz.',
+        },
+        copyright: {
+          title: 'Copyright Policy',
+          content: 'All content, materials, software, graphics, logos, and intellectual property displayed on or accessible through the Carsai Mozambique platform at https://carsai.mz are the exclusive property of Carsai Mozambique Lda. or its content suppliers and are protected by Mozambican copyright law, the Berne Convention for the Protection of Literary and Artistic Works, and other applicable international copyright treaties. This includes, but is not limited to, the design, layout, and look-and-feel of the website, all text, graphics, logos, icons, images, audio clips, digital downloads, and data compilations, the software and code underlying our platform and services, and all original content produced by Carsai Mozambique for clients. Unauthorized reproduction, distribution, modification, display, or use of any content from our platform without prior written consent from Carsai Mozambique constitutes a violation of copyright law and may result in legal action. We reserve all rights not expressly granted in this policy.',
+        },
+        notice: {
+          title: 'Filing a DMCA Takedown Notice',
+          content: 'If you believe that your copyrighted work has been copied, reproduced, or made available on the Carsai Mozambique platform in a way that constitutes copyright infringement, you may submit a DMCA takedown notice to our designated copyright agent. Your notice must include the following information: a physical or electronic signature of the copyright owner or a person authorized to act on their behalf, identification of the copyrighted work claimed to have been infringed (if multiple works are involved, you may provide a representative list), identification of the material that is claimed to be infringing and that is to be removed or access to which is to be disabled, including information reasonably sufficient to permit Carsai Mozambique to locate the material on our platform, your contact information including address, telephone number, and email address, a statement that you have a good faith belief that the use of the material in the manner complained of is not authorized by the copyright owner, its agent, or the law, and a statement made under penalty of perjury that the information in the notification is accurate and that you are the copyright owner or authorized to act on behalf of the copyright owner. Send DMCA notices to: Email: carsaimozambique@gmail.com | Alternative Email: suporte.carsaimz@gmail.com | Phone: 847545020 / 874512581 | Address: Montepuez, Cabo Delgado, Mozambique.',
+        },
+        counterNotice: {
+          title: 'Filing a Counter-Notice',
+          content: 'If you believe that your content was removed or access to it was disabled as a result of a mistake or misidentification, you may submit a counter-notice to our designated copyright agent. Your counter-notice must include the following: your physical or electronic signature, identification of the material that has been removed or to which access has been disabled and the location at which the material appeared before it was removed or access was disabled, a statement under penalty of perjury that you have a good faith belief that the material was removed or disabled as a result of mistake or misidentification of the material to be removed or disabled, your name, address, telephone number, and a statement that you consent to the jurisdiction of the courts of Mozambique and that you will accept service of process from the person who provided the original DMCA notice or an agent of such person. Upon receipt of a valid counter-notice, Carsai Mozambique will forward a copy to the original complaining party and will restore the removed content or cease disabling access to it within 10 to 14 business days, unless the copyright owner files a court action seeking a restraining order. Send counter-notices to: Email: carsaimozambique@gmail.com | Alternative Email: suporte.carsaimz@gmail.com | Phone: 847545020 / 874512581 | Address: Montepuez, Cabo Delgado, Mozambique.',
+        },
+        repeatInfringers: {
+          title: 'Repeat Infringers Policy',
+          content: 'Carsai Mozambique has adopted a policy of terminating, in appropriate circumstances, users or account holders who are deemed to be repeat infringers of copyright. A repeat infringer is defined as a user who has been the subject of two or more valid DMCA takedown notices regarding content posted or made available through our platform. Upon receiving a valid DMCA notice, we will promptly remove or disable access to the allegedly infringing material and notify the user responsible for the content. If a user receives two or more valid DMCA takedown notices, Carsai Mozambique reserves the right to permanently terminate the user account, remove all content associated with the account, and refuse future access to our services. We maintain records of all DMCA takedown notices received and the actions taken in response. Users who believe a takedown notice was issued in error may file a counter-notice as described above. This repeat infringers policy is designed to protect the rights of copyright holders while ensuring fair treatment for all users of our platform.',
+        },
+        contact: {
+          title: 'Contact Information',
+          content: 'For all DMCA-related inquiries, copyright concerns, or to submit takedown notices and counter-notices, please contact Carsai Mozambique using the following information: Company: Carsai Mozambique Lda. | Primary DMCA Email: carsaimozambique@gmail.com | Support Email: suporte.carsaimz@gmail.com | Phone: 847545020 / 874512581 | Physical Address: Montepuez, Cabo Delgado, Mozambique | Website: https://carsai.mz. We aim to respond to all DMCA notices within 5 business days of receipt. For urgent matters requiring immediate attention, please contact us via phone during business hours. Please note that under Mozambican law, any person who knowingly materially misrepresents that material or activity is infringing may be subject to liability for damages. You should consult with legal counsel before submitting a DMCA notice or counter-notice to ensure that your claim is valid and that you have complied with all legal requirements. This DMCA Policy was last updated in January 2026. We may update this policy periodically, and any changes will be posted on our website at https://carsai.mz.',
         },
       },
     },

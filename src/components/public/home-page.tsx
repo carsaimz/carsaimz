@@ -75,6 +75,9 @@ export function HomePage() {
 
       <GradientWaveSVG height={40} />
 
+      {/* Social Media Section */}
+      <SocialSection />
+
       {/* FAQ Section */}
       <div className="relative overflow-hidden">
         <Suspense fallback={null}>
@@ -82,9 +85,6 @@ export function HomePage() {
         </Suspense>
         <FaqSection />
       </div>
-
-      {/* Social Media Section */}
-      <SocialSection />
     </>
   );
 }

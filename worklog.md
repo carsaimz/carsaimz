@@ -314,3 +314,32 @@ Stage Summary:
 - Admin users CRUD supports all fields (bio, company, address)
 - Affiliate links use detected URL with hardcoded fallback
 - 4 commits pushed to GitHub
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix social media section icons, move before FAQ, create setup docs, add LICENSE/DMCA, fix chatbot
+
+Work Log:
+- Moved SocialSection before FaqSection in home-page.tsx
+- Replaced Lucide icons (Youtube, Github) with FontAwesome icons in social-section.tsx for visual consistency
+- Investigated chatbot: z-ai-web-dev-sdk works fine, issue was missing .z-ai-config in project directory
+- Created .z-ai-config in project root (was only in /etc/, not accessible on Vercel)
+- Updated api/chat/route.ts to support ZAI_BASE_URL and ZAI_API_KEY env vars as fallback for Vercel
+- Added concurrent initialization guard to prevent race conditions
+- Created comprehensive docs/SETUP.md covering Firebase, Vercel, Docker, Android, Electron, chatbot
+- Created LICENSE file (MIT License, copyright 2022-2026 Carsai Mozambique)
+- Created DMCA page at /dmca with full component and route
+- Created docs/DMCA.md with full legal DMCA policy
+- Added DMCA translations to all 7 language files
+- Added footer.dmca translation key to all 7 language files
+- Added DMCA link to footer, terms page, and privacy page
+
+Stage Summary:
+- Social section now before FAQ on home page
+- All social media icons use FontAwesome (consistent visual style)
+- Chatbot fixed: .z-ai-config added + env var fallback for Vercel
+- Complete setup documentation created
+- MIT License added
+- DMCA policy page and legal documents created
+- Build passes successfully

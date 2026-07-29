@@ -98,6 +98,8 @@ export function TermsPage() {
             <Link href="/privacy" className="text-emerald-600 hover:underline">{t('legal.terms.seeAlsoPrivacy')}</Link>
             {' · '}
             <Link href="/cookies" className="text-emerald-600 hover:underline">{t('legal.terms.seeAlsoCookies')}</Link>
+            {' · '}
+            <Link href="/dmca" className="text-emerald-600 hover:underline">{t('footer.dmca')}</Link>
           </p>
         </div>
       </div>

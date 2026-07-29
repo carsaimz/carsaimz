@@ -46,6 +46,7 @@ const LEGAL_LINKS: FooterLink[] = [
   { path: '/privacy', labelKey: 'footer.privacy' },
   { path: '/terms', labelKey: 'footer.terms' },
   { path: '/cookies', labelKey: 'footer.cookies' },
+  { path: '/dmca', labelKey: 'footer.dmca' },
 ];
 
 // ──────────────────────────────────────────────
