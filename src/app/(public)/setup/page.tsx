@@ -16,13 +16,13 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
+import { useLanguage } from '@/contexts/language-context';
 import { seedInitialData as clientSeedInitialData, isDatabaseSeeded } from '@/lib/client-seed';
 import { useAuthStore } from '@/lib/store';
 
@@ -48,6 +48,7 @@ interface FirestoreStatus {
 // ──────────────────────────────────────────────
 
 export default function SetupPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
 
@@ -98,7 +99,6 @@ export default function SetupPage() {
         return;
       }
 
-      // Try to connect to Firestore and check for existing data
       const { firestoreClient } = await import('@/lib/firebase-client');
 
       if (!firestoreClient) {
@@ -138,28 +138,16 @@ export default function SetupPage() {
           hasAdmin = !adminSnap.empty;
         }
       } catch {
-        // Firestore rules might block — that's OK, means no admin yet
+        // Firestore rules might block
       }
 
-      // Check if data has been seeded (roles + settings exist)
+      // Check if data has been seeded
       let hasData = false;
       try {
         const dbSeeded = await isDatabaseSeeded();
         hasData = dbSeeded;
       } catch {
         // Can't check — assume not seeded
-      }
-
-      // Check setup lock
-      let isLocked = false;
-      try {
-        const settingsRef = doc(firestoreClient, 'settings', 'app');
-        const settingsSnap = await getDoc(settingsRef);
-        if (settingsSnap.exists() && settingsSnap.data()?.setupComplete) {
-          isLocked = true;
-        }
-      } catch {
-        // Settings doc doesn't exist yet
       }
 
       setStatus({
@@ -171,14 +159,12 @@ export default function SetupPage() {
         collections: existingCollections,
       });
 
-      // If setup is already done and admin exists, go to done
+      // Smart routing
       if (hasAdmin && hasData) {
         setStep('done');
       } else if (hasData && !hasAdmin) {
-        // Data exists but no admin — go to admin creation
         setStep('admin');
       } else {
-        // No data yet — start with seed
         setStep('seed');
       }
     } catch (err) {
@@ -189,7 +175,7 @@ export default function SetupPage() {
     setChecking(false);
   }
 
-  // ── Seed initial data (roles, permissions, categories, settings, etc.) ──
+  // ── Seed initial data ──
   async function handleSeedData() {
     setSeeding(true);
     setSeedError('');
@@ -206,7 +192,7 @@ export default function SetupPage() {
       }
     } catch (err) {
       console.error('Seed error:', err);
-      setSeedError('Erro ao criar dados iniciais. Pode tentar novamente.');
+      setSeedError(t('setup.seed.error'));
     }
     setSeeding(false);
   }
@@ -215,27 +201,23 @@ export default function SetupPage() {
   async function createSuperAdmin() {
     setAdminError('');
     if (!adminName || !adminEmail || !adminPassword) {
-      setAdminError('Preencha todos os campos.');
+      setAdminError(t('setup.admin.fillAllFields'));
       return;
     }
     if (adminPassword.length < 8) {
-      setAdminError('A senha deve ter pelo menos 8 caracteres.');
+      setAdminError(t('setup.admin.passwordMinLength'));
       return;
     }
 
     setAdminCreating(true);
     try {
-      // Create Firebase Auth user
       const { createUserWithEmailAndPassword, auth, updateProfile } = await import('@/lib/firebase-client');
       const credential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
 
-      // Update display name
       await updateProfile(credential.user, { displayName: adminName });
 
-      // Get ID token
       const idToken = await credential.user.getIdToken();
 
-      // Create Firestore profile with super_admin role
       const { firestoreClient } = await import('@/lib/firebase-client');
       const { doc, setDoc } = await import('firebase/firestore');
 
@@ -277,13 +259,13 @@ export default function SetupPage() {
       setStep('done');
     } catch (err: any) {
       console.error('Admin creation error:', err);
-      let errorMsg = 'Erro ao criar administrador.';
+      let errorMsg = t('setup.admin.error');
       if (err.code === 'auth/email-already-in-use') {
-        errorMsg = 'Este email já está registado no Firebase Auth.';
+        errorMsg = t('setup.admin.emailInUse');
       } else if (err.code === 'auth/weak-password') {
-        errorMsg = 'Senha demasiado fraca. Use pelo menos 8 caracteres.';
+        errorMsg = t('setup.admin.weakPassword');
       } else if (err.code === 'auth/invalid-email') {
-        errorMsg = 'Email inválido.';
+        errorMsg = t('setup.admin.invalidEmail');
       }
       setAdminError(errorMsg);
     }
@@ -301,7 +283,7 @@ export default function SetupPage() {
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="text-center space-y-3">
           <Loader2 className="size-8 animate-spin text-primary mx-auto" />
-          <p className="text-muted-foreground">Verificando estado do Firebase...</p>
+          <p className="text-muted-foreground">{t('setup.checking')}</p>
         </div>
       </div>
     );
@@ -315,10 +297,9 @@ export default function SetupPage() {
           <div className="flex items-center justify-center size-16 rounded-full bg-primary/10">
             <Settings className="size-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold">Carsai Mozambique — Instalação</h1>
+          <h1 className="text-2xl font-bold">{t('setup.title')}</h1>
           <p className="text-muted-foreground text-sm text-center max-w-md">
-            Configure o banco de dados, popule dados iniciais e crie o administrador.
-            Este assistente só é necessário na primeira vez.
+            {t('setup.subtitle')}
           </p>
         </div>
 
@@ -346,45 +327,45 @@ export default function SetupPage() {
           ))}
         </div>
 
-        {/* Step 1: Firebase Status Check */}
+        {/* Step 1: Firebase Status Check — using plain divs instead of Card to avoid extra spacing */}
         {step === 'check' && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <div className="rounded-xl border bg-card text-card-foreground shadow">
+            <div className="flex flex-col space-y-1.5 p-6">
+              <div className="flex items-center gap-2 font-semibold leading-none tracking-tight">
                 <Database className="size-5" />
-                Verificação do Firebase
-              </CardTitle>
-              <CardDescription>
-                Verificando a ligação ao Firebase e estado do banco de dados
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+                {t('setup.check.title')}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {t('setup.check.description')}
+              </p>
+            </div>
+            <div className="p-6 pt-0 space-y-4">
               <StatusItem
-                label="Firebase Configurado"
+                label={t('setup.check.firebaseConfigured')}
                 ok={status.configured}
-                detail={status.configured ? 'Credenciais encontradas' : 'Adicione as credenciais Firebase'}
+                detail={status.configured ? t('setup.check.credentialsFound') : t('setup.check.addCredentials')}
               />
               <StatusItem
-                label="Firestore Conectado"
+                label={t('setup.check.firestoreConnected')}
                 ok={status.connected}
-                detail={status.connected ? 'Ligação estabelecida' : 'Não foi possível conectar'}
+                detail={status.connected ? t('setup.check.connectionEstablished') : t('setup.check.couldNotConnect')}
               />
               <StatusItem
-                label="Dados Iniciais"
+                label={t('setup.check.initialData')}
                 ok={status.hasData}
-                detail={status.hasData ? `${status.collections.length} colecções com dados` : 'Necessário popular dados iniciais'}
+                detail={status.hasData ? t('setup.check.collectionsWithData', { count: status.collections.length }) : t('setup.check.needToPopulate')}
               />
               <StatusItem
-                label="Administrador"
+                label={t('setup.check.administrator')}
                 ok={status.hasAdmin}
-                detail={status.hasAdmin ? 'Administrador já existe' : 'Necessário criar administrador'}
+                detail={status.hasAdmin ? t('setup.check.adminExists') : t('setup.check.needAdmin')}
               />
 
               <Separator />
 
               {status.configured && status.connected ? (
                 <Button onClick={() => setStep('seed')} className="w-full" disabled={!status.connected}>
-                  Continuar
+                  {t('common.continue')}
                   <ArrowRight className="size-4 ml-2" />
                 </Button>
               ) : (
@@ -392,64 +373,63 @@ export default function SetupPage() {
                   <div className="flex items-start gap-2 p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg border border-yellow-200 dark:border-yellow-900">
                     <AlertTriangle className="size-5 text-yellow-600 shrink-0 mt-0.5" />
                     <div className="text-sm">
-                      <p className="font-medium text-yellow-800 dark:text-yellow-200">Firebase não configurado</p>
+                      <p className="font-medium text-yellow-800 dark:text-yellow-200">{t('setup.check.notConfigured')}</p>
                       <p className="text-yellow-700 dark:text-yellow-300 mt-1">
-                        Verifique se as credenciais Firebase estão correctas em <code className="text-xs bg-yellow-100 dark:bg-yellow-900 px-1 rounded">src/lib/client-config.ts</code>
+                        {t('setup.check.checkCredentials')} <code className="text-xs bg-yellow-100 dark:bg-yellow-900 px-1 rounded">src/lib/client-config.ts</code>
                       </p>
                     </div>
                   </div>
                   <Button onClick={checkFirestoreStatus} variant="outline" className="w-full">
                     <RefreshCw className="size-4 mr-2" />
-                    Verificar novamente
+                    {t('common.retry')}
                   </Button>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
-        {/* Step 2: Seed Data (BEFORE admin creation) */}
+        {/* Step 2: Seed Data */}
         {step === 'seed' && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <div className="rounded-xl border bg-card text-card-foreground shadow">
+            <div className="flex flex-col space-y-1.5 p-6">
+              <div className="flex items-center gap-2 font-semibold leading-none tracking-tight">
                 <Database className="size-5" />
-                Dados Iniciais
-              </CardTitle>
-              <CardDescription>
-                Popule o banco de dados com roles, permissões, categorias, serviços e configurações padrão.
-                Isto deve ser feito ANTES de criar o administrador.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+                {t('setup.seed.title')}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {t('setup.seed.description')}
+              </p>
+            </div>
+            <div className="p-6 pt-0 space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <span className="text-sm font-medium">Roles (super_admin, admin, partner, user)</span>
-                  <Badge variant="secondary">4 items</Badge>
+                  <span className="text-sm font-medium">{t('setup.seed.roles')}</span>
+                  <Badge variant="secondary">4</Badge>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <span className="text-sm font-medium">Permissões do sistema</span>
-                  <Badge variant="secondary">23 items</Badge>
+                  <span className="text-sm font-medium">{t('setup.seed.permissions')}</span>
+                  <Badge variant="secondary">23</Badge>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <span className="text-sm font-medium">Categorias do blog</span>
-                  <Badge variant="secondary">5 items</Badge>
+                  <span className="text-sm font-medium">{t('setup.seed.blogCategories')}</span>
+                  <Badge variant="secondary">5</Badge>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <span className="text-sm font-medium">Categorias do fórum</span>
-                  <Badge variant="secondary">4 items</Badge>
+                  <span className="text-sm font-medium">{t('setup.seed.forumCategories')}</span>
+                  <Badge variant="secondary">4</Badge>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <span className="text-sm font-medium">Serviços</span>
-                  <Badge variant="secondary">6 items</Badge>
+                  <span className="text-sm font-medium">{t('setup.seed.services')}</span>
+                  <Badge variant="secondary">6</Badge>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <span className="text-sm font-medium">Projectos de exemplo</span>
-                  <Badge variant="secondary">3 items</Badge>
+                  <span className="text-sm font-medium">{t('setup.seed.projects')}</span>
+                  <Badge variant="secondary">3</Badge>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <span className="text-sm font-medium">Configurações da aplicação</span>
-                  <Badge variant="secondary">17 items</Badge>
+                  <span className="text-sm font-medium">{t('setup.seed.appSettings')}</span>
+                  <Badge variant="secondary">17</Badge>
                 </div>
               </div>
 
@@ -462,11 +442,11 @@ export default function SetupPage() {
                   {Object.entries(seedResults).map(([key, val]) => (
                     <div key={key} className="flex items-center gap-2 text-sm text-green-600">
                       <CheckCircle2 className="size-4" />
-                      {key}: {val} criado(s)
+                      {key}: {val} {t('setup.seed.created')}
                     </div>
                   ))}
                   <Button onClick={() => setStep('admin')} className="w-full mt-4">
-                    Continuar para Criar Administrador
+                    {t('setup.seed.continueToAdmin')}
                     <ArrowRight className="size-4 ml-2" />
                   </Button>
                 </div>
@@ -476,64 +456,63 @@ export default function SetupPage() {
                     {seeding ? (
                       <>
                         <Loader2 className="size-4 mr-2 animate-spin" />
-                        Criando dados...
+                        {t('setup.seed.creating')}
                       </>
                     ) : (
                       <>
                         <Database className="size-4 mr-2" />
-                        Popular Banco de Dados
+                        {t('setup.seed.populate')}
                       </>
                     )}
                   </Button>
                   <Button onClick={() => setStep('admin')} variant="outline">
-                    Saltar
+                    {t('common.skip')}
                   </Button>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
-        {/* Step 3: Create Admin (AFTER data is seeded) */}
+        {/* Step 3: Create Admin */}
         {step === 'admin' && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <div className="rounded-xl border bg-card text-card-foreground shadow">
+            <div className="flex flex-col space-y-1.5 p-6">
+              <div className="flex items-center gap-2 font-semibold leading-none tracking-tight">
                 <Shield className="size-5" />
-                Criar Administrador
-              </CardTitle>
-              <CardDescription>
-                Crie a conta de super administrador. Esta conta terá acesso total ao painel de administração.
-                Os dados iniciais (roles, permissões) já foram criados no passo anterior.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+                {t('setup.admin.title')}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {t('setup.admin.description')}
+              </p>
+            </div>
+            <div className="p-6 pt-0 space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="admin-name">Nome completo</Label>
+                <Label htmlFor="admin-name">{t('setup.admin.fullName')}</Label>
                 <Input
                   id="admin-name"
                   type="text"
-                  placeholder="Nome do administrador"
+                  placeholder={t('setup.admin.namePlaceholder')}
                   value={adminName}
                   onChange={(e) => setAdminName(e.target.value)}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="admin-email">Email</Label>
+                <Label htmlFor="admin-email">{t('setup.admin.emailLabel')}</Label>
                 <Input
                   id="admin-email"
                   type="email"
-                  placeholder="admin@carsai.mz"
+                  placeholder={t('setup.admin.emailPlaceholder')}
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="admin-password">Senha</Label>
+                <Label htmlFor="admin-password">{t('setup.admin.passwordLabel')}</Label>
                 <Input
                   id="admin-password"
                   type="password"
-                  placeholder="Mínimo 8 caracteres"
+                  placeholder={t('setup.admin.passwordPlaceholder')}
                   value={adminPassword}
                   onChange={(e) => setAdminPassword(e.target.value)}
                 />
@@ -546,9 +525,9 @@ export default function SetupPage() {
               <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-900">
                 <Lock className="size-5 text-blue-600 shrink-0 mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-medium text-blue-800 dark:text-blue-200">Conta segura</p>
+                  <p className="font-medium text-blue-800 dark:text-blue-200">{t('setup.admin.secureAccount')}</p>
                   <p className="text-blue-700 dark:text-blue-300 mt-1">
-                    A senha é armazenada com encriptação do Firebase Auth. O instalador será bloqueado após a criação do administrador.
+                    {t('setup.admin.secureAccountDesc')}
                   </p>
                 </div>
               </div>
@@ -557,50 +536,50 @@ export default function SetupPage() {
                 {adminCreating ? (
                   <>
                     <Loader2 className="size-4 mr-2 animate-spin" />
-                    Criando administrador...
+                    {t('setup.admin.creating')}
                   </>
                 ) : (
                   <>
                     <UserPlus className="size-4 mr-2" />
-                    Criar Administrador
+                    {t('setup.admin.createButton')}
                   </>
                 )}
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Step 4: Done */}
         {step === 'done' && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <div className="rounded-xl border bg-card text-card-foreground shadow">
+            <div className="flex flex-col space-y-1.5 p-6">
+              <div className="flex items-center gap-2 font-semibold leading-none tracking-tight">
                 <CheckCircle2 className="size-5 text-green-500" />
-                Instalação Completa!
-              </CardTitle>
-              <CardDescription>
-                O Carsai Mozambique está pronto para usar.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+                {t('setup.done.title')}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {t('setup.done.description')}
+              </p>
+            </div>
+            <div className="p-6 pt-0 space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm">
                   <CheckCircle2 className="size-4 text-green-500" />
-                  Firebase configurado e conectado
+                  {t('setup.done.firebaseConfigured')}
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <CheckCircle2 className="size-4 text-green-500" />
                   {Object.keys(seedResults).length > 0 || status.hasData
-                    ? 'Dados iniciais populados'
-                    : 'Banco de dados pronto (sem dados iniciais)'}
+                    ? t('setup.done.dataPopulated')
+                    : t('setup.done.dbReady')}
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <CheckCircle2 className="size-4 text-green-500" />
-                  Conta de administrador criada
+                  {t('setup.done.adminCreated')}
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <CheckCircle2 className="size-4 text-green-500" />
-                  Instalador bloqueado (segurança)
+                  {t('setup.done.installerLocked')}
                 </div>
               </div>
 
@@ -609,19 +588,19 @@ export default function SetupPage() {
               <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-900">
                 <Shield className="size-5 text-green-600 shrink-0 mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-medium text-green-800 dark:text-green-200">Próximo passo</p>
+                  <p className="font-medium text-green-800 dark:text-green-200">{t('setup.done.nextStep')}</p>
                   <p className="text-green-700 dark:text-green-300 mt-1">
-                    Faça login com as credenciais do administrador para acessar o painel de administração.
+                    {t('setup.done.nextStepDesc')}
                   </p>
                 </div>
               </div>
 
               <Button onClick={() => router.push('/auth')} className="w-full" size="lg">
-                Ir para Login
+                {t('setup.done.goToLogin')}
                 <ArrowRight className="size-4 ml-2" />
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
       </div>
     </div>

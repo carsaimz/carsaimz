@@ -8,15 +8,15 @@
  * directly from the browser.
  *
  * This component is auto-dismissed after seeding or when the user clicks "Skip".
- *
- * Note: Installer/setup components do NOT use translations — all text is hardcoded in Portuguese.
  */
 
 import { useState, useEffect } from 'react';
 import { seedInitialData, isDatabaseSeeded } from '@/lib/client-seed';
+import { useLanguage } from '@/contexts/language-context';
 import { useAuth } from '@/contexts/auth-context';
 
 export function DatabaseSetup() {
+  const { t } = useLanguage();
   const { isAuthenticated } = useAuth();
   const [show, setShow] = useState(false);
   const [seeding, setSeeding] = useState(false);
@@ -31,7 +31,6 @@ export function DatabaseSetup() {
           setShow(true);
         }
       } catch (err) {
-        // If we can't check (e.g., Firestore not configured), don't show
         console.warn('[DatabaseSetup] Could not check seed status:', err);
       } finally {
         setChecking(false);
@@ -44,7 +43,7 @@ export function DatabaseSetup() {
     if (!isAuthenticated) {
       setResult({
         success: false,
-        message: 'Precisa de estar autenticado para inicializar a base de dados. Crie uma conta primeiro.',
+        message: t('setup.dbSetup.authRequired'),
       });
       return;
     }
@@ -74,20 +73,16 @@ export function DatabaseSetup() {
           </div>
           <div>
             <h3 className="font-semibold text-foreground">
-              Configuração da Base de Dados
+              {t('setup.dbSetup.title')}
             </h3>
-            <p className="text-sm text-muted-foreground">
-              Database Setup
-            </p>
           </div>
         </div>
 
         <p className="text-sm text-muted-foreground mb-4">
-          A base de dados Firestore está vazia. Para que o app funcione correctamente,
-          precisa de dados iniciais (roles, permissões, categorias, etc.).
+          {t('setup.dbSetup.description')}
           {isAuthenticated
-            ? ' Clique em "Inicializar" para criar os dados automaticamente.'
-            : ' Precisa de criar uma conta primeiro antes de inicializar a base de dados.'
+            ? ` ${t('setup.dbSetup.clickInitialize')}`
+            : ` ${t('setup.dbSetup.createAccountFirst')}`
           }
         </p>
 
@@ -108,7 +103,7 @@ export function DatabaseSetup() {
               disabled={seeding}
               className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
             >
-              {seeding ? 'A inicializar...' : 'Inicializar Dados'}
+              {seeding ? t('setup.dbSetup.initializing') : t('setup.dbSetup.initialize')}
             </button>
           )}
           <button
@@ -116,7 +111,7 @@ export function DatabaseSetup() {
             disabled={seeding}
             className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors text-sm text-muted-foreground"
           >
-            Saltar
+            {t('common.skip')}
           </button>
         </div>
       </div>
