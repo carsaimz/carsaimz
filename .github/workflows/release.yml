@@ -1,21 +1,42 @@
 # =============================================================================
-# Carsai Mozambique - Release Workflow
+# Carsai Mozambique — Release Workflow
 # =============================================================================
-# Triggers on tag push (v*) and builds all platforms in parallel,
-# then creates a GitHub Release with changelog, download links, and assets.
+# Triggers:
+#   1. Push to main → auto-increment build number (1.0.xxx), commit & tag,
+#      build all platforms, create GitHub Release with changelog
+#   2. workflow_dispatch → manual release with optional version input
+#      (defaults to latest tag or package.json version)
 #
-# Build targets:
-#   - Web:  BUILD_TARGET=standalone → .next/standalone/server.js
-#   - Android: BUILD_TARGET=capacitor → out/ → Capacitor → APK + AAB
-#   - Windows: BUILD_TARGET=standalone → .next/standalone/ → Electron → Portable EXE
+# Versioning: MAJOR.MINOR.BUILD
+#   - MAJOR.MINOR set via workflow_dispatch input or tag
+#   - BUILD auto-incremented from GitHub run number (unique per run)
+#   - Synced to package.json and capacitor.config.ts
+#
+# Builds: Web (standalone) + Android (APK + AAB) + Windows (Portable EXE)
 # =============================================================================
 
 name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.github/workflows/**'
+
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g. 1.2.0) — leave empty to auto-increment build'
+        required: false
+        type: string
+      prerelease:
+        description: 'Mark as pre-release?'
+        required: false
+        type: boolean
+        default: false
 
 env:
   REGISTRY: ghcr.io
@@ -27,48 +48,167 @@ permissions:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Extract version from tag & generate changelog
+  # Bump version & generate changelog
   # ---------------------------------------------------------------------------
   prepare:
     name: Prepare Release
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      version: ${{ steps.bump.outputs.version }}
       previous_tag: ${{ steps.prev_tag.outputs.previous_tag }}
       changelog: ${{ steps.changelog.outputs.changelog }}
+      is_prerelease: ${{ steps.bump.outputs.is_prerelease }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract version from tag
-        id: version
-        run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          VERSION="${TAG#v}"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-          echo "Extracted version: ${VERSION} from tag: ${TAG}"
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
       - name: Get previous tag
         id: prev_tag
         run: |
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD 2>/dev/null || echo "")
           echo "previous_tag=${PREVIOUS_TAG}" >> "$GITHUB_OUTPUT"
           echo "Previous tag: ${PREVIOUS_TAG}"
+
+      - name: Determine version
+        id: bump
+        run: |
+          # Read current version from package.json
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Current package.json version: ${CURRENT_VERSION}"
+
+          # Parse MAJOR.MINOR from current version
+          MAJOR=$(echo "${CURRENT_VERSION}" | cut -d. -f1)
+          MINOR=$(echo "${CURRENT_VERSION}" | cut -d. -f2)
+
+          # Build number = GitHub run number (unique, always incrementing)
+          BUILD="${{ github.run_number }}"
+
+          if [ -n "${{ inputs.version }}" ]; then
+            # Manual trigger with explicit version input
+            INPUT_VERSION="${{ inputs.version }}"
+            # Validate format (semver)
+            if echo "${INPUT_VERSION}" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+              VERSION="${INPUT_VERSION}"
+              # Re-parse MAJOR.MINOR from input for sync
+              MAJOR=$(echo "${VERSION}" | cut -d. -f1)
+              MINOR=$(echo "${VERSION}" | cut -d. -f2)
+              BUILD=$(echo "${VERSION}" | cut -d. -f3)
+            else
+              echo "ERROR: Invalid version format '${INPUT_VERSION}'. Use MAJOR.MINOR.PATCH (e.g. 1.2.0)"
+              exit 1
+            fi
+          else
+            # Auto-increment: use MAJOR.MINOR from package.json + BUILD from run number
+            VERSION="${MAJOR}.${MINOR}.${BUILD}"
+          fi
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "major=${MAJOR}" >> "$GITHUB_OUTPUT"
+          echo "minor=${MINOR}" >> "$GITHUB_OUTPUT"
+          echo "build=${BUILD}" >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=${{ inputs.prerelease || 'false' }}" >> "$GITHUB_OUTPUT"
+          echo "New version: ${VERSION}"
+
+      - name: Update package.json version
+        run: |
+          VERSION="${{ steps.bump.outputs.version }}"
+          # Update version in package.json
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '${VERSION}';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          echo "Updated package.json to v${VERSION}"
+
+      - name: Update capacitor.config.ts version
+        run: |
+          VERSION="${{ steps.bump.outputs.version }}"
+          # capacitor.config.ts reads version from package.json via require('./package.json')
+          # So it's already synced. But we also update the versionCode for Android.
+          # The versionCode must be an integer (used by Google Play).
+          MAJOR="${{ steps.bump.outputs.major }}"
+          MINOR="${{ steps.bump.outputs.minor }}"
+          BUILD="${{ steps.bump.outputs.build }}"
+          # versionCode = MAJOR * 1000000 + MINOR * 1000 + BUILD
+          VERSION_CODE=$(( MAJOR * 1000000 + MINOR * 1000 + BUILD ))
+          echo "Android versionCode: ${VERSION_CODE}"
+
+          # Update capacitor.config.ts to include versionCode
+          if grep -q "versionCode" capacitor.config.ts; then
+            sed -i "s/versionCode: [0-9]*/versionCode: ${VERSION_CODE}/" capacitor.config.ts
+          else
+            # Add versionCode after appName
+            sed -i "s/appName: 'Carsai Mozambique',/appName: 'Carsai Mozambique',\n  versionCode: ${VERSION_CODE},/" capacitor.config.ts
+          fi
+          echo "Updated capacitor.config.ts with versionCode ${VERSION_CODE}"
+
+      - name: Commit version bump
+        run: |
+          VERSION="${{ steps.bump.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json capacitor.config.ts
+          git diff --cached --quiet || git commit -m "chore: bump version to v${VERSION}"
+          git push
+
+      - name: Create tag
+        run: |
+          VERSION="${{ steps.bump.outputs.version }}"
+          TAG="v${VERSION}"
+          # Check if tag already exists
+          if git tag -l | grep -q "^${TAG}$"; then
+            echo "Tag ${TAG} already exists — skipping"
+          else
+            git tag "${TAG}"
+            git push origin "${TAG}"
+            echo "Created tag ${TAG}"
+          fi
 
       - name: Generate changelog
         id: changelog
         run: |
-          if [ -n "${{ steps.prev_tag.outputs.previous_tag }}" ]; then
-            LOG=$(git log ${{ steps.prev_tag.outputs.previous_tag }}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          PREVIOUS_TAG="${{ steps.prev_tag.outputs.previous_tag }}"
+
+          if [ -n "${PREVIOUS_TAG}" ]; then
+            LOG=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
           else
-            LOG=$(git log --pretty=format:"- %s (%h)" --no-merges -20)
+            LOG=$(git log --pretty=format:"- %s (%h)" --no-merges -30)
           fi
 
-          # Save changelog to file for multi-line output
-          echo "${LOG}" > /tmp/changelog.txt
+          # If no commits since last tag, use last 10 commits
+          if [ -z "${LOG}" ]; then
+            LOG=$(git log --pretty=format:"- %s (%h)" --no-merges -10)
+          fi
+
+          # Categorize commits
+          FEATURES=$(echo "${LOG}" | grep -iE "feat|add|new" || true)
+          FIXES=$(echo "${LOG}" | grep -iE "fix|patch|hotfix|repair" || true)
+          CHORES=$(echo "${LOG}" | grep -iE "chore|build|ci|deps" || true)
+          OTHER=$(echo "${LOG}" | grep -viE "feat|add|new|fix|patch|hotfix|repair|chore|build|ci|deps" || true)
+
+          # Build formatted changelog
+          cat > /tmp/changelog.txt << EOF
+          ### What's New
+          ${FEATURES:-_No new features in this release._}
+
+          ### Bug Fixes
+          ${FIXES:-_No bug fixes in this release._}
+
+          ### Maintenance
+          ${CHORES:-_No maintenance changes in this release._}
+
+          ### Other Changes
+          ${OTHER:-_No other changes._}
+          EOF
 
           # Multi-line output via heredoc
           echo "changelog<<EOF" >> "$GITHUB_OUTPUT"
@@ -114,9 +254,9 @@ jobs:
       - name: Verify standalone output
         run: |
           if [ -f ".next/standalone/server.js" ]; then
-            echo "✅ Standalone server.js found"
+            echo "Standalone server.js found"
           else
-            echo "❌ Standalone server.js NOT found"
+            echo "Standalone server.js NOT found"
             exit 1
           fi
 
@@ -166,8 +306,6 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      # BUILD_TARGET=capacitor → next.config.ts sets output: "export"
-      # scripts/build.js handles moving API routes aside and restoring after build
       - name: Build static export for Capacitor
         env:
           BUILD_TARGET: capacitor
@@ -188,9 +326,9 @@ jobs:
       - name: Verify static export
         run: |
           if [ -d "out" ] && [ "$(find out -name '*.html' | wc -l)" -gt 0 ]; then
-            echo "✅ Static export — $(find out -name '*.html' | wc -l) HTML pages generated"
+            echo "Static export — $(find out -name '*.html' | wc -l) HTML pages generated"
           else
-            echo "❌ Static export failed — 'out' directory empty or missing"
+            echo "Static export failed — 'out' directory empty or missing"
             exit 1
           fi
 
@@ -207,7 +345,6 @@ jobs:
               echo "Android platform failed to initialize"
               exit 1
             fi
-            echo "Android platform added successfully"
           fi
 
       - name: Sync Capacitor
@@ -223,8 +360,7 @@ jobs:
             echo "ERROR: AndroidManifest.xml not found"
             exit 1
           fi
-          echo "=== AndroidManifest.xml ==="
-          cat "$MANIFEST"
+          echo "AndroidManifest.xml found"
 
       - name: Setup keystore for signing
         env:
@@ -236,12 +372,11 @@ jobs:
           if [ -n "${KEYSTORE_FILE}" ] && [ -n "${KEYSTORE_PASSWORD}" ] && [ -n "${KEYSTORE_ALIAS}" ] && [ -n "${KEY_PASSWORD}" ]; then
             mkdir -p android/app/upload
             echo "${KEYSTORE_FILE}" | base64 -d > android/app/upload/release.jks
-            echo "Keystore decoded from KEYSTORE_FILE secret"
             printf 'storeFile=upload/release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
               "${KEYSTORE_PASSWORD}" "${KEYSTORE_ALIAS}" "${KEY_PASSWORD}" > android/keystore.properties
-            echo "keystore.properties created — builds will be signed"
+            echo "Keystore configured — builds will be signed"
           else
-            echo "Signing secrets not configured — builds will be unsigned (OK for dev/testing)"
+            echo "Signing secrets not configured — builds will be unsigned"
           fi
 
       - name: Build APK with Gradle
@@ -257,17 +392,13 @@ jobs:
       - name: Rename artifacts
         run: |
           VERSION="${{ needs.prepare.outputs.version }}"
-          
           APK_PATH=$(find android/app/build/outputs/apk/release/ -name "*.apk" -type f | head -1)
           if [ -n "$APK_PATH" ]; then
             cp "$APK_PATH" "CarsaiMozambique-${VERSION}.apk"
-            echo "APK: CarsaiMozambique-${VERSION}.apk"
           fi
-          
           AAB_PATH=$(find android/app/build/outputs/bundle/release/ -name "*.aab" -type f | head -1)
           if [ -n "$AAB_PATH" ]; then
             cp "$AAB_PATH" "CarsaiMozambique-${VERSION}.aab"
-            echo "AAB: CarsaiMozambique-${VERSION}.aab"
           fi
 
       - name: Upload APK artifact
@@ -303,8 +434,6 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      # BUILD_TARGET=standalone → next.config.ts sets output: "standalone"
-      # → produces .next/standalone/server.js for Electron to wrap
       - name: Build Next.js standalone
         env:
           BUILD_TARGET: standalone
@@ -332,7 +461,6 @@ jobs:
             exit 1
           }
 
-          # Safety net: copy static + public if build.js didn't
           $staticDest = ".next\standalone\.next\static"
           if (-not (Test-Path $staticDest)) {
             Copy-Item -Path ".next\static" -Destination $staticDest -Recurse -Force
@@ -378,7 +506,7 @@ jobs:
           retention-days: 30
 
   # ---------------------------------------------------------------------------
-  # Create GitHub Release with assets
+  # Create GitHub Release with changelog & assets
   # ---------------------------------------------------------------------------
   create-release:
     name: Create Release
@@ -409,19 +537,19 @@ jobs:
         id: body
         run: |
           VERSION="${{ needs.prepare.outputs.version }}"
-          TAG="${GITHUB_REF#refs/tags/}"
+          TAG="v${VERSION}"
           REPO="${{ github.repository }}"
-          
-          cat > /tmp/release-body.md << HEADER
-          ## 🏢 Carsai Mozambique — Release
 
-          **Version:** \`${VERSION}\`
+          cat > /tmp/release-body.md << HEADER
+          ## Carsai Mozambique v${VERSION}
+
           **Date:** $(date -u '+%Y-%m-%d %H:%M UTC')
+          **Commit:** \`${{ github.sha }}\`
           HEADER
-          
+
           echo "" >> /tmp/release-body.md
-          
-          # --- Download Links Section ---
+
+          # --- Downloads Section ---
           cat >> /tmp/release-body.md << 'DOWNLOADS'
           ---
 
@@ -454,7 +582,7 @@ jobs:
           cat >> /tmp/release-body.md << 'CHANGELOG'
           ---
 
-          ### 📋 Changelog
+          ### Changelog
 
           CHANGELOG
 
@@ -467,14 +595,14 @@ jobs:
 
           ---
 
-          ### 📝 Platform Notes
+          ### Platform Notes
 
           | Platform | Details |
           |:---------|:--------|
-          | 🌐 **Web** | Standalone Next.js server — extract and run `node server.js` |
-          | 📱 **Android APK** | Direct install — enable "Install from unknown sources" |
-          | 📦 **Android AAB** | App Bundle for Google Play Store upload |
-          | 🖥️ **Windows EXE** | Portable — no installation required, just run |
+          | **Web** | Standalone Next.js server — extract and run `node server.js` |
+          | **Android APK** | Direct install — enable "Install from unknown sources" |
+          | **Android AAB** | App Bundle for Google Play Store upload |
+          | **Windows EXE** | Portable — no installation required, just run |
 
           NOTES
 
@@ -483,11 +611,11 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: v${{ needs.prepare.outputs.version }}
           name: "Carsai Mozambique v${{ needs.prepare.outputs.version }}"
           body_path: /tmp/release-body.md
           draft: false
-          prerelease: ${{ contains(needs.prepare.outputs.version, '-') }}
+          prerelease: ${{ needs.prepare.outputs.is_prerelease == 'true' || contains(needs.prepare.outputs.version, '-') }}
           files: release-assets/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

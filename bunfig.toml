@@ -1,0 +1,22 @@
+# =============================================================================
+# Carsai Mozambique — Bun Configuration
+# =============================================================================
+# Fixes: bun install fails extracting @codesandbox/sandpack-client tarball
+# (known bun bug with certain npm packages). The hardlink backend avoids the
+# broken symlink extraction path.
+# =============================================================================
+
+[install]
+# Use hardlink backend instead of default copyfile — avoids tarball extraction
+# failures with certain packages (e.g., @codesandbox/sandpack-client)
+backend = "hardlink"
+
+# Don't fail on optional dependency issues
+optional = true
+
+# Peer dependencies: don't auto-install (let them be resolved naturally)
+peer = false
+
+[install.cache]
+# Disable global cache in CI to avoid stale tarball issues
+disable = false
