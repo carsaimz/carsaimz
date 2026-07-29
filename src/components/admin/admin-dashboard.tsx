@@ -214,19 +214,29 @@ export function AdminDashboard() {
     // if one fails, the others still load their data.
     Promise.allSettled([
       apiFetch('/api/stats').then(async (res) => {
-        if (!res.ok) throw new Error(`Stats: HTTP ${res.status}`);
+        if (!res.ok) {
+          // Try to get the actual error message from the response body
+          try { const errData = await safeJson(res); if (errData?.error) throw new Error(`Stats: ${errData.error}`); } catch (e) { if (e instanceof Error && e.message.startsWith('Stats:')) throw e; }
+          throw new Error(`Stats: HTTP ${res.status}`);
+        }
         const data = await safeJson(res);
         if (!data) throw new Error(t('common.serverNonJson'));
         return data;
       }),
       apiFetch('/api/stats/history').then(async (res) => {
-        if (!res.ok) throw new Error(`History: HTTP ${res.status}`);
+        if (!res.ok) {
+          try { const errData = await safeJson(res); if (errData?.error) throw new Error(`History: ${errData.error}`); } catch (e) { if (e instanceof Error && e.message.startsWith('History:')) throw e; }
+          throw new Error(`History: HTTP ${res.status}`);
+        }
         const data = await safeJson(res);
         if (!data) throw new Error(t('common.serverNonJson'));
         return data;
       }),
       apiFetch(`/api/dashboard?role=${user?.role || 'admin'}&userId=${user.id}`).then(async (res) => {
-        if (!res.ok) throw new Error(`Dashboard: HTTP ${res.status}`);
+        if (!res.ok) {
+          try { const errData = await safeJson(res); if (errData?.error) throw new Error(`Dashboard: ${errData.error}`); } catch (e) { if (e instanceof Error && e.message.startsWith('Dashboard:')) throw e; }
+          throw new Error(`Dashboard: HTTP ${res.status}`);
+        }
         const data = await safeJson(res);
         if (!data) throw new Error(t('common.serverNonJson'));
         return data;

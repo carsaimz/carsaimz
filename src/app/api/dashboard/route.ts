@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { safeGetDoc, safeGetDocs, safeCountDocs, safeQueryDocs, checkFirebaseAdmin } from '@/lib/db-helpers'
-import { getDoc, queryDocs, getDocs, countDocs, getDocByField } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET(request: NextRequest) {
@@ -35,12 +34,23 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Resolve role name
+    // Resolve role name — try multiple sources
     let roleName = 'user'
-    if ((user as any).roleId) {
-      const roleDoc = await safeGetDoc('roles', (user as any).roleId)
-      if (roleDoc) roleName = (roleDoc as any).name
+    try {
+      // Check direct role field first
+      if ((user as any).role) {
+        const r = (user as any).role
+        roleName = typeof r === 'string' ? r : (r?.name || 'user')
+      }
+      // Then check roleId reference
+      else if ((user as any).roleId) {
+        const roleDoc = await safeGetDoc('roles', (user as any).roleId)
+        if (roleDoc) roleName = (roleDoc as any).name || 'user'
+      }
+    } catch (roleErr) {
+      console.warn('[Dashboard] Role resolution failed, defaulting to role param:', roleErr)
     }
+
     const effectiveRole = role || roleName
 
     // === ADMIN / SUPER_ADMIN DASHBOARD ===
@@ -66,28 +76,42 @@ export async function GET(request: NextRequest) {
       // Recent users (last 5, exclude super_admin, sorted by createdAt desc)
       const recentUsersRaw = nonSuperAdminUsers
         .sort((a: any, b: any) => {
-          const aTime = a.createdAt ? new Date(serializeFirestore(a.createdAt)).getTime() : 0
-          const bTime = b.createdAt ? new Date(serializeFirestore(b.createdAt)).getTime() : 0
-          return bTime - aTime
+          try {
+            const aTime = a.createdAt ? new Date(serializeFirestore(a.createdAt)).getTime() : 0
+            const bTime = b.createdAt ? new Date(serializeFirestore(b.createdAt)).getTime() : 0
+            return bTime - aTime
+          } catch {
+            return 0
+          }
         })
         .slice(0, 5)
-        .map((u: any) => ({
-          id: u.id,
-          name: u.name,
-          email: u.email,
-          createdAt: serializeFirestore(u.createdAt),
-          isActive: u.isActive,
-        }))
+        .map((u: any) => {
+          try {
+            return {
+              id: u.id,
+              name: u.name,
+              email: u.email,
+              createdAt: serializeFirestore(u.createdAt),
+              isActive: u.isActive,
+            }
+          } catch {
+            return { id: u.id, name: u.name, email: u.email, createdAt: null, isActive: u.isActive }
+          }
+        })
 
       // Recent quotes with user data
       const recentQuotesRaw = await safeQueryDocs('quotes', [], 'createdAt', 'desc', 5)
       const recentQuotes = await Promise.all(
         recentQuotesRaw.map(async (q: any) => {
-          const quoteUser = q.userId ? await safeGetDoc('users', q.userId) : null
-          return serializeFirestore({
-            ...q,
-            user: quoteUser ? { id: (quoteUser as any).id, name: (quoteUser as any).name, email: (quoteUser as any).email } : null,
-          })
+          try {
+            const quoteUser = q.userId ? await safeGetDoc('users', q.userId) : null
+            return serializeFirestore({
+              ...q,
+              user: quoteUser ? { id: (quoteUser as any).id, name: (quoteUser as any).name, email: (quoteUser as any).email } : null,
+            })
+          } catch {
+            return serializeFirestore(q)
+          }
         })
       )
 
@@ -95,13 +119,17 @@ export async function GET(request: NextRequest) {
       const recentPaymentsRaw = await safeQueryDocs('payments', [], 'createdAt', 'desc', 5)
       const recentPayments = await Promise.all(
         recentPaymentsRaw.map(async (p: any) => {
-          const paymentUser = p.userId ? await safeGetDoc('users', p.userId) : null
-          const proposal = p.proposalId ? await safeGetDoc('proposals', p.proposalId) : null
-          return serializeFirestore({
-            ...p,
-            user: paymentUser ? { id: (paymentUser as any).id, name: (paymentUser as any).name, email: (paymentUser as any).email } : null,
-            proposal: proposal ? { id: (proposal as any).id, title: (proposal as any).title } : null,
-          })
+          try {
+            const paymentUser = p.userId ? await safeGetDoc('users', p.userId) : null
+            const proposal = p.proposalId ? await safeGetDoc('proposals', p.proposalId) : null
+            return serializeFirestore({
+              ...p,
+              user: paymentUser ? { id: (paymentUser as any).id, name: (paymentUser as any).name, email: (paymentUser as any).email } : null,
+              proposal: proposal ? { id: (proposal as any).id, title: (proposal as any).title } : null,
+            })
+          } catch {
+            return serializeFirestore(p)
+          }
         })
       )
 
@@ -109,11 +137,15 @@ export async function GET(request: NextRequest) {
       const recentTicketsRaw = await safeQueryDocs('support_tickets', [], 'createdAt', 'desc', 5)
       const recentTickets = await Promise.all(
         recentTicketsRaw.map(async (t: any) => {
-          const ticketUser = t.userId ? await safeGetDoc('users', t.userId) : null
-          return serializeFirestore({
-            ...t,
-            user: ticketUser ? { id: (ticketUser as any).id, name: (ticketUser as any).name, email: (ticketUser as any).email } : null,
-          })
+          try {
+            const ticketUser = t.userId ? await safeGetDoc('users', t.userId) : null
+            return serializeFirestore({
+              ...t,
+              user: ticketUser ? { id: (ticketUser as any).id, name: (ticketUser as any).name, email: (ticketUser as any).email } : null,
+            })
+          } catch {
+            return serializeFirestore(t)
+          }
         })
       )
 
@@ -156,13 +188,17 @@ export async function GET(request: NextRequest) {
       const recentPostsRaw = await safeQueryDocs('posts', [{ field: 'published', op: '==', value: true }], 'createdAt', 'desc', 5)
       const recentPosts = await Promise.all(
         recentPostsRaw.map(async (p: any) => {
-          const author = p.authorId ? await safeGetDoc('users', p.authorId) : null
-          const commentCount = await safeCountDocs('comments', [{ field: 'postId', op: '==', value: p.id }])
-          return serializeFirestore({
-            ...p,
-            author: author ? { id: (author as any).id, name: (author as any).name } : null,
-            _count: { comments: commentCount },
-          })
+          try {
+            const author = p.authorId ? await safeGetDoc('users', p.authorId) : null
+            const commentCount = await safeCountDocs('comments', [{ field: 'postId', op: '==', value: p.id }])
+            return serializeFirestore({
+              ...p,
+              author: author ? { id: (author as any).id, name: (author as any).name } : null,
+              _count: { comments: commentCount },
+            })
+          } catch {
+            return serializeFirestore(p)
+          }
         })
       )
 
@@ -264,18 +300,22 @@ export async function GET(request: NextRequest) {
 
     const userQuotes = await Promise.all(
       userQuotesRaw.map(async (q: any) => {
-        const proposals = await safeQueryDocs('proposals', [
-          { field: 'quoteId', op: '==', value: q.id },
-        ])
-        return serializeFirestore({
-          ...q,
-          proposals: proposals.map((p: any) => ({
-            id: p.id,
-            title: p.title,
-            totalAmount: p.totalAmount,
-            status: p.status,
-          })),
-        })
+        try {
+          const proposals = await safeQueryDocs('proposals', [
+            { field: 'quoteId', op: '==', value: q.id },
+          ])
+          return serializeFirestore({
+            ...q,
+            proposals: proposals.map((p: any) => ({
+              id: p.id,
+              title: p.title,
+              totalAmount: p.totalAmount,
+              status: p.status,
+            })),
+          })
+        } catch {
+          return serializeFirestore(q)
+        }
       })
     )
 
@@ -285,15 +325,19 @@ export async function GET(request: NextRequest) {
 
     const userPayments = await Promise.all(
       userPaymentsRaw.map(async (p: any) => {
-        const proposal = p.proposalId ? await safeGetDoc('proposals', p.proposalId) : null
-        return serializeFirestore({
-          ...p,
-          proposal: proposal ? {
-            id: (proposal as any).id,
-            title: (proposal as any).title,
-            totalAmount: (proposal as any).totalAmount,
-          } : null,
-        })
+        try {
+          const proposal = p.proposalId ? await safeGetDoc('proposals', p.proposalId) : null
+          return serializeFirestore({
+            ...p,
+            proposal: proposal ? {
+              id: (proposal as any).id,
+              title: (proposal as any).title,
+              totalAmount: (proposal as any).totalAmount,
+            } : null,
+          })
+        } catch {
+          return serializeFirestore(p)
+        }
       })
     )
 
@@ -303,11 +347,15 @@ export async function GET(request: NextRequest) {
 
     const userTickets = await Promise.all(
       userTicketsRaw.map(async (t: any) => {
-        const replyCount = await safeCountDocs('ticket_replies', [{ field: 'ticketId', op: '==', value: t.id }])
-        return serializeFirestore({
-          ...t,
-          _count: { replies: replyCount },
-        })
+        try {
+          const replyCount = await safeCountDocs('ticket_replies', [{ field: 'ticketId', op: '==', value: t.id }])
+          return serializeFirestore({
+            ...t,
+            _count: { replies: replyCount },
+          })
+        } catch {
+          return serializeFirestore(t)
+        }
       })
     )
 
@@ -351,11 +399,15 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Dashboard fetch error:', error)
+    // Return the actual error message so the client can show it
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
     return NextResponse.json(
       {
         success: false,
         message: 'Failed to fetch dashboard data',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
+        stack: process.env.NODE_ENV === 'development' ? errorStack : undefined,
       },
       { status: 500 }
     )

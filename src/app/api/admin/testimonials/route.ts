@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { queryDocs, createDoc, updateDoc, getDoc, deleteDoc } from '@/lib/db'
+import { safeQueryDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
+import { createDoc, updateDoc, deleteDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 
 // GET all testimonials (including unpublished) for admin
 export async function GET() {
   try {
-    const testimonials = await queryDocs('testimonials', [], 'createdAt', 'desc')
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
+    const testimonials = await safeQueryDocs('testimonials', [], 'createdAt', 'desc')
     return NextResponse.json({ success: true, data: serializeFirestore(testimonials) })
   } catch (error) {
     console.error('Admin testimonials fetch error:', error)
@@ -19,6 +28,14 @@ export async function GET() {
 // POST create a new testimonial
 export async function POST(request: NextRequest) {
   try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
     const body = await request.json()
     const { name, company, content, contentI18n, rating, isPublished } = body
 
@@ -38,7 +55,7 @@ export async function POST(request: NextRequest) {
       isPublished: isPublished || false,
     })
 
-    const testimonial = await getDoc('testimonials', testimonialId)
+    const testimonial = await safeGetDoc('testimonials', testimonialId)
     return NextResponse.json({ success: true, data: serializeFirestore(testimonial) })
   } catch (error) {
     console.error('Admin testimonial create error:', error)
@@ -52,6 +69,14 @@ export async function POST(request: NextRequest) {
 // PUT update a testimonial
 export async function PUT(request: NextRequest) {
   try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
     const body = await request.json()
     const { id, name, company, content, contentI18n, rating, isPublished } = body
 
@@ -71,7 +96,7 @@ export async function PUT(request: NextRequest) {
     if (isPublished !== undefined) updateData.isPublished = isPublished || false
 
     await updateDoc('testimonials', id, updateData)
-    const testimonial = await getDoc('testimonials', id)
+    const testimonial = await safeGetDoc('testimonials', id)
     return NextResponse.json({ success: true, data: serializeFirestore(testimonial) })
   } catch (error) {
     console.error('Admin testimonial update error:', error)
@@ -85,6 +110,14 @@ export async function PUT(request: NextRequest) {
 // DELETE a testimonial
 export async function DELETE(request: NextRequest) {
   try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 

@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { queryDocs, getDocByField, createDoc, updateDoc, getDoc, deleteDoc } from '@/lib/db'
+import { safeQueryDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
+import { getDocByField, createDoc, updateDoc, deleteDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 
 // GET all projects (including unpublished) for admin
 export async function GET() {
   try {
-    const projects = await queryDocs('projects', [], 'createdAt', 'desc')
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
+    const projects = await safeQueryDocs('projects', [], 'createdAt', 'desc')
     return NextResponse.json({ success: true, data: serializeFirestore(projects) })
   } catch (error) {
     console.error('Admin projects fetch error:', error)
@@ -19,6 +28,14 @@ export async function GET() {
 // POST create a new project
 export async function POST(request: NextRequest) {
   try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
     const body = await request.json()
     const { title, titleI18n, slug, description, descriptionI18n, client, technologies, demoUrl, isFeatured, isPublished } = body
 
@@ -43,7 +60,7 @@ export async function POST(request: NextRequest) {
       isPublished: isPublished || false,
     })
 
-    const project = await getDoc('projects', projectId)
+    const project = await safeGetDoc('projects', projectId)
     return NextResponse.json({ success: true, data: serializeFirestore(project) })
   } catch (error) {
     console.error('Admin project create error:', error)
@@ -57,6 +74,14 @@ export async function POST(request: NextRequest) {
 // PUT update a project
 export async function PUT(request: NextRequest) {
   try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
     const body = await request.json()
     const { id, title, titleI18n, slug, description, descriptionI18n, client, technologies, demoUrl, isFeatured, isPublished } = body
 
@@ -90,7 +115,7 @@ export async function PUT(request: NextRequest) {
     if (isPublished !== undefined) updateData.isPublished = isPublished || false
 
     await updateDoc('projects', id, updateData)
-    const project = await getDoc('projects', id)
+    const project = await safeGetDoc('projects', id)
     return NextResponse.json({ success: true, data: serializeFirestore(project) })
   } catch (error) {
     console.error('Admin project update error:', error)
@@ -104,6 +129,14 @@ export async function PUT(request: NextRequest) {
 // DELETE a project
 export async function DELETE(request: NextRequest) {
   try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 

@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminAuth } from '@/lib/firebase-admin'
 import { getDoc, getDocByField, createDocWithId } from '@/lib/db'
+import { safeGetDoc } from '@/lib/db-helpers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -70,11 +71,21 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Get role info
+      // Get role info — try multiple sources for robustness
       let role: any = null
-      if (userProfile.roleId) {
-        const roleDoc = await getDoc('roles', userProfile.roleId)
-        if (roleDoc) role = { id: roleDoc.id, name: roleDoc.name }
+      // 1. Check direct role field (string like 'admin')
+      if ((userProfile as any).role) {
+        const r = (userProfile as any).role
+        role = typeof r === 'string' ? { name: r } : (r?.name ? r : null)
+      }
+      // 2. Check roleId reference
+      if (!role && (userProfile as any).roleId) {
+        try {
+          const roleDoc = await safeGetDoc('roles', (userProfile as any).roleId)
+          if (roleDoc) role = { id: (roleDoc as any).id, name: (roleDoc as any).name }
+        } catch (roleErr) {
+          console.warn('[Login] Role lookup failed for roleId:', (userProfile as any).roleId, roleErr)
+        }
       }
 
       return NextResponse.json({

@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { queryDocs, getDocByField, createDoc, updateDoc, getDoc, deleteDoc } from '@/lib/db'
+import { safeQueryDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
+import { getDocByField, createDoc, updateDoc, deleteDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 
 // GET all services (including unpublished) for admin
 export async function GET() {
   try {
-    const services = await queryDocs('services', [], 'order', 'asc')
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
+    const services = await safeQueryDocs('services', [], 'order', 'asc')
     return NextResponse.json({ success: true, data: serializeFirestore(services) })
   } catch (error) {
     console.error('Admin services fetch error:', error)
@@ -19,6 +28,14 @@ export async function GET() {
 // POST create a new service
 export async function POST(request: NextRequest) {
   try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
     const body = await request.json()
     const { title, titleI18n, slug, description, descriptionI18n, icon, basePrice, isFeatured, isPublished, order } = body
 
@@ -44,7 +61,7 @@ export async function POST(request: NextRequest) {
       order: order || 0,
     })
 
-    const service = await getDoc('services', serviceId)
+    const service = await safeGetDoc('services', serviceId)
     return NextResponse.json({ success: true, data: serializeFirestore(service) })
   } catch (error) {
     console.error('Admin service create error:', error)
@@ -58,6 +75,14 @@ export async function POST(request: NextRequest) {
 // PUT update a service
 export async function PUT(request: NextRequest) {
   try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
     const body = await request.json()
     const { id, title, titleI18n, slug, description, descriptionI18n, icon, basePrice, isFeatured, isPublished, order } = body
 
@@ -92,7 +117,7 @@ export async function PUT(request: NextRequest) {
     if (order !== undefined) updateData.order = order || 0
 
     await updateDoc('services', id, updateData)
-    const service = await getDoc('services', id)
+    const service = await safeGetDoc('services', id)
     return NextResponse.json({ success: true, data: serializeFirestore(service) })
   } catch (error) {
     console.error('Admin service update error:', error)
@@ -106,6 +131,14 @@ export async function PUT(request: NextRequest) {
 // DELETE a service
 export async function DELETE(request: NextRequest) {
   try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 

@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { queryDocs, getDocByField, createDoc, updateDoc, getDoc, deleteDoc, deleteMany } from '@/lib/db'
+import { safeQueryDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
+import { getDocByField, createDoc, updateDoc, deleteDoc, deleteMany } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 
 // GET all posts (including unpublished) for admin
 export async function GET() {
   try {
-    const posts = await queryDocs('posts', [], 'createdAt', 'desc')
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
+    const posts = await safeQueryDocs('posts', [], 'createdAt', 'desc')
 
     // Enrich with author and category data
     const enrichedPosts = await Promise.all(
@@ -14,14 +23,14 @@ export async function GET() {
         let category: any = null
 
         if (post.authorId) {
-          author = await getDoc('users', post.authorId)
+          author = await safeGetDoc('users', post.authorId)
           if (author) {
             author = { id: author.id, name: author.name, email: author.email }
           }
         }
 
         if (post.categoryId) {
-          category = await getDoc('categories', post.categoryId)
+          category = await safeGetDoc('categories', post.categoryId)
           if (category) {
             category = { id: category.id, name: category.name, slug: category.slug }
           }
@@ -44,6 +53,14 @@ export async function GET() {
 // POST create a new post
 export async function POST(request: NextRequest) {
   try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
     const body = await request.json()
     const { title, titleI18n, slug, excerpt, excerptI18n, content, contentI18n, categoryId, published, authorId } = body
 
@@ -68,7 +85,7 @@ export async function POST(request: NextRequest) {
       published: published || false,
     })
 
-    const post = await getDoc('posts', postId)
+    const post = await safeGetDoc('posts', postId)
     return NextResponse.json({ success: true, data: serializeFirestore(post) })
   } catch (error) {
     console.error('Admin post create error:', error)
@@ -82,6 +99,14 @@ export async function POST(request: NextRequest) {
 // PUT update a post
 export async function PUT(request: NextRequest) {
   try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
     const body = await request.json()
     const { id, title, titleI18n, slug, excerpt, excerptI18n, content, contentI18n, categoryId, published } = body
 
@@ -114,7 +139,7 @@ export async function PUT(request: NextRequest) {
     if (published !== undefined) updateData.published = published || false
 
     await updateDoc('posts', id, updateData)
-    const post = await getDoc('posts', id)
+    const post = await safeGetDoc('posts', id)
     return NextResponse.json({ success: true, data: serializeFirestore(post) })
   } catch (error) {
     console.error('Admin post update error:', error)
@@ -128,6 +153,14 @@ export async function PUT(request: NextRequest) {
 // DELETE a post
 export async function DELETE(request: NextRequest) {
   try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 

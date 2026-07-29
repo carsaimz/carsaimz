@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { queryDocs, getDocs, countDocs, getDoc, getDocByField, updateDoc, createDocWithId } from '@/lib/db'
+import { safeGetDocs, safeGetDoc, safeCountDocs, safeQueryDocs, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { getAdminAuth } from '@/lib/firebase-admin'
 import { serializeFirestore } from '@/lib/serialize'
 
@@ -47,16 +48,22 @@ async function buildUserResponse(userData: any): Promise<any> {
 
 export async function GET(request: NextRequest) {
   try {
+    // Check if Firebase Admin SDK is configured
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json({ success: false, message: adminError }, { status: 503 })
+    }
+
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
     const search = searchParams.get('search') || ''
 
     // Fetch all users (Firestore doesn't support relation-based filtering)
-    const allUsers = await getDocs('users')
+    const allUsers = await safeGetDocs('users')
 
     // Fetch all roles so we can join them
-    const roles = await getDocs('roles')
+    const roles = await safeGetDocs('roles')
     const roleMap = new Map(roles.map(r => [r.id, r]))
 
     // Filter out super_admin users and apply search
@@ -77,9 +84,13 @@ export async function GET(request: NextRequest) {
 
     // Sort by createdAt descending
     filteredUsers.sort((a: any, b: any) => {
-      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0
-      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0
-      return bTime - aTime
+      try {
+        const aTime = a.createdAt ? new Date(typeof a.createdAt === 'string' ? a.createdAt : a.createdAt?.toDate?.()?.toISOString?.() || 0).getTime() : 0
+        const bTime = b.createdAt ? new Date(typeof b.createdAt === 'string' ? b.createdAt : b.createdAt?.toDate?.()?.toISOString?.() || 0).getTime() : 0
+        return bTime - aTime
+      } catch {
+        return 0
+      }
     })
 
     // Paginate

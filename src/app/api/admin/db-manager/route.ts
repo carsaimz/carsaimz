@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { safeCountDocs, safeGetDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
-import { getDoc, deleteDoc, countDocs, getDocs } from '@/lib/db'
+import { deleteDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 
 // Known Firestore collections (from the db.ts schema)

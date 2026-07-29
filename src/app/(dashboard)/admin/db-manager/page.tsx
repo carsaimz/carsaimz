@@ -87,6 +87,16 @@ export default function DbManagerPage() {
     setError(null);
     try {
       const res = await apiFetch('/api/admin/db-manager');
+      if (!res.ok) {
+        // Try to get the actual error message from the response body
+        try {
+          const errJson = await safeJson(res);
+          if (errJson?.error) { setError(errJson.error); return; }
+          if (errJson?.message) { setError(errJson.message); return; }
+        } catch {}
+        setError(`Server error: HTTP ${res.status}`);
+        return;
+      }
       const json = await safeJson(res);
       if (!json) { setError('Server returned non-JSON response'); return; }
       if (json.success) {
@@ -95,7 +105,7 @@ export default function DbManagerPage() {
         setError(json.message || 'Failed to fetch collections');
       }
     } catch (err) {
-      setError('Network error');
+      setError(err instanceof Error ? err.message : 'Network error');
     } finally {
       setLoading(false);
     }

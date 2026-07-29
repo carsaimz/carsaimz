@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { queryDocs, getDocByField, createDoc, updateDoc, getDoc, deleteDoc } from '@/lib/db'
+import { safeQueryDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
+import { getDocByField, createDoc, updateDoc, deleteDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 
 /**
@@ -12,7 +13,15 @@ import { serializeFirestore } from '@/lib/serialize'
 // ── GET: List all providers ──
 export async function GET() {
   try {
-    const providers = await queryDocs('ai_providers', [], 'priority', 'asc')
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, error: adminError },
+        { status: 503 }
+      )
+    }
+
+    const providers = await safeQueryDocs('ai_providers', [], 'priority', 'asc')
 
     // Mask API keys for security (only show last 4 chars)
     const masked = providers.map(p => ({
@@ -33,6 +42,14 @@ export async function GET() {
 // ── POST: Create a new provider ──
 export async function POST(request: NextRequest) {
   try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, error: adminError },
+        { status: 503 }
+      )
+    }
+
     const body = await request.json()
     const { name, displayName, apiKey, baseUrl, model, priority, isActive, config } = body
 
@@ -88,7 +105,7 @@ export async function POST(request: NextRequest) {
       config: config ? JSON.stringify(config) : null,
     })
 
-    const provider = await getDoc('ai_providers', providerId)
+    const provider = await safeGetDoc('ai_providers', providerId)
 
     return NextResponse.json({ success: true, provider: serializeFirestore(provider) })
   } catch (error) {
@@ -103,6 +120,14 @@ export async function POST(request: NextRequest) {
 // ── PUT: Update a provider ──
 export async function PUT(request: NextRequest) {
   try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, error: adminError },
+        { status: 503 }
+      )
+    }
+
     const body = await request.json()
     const { id, apiKey, baseUrl, model, priority, isActive, displayName, config } = body
 
@@ -120,7 +145,7 @@ export async function PUT(request: NextRequest) {
     if (config !== undefined) updateData.config = JSON.stringify(config)
 
     await updateDoc('ai_providers', id, updateData)
-    const provider = await getDoc('ai_providers', id)
+    const provider = await safeGetDoc('ai_providers', id)
 
     return NextResponse.json({ success: true, provider: serializeFirestore(provider) })
   } catch (error) {
@@ -135,6 +160,14 @@ export async function PUT(request: NextRequest) {
 // ── DELETE: Remove a provider ──
 export async function DELETE(request: NextRequest) {
   try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, error: adminError },
+        { status: 503 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
