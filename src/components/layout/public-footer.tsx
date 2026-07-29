@@ -5,8 +5,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  Youtube,
-  Github,
 } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -15,6 +13,8 @@ import {
   faInstagram,
   faTiktok,
   faDiscord,
+  faYoutube,
+  faGithub,
 } from '@fortawesome/free-brands-svg-icons';
 
 import { Button } from '@/components/ui/button';
@@ -58,8 +58,8 @@ const SOCIAL_LINKS = [
   { icon: faInstagram, label: 'Instagram', href: 'https://instagram.com/carsaimz' },
   { icon: faTiktok, label: 'TikTok', href: 'https://tiktok.com/@carsaimz' },
   { icon: faDiscord, label: 'Discord', href: 'https://discord.gg/carsaimz' },
-  { icon: faYoutube, label: 'YouTube', href: 'https://youtube.com/@carsaimz', isLucide: true },
-  { icon: faGithub, label: 'GitHub', href: GITHUB_URL, isLucide: true },
+  { icon: faYoutube, label: 'YouTube', href: 'https://youtube.com/@carsaimz' },
+  { icon: faGithub, label: 'GitHub', href: GITHUB_URL },
 ];
 
 // ──────────────────────────────────────────────
@@ -93,11 +93,7 @@ export function PublicFooter({ className }: { className?: string }) {
                   aria-label={social.label}
                 >
                   <Button variant="ghost" size="icon" className="size-8">
-                    {social.isLucide ? (
-                      <social.icon className="size-4" />
-                    ) : (
-                      <FontAwesomeIcon icon={social.icon} className="size-4" />
-                    )}
+                    <FontAwesomeIcon icon={social.icon} className="size-4" />
                   </Button>
                 </a>
               ))}
