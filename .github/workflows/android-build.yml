@@ -76,20 +76,15 @@ jobs:
           
           # API routes are incompatible with output: "export" (no server in static sites).
           # The Capacitor app uses client-side Firestore directly, so API routes are not needed.
-          # Dynamic [slug] routes also need generateStaticParams() which is problematic.
-          # The Capacitor app handles navigation client-side via the store's selectedPostSlug/selectedTopicSlug.
+          # Dynamic [slug]/[id] routes now have generateStaticParams() returning a placeholder,
+          # so they work with static export — no need to remove them.
+          # The Capacitor app handles navigation client-side via the store.
           
           # Backup and remove API directory
           if [ -d "src/app/api" ]; then
             mv src/app/api /tmp/api_bak
             echo "API routes temporarily removed for static export"
           fi
-          
-          # Backup and remove dynamic [slug] routes
-          for slug_dir in $(find src/app -type d -name '[slug]'); do
-            mv "$slug_dir" "${slug_dir}.bak"
-            echo "Dynamic route temporarily removed: $slug_dir"
-          done
           
           # Build with BUILD_TARGET=capacitor for static export
           BUILD_TARGET=capacitor bun run build
@@ -99,13 +94,6 @@ jobs:
             mv /tmp/api_bak src/app/api
             echo "API routes restored"
           fi
-          
-          # Restore dynamic [slug] routes
-          for bak_dir in $(find src/app -type d -name '[slug].bak'); do
-            original="${bak_dir%.bak}"
-            mv "$bak_dir" "$original"
-            echo "Dynamic route restored: $original"
-          done
           
           echo "Static export completed successfully"
           EXPORT_SCRIPT
