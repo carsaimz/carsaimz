@@ -11,59 +11,76 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
+    // Setup mode: allow writes when the app hasn't been set up yet.
+    // This is essential for the /setup wizard to seed initial data
+    // (roles, permissions, categories, etc.) before the admin exists.
+    // Once setup is complete, this returns false and normal auth rules apply.
+    function isSetupMode() {
+      return !exists(/databases/$(database)/documents/settings/app) ||
+             !get(/databases/$(database)/documents/settings/app).data.setupComplete;
+    }
+
+    // Authenticated OR in setup mode — used for seed collections
+    function canWrite() {
+      return isAuthenticated() || isSetupMode();
+    }
+
     // ── Users collection ──
     // Anyone authenticated can read user profiles
     // Users can create/update their own profile
+    // During setup, allow creating the admin user profile
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isOwner(userId);
+      allow read: if isAuthenticated() || isSetupMode();
+      allow create: if isOwner(userId) || isSetupMode();
       allow update: if isOwner(userId);
       allow delete: if false; // Only via Admin SDK
     }
 
     // ── Roles & Permissions ──
     // Allow reads so the seed check works even before auth
+    // During setup, allow seeding roles/permissions
     match /roles/{roleId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if canWrite();
     }
 
     match /permissions/{permId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if canWrite();
     }
 
     match /role_permissions/{rpId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if canWrite();
     }
 
     // ── Settings ──
     // Allow reads so the seed check works even before auth
+    // During setup, allow writing initial settings
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if canWrite();
     }
 
     // ── Blog: posts, categories, tags, comments ──
     match /posts/{postId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if canWrite();
     }
 
     match /categories/{catId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if canWrite();
     }
 
     match /tags/{tagId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if canWrite();
     }
 
     match /post_tags/{ptId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if canWrite();
     }
 
     match /comments/{commentId} {
@@ -76,7 +93,7 @@ service cloud.firestore {
     // ── Forum ──
     match /forum_categories/{catId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if canWrite();
     }
 
     match /forum_topics/{topicId} {
@@ -102,17 +119,17 @@ service cloud.firestore {
     // ── Services & Projects ──
     match /services/{serviceId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if canWrite();
     }
 
     match /projects/{projectId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if canWrite();
     }
 
     match /testimonials/{testimonialId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if canWrite();
     }
 
     // ── Business: quotes, proposals, payments, invoices ──
@@ -191,7 +208,7 @@ service cloud.firestore {
     // ── Pages ──
     match /pages/{pageId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if canWrite();
     }
 
     // ── Newsletter subscribers ──
