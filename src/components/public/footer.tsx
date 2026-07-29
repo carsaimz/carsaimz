@@ -4,16 +4,20 @@ import { useState } from 'react';
 import { useLanguage } from '@/contexts/language-context';
 import { Separator } from '@/components/ui/separator';
 import {
-  MessageCircle,
-  Facebook,
-  Instagram,
   Youtube,
   Github,
   Mail,
   Phone,
   MapPin,
-  Globe,
 } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faWhatsapp,
+  faFacebookF,
+  faInstagram,
+  faTiktok,
+  faDiscord,
+} from '@fortawesome/free-brands-svg-icons';
 import { GITHUB_URL } from '@/lib/client-config';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 
@@ -51,13 +55,13 @@ export function Footer() {
   };
 
   const socialLinks = [
-    { icon: MessageCircle, label: t('footer.socialWhatsapp'), href: 'https://wa.me/258847545020', color: 'hover:text-green-400' },
-    { icon: Facebook, label: t('footer.socialFacebook'), href: 'https://facebook.com/carsaimz', color: 'hover:text-blue-400' },
-    { icon: Instagram, label: t('footer.socialInstagram'), href: 'https://instagram.com/carsaimz', color: 'hover:text-pink-400' },
-    { icon: Globe, label: t('footer.socialTiktok'), href: 'https://tiktok.com/@carsaimz', color: 'hover:text-red-400' },
-    { icon: Youtube, label: t('footer.socialYoutube'), href: 'https://youtube.com/@carsaimz', color: 'hover:text-red-500' },
-    { icon: MessageCircle, label: t('footer.socialDiscord'), href: 'https://discord.gg/carsaimz', color: 'hover:text-indigo-400' },
-    { icon: Github, label: t('footer.socialGithub'), href: GITHUB_URL, color: 'hover:text-gray-300' },
+    { icon: faWhatsapp, label: 'WhatsApp', href: 'https://wa.me/258847545020', color: 'hover:text-green-400' },
+    { icon: faFacebookF, label: 'Facebook', href: 'https://facebook.com/carsaimz', color: 'hover:text-blue-400' },
+    { icon: faInstagram, label: 'Instagram', href: 'https://instagram.com/carsaimz', color: 'hover:text-pink-400' },
+    { icon: faTiktok, label: 'TikTok', href: 'https://tiktok.com/@carsaimz', color: 'hover:text-cyan-400' },
+    { icon: Youtube, label: 'YouTube', href: 'https://youtube.com/@carsaimz', color: 'hover:text-red-400', isLucide: true },
+    { icon: faDiscord, label: 'Discord', href: 'https://discord.gg/carsaimz', color: 'hover:text-indigo-400' },
+    { icon: Github, label: 'GitHub', href: GITHUB_URL, color: 'hover:text-gray-300', isLucide: true },
   ];
 
   return (
@@ -187,7 +191,11 @@ export function Footer() {
                   aria-label={social.label}
                   className={`text-emerald-300 transition-colors ${social.color}`}
                 >
-                  <social.icon className="h-5 w-5" />
+                  {social.isLucide ? (
+                    <social.icon className="h-5 w-5" />
+                  ) : (
+                    <FontAwesomeIcon icon={social.icon as any} className="h-5 w-5" />
+                  )}
                 </a>
               ))}
             </div>

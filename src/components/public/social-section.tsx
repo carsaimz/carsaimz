@@ -2,14 +2,18 @@
 
 import { motion } from 'framer-motion';
 import {
-  MessageCircle,
-  Facebook,
-  Instagram,
-  Globe,
   Youtube,
   Github,
   ExternalLink,
 } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faWhatsapp,
+  faFacebookF,
+  faInstagram,
+  faTiktok,
+  faDiscord,
+} from '@fortawesome/free-brands-svg-icons';
 import { GITHUB_URL } from '@/lib/client-config';
 import { useLanguage } from '@/contexts/language-context';
 import { GradientWaveSVG } from '@/components/common/decorative-svg';
@@ -29,7 +33,7 @@ const socialLinks: SocialLink[] = [
     name: 'WhatsApp',
     handle: '+258 84 754 5020',
     url: 'https://wa.me/258847545020',
-    icon: <MessageCircle className="h-7 w-7" />,
+    icon: <FontAwesomeIcon icon={faWhatsapp} className="h-7 w-7" />,
     color: 'text-green-400',
     hoverColor: 'group-hover:text-green-300',
     bgColor: 'from-green-500/20 to-green-600/10',
@@ -38,7 +42,7 @@ const socialLinks: SocialLink[] = [
     name: 'Facebook',
     handle: '@carsaimz',
     url: 'https://facebook.com/carsaimz',
-    icon: <Facebook className="h-7 w-7" />,
+    icon: <FontAwesomeIcon icon={faFacebookF} className="h-7 w-7" />,
     color: 'text-blue-400',
     hoverColor: 'group-hover:text-blue-300',
     bgColor: 'from-blue-500/20 to-blue-600/10',
@@ -47,7 +51,7 @@ const socialLinks: SocialLink[] = [
     name: 'Instagram',
     handle: '@carsaimz',
     url: 'https://instagram.com/carsaimz',
-    icon: <Instagram className="h-7 w-7" />,
+    icon: <FontAwesomeIcon icon={faInstagram} className="h-7 w-7" />,
     color: 'text-pink-400',
     hoverColor: 'group-hover:text-pink-300',
     bgColor: 'from-pink-500/20 to-purple-600/10',
@@ -56,7 +60,7 @@ const socialLinks: SocialLink[] = [
     name: 'TikTok',
     handle: '@carsaimz',
     url: 'https://tiktok.com/@carsaimz',
-    icon: <Globe className="h-7 w-7" />,
+    icon: <FontAwesomeIcon icon={faTiktok} className="h-7 w-7" />,
     color: 'text-cyan-400',
     hoverColor: 'group-hover:text-cyan-300',
     bgColor: 'from-cyan-500/20 to-cyan-600/10',
@@ -74,7 +78,7 @@ const socialLinks: SocialLink[] = [
     name: 'Discord',
     handle: 'carsaimz',
     url: 'https://discord.gg/carsaimz',
-    icon: <MessageCircle className="h-7 w-7" />,
+    icon: <FontAwesomeIcon icon={faDiscord} className="h-7 w-7" />,
     color: 'text-indigo-400',
     hoverColor: 'group-hover:text-indigo-300',
     bgColor: 'from-indigo-500/20 to-indigo-600/10',

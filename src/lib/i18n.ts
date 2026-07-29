@@ -11,7 +11,7 @@
 // ============================================================================
 
 /** Supported language codes for the Carsai Mozambique platform */
-export type LanguageCode = 'pt-pt' | 'en-us' | 'pt-br' | 'fr-fr' | 'es-es' | 'zh-cn' | 'de-de';
+export type LanguageCode = 'pt-pt' | 'en-us' | 'pt-br' | 'fr-fr' | 'es-es' | 'zh-cn' | 'de-de' | 'sw-tz';
 
 /** Configuration for each supported language */
 export interface LanguageConfig {
@@ -123,13 +123,24 @@ export const LANGUAGE_CONFIGS: Record<LanguageCode, LanguageConfig> = {
     currencyCode: 'EUR',
     locale: 'de-DE',
   },
+  'sw-tz': {
+    code: 'sw-tz',
+    name: 'Swahili (Tanzania)',
+    nativeName: 'Kiswahili (Tanzania)',
+    flag: '🇹🇿',
+    direction: 'ltr',
+    dateFormat: 'dd/MM/yyyy',
+    currencySymbol: 'TZS',
+    currencyCode: 'TZS',
+    locale: 'sw-TZ',
+  },
 };
 
 /** Default language for the platform */
 export const DEFAULT_LANGUAGE: LanguageCode = 'pt-pt';
 
 /** All available language codes */
-export const AVAILABLE_LANGUAGES: LanguageCode[] = ['pt-pt', 'en-us', 'pt-br', 'fr-fr', 'es-es', 'zh-cn', 'de-de'];
+export const AVAILABLE_LANGUAGES: LanguageCode[] = ['pt-pt', 'en-us', 'pt-br', 'fr-fr', 'es-es', 'zh-cn', 'de-de', 'sw-tz'];
 
 /** Cookie key for persisting language preference */
 export const LANGUAGE_COOKIE_KEY = 'carsai-language';
@@ -198,6 +209,9 @@ export function detectLanguage(): LanguageCode {
     }
     if (prefix === 'de') {
       return 'de-de';
+    }
+    if (prefix === 'sw') {
+      return 'sw-tz';
     }
   }
 

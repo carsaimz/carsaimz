@@ -4,11 +4,17 @@ import {
   Mail,
   Phone,
   MapPin,
-  Facebook,
-  Instagram,
-  Twitter,
-  Linkedin,
+  Youtube,
+  Github,
 } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faWhatsapp,
+  faFacebookF,
+  faInstagram,
+  faTiktok,
+  faDiscord,
+} from '@fortawesome/free-brands-svg-icons';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -16,6 +22,7 @@ import { NewsletterForm } from '@/components/features/newsletter-form';
 
 import { useAppStore, type AppView } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
+import { GITHUB_URL } from '@/lib/client-config';
 
 // ──────────────────────────────────────────────
 // Footer quick links
@@ -37,6 +44,20 @@ const LEGAL_LINKS: FooterLink[] = [
   { view: 'home', labelKey: 'footer.privacy' },
   { view: 'home', labelKey: 'footer.terms' },
   { view: 'home', labelKey: 'footer.cookies' },
+];
+
+// ──────────────────────────────────────────────
+// Social links (FontAwesome brand icons)
+// ──────────────────────────────────────────────
+
+const SOCIAL_LINKS = [
+  { icon: faWhatsapp, label: 'WhatsApp', href: 'https://wa.me/258847545020' },
+  { icon: faFacebookF, label: 'Facebook', href: 'https://facebook.com/carsaimz' },
+  { icon: faInstagram, label: 'Instagram', href: 'https://instagram.com/carsaimz' },
+  { icon: faTiktok, label: 'TikTok', href: 'https://tiktok.com/@carsaimz' },
+  { icon: faDiscord, label: 'Discord', href: 'https://discord.gg/carsaimz' },
+  { icon: faYoutube, label: 'YouTube', href: 'https://youtube.com/@carsaimz', isLucide: true },
+  { icon: faGithub, label: 'GitHub', href: GITHUB_URL, isLucide: true },
 ];
 
 // ──────────────────────────────────────────────
@@ -67,18 +88,23 @@ export function Footer({ className }: { className?: string }) {
             </p>
             {/* Social Media */}
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="size-8" aria-label={t('footer.socialFacebook')}>
-                <Facebook className="size-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="size-8" aria-label={t('footer.socialInstagram')}>
-                <Instagram className="size-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="size-8" aria-label={t('footer.socialTwitter')}>
-                <Twitter className="size-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="size-8" aria-label={t('footer.socialLinkedIn')}>
-                <Linkedin className="size-4" />
-              </Button>
+              {SOCIAL_LINKS.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                >
+                  <Button variant="ghost" size="icon" className="size-8">
+                    {social.isLucide ? (
+                      <social.icon className="size-4" />
+                    ) : (
+                      <FontAwesomeIcon icon={social.icon} className="size-4" />
+                    )}
+                  </Button>
+                </a>
+              ))}
             </div>
           </div>
 

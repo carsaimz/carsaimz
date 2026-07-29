@@ -713,8 +713,6 @@ export const deDE: TranslationObject = {
     social: 'Social Media',
     socialFacebook: 'Facebook',
     socialInstagram: 'Instagram',
-    socialTwitter: 'Twitter',
-    socialLinkedIn: 'LinkedIn',
     socialWhatsapp: 'WhatsApp',
     socialTiktok: 'TikTok',
     socialYoutube: 'YouTube',
@@ -970,10 +968,9 @@ export const deDE: TranslationObject = {
     close: 'Chat schließen',
     open: 'Chat-Assistent öffnen',
     newMessage: 'Neue Nachricht vom Assistent',
+    online: 'Online',
     frequentQuestions: 'Häufige Fragen:',
-    messagesInMemory: 'Nachrichten im Speicher',
-    dbConnected: 'DB Verbunden',
-    poweredBy: 'Powered by Carsai AI · Verbunden mit Datenbank · Lokale Sitzungsspeicherung',
+    poweredBy: 'Carsai AI',
   },
 
   // ============================================================================

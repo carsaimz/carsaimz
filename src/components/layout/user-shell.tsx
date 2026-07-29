@@ -79,7 +79,7 @@ import {
 
 const LANGUAGE_FLAGS: Record<string, string> = {
   'pt-pt': '🇲🇿', 'en-us': '🇺🇸', 'pt-br': '🇧🇷',
-  'fr-fr': '🇫🇷', 'es-es': '🇪🇸', 'zh-cn': '🇨🇳', 'de-de': '🇩🇪',
+  'fr-fr': '🇫🇷', 'es-es': '🇪🇸', 'zh-cn': '🇨🇳', 'de-de': '🇩🇪', 'sw-tz': '🇹🇿',
 };
 
 // Helper: get flag for a language code, falling back to the lang object's own flag

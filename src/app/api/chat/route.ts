@@ -106,7 +106,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         response,
-        provider: 'z_ai',
         sessionId: sessionId || `session-${Date.now()}`,
       })
     }

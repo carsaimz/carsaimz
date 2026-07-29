@@ -713,8 +713,6 @@ export const zhCN: TranslationObject = {
     social: '社交媒体',
     socialFacebook: 'Facebook',
     socialInstagram: 'Instagram',
-    socialTwitter: 'Twitter',
-    socialLinkedIn: 'LinkedIn',
     socialWhatsapp: 'WhatsApp',
     socialTiktok: 'TikTok',
     socialYoutube: 'YouTube',
@@ -970,10 +968,9 @@ export const zhCN: TranslationObject = {
     close: '关闭对话',
     open: '打开对话助手',
     newMessage: '助手新消息',
+    online: 'Online',
     frequentQuestions: '常见问题：',
-    messagesInMemory: '条消息在记忆中',
-    dbConnected: '数据库已连接',
-    poweredBy: 'Powered by Carsai AI · 连接数据库 · 本地会话记忆',
+    poweredBy: 'Carsai AI',
   },
 
   // ============================================================================

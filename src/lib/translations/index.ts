@@ -13,6 +13,7 @@ import { frFR } from './fr-fr';
 import { esES } from './es-es';
 import { zhCN } from './zh-cn';
 import { deDE } from './de-de';
+import { swTZ } from './sw-tz';
 
 /**
  * All translation objects mapped by language code.
@@ -26,6 +27,7 @@ export const translations: Record<LanguageCode, TranslationObject> = {
   'es-es': esES,
   'zh-cn': zhCN,
   'de-de': deDE,
+  'sw-tz': swTZ,
 };
 
 /**
@@ -52,3 +54,4 @@ export { frFR } from './fr-fr';
 export { esES } from './es-es';
 export { zhCN } from './zh-cn';
 export { deDE } from './de-de';
+export { swTZ } from './sw-tz';

@@ -13,7 +13,6 @@ const config: CapacitorConfig = {
   appId: 'com.carsaimz',
   appName: 'Carsai Mozambique',
   webDir: 'out',
-  versionCode,
   server: {
     androidScheme: 'https',
     // In Capacitor static export, API calls need to go to the external server

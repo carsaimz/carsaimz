@@ -70,6 +70,7 @@ const LANGUAGE_FLAGS: Record<string, string> = {
   'es-es': '🇪🇸',
   'zh-cn': '🇨🇳',
   'de-de': '🇩🇪',
+  'sw-tz': '🇹🇿',
 };
 
 // Helper: get flag for a language code, falling back to the lang object's own flag

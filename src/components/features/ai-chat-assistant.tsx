@@ -15,18 +15,15 @@ import {
   Send,
   Bot,
   User,
-  Sparkles,
   Minimize2,
   Maximize2,
   Trash2,
-  Globe,
   RefreshCw,
   ChevronUp,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/language-context';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
@@ -796,23 +793,13 @@ export function AiChatAssistant() {
         </div>
       </div>
 
-      {/* ── Session memory indicator (only in expanded states) ── */}
+      {/* ── Session status indicator (only in expanded states) ── */}
       {!compact && (
-        <div className="flex items-center gap-2 mt-2 flex-wrap">
-          <Badge
-            className="bg-white/10 text-red-200 border-red-400/20 text-[10px] px-2 py-0.5"
-          >
-            <Globe className="size-2.5 mr-1" />
-            {t('chat.dbConnected')}
-          </Badge>
-          {messages.length > 1 && (
-            <Badge
-              className="bg-white/10 text-red-200 border-red-400/20 text-[10px] px-2 py-0.5"
-            >
-              <Sparkles className="size-2.5 mr-1" />
-              {messages.length - 1} {t('chat.messagesInMemory')}
-            </Badge>
-          )}
+        <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-1.5 text-[10px] text-red-200/60">
+            <div className="size-1.5 rounded-full bg-green-400 animate-pulse" />
+            <span>{t('chat.online')}</span>
+          </div>
         </div>
       )}
     </div>
@@ -1018,11 +1005,6 @@ export function AiChatAssistant() {
             <MessageCircle
               className="size-6 group-hover:scale-110 transition-transform"
             />
-            <Badge
-              className="absolute -top-1 -right-1 size-5 p-0 bg-yellow-400 text-red-900 text-[10px] flex items-center justify-center border-0 rounded-full shadow-sm"
-            >
-              <Sparkles className="size-3" />
-            </Badge>
 
             {/* ── Unread notification dot ── */}
             {hasUnread && (
