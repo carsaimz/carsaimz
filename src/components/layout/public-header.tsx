@@ -72,6 +72,11 @@ const LANGUAGE_FLAGS: Record<string, string> = {
   'de-de': '🇩🇪',
 };
 
+// Helper: get flag for a language code, falling back to the lang object's own flag
+function getFlag(code: string, langFlag?: string): string {
+  return LANGUAGE_FLAGS[code] || langFlag || '🌐';
+}
+
 // ──────────────────────────────────────────────
 // Header Component
 // ──────────────────────────────────────────────
@@ -86,7 +91,7 @@ export function PublicHeader() {
 
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
 
-  const currentFlag = LANGUAGE_FLAGS[language] || '🌐';
+  const currentFlag = getFlag(language);
 
   const initials = user?.name
     ? user.name
@@ -147,7 +152,7 @@ export function PublicHeader() {
                   onClick={() => setLanguage(lang.code)}
                   className={language === lang.code ? 'bg-accent' : ''}
                 >
-                  <span className="mr-2 text-lg">{LANGUAGE_FLAGS[lang.code] || '🌐'}</span>
+                  <span className="mr-2 text-lg">{getFlag(lang.code, lang.flag)}</span>
                   <span>{lang.nativeName}</span>
                 </DropdownMenuItem>
               ))}
@@ -249,13 +254,13 @@ export function PublicHeader() {
                 <DropdownMenuSeparator />
 
                 {/* Dashboard navigation based on role */}
-                {isAdmin && (
+                {(isAdmin || isSuperAdmin) && (
                   <DropdownMenuItem onClick={() => router.push('/admin')}>
                     <Shield className="mr-2 size-4" />
                     {t('nav.admin')}
                   </DropdownMenuItem>
                 )}
-                {isPartner && (
+                {isPartner && !isAdmin && !isSuperAdmin && (
                   <DropdownMenuItem onClick={() => router.push('/partner')}>
                     <Briefcase className="mr-2 size-4" />
                     {t('nav.partner')}
@@ -362,7 +367,17 @@ export function PublicHeader() {
                         {t('nav.admin')}
                       </Button>
                     )}
-                    {isPartner && (
+                    {isSuperAdmin && !isAdmin && (
+                      <Button
+                        variant="ghost"
+                        onClick={() => { router.push('/admin'); setMobileSheetOpen(false); }}
+                        className="justify-start text-sm"
+                      >
+                        <Shield className="mr-2 size-4" />
+                        {t('nav.admin')}
+                      </Button>
+                    )}
+                    {isPartner && !isAdmin && !isSuperAdmin && (
                       <Button
                         variant="ghost"
                         onClick={() => { router.push('/partner'); setMobileSheetOpen(false); }}

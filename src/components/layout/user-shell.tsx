@@ -82,6 +82,11 @@ const LANGUAGE_FLAGS: Record<string, string> = {
   'fr-fr': '🇫🇷', 'es-es': '🇪🇸', 'zh-cn': '🇨🇳', 'de-de': '🇩🇪',
 };
 
+// Helper: get flag for a language code, falling back to the lang object's own flag
+function getFlag(code: string, langFlag?: string): string {
+  return LANGUAGE_FLAGS[code] || langFlag || '🌐';
+}
+
 // ──────────────────────────────────────────────
 // User menu items
 // ──────────────────────────────────────────────
@@ -145,7 +150,7 @@ export function UserShell({ children }: { children: React.ReactNode }) {
   const isPrivileged = isAdmin || isSuperAdmin;
   const canAccessAll = isPrivileged || isPartner;
 
-  const currentFlag = LANGUAGE_FLAGS[language] || '🌐';
+  const currentFlag = getFlag(language);
 
   const initials = user?.name
     ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -302,7 +307,7 @@ export function UserShell({ children }: { children: React.ReactNode }) {
                       onClick={() => setLanguage(lang.code)}
                       className={language === lang.code ? 'bg-accent' : ''}
                     >
-                      <span className="mr-2 text-lg">{LANGUAGE_FLAGS[lang.code] || '🌐'}</span>
+                      <span className="mr-2 text-lg">{getFlag(lang.code, lang.flag)}</span>
                       <span>{lang.nativeName}</span>
                     </DropdownMenuItem>
                   ))}

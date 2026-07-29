@@ -39,6 +39,11 @@ const LANGUAGE_FLAGS: Record<string, string> = {
   'fr-fr': '🇫🇷', 'es-es': '🇪🇸', 'zh-cn': '🇨🇳', 'de-de': '🇩🇪',
 };
 
+// Helper: get flag for a language code, falling back to the lang object's own flag
+function getFlag(code: string, langFlag?: string): string {
+  return LANGUAGE_FLAGS[code] || langFlag || '🌐';
+}
+
 interface SidebarLink { path: string; labelKey: string; icon: React.ComponentType<{ className?: string }> }
 
 const ADMIN_MENU_ITEMS: SidebarLink[] = [
@@ -88,7 +93,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   const isPrivileged = isAdmin || isSuperAdmin;
 
-  const currentFlag = LANGUAGE_FLAGS[language] || '🌐';
+  const currentFlag = getFlag(language);
   const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) : 'A';
 
   return (
@@ -202,7 +207,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" className="gap-1 h-7"><span className="text-base leading-none">{currentFlag}</span><ChevronDown className="size-3 opacity-50" /></Button></DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>{t('nav.language')}</DropdownMenuLabel><DropdownMenuSeparator />
-                  {languages.map((lang) => (<DropdownMenuItem key={lang.code} onClick={() => setLanguage(lang.code)} className={language === lang.code ? 'bg-accent' : ''}><span className="mr-2 text-lg">{LANGUAGE_FLAGS[lang.code] || '🌐'}</span><span>{lang.nativeName}</span></DropdownMenuItem>))}
+                  {languages.map((lang) => (<DropdownMenuItem key={lang.code} onClick={() => setLanguage(lang.code)} className={language === lang.code ? 'bg-accent' : ''}><span className="mr-2 text-lg">{getFlag(lang.code, lang.flag)}</span><span>{lang.nativeName}</span></DropdownMenuItem>))}
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button variant="ghost" size="icon" className="size-7" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}</Button>

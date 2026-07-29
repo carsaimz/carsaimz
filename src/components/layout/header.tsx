@@ -40,6 +40,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAppStore, useAuthStore, useNotificationStore, type AppView } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
 import { LoginModal } from '@/components/common/login-modal';
+import { useRouter } from 'next/navigation';
 
 // ──────────────────────────────────────────────
 // Navigation items mapped to AppView
@@ -67,8 +68,9 @@ export function Header() {
   const { t, language, setLanguage, languages } = useLanguage();
   const { theme, setTheme } = useTheme();
   const { currentView, setCurrentView, searchOpen, setSearchOpen } = useAppStore();
-  const { user, isAuthenticated, isAdmin, isPartner, logout } = useAuthStore();
+  const { user, isAuthenticated, isAdmin, isSuperAdmin, isPartner, logout } = useAuthStore();
   const { unreadCount, notifications, markAllAsRead } = useNotificationStore();
+  const router = useRouter();
 
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
@@ -78,8 +80,8 @@ export function Header() {
     setMobileSheetOpen(false);
   };
 
-  const handleDemoLogin = (view: AppView) => {
-    setCurrentView(view);
+  const handleNavigateToDashboard = (path: string) => {
+    router.push(path);
   };
 
   const initials = user?.name
@@ -247,19 +249,19 @@ export function Header() {
                   <DropdownMenuSeparator />
 
                   {/* Dashboard navigation based on role */}
-                  {isAdmin && (
-                    <DropdownMenuItem onClick={() => handleDemoLogin('admin')}>
+                  {(isAdmin || isSuperAdmin) && (
+                    <DropdownMenuItem onClick={() => handleNavigateToDashboard('/admin')}>
                       <Shield className="mr-2 size-4" />
                       {t('nav.admin')}
                     </DropdownMenuItem>
                   )}
-                  {isPartner && (
-                    <DropdownMenuItem onClick={() => handleDemoLogin('partner')}>
+                  {isPartner && !isAdmin && !isSuperAdmin && (
+                    <DropdownMenuItem onClick={() => handleNavigateToDashboard('/partner')}>
                       <Briefcase className="mr-2 size-4" />
                       {t('nav.partner')}
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onClick={() => handleDemoLogin('dashboard')}>
+                  <DropdownMenuItem onClick={() => handleNavigateToDashboard('/user')}>
                     <User className="mr-2 size-4" />
                     {t('nav.dashboard')}
                   </DropdownMenuItem>
@@ -328,26 +330,26 @@ export function Header() {
                     <div className="flex flex-col gap-2 px-4">
                       <Button
                         variant="ghost"
-                        onClick={() => handleDemoLogin('dashboard')}
+                        onClick={() => handleNavigateToDashboard('/user')}
                         className="justify-start text-sm"
                       >
                         <User className="mr-2 size-4" />
                         {t('nav.dashboard')}
                       </Button>
-                      {isAdmin && (
+                      {(isAdmin || isSuperAdmin) && (
                         <Button
                           variant="ghost"
-                          onClick={() => handleDemoLogin('admin')}
+                          onClick={() => handleNavigateToDashboard('/admin')}
                           className="justify-start text-sm"
                         >
                           <Shield className="mr-2 size-4" />
                           {t('nav.admin')}
                         </Button>
                       )}
-                      {isPartner && (
+                      {isPartner && !isAdmin && !isSuperAdmin && (
                         <Button
                           variant="ghost"
-                          onClick={() => handleDemoLogin('partner')}
+                          onClick={() => handleNavigateToDashboard('/partner')}
                           className="justify-start text-sm"
                         >
                           <Briefcase className="mr-2 size-4" />

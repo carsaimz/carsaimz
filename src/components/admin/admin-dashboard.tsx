@@ -210,7 +210,9 @@ export function AdminDashboard() {
   useEffect(() => {
     if (!user?.id) return;
 
-    Promise.all([
+    // Use Promise.allSettled so each API call is independent —
+    // if one fails, the others still load their data.
+    Promise.allSettled([
       apiFetch('/api/stats').then(async (res) => {
         if (!res.ok) throw new Error(`Stats: HTTP ${res.status}`);
         const data = await safeJson(res);
@@ -230,19 +232,33 @@ export function AdminDashboard() {
         return data;
       }),
     ])
-      .then(([statsJson, historyJson, dashboardJson]) => {
-        if (statsJson.success && statsJson.data) {
-          setStats(statsJson.data as StatsData);
+      .then(([statsResult, historyResult, dashboardResult]) => {
+        const errors: string[] = [];
+
+        if (statsResult.status === 'fulfilled' && statsResult.value?.success && statsResult.value?.data) {
+          setStats(statsResult.value.data as StatsData);
+        } else if (statsResult.status === 'rejected') {
+          errors.push(statsResult.reason?.message || 'Stats failed');
         }
-        if (historyJson.success && historyJson.data) {
-          setHistory(historyJson.data as HistoryData);
+
+        if (historyResult.status === 'fulfilled' && historyResult.value?.success && historyResult.value?.data) {
+          setHistory(historyResult.value.data as HistoryData);
+        } else if (historyResult.status === 'rejected') {
+          errors.push(historyResult.reason?.message || 'History failed');
         }
-        if (dashboardJson.success && dashboardJson.data) {
-          setDashboardData(dashboardJson.data as DashboardData);
+
+        if (dashboardResult.status === 'fulfilled' && dashboardResult.value?.success && dashboardResult.value?.data) {
+          setDashboardData(dashboardResult.value.data as DashboardData);
+        } else if (dashboardResult.status === 'rejected') {
+          errors.push(dashboardResult.reason?.message || 'Dashboard failed');
         }
-      })
-      .catch((err) => {
-        setError(err.message || t('common.networkError'));
+
+        // Only show error if ALL three failed
+        if (errors.length === 3) {
+          setError(errors.join('; '));
+        } else if (errors.length > 0) {
+          console.warn('[AdminDashboard] Partial API failures:', errors);
+        }
       })
       .finally(() => {
         setLoading(false);

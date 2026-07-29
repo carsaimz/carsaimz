@@ -123,6 +123,44 @@ function mapRole(roleData: any): UserRole {
 }
 
 /**
+ * Resolve role from a Firestore user profile.
+ * The profile may have:
+ *   - `role` as a string (e.g. 'admin') — new format
+ *   - `role` as an object { id, name } — from server API response
+ *   - `roleId` as a string — reference to a roles/{id} document (legacy)
+ *   - None of the above — default to 'user'
+ *
+ * When roleId is present, we try to read the role document from Firestore
+ * (client-side) to resolve the name.
+ */
+async function resolveRoleFromProfile(profile: any): Promise<UserRole> {
+  // 1. Direct `role` field (string or object)
+  if (profile.role) {
+    return mapRole(profile.role)
+  }
+
+  // 2. `roleId` — resolve from Firestore roles collection
+  if (profile.roleId) {
+    try {
+      const { firestoreClient, isFirebaseConfigured } = await import('@/lib/firebase-client')
+      if (isFirebaseConfigured() && firestoreClient) {
+        const { doc, getDoc } = await import('firebase/firestore')
+        const roleRef = doc(firestoreClient, 'roles', profile.roleId)
+        const roleSnap = await getDoc(roleRef)
+        if (roleSnap.exists()) {
+          const roleData = roleSnap.data()
+          return roleData.name as UserRole || 'user'
+        }
+      }
+    } catch (err) {
+      console.warn('[Auth] Failed to resolve roleId:', err)
+    }
+  }
+
+  return 'user'
+}
+
+/**
  * Verify authentication with server API route.
  * Uses apiFetch (instead of raw fetch) to handle:
  *   - Capacitor CORS bypass (external URL + CORS middleware)
@@ -251,11 +289,12 @@ async function verifyWithNativeResult(nativeResult: NativeAuthResult): Promise<{
 
       if (userSnap.exists()) {
         const profile = userSnap.data()
+        const userRole = await resolveRoleFromProfile(profile)
         const user: User = {
           id: uid,
           name: profile.name || nativeResult.displayName || 'Utilizador',
           email: profile.email || nativeResult.email || null,
-          role: mapRole(profile.role),
+          role: userRole,
           avatar: profile.avatar || nativeResult.photoUrl || null,
           phone: profile.phone || nativeResult.phoneNumber || null,
           authProvider: nativeResult.providerId as AuthProvider || 'unknown',
@@ -275,7 +314,7 @@ async function verifyWithNativeResult(nativeResult: NativeAuthResult): Promise<{
         company: null,
         bio: null,
         address: null,
-        role: 'user',
+        roleId: null,
         isActive: true,
         emailVerified: nativeResult.emailVerified,
         authProvider,
@@ -357,9 +396,9 @@ async function verifyWithClientFirestore(idToken: string): Promise<{ success: bo
     const userSnap = await getDoc(userRef)
 
     if (userSnap.exists()) {
-      // Profile exists — return it
+      // Profile exists — resolve role from roleId or role field
       const profile = userSnap.data()
-      const userRole = mapRole(profile.role)
+      const userRole = await resolveRoleFromProfile(profile)
       const user: User = {
         id: uid,
         name: profile.name || currentUser.displayName || 'Utilizador',
@@ -394,7 +433,7 @@ async function verifyWithClientFirestore(idToken: string): Promise<{ success: bo
       company: null,
       bio: null,
       address: null,
-      role: 'user',
+      roleId: null,
       isActive: true,
       emailVerified: currentUser.emailVerified,
       authProvider,

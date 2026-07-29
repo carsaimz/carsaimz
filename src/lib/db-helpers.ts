@@ -89,8 +89,8 @@ export function checkFirebaseAdmin(): string | null {
 export async function isFirestoreAvailable(): Promise<boolean> {
   try {
     const db = getDb()
-    // Try a lightweight read — just check if we can list collections
-    await db.collection('users').select('__name__').limit(1).get()
+    // Try a lightweight read — just check if we can access the users collection
+    await db.collection('users').limit(1).get()
     return true
   } catch {
     return false
