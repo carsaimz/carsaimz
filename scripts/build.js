@@ -6,8 +6,9 @@
  * Works on Windows, macOS, and Linux — uses only Node.js APIs
  * (no bash-specific commands like `if [ -d ]` or `cp -r`).
  *
- * Supports two output modes controlled by BUILD_TARGET env var:
+ * Supports three output modes controlled by BUILD_TARGET env var:
  *   - BUILD_TARGET=capacitor → output: "export" → generates `out/` directory
+ *   - BUILD_TARGET=standalone → output: "standalone" → generates `.next/standalone/`
  *   - (default)              → output: undefined → generates `.next/` for server
  *
  * When output is "export", API routes and dynamic [slug]/[id] routes are
@@ -31,12 +32,11 @@ const backupDir = path.join(projectRoot, ".build-backup");
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 /**
- * Determine if we're building for Capacitor (static export).
- * Checks BUILD_TARGET env var directly — this is the source of truth,
- * matching next.config.ts logic.
+ * Determine build target from BUILD_TARGET env var.
+ * Returns "capacitor", "standalone", or "" (default server mode).
  */
-function isCapacitorBuild() {
-  return process.env.BUILD_TARGET === "capacitor";
+function getBuildTarget() {
+  return process.env.BUILD_TARGET || "";
 }
 
 /**
@@ -153,9 +153,13 @@ function countFilesRecursive(dir, ext) {
 
 // ── Main Build ──────────────────────────────────────────────────────────────
 
-const isExport = isCapacitorBuild();
-console.log(`[build] BUILD_TARGET=${process.env.BUILD_TARGET || "(unset)"}`);
-console.log(`[build] Output mode: ${isExport ? "export (static)" : "default (server)"}`);
+const buildTarget = getBuildTarget();
+const isExport = buildTarget === "capacitor";
+const isStandalone = buildTarget === "standalone";
+const modeLabel = isExport ? "export (static)" : isStandalone ? "standalone (Electron)" : "default (server)";
+
+console.log(`[build] BUILD_TARGET=${buildTarget || "(unset)"}`);
+console.log(`[build] Output mode: ${modeLabel}`);
 
 let movedItems = [];
 

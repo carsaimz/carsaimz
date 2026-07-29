@@ -15,9 +15,13 @@ service cloud.firestore {
     // This is essential for the /setup wizard to seed initial data
     // (roles, permissions, categories, etc.) before the admin exists.
     // Once setup is complete, this returns false and normal auth rules apply.
+    //
+    // IMPORTANT: Firestore rules evaluate both sides of || (no short-circuit).
+    // We must guard get() with exists() to avoid null.data errors.
     function isSetupMode() {
       return !exists(/databases/$(database)/documents/settings/app) ||
-             !get(/databases/$(database)/documents/settings/app).data.setupComplete;
+             (exists(/databases/$(database)/documents/settings/app) &&
+              !get(/databases/$(database)/documents/settings/app).data.setupComplete);
     }
 
     // Authenticated OR in setup mode — used for seed collections

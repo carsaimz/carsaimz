@@ -1,15 +1,13 @@
 import type { NextConfig } from "next";
 
-// When building for Capacitor (native app), use static export.
-// For web development and deployment, use standard server mode (API routes work).
-// Set BUILD_TARGET=capacitor for native builds, or leave unset for web.
-const isCapacitorBuild = process.env.BUILD_TARGET === "capacitor";
+// Build targets controlled by BUILD_TARGET env var:
+//   - "capacitor" → output: "export" (static HTML/CSS/JS for Capacitor native apps)
+//   - "standalone" → output: "standalone" (self-contained server for Electron/Docker)
+//   - (unset) → output: undefined (standard server mode for dev/web deployment)
+const buildTarget = process.env.BUILD_TARGET || "";
 
 const nextConfig: NextConfig = {
-  // Only use static export for Capacitor builds.
-  // For web, API routes need a server — they won't work with static export.
-  output: isCapacitorBuild ? "export" : undefined,
-  /* config options here */
+  output: buildTarget === "capacitor" ? "export" : buildTarget === "standalone" ? "standalone" : undefined,
   typescript: {
     ignoreBuildErrors: true,
   },

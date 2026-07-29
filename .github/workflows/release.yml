@@ -3,6 +3,11 @@
 # =============================================================================
 # Triggers on tag push (v*) and builds all platforms in parallel,
 # then creates a GitHub Release with changelog, download links, and assets.
+#
+# Build targets:
+#   - Web:  BUILD_TARGET=standalone → .next/standalone/server.js
+#   - Android: BUILD_TARGET=capacitor → out/ → Capacitor → APK + AAB
+#   - Windows: BUILD_TARGET=standalone → .next/standalone/ → Electron → Portable EXE
 # =============================================================================
 
 name: Release
@@ -15,13 +20,14 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  JAVA_VERSION: '21'
 
 permissions:
   contents: write
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Extract version from tag
+  # Extract version from tag & generate changelog
   # ---------------------------------------------------------------------------
   prepare:
     name: Prepare Release
@@ -64,13 +70,13 @@ jobs:
           # Save changelog to file for multi-line output
           echo "${LOG}" > /tmp/changelog.txt
 
-          # Multi-line output via file
+          # Multi-line output via heredoc
           echo "changelog<<EOF" >> "$GITHUB_OUTPUT"
           cat /tmp/changelog.txt >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
 
   # ---------------------------------------------------------------------------
-  # Build: Web (standalone Next.js)
+  # Build: Web (standalone Next.js server)
   # ---------------------------------------------------------------------------
   build-web:
     name: Build Web
@@ -90,6 +96,7 @@ jobs:
 
       - name: Build Next.js standalone
         env:
+          BUILD_TARGET: standalone
           NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
@@ -103,6 +110,15 @@ jobs:
           FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
           FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
         run: bun run build
+
+      - name: Verify standalone output
+        run: |
+          if [ -f ".next/standalone/server.js" ]; then
+            echo "✅ Standalone server.js found"
+          else
+            echo "❌ Standalone server.js NOT found"
+            exit 1
+          fi
 
       - name: Package web artifact
         run: |
@@ -118,7 +134,7 @@ jobs:
           retention-days: 30
 
   # ---------------------------------------------------------------------------
-  # Build: Android APK + AAB
+  # Build: Android APK + AAB (Capacitor static export)
   # ---------------------------------------------------------------------------
   build-android:
     name: Build Android
@@ -137,39 +153,24 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: ${{ env.JAVA_VERSION }}
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Install Gradle wrapper dependencies
+        run: |
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager --install "platform-tools" "platforms;android-36" "build-tools;36.0.0" > /dev/null 2>&1 || true
+
       - name: Install dependencies
         run: bun install
 
-      - name: Create export script
-        run: |
-          mkdir -p scripts
-          cat > scripts/export.sh << 'SCRIPT'
-          #!/bin/bash
-          set -e
-          CONFIG_FILE="next.config.ts"
-          # Backup original config
-          cp "$CONFIG_FILE" "$CONFIG_FILE.bak"
-          # Trap to restore on exit via git checkout
-          trap 'mv "$CONFIG_FILE.bak" "$CONFIG_FILE"; git checkout -- src/app/api; git checkout -- src/app' EXIT
-          # Remove API routes (delete completely — .bak dirs get detected by Next.js)
-          rm -rf src/app/api
-          # Remove [slug] dynamic routes (delete completely)
-          find src/app -type d -name '\[*\]' -exec rm -rf {} + 2>/dev/null || true
-          # Change output to "export"
-          sed -i 's/output: "standalone"/output: "export"/' "$CONFIG_FILE"
-          # Build
-          bun run build
-          echo "Static export completed"
-          SCRIPT
-          chmod +x scripts/export.sh
-
-      - name: Static export for Android
+      # BUILD_TARGET=capacitor → next.config.ts sets output: "export"
+      # scripts/build.js handles moving API routes aside and restoring after build
+      - name: Build static export for Capacitor
         env:
+          BUILD_TARGET: capacitor
           NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
@@ -182,13 +183,32 @@ jobs:
           FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
           FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
           FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
-        run: bash scripts/export.sh
+        run: bun run build
+
+      - name: Verify static export
+        run: |
+          if [ -d "out" ] && [ "$(find out -name '*.html' | wc -l)" -gt 0 ]; then
+            echo "✅ Static export — $(find out -name '*.html' | wc -l) HTML pages generated"
+          else
+            echo "❌ Static export failed — 'out' directory empty or missing"
+            exit 1
+          fi
 
       - name: Initialize Capacitor
         run: bunx cap init com.carsaimz CarsaiMZ --web-dir out || true
 
       - name: Add Android platform
-        run: bunx cap add android || true
+        run: |
+          if [ -d "android" ]; then
+            echo "Android platform already exists — skipping add"
+          else
+            bunx cap add android
+            if [ ! -d "android" ]; then
+              echo "Android platform failed to initialize"
+              exit 1
+            fi
+            echo "Android platform added successfully"
+          fi
 
       - name: Sync Capacitor
         run: bunx cap sync android
@@ -199,25 +219,12 @@ jobs:
       - name: Validate AndroidManifest.xml
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          
           if [ ! -f "$MANIFEST" ]; then
             echo "ERROR: AndroidManifest.xml not found"
             exit 1
           fi
-          
-          echo "=== AndroidManifest.xml contents ==="
+          echo "=== AndroidManifest.xml ==="
           cat "$MANIFEST"
-          
-          # Verify key permissions
-          echo ""
-          echo "=== Manifest validation ==="
-          for perm in INTERNET ACCESS_NETWORK_STATE CAMERA VIBRATE WAKE_LOCK FOREGROUND_SERVICE POST_NOTIFICATIONS ACCESS_FINE_LOCATION NFC BLUETOOTH_CONNECT; do
-            if grep -q "android.permission.${perm}" "$MANIFEST"; then
-              echo "OK: ${perm}"
-            else
-              echo "MISSING: ${perm}"
-            fi
-          done
 
       - name: Setup keystore for signing
         env:
@@ -227,15 +234,11 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           if [ -n "${KEYSTORE_FILE}" ] && [ -n "${KEYSTORE_PASSWORD}" ] && [ -n "${KEYSTORE_ALIAS}" ] && [ -n "${KEY_PASSWORD}" ]; then
-            # Decode base64 keystore and place it where Gradle expects it
             mkdir -p android/app/upload
             echo "${KEYSTORE_FILE}" | base64 -d > android/app/upload/release.jks
             echo "Keystore decoded from KEYSTORE_FILE secret"
-
-            # Create keystore properties file for Gradle
             printf 'storeFile=upload/release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
               "${KEYSTORE_PASSWORD}" "${KEYSTORE_ALIAS}" "${KEY_PASSWORD}" > android/keystore.properties
-
             echo "keystore.properties created — builds will be signed"
           else
             echo "Signing secrets not configured — builds will be unsigned (OK for dev/testing)"
@@ -245,24 +248,22 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease
+          ./gradlew assembleRelease --stacktrace
 
       - name: Build AAB with Gradle
         working-directory: android
-        run: ./gradlew bundleRelease
+        run: ./gradlew bundleRelease --stacktrace
 
       - name: Rename artifacts
         run: |
           VERSION="${{ needs.prepare.outputs.version }}"
           
-          # Find and rename APK
           APK_PATH=$(find android/app/build/outputs/apk/release/ -name "*.apk" -type f | head -1)
           if [ -n "$APK_PATH" ]; then
             cp "$APK_PATH" "CarsaiMozambique-${VERSION}.apk"
             echo "APK: CarsaiMozambique-${VERSION}.apk"
           fi
           
-          # Find and rename AAB
           AAB_PATH=$(find android/app/build/outputs/bundle/release/ -name "*.aab" -type f | head -1)
           if [ -n "$AAB_PATH" ]; then
             cp "$AAB_PATH" "CarsaiMozambique-${VERSION}.aab"
@@ -284,7 +285,7 @@ jobs:
           retention-days: 30
 
   # ---------------------------------------------------------------------------
-  # Build: Windows Portable EXE
+  # Build: Windows Portable EXE (Electron + standalone)
   # ---------------------------------------------------------------------------
   build-windows:
     name: Build Windows
@@ -302,8 +303,11 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      # BUILD_TARGET=standalone → next.config.ts sets output: "standalone"
+      # → produces .next/standalone/server.js for Electron to wrap
       - name: Build Next.js standalone
         env:
+          BUILD_TARGET: standalone
           NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
@@ -318,10 +322,40 @@ jobs:
           FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
         run: bun run build
 
+      - name: Verify standalone output
+        shell: pwsh
+        run: |
+          if (Test-Path ".next\standalone\server.js") {
+            Write-Host "Standalone server.js found"
+          } else {
+            Write-Host "Standalone server.js NOT found"
+            exit 1
+          }
+
+          # Safety net: copy static + public if build.js didn't
+          $staticDest = ".next\standalone\.next\static"
+          if (-not (Test-Path $staticDest)) {
+            Copy-Item -Path ".next\static" -Destination $staticDest -Recurse -Force
+          }
+          $publicDest = ".next\standalone\public"
+          if (-not (Test-Path $publicDest)) {
+            Copy-Item -Path "public" -Destination $publicDest -Recurse -Force
+          }
+
       - name: Build Electron portable EXE
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bunx electron-builder --win portable
+        shell: pwsh
+        run: |
+          Write-Host "Running electron-builder for Windows portable..."
+          bunx electron-builder --win portable
+
+          if (Test-Path "dist") {
+            Get-ChildItem -Path "dist" -Recurse -Filter "*.exe" | Select-Object FullName, Length
+          } else {
+            Write-Host "dist directory not found"
+            exit 1
+          }
 
       - name: Rename EXE artifact
         shell: pwsh
@@ -344,7 +378,7 @@ jobs:
           retention-days: 30
 
   # ---------------------------------------------------------------------------
-  # Create GitHub Release
+  # Create GitHub Release with assets
   # ---------------------------------------------------------------------------
   create-release:
     name: Create Release
@@ -365,7 +399,6 @@ jobs:
       - name: Prepare release assets
         run: |
           mkdir -p release-assets
-          # Copy all build artifacts
           find artifacts -name "*.tar.gz" -exec cp {} release-assets/ \;
           find artifacts -name "*.apk" -exec cp {} release-assets/ \;
           find artifacts -name "*.aab" -exec cp {} release-assets/ \;
@@ -379,32 +412,31 @@ jobs:
           TAG="${GITHUB_REF#refs/tags/}"
           REPO="${{ github.repository }}"
           
-          cat > /tmp/release-body.md << 'HEADER'
+          cat > /tmp/release-body.md << HEADER
           ## 🏢 Carsai Mozambique — Release
+
+          **Version:** \`${VERSION}\`
+          **Date:** $(date -u '+%Y-%m-%d %H:%M UTC')
           HEADER
           
-          echo "" >> /tmp/release-body.md
-          echo "**Version:** \`${VERSION}\`" >> /tmp/release-body.md
-          echo "**Date:** $(date -u '+%Y-%m-%d %H:%M UTC')" >> /tmp/release-body.md
           echo "" >> /tmp/release-body.md
           
           # --- Download Links Section ---
           cat >> /tmp/release-body.md << 'DOWNLOADS'
           ---
-          
+
           ### Downloads
-          
+
           DOWNLOADS
-          
+
           echo "| Platform | File | Size |" >> /tmp/release-body.md
           echo "|:---------|:-----|-----:|" >> /tmp/release-body.md
-          
-          # Calculate sizes and add download links
+
           for file in release-assets/*; do
             fname=$(basename "$file")
             fsize=$(du -h "$file" | cut -f1 | tr -d ' ')
             ext="${fname##*.}"
-            
+
             case "$ext" in
               apk) icon="📱" ;;
               aab) icon="📦" ;;
@@ -412,41 +444,40 @@ jobs:
               gz)  icon="🌐" ;;
               *)   icon="📁" ;;
             esac
-            
+
             echo "| ${icon} ${ext^^} | [\`${fname}\`](https://github.com/${REPO}/releases/download/${TAG}/${fname}) | ${fsize} |" >> /tmp/release-body.md
           done
-          
+
           echo "" >> /tmp/release-body.md
-          
+
           # --- Changelog Section ---
           cat >> /tmp/release-body.md << 'CHANGELOG'
           ---
-          
+
           ### 📋 Changelog
-          
+
           CHANGELOG
-          
+
           echo '```' >> /tmp/release-body.md
           echo "${{ needs.prepare.outputs.changelog }}" >> /tmp/release-body.md
           echo '```' >> /tmp/release-body.md
-          
+
           # --- Platform Notes ---
           cat >> /tmp/release-body.md << 'NOTES'
-          
+
           ---
-          
+
           ### 📝 Platform Notes
-          
+
           | Platform | Details |
           |:---------|:--------|
           | 🌐 **Web** | Standalone Next.js server — extract and run `node server.js` |
           | 📱 **Android APK** | Direct install — enable "Install from unknown sources" |
-          | **Android AAB** | App Bundle for Google Play Store upload |
+          | 📦 **Android AAB** | App Bundle for Google Play Store upload |
           | 🖥️ **Windows EXE** | Portable — no installation required, just run |
-          
+
           NOTES
-          
-          # Output the body for GitHub release
+
           echo "body_file=/tmp/release-body.md" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release

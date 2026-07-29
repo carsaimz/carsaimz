@@ -171,3 +171,25 @@ Stage Summary:
 - generateStaticParams returns placeholder slug '__dynamic__' instead of empty array
 - CI export script simplified — no directory removal needed for [slug] routes
 - Android build should now succeed in CI
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix release workflow, Windows CI build, splash screen, and Firestore permissions
+
+Work Log:
+- Added BUILD_TARGET=standalone support to next.config.ts (output: "standalone")
+- Updated scripts/build.js to handle standalone mode (3 modes: capacitor, standalone, default)
+- Fixed windows-build.yml: added BUILD_TARGET=standalone env var
+- Rewrote release.yml: uses BUILD_TARGET=capacitor for Android, BUILD_TARGET=standalone for Windows/Web
+- Fixed Firestore rules isSetupMode() to guard get() with exists() (prevents null.data errors)
+- Installed @capacitor/splash-screen package
+- Generated proper splash images with Carsai logo on red background (#D32F2F)
+- Fixed ic_launcher_background.xml from teal (#26A69A) to red (#D32F2F)
+- Updated capacitor.config.ts with launchAutoHide: true
+
+Stage Summary:
+- Windows CI build should now work (BUILD_TARGET=standalone produces .next/standalone/server.js)
+- Release workflow creates GitHub releases with changelogs and attached artifacts
+- Android splash screen now shows the Carsai logo on red background
+- Firestore rules now properly guard against null.data errors in isSetupMode()

@@ -5,9 +5,8 @@
 # Builds a portable Windows EXE using Electron + electron-builder,
 # and uploads as GitHub artifact.
 #
-# NOTE: The project uses output: "export" in next.config.ts for Android/Capacitor,
-# but Electron requires output: "standalone". This workflow temporarily switches
-# to standalone mode before building, then restores the original config.
+# Uses BUILD_TARGET=standalone to produce .next/standalone/server.js
+# which Electron wraps as a native desktop application.
 # =============================================================================
 
 name: Windows Build
@@ -52,8 +51,11 @@ jobs:
       # -----------------------------------------------------------------------
       # Build Next.js Standalone (for Electron)
       # -----------------------------------------------------------------------
-      - name: Run Next.js build (standalone for Electron)
+      # BUILD_TARGET=standalone → next.config.ts sets output: "standalone"
+      # → produces .next/standalone/server.js with all dependencies traced
+      - name: Build Next.js standalone
         env:
+          BUILD_TARGET: standalone
           NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
@@ -66,18 +68,9 @@ jobs:
           FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
           FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
           FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
-        shell: pwsh
-        run: |
-          # No BUILD_TARGET set — builds in standard server mode (API routes work)
-          try {
-            bun run build
-            Write-Host "Next.js build completed"
-          } catch {
-            Write-Host "Next.js build failed: $_"
-            exit 1
-          }
+        run: bun run build
 
-      - name: Verify standalone output and copy assets
+      - name: Verify standalone output
         shell: pwsh
         run: |
           $standaloneDir = ".next\standalone"
@@ -95,7 +88,8 @@ jobs:
             exit 1
           }
           
-          # Copy static files into standalone directory
+          # Copy static files into standalone directory (build.js handles this,
+          # but verify here as a safety net)
           $staticSource = ".next\static"
           $staticDest = ".next\standalone\.next\static"
           if (Test-Path $staticDest) {
