@@ -23,20 +23,23 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
-import { useLanguage } from '@/contexts/language-context';
+import { seedInitialData as clientSeedInitialData, isDatabaseSeeded } from '@/lib/client-seed';
 import { useAuthStore } from '@/lib/store';
 
 // ──────────────────────────────────────────────
 // Types
 // ──────────────────────────────────────────────
 
-type SetupStep = 'check' | 'admin' | 'seed' | 'done';
+// Order: check → seed → admin → done
+// Seed data FIRST so roles/permissions exist before admin creation
+type SetupStep = 'check' | 'seed' | 'admin' | 'done';
 
 interface FirestoreStatus {
   configured: boolean;
   connected: boolean;
   hasUsers: boolean;
   hasAdmin: boolean;
+  hasData: boolean;
   collections: string[];
 }
 
@@ -45,7 +48,6 @@ interface FirestoreStatus {
 // ──────────────────────────────────────────────
 
 export default function SetupPage() {
-  const { t } = useLanguage();
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
 
@@ -55,9 +57,15 @@ export default function SetupPage() {
     connected: false,
     hasUsers: false,
     hasAdmin: false,
+    hasData: false,
     collections: [],
   });
   const [checking, setChecking] = useState(true);
+
+  // Seed state
+  const [seeding, setSeeding] = useState(false);
+  const [seedError, setSeedError] = useState('');
+  const [seedResults, setSeedResults] = useState<Record<string, number>>({});
 
   // Admin form
   const [adminName, setAdminName] = useState('');
@@ -65,11 +73,6 @@ export default function SetupPage() {
   const [adminPassword, setAdminPassword] = useState('');
   const [adminCreating, setAdminCreating] = useState(false);
   const [adminError, setAdminError] = useState('');
-
-  // Seed state
-  const [seeding, setSeeding] = useState(false);
-  const [seedError, setSeedError] = useState('');
-  const [seedResults, setSeedResults] = useState<Record<string, number>>({});
 
   // ── Check Firestore status on mount ──
   useEffect(() => {
@@ -88,6 +91,7 @@ export default function SetupPage() {
           connected: false,
           hasUsers: false,
           hasAdmin: false,
+          hasData: false,
           collections: [],
         });
         setChecking(false);
@@ -106,7 +110,7 @@ export default function SetupPage() {
       const { collection, getDocs, query, limit, where, getDoc, doc } = await import('firebase/firestore');
 
       // Check collections
-      const collectionsToCheck = ['users', 'services', 'categories', 'blog_posts', 'settings'];
+      const collectionsToCheck = ['users', 'services', 'categories', 'blog_posts', 'settings', 'roles', 'permissions'];
       const existingCollections: string[] = [];
 
       for (const colName of collectionsToCheck) {
@@ -137,6 +141,15 @@ export default function SetupPage() {
         // Firestore rules might block — that's OK, means no admin yet
       }
 
+      // Check if data has been seeded (roles + settings exist)
+      let hasData = false;
+      try {
+        const dbSeeded = await isDatabaseSeeded();
+        hasData = dbSeeded;
+      } catch {
+        // Can't check — assume not seeded
+      }
+
       // Check setup lock
       let isLocked = false;
       try {
@@ -154,21 +167,48 @@ export default function SetupPage() {
         connected: true,
         hasUsers,
         hasAdmin,
+        hasData,
         collections: existingCollections,
       });
 
       // If setup is already done and admin exists, go to done
-      if (hasAdmin) {
+      if (hasAdmin && hasData) {
         setStep('done');
-      } else {
+      } else if (hasData && !hasAdmin) {
+        // Data exists but no admin — go to admin creation
         setStep('admin');
+      } else {
+        // No data yet — start with seed
+        setStep('seed');
       }
     } catch (err) {
       console.error('Status check error:', err);
       setStatus(prev => ({ ...prev, configured: true, connected: false }));
-      setStep('admin');
+      setStep('seed');
     }
     setChecking(false);
+  }
+
+  // ── Seed initial data (roles, permissions, categories, settings, etc.) ──
+  async function handleSeedData() {
+    setSeeding(true);
+    setSeedError('');
+    setSeedResults({});
+
+    try {
+      const result = await clientSeedInitialData();
+
+      if (result.success) {
+        setSeedResults(result.details);
+        setStatus(prev => ({ ...prev, hasData: true }));
+      } else {
+        setSeedError(result.message);
+      }
+    } catch (err) {
+      console.error('Seed error:', err);
+      setSeedError('Erro ao criar dados iniciais. Pode tentar novamente.');
+    }
+    setSeeding(false);
   }
 
   // ── Create super admin ──
@@ -234,7 +274,7 @@ export default function SetupPage() {
       const { signOut } = await import('@/lib/firebase-client');
       await signOut(auth);
 
-      setStep('seed');
+      setStep('done');
     } catch (err: any) {
       console.error('Admin creation error:', err);
       let errorMsg = 'Erro ao criar administrador.';
@@ -250,95 +290,11 @@ export default function SetupPage() {
     setAdminCreating(false);
   }
 
-  // ── Seed initial data ──
-  async function seedInitialData() {
-    setSeeding(true);
-    setSeedError('');
-    setSeedResults({});
-
-    try {
-      const { firestoreClient } = await import('@/lib/firebase-client');
-      if (!firestoreClient) {
-        setSeedError('Firestore não disponível.');
-        setSeeding(false);
-        return;
-      }
-
-      const { collection, addDoc, setDoc, doc } = await import('firebase/firestore');
-      const results: Record<string, number> = {};
-
-      // ── Seed Services ──
-      const services = [
-        { name: 'Revisão Completa', description: 'Revisão completa do veículo com diagnóstico avançado', category: 'manutencao', price: 4500, currency: 'MZN', icon: 'wrench', isActive: true, order: 1, createdAt: new Date(), updatedAt: new Date() },
-        { name: 'Mudança de Óleo', description: 'Substituição de óleo e filtro do motor', category: 'manutencao', price: 1200, currency: 'MZN', icon: 'droplet', isActive: true, order: 2, createdAt: new Date(), updatedAt: new Date() },
-        { name: 'Alinhamento e Balanceamento', description: 'Alinhamento de direcção e balanceamento de pneus', category: 'pneus', price: 2000, currency: 'MZN', icon: 'circle', isActive: true, order: 3, createdAt: new Date(), updatedAt: new Date() },
-        { name: 'Diagnóstico Electrónico', description: 'Leitura de códigos de falha e diagnóstico computadorizado', category: 'diagnostico', price: 1500, currency: 'MZN', icon: 'cpu', isActive: true, order: 4, createdAt: new Date(), updatedAt: new Date() },
-        { name: 'Pintura Automóvel', description: 'Pintura e retoque de carroçaria', category: 'carroceria', price: 8000, currency: 'MZN', icon: 'paintbrush', isActive: true, order: 5, createdAt: new Date(), updatedAt: new Date() },
-        { name: 'Ar Condicionado', description: 'Manutenção e reparação do sistema de ar condicionado', category: 'climatizacao', price: 3500, currency: 'MZN', icon: 'wind', isActive: true, order: 6, createdAt: new Date(), updatedAt: new Date() },
-      ];
-
-      let count = 0;
-      for (const service of services) {
-        await addDoc(collection(firestoreClient, 'services'), service);
-        count++;
-      }
-      results['Serviços'] = count;
-
-      // ── Seed Categories ──
-      const categories = [
-        { name: 'Manutenção', slug: 'manutencao', icon: 'wrench', color: '#3B82F6', order: 1, isActive: true, createdAt: new Date() },
-        { name: 'Pneus', slug: 'pneus', icon: 'circle', color: '#10B981', order: 2, isActive: true, createdAt: new Date() },
-        { name: 'Diagnóstico', slug: 'diagnostico', icon: 'cpu', color: '#F59E0B', order: 3, isActive: true, createdAt: new Date() },
-        { name: 'Carroceria', slug: 'carroceria', icon: 'paintbrush', color: '#EF4444', order: 4, isActive: true, createdAt: new Date() },
-        { name: 'Climatização', slug: 'climatizacao', icon: 'wind', color: '#8B5CF6', order: 5, isActive: true, createdAt: new Date() },
-        { name: 'Eléctrica', slug: 'eletrica', icon: 'zap', color: '#F97316', order: 6, isActive: true, createdAt: new Date() },
-      ];
-
-      count = 0;
-      for (const cat of categories) {
-        await addDoc(collection(firestoreClient, 'categories'), cat);
-        count++;
-      }
-      results['Categorias'] = count;
-
-      // ── Seed App Settings ──
-      await setDoc(doc(firestoreClient, 'settings', 'app'), {
-        setupComplete: true,
-        setupDate: new Date(),
-        version: '1.0.0',
-        appName: 'Carsai Mozambique',
-        contactEmail: 'info@carsai.mz',
-        contactPhone: '+258 21 000 000',
-        address: 'Maputo, Moçambique',
-        socialLinks: {
-          facebook: 'https://facebook.com/carsaimz',
-          instagram: 'https://instagram.com/carsaimz',
-          whatsapp: '+258840000000',
-        },
-        features: {
-          chat: true,
-          forum: true,
-          blog: true,
-          newsletter: true,
-        },
-        currency: 'MZN',
-        locale: 'pt-MZ',
-      }, { merge: true });
-
-      results['Configurações'] = 1;
-
-      setSeedResults(results);
-      setStep('done');
-    } catch (err) {
-      console.error('Seed error:', err);
-      setSeedError('Erro ao criar dados iniciais. Pode tentar novamente.');
-    }
-    setSeeding(false);
-  }
-
   // ──────────────────────────────────────────────
   // Render
   // ──────────────────────────────────────────────
+
+  const stepOrder: SetupStep[] = ['check', 'seed', 'admin', 'done'];
 
   if (checking) {
     return (
@@ -361,21 +317,21 @@ export default function SetupPage() {
           </div>
           <h1 className="text-2xl font-bold">Carsai Mozambique — Instalação</h1>
           <p className="text-muted-foreground text-sm text-center max-w-md">
-            Configure o banco de dados, crie o administrador e popule dados iniciais.
+            Configure o banco de dados, popule dados iniciais e crie o administrador.
             Este assistente só é necessário na primeira vez.
           </p>
         </div>
 
         {/* Progress Steps */}
         <div className="flex items-center justify-center gap-2">
-          {(['check', 'admin', 'seed', 'done'] as SetupStep[]).map((s, i) => (
+          {stepOrder.map((s, i) => (
             <div key={s} className="flex items-center gap-2">
               <div className={`flex items-center justify-center size-8 rounded-full text-xs font-bold transition-colors ${
                 step === s ? 'bg-primary text-primary-foreground' :
-                ['check', 'admin', 'seed', 'done'].indexOf(step) > i ? 'bg-green-500 text-white' :
+                stepOrder.indexOf(step) > i ? 'bg-green-500 text-white' :
                 'bg-muted text-muted-foreground'
               }`}>
-                {['check', 'admin', 'seed', 'done'].indexOf(step) > i ? (
+                {stepOrder.indexOf(step) > i ? (
                   <CheckCircle2 className="size-4" />
                 ) : (
                   i + 1
@@ -383,7 +339,7 @@ export default function SetupPage() {
               </div>
               {i < 3 && (
                 <div className={`w-8 h-0.5 ${
-                  ['check', 'admin', 'seed', 'done'].indexOf(step) > i ? 'bg-green-500' : 'bg-muted'
+                  stepOrder.indexOf(step) > i ? 'bg-green-500' : 'bg-muted'
                 }`} />
               )}
             </div>
@@ -414,9 +370,9 @@ export default function SetupPage() {
                 detail={status.connected ? 'Ligação estabelecida' : 'Não foi possível conectar'}
               />
               <StatusItem
-                label="Utilizadores"
-                ok={status.hasUsers}
-                detail={status.hasUsers ? `${status.collections.length} colecções com dados` : 'Nenhum utilizador registado'}
+                label="Dados Iniciais"
+                ok={status.hasData}
+                detail={status.hasData ? `${status.collections.length} colecções com dados` : 'Necessário popular dados iniciais'}
               />
               <StatusItem
                 label="Administrador"
@@ -427,7 +383,7 @@ export default function SetupPage() {
               <Separator />
 
               {status.configured && status.connected ? (
-                <Button onClick={() => setStep('admin')} className="w-full" disabled={!status.connected}>
+                <Button onClick={() => setStep('seed')} className="w-full" disabled={!status.connected}>
                   Continuar
                   <ArrowRight className="size-4 ml-2" />
                 </Button>
@@ -452,7 +408,93 @@ export default function SetupPage() {
           </Card>
         )}
 
-        {/* Step 2: Create Admin */}
+        {/* Step 2: Seed Data (BEFORE admin creation) */}
+        {step === 'seed' && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="size-5" />
+                Dados Iniciais
+              </CardTitle>
+              <CardDescription>
+                Popule o banco de dados com roles, permissões, categorias, serviços e configurações padrão.
+                Isto deve ser feito ANTES de criar o administrador.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <span className="text-sm font-medium">Roles (super_admin, admin, partner, user)</span>
+                  <Badge variant="secondary">4 items</Badge>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <span className="text-sm font-medium">Permissões do sistema</span>
+                  <Badge variant="secondary">23 items</Badge>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <span className="text-sm font-medium">Categorias do blog</span>
+                  <Badge variant="secondary">5 items</Badge>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <span className="text-sm font-medium">Categorias do fórum</span>
+                  <Badge variant="secondary">4 items</Badge>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <span className="text-sm font-medium">Serviços</span>
+                  <Badge variant="secondary">6 items</Badge>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <span className="text-sm font-medium">Projectos de exemplo</span>
+                  <Badge variant="secondary">3 items</Badge>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <span className="text-sm font-medium">Configurações da aplicação</span>
+                  <Badge variant="secondary">17 items</Badge>
+                </div>
+              </div>
+
+              {seedError && (
+                <p className="text-sm text-destructive">{seedError}</p>
+              )}
+
+              {Object.keys(seedResults).length > 0 ? (
+                <div className="space-y-2">
+                  {Object.entries(seedResults).map(([key, val]) => (
+                    <div key={key} className="flex items-center gap-2 text-sm text-green-600">
+                      <CheckCircle2 className="size-4" />
+                      {key}: {val} criado(s)
+                    </div>
+                  ))}
+                  <Button onClick={() => setStep('admin')} className="w-full mt-4">
+                    Continuar para Criar Administrador
+                    <ArrowRight className="size-4 ml-2" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Button onClick={handleSeedData} className="flex-1" disabled={seeding}>
+                    {seeding ? (
+                      <>
+                        <Loader2 className="size-4 mr-2 animate-spin" />
+                        Criando dados...
+                      </>
+                    ) : (
+                      <>
+                        <Database className="size-4 mr-2" />
+                        Popular Banco de Dados
+                      </>
+                    )}
+                  </Button>
+                  <Button onClick={() => setStep('admin')} variant="outline">
+                    Saltar
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 3: Create Admin (AFTER data is seeded) */}
         {step === 'admin' && (
           <Card>
             <CardHeader>
@@ -462,6 +504,7 @@ export default function SetupPage() {
               </CardTitle>
               <CardDescription>
                 Crie a conta de super administrador. Esta conta terá acesso total ao painel de administração.
+                Os dados iniciais (roles, permissões) já foram criados no passo anterior.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -527,75 +570,6 @@ export default function SetupPage() {
           </Card>
         )}
 
-        {/* Step 3: Seed Data */}
-        {step === 'seed' && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="size-5" />
-                Dados Iniciais
-              </CardTitle>
-              <CardDescription>
-                Popule o banco de dados com serviços, categorias e configurações padrão para Moçambique.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <span className="text-sm font-medium">Serviços automotivos</span>
-                  <Badge variant="secondary">6 itens</Badge>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <span className="text-sm font-medium">Categorias de serviços</span>
-                  <Badge variant="secondary">6 itens</Badge>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <span className="text-sm font-medium">Configurações da aplicação</span>
-                  <Badge variant="secondary">1 documento</Badge>
-                </div>
-              </div>
-
-              {seedError && (
-                <p className="text-sm text-destructive">{seedError}</p>
-              )}
-
-              {Object.keys(seedResults).length > 0 ? (
-                <div className="space-y-2">
-                  {Object.entries(seedResults).map(([key, val]) => (
-                    <div key={key} className="flex items-center gap-2 text-sm text-green-600">
-                      <CheckCircle2 className="size-4" />
-                      {key}: {val} criado(s)
-                    </div>
-                  ))}
-                  <Button onClick={() => setStep('done')} className="w-full mt-4">
-                    Continuar
-                    <ArrowRight className="size-4 ml-2" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <Button onClick={seedInitialData} className="flex-1" disabled={seeding}>
-                    {seeding ? (
-                      <>
-                        <Loader2 className="size-4 mr-2 animate-spin" />
-                        Criando dados...
-                      </>
-                    ) : (
-                      <>
-                        <Database className="size-4 mr-2" />
-                        Popular Banco de Dados
-                      </>
-                    )}
-                  </Button>
-                  <Button onClick={() => setStep('done')} variant="outline">
-                    Saltar
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
         {/* Step 4: Done */}
         {step === 'done' && (
           <Card>
@@ -616,13 +590,13 @@ export default function SetupPage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <CheckCircle2 className="size-4 text-green-500" />
-                  Conta de administrador criada
+                  {Object.keys(seedResults).length > 0 || status.hasData
+                    ? 'Dados iniciais populados'
+                    : 'Banco de dados pronto (sem dados iniciais)'}
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <CheckCircle2 className="size-4 text-green-500" />
-                  {Object.keys(seedResults).length > 0
-                    ? 'Dados iniciais populados'
-                    : 'Banco de dados pronto (sem dados iniciais)'}
+                  Conta de administrador criada
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <CheckCircle2 className="size-4 text-green-500" />

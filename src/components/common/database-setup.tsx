@@ -8,15 +8,15 @@
  * directly from the browser.
  *
  * This component is auto-dismissed after seeding or when the user clicks "Skip".
+ *
+ * Note: Installer/setup components do NOT use translations — all text is hardcoded in Portuguese.
  */
 
 import { useState, useEffect } from 'react';
 import { seedInitialData, isDatabaseSeeded } from '@/lib/client-seed';
-import { useLanguage } from '@/contexts/language-context';
 import { useAuth } from '@/contexts/auth-context';
 
 export function DatabaseSetup() {
-  const { t } = useLanguage();
   const { isAuthenticated } = useAuth();
   const [show, setShow] = useState(false);
   const [seeding, setSeeding] = useState(false);
@@ -74,7 +74,7 @@ export function DatabaseSetup() {
           </div>
           <div>
             <h3 className="font-semibold text-foreground">
-              {t('admin.itemTitle') || 'Configuração da Base de Dados'}
+              Configuração da Base de Dados
             </h3>
             <p className="text-sm text-muted-foreground">
               Database Setup
@@ -116,7 +116,7 @@ export function DatabaseSetup() {
             disabled={seeding}
             className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors text-sm text-muted-foreground"
           >
-            {t('common.skip') || 'Saltar'}
+            Saltar
           </button>
         </div>
       </div>
