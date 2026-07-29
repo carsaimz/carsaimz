@@ -7,6 +7,7 @@
  */
 
 import { getDb, getDocs, getDoc, queryDocs, countDocs } from '@/lib/db'
+import { getAdminInitError } from '@/lib/firebase-admin'
 import { WhereFilterOp } from 'firebase-admin/firestore'
 
 /**
@@ -99,7 +100,6 @@ export function checkFirebaseAdmin(): string | null {
 
   // Try to use the actual Firebase Admin init — if it's already initialized, it's fine
   try {
-    const { getAdminInitError } = require('@/lib/firebase-admin')
     const initErr = getAdminInitError()
     if (!initErr) return null
     return initErr

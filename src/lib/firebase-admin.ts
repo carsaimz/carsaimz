@@ -30,6 +30,7 @@ import { initializeApp, getApp, getApps, cert, applicationDefault } from 'fireba
 import { getAuth } from 'firebase-admin/auth'
 import { getFirestore } from 'firebase-admin/firestore'
 import { getMessaging } from 'firebase-admin/messaging'
+import crypto from 'crypto'
 
 // ─── Firebase Admin types (imported for type annotations only) ───
 
@@ -65,8 +66,6 @@ const HARDCODED_CLIENT_EMAIL = 'firebase-adminsdk-fbsvc@carsai-mozambique-d5983.
 
 function decryptPrivateKey(encryptedBlob: string, secret: string): string | null {
   try {
-    const crypto = require('crypto')
-
     // Derive 32-byte key from the secret using SHA-256
     const key = crypto.createHash('sha256').update(secret).digest()
 
