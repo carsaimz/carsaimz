@@ -1,0 +1,676 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect } from 'react';
+     4→import { useRouter } from 'next/navigation';
+     5→import {
+     6→  CheckCircle2,
+     7→  XCircle,
+     8→  Loader2,
+     9→  Database,
+    10→  Shield,
+    11→  UserPlus,
+    12→  Settings,
+    13→  ArrowRight,
+    14→  RefreshCw,
+    15→  Lock,
+    16→  AlertTriangle,
+    17→} from 'lucide-react';
+    18→
+    19→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+    20→import { Button } from '@/components/ui/button';
+    21→import { Input } from '@/components/ui/input';
+    22→import { Label } from '@/components/ui/label';
+    23→import { Badge } from '@/components/ui/badge';
+    24→import { Separator } from '@/components/ui/separator';
+    25→
+    26→import { useLanguage } from '@/contexts/language-context';
+    27→import { useAuthStore } from '@/lib/store';
+    28→
+    29→// ──────────────────────────────────────────────
+    30→// Types
+    31→// ──────────────────────────────────────────────
+    32→
+    33→type SetupStep = 'check' | 'admin' | 'seed' | 'done';
+    34→
+    35→interface FirestoreStatus {
+    36→  configured: boolean;
+    37→  connected: boolean;
+    38→  hasUsers: boolean;
+    39→  hasAdmin: boolean;
+    40→  collections: string[];
+    41→}
+    42→
+    43→// ──────────────────────────────────────────────
+    44→// Setup Page Component
+    45→// ──────────────────────────────────────────────
+    46→
+    47→export default function SetupPage() {
+    48→  const { t } = useLanguage();
+    49→  const router = useRouter();
+    50→  const { isAuthenticated, user } = useAuthStore();
+    51→
+    52→  const [step, setStep] = useState<SetupStep>('check');
+    53→  const [status, setStatus] = useState<FirestoreStatus>({
+    54→    configured: false,
+    55→    connected: false,
+    56→    hasUsers: false,
+    57→    hasAdmin: false,
+    58→    collections: [],
+    59→  });
+    60→  const [checking, setChecking] = useState(true);
+    61→
+    62→  // Admin form
+    63→  const [adminName, setAdminName] = useState('');
+    64→  const [adminEmail, setAdminEmail] = useState('');
+    65→  const [adminPassword, setAdminPassword] = useState('');
+    66→  const [adminCreating, setAdminCreating] = useState(false);
+    67→  const [adminError, setAdminError] = useState('');
+    68→
+    69→  // Seed state
+    70→  const [seeding, setSeeding] = useState(false);
+    71→  const [seedError, setSeedError] = useState('');
+    72→  const [seedResults, setSeedResults] = useState<Record<string, number>>({});
+    73→
+    74→  // ── Check Firestore status on mount ──
+    75→  useEffect(() => {
+    76→    checkFirestoreStatus();
+    77→  }, []);
+    78→
+    79→  async function checkFirestoreStatus() {
+    80→    setChecking(true);
+    81→    try {
+    82→      const { isFirebaseConfigured } = await import('@/lib/client-config');
+    83→      const configured = isFirebaseConfigured();
+    84→
+    85→      if (!configured) {
+    86→        setStatus({
+    87→          configured: false,
+    88→          connected: false,
+    89→          hasUsers: false,
+    90→          hasAdmin: false,
+    91→          collections: [],
+    92→        });
+    93→        setChecking(false);
+    94→        return;
+    95→      }
+    96→
+    97→      // Try to connect to Firestore and check for existing data
+    98→      const { firestoreClient } = await import('@/lib/firebase-client');
+    99→
+   100→      if (!firestoreClient) {
+   101→        setStatus(prev => ({ ...prev, configured, connected: false }));
+   102→        setChecking(false);
+   103→        return;
+   104→      }
+   105→
+   106→      const { collection, getDocs, query, limit, where, getDoc, doc } = await import('firebase/firestore');
+   107→
+   108→      // Check collections
+   109→      const collectionsToCheck = ['users', 'services', 'categories', 'blog_posts', 'settings'];
+   110→      const existingCollections: string[] = [];
+   111→
+   112→      for (const colName of collectionsToCheck) {
+   113→        try {
+   114→          const colRef = collection(firestoreClient, colName);
+   115→          const snap = await getDocs(query(colRef, limit(1)));
+   116→          if (!snap.empty) {
+   117→            existingCollections.push(colName);
+   118→          }
+   119→        } catch {
+   120→          // Collection doesn't exist yet
+   121→        }
+   122→      }
+   123→
+   124→      // Check for admin user
+   125→      let hasAdmin = false;
+   126→      let hasUsers = false;
+   127→      try {
+   128→        const usersRef = collection(firestoreClient, 'users');
+   129→        const usersSnap = await getDocs(query(usersRef, limit(1)));
+   130→        hasUsers = !usersSnap.empty;
+   131→
+   132→        if (hasUsers) {
+   133→          const adminSnap = await getDocs(query(usersRef, where('role', 'in', ['admin', 'super_admin']), limit(1)));
+   134→          hasAdmin = !adminSnap.empty;
+   135→        }
+   136→      } catch {
+   137→        // Firestore rules might block — that's OK, means no admin yet
+   138→      }
+   139→
+   140→      // Check setup lock
+   141→      let isLocked = false;
+   142→      try {
+   143→        const settingsRef = doc(firestoreClient, 'settings', 'app');
+   144→        const settingsSnap = await getDoc(settingsRef);
+   145→        if (settingsSnap.exists() && settingsSnap.data()?.setupComplete) {
+   146→          isLocked = true;
+   147→        }
+   148→      } catch {
+   149→        // Settings doc doesn't exist yet
+   150→      }
+   151→
+   152→      setStatus({
+   153→        configured,
+   154→        connected: true,
+   155→        hasUsers,
+   156→        hasAdmin,
+   157→        collections: existingCollections,
+   158→      });
+   159→
+   160→      // If setup is already done and admin exists, go to done
+   161→      if (hasAdmin) {
+   162→        setStep('done');
+   163→      } else {
+   164→        setStep('admin');
+   165→      }
+   166→    } catch (err) {
+   167→      console.error('Status check error:', err);
+   168→      setStatus(prev => ({ ...prev, configured: true, connected: false }));
+   169→      setStep('admin');
+   170→    }
+   171→    setChecking(false);
+   172→  }
+   173→
+   174→  // ── Create super admin ──
+   175→  async function createSuperAdmin() {
+   176→    setAdminError('');
+   177→    if (!adminName || !adminEmail || !adminPassword) {
+   178→      setAdminError('Preencha todos os campos.');
+   179→      return;
+   180→    }
+   181→    if (adminPassword.length < 8) {
+   182→      setAdminError('A senha deve ter pelo menos 8 caracteres.');
+   183→      return;
+   184→    }
+   185→
+   186→    setAdminCreating(true);
+   187→    try {
+   188→      // Create Firebase Auth user
+   189→      const { createUserWithEmailAndPassword, auth, updateProfile } = await import('@/lib/firebase-client');
+   190→      const credential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
+   191→
+   192→      // Update display name
+   193→      await updateProfile(credential.user, { displayName: adminName });
+   194→
+   195→      // Get ID token
+   196→      const idToken = await credential.user.getIdToken();
+   197→
+   198→      // Create Firestore profile with super_admin role
+   199→      const { firestoreClient } = await import('@/lib/firebase-client');
+   200→      const { doc, setDoc } = await import('firebase/firestore');
+   201→
+   202→      if (firestoreClient) {
+   203→        const uid = credential.user.uid;
+   204→        await setDoc(doc(firestoreClient, 'users', uid), {
+   205→          name: adminName,
+   206→          email: adminEmail,
+   207→          role: 'super_admin',
+   208→          avatar: null,
+   209→          phone: null,
+   210→          company: null,
+   211→          bio: null,
+   212→          address: null,
+   213→          isActive: true,
+   214→          emailVerified: false,
+   215→          authProvider: 'email',
+   216→          isAnonymous: false,
+   217→          createdAt: new Date(),
+   218→          updatedAt: new Date(),
+   219→        });
+   220→      }
+   221→
+   222→      // Mark setup as complete
+   223→      if (firestoreClient) {
+   224→        const { doc, setDoc } = await import('firebase/firestore');
+   225→        await setDoc(doc(firestoreClient, 'settings', 'app'), {
+   226→          setupComplete: true,
+   227→          setupDate: new Date(),
+   228→          version: '1.0.0',
+   229→          appName: 'Carsai Mozambique',
+   230→        }, { merge: true });
+   231→      }
+   232→
+   233→      // Sign out the admin (they'll log in normally)
+   234→      const { signOut } = await import('@/lib/firebase-client');
+   235→      await signOut(auth);
+   236→
+   237→      setStep('seed');
+   238→    } catch (err: any) {
+   239→      console.error('Admin creation error:', err);
+   240→      let errorMsg = 'Erro ao criar administrador.';
+   241→      if (err.code === 'auth/email-already-in-use') {
+   242→        errorMsg = 'Este email já está registado no Firebase Auth.';
+   243→      } else if (err.code === 'auth/weak-password') {
+   244→        errorMsg = 'Senha demasiado fraca. Use pelo menos 8 caracteres.';
+   245→      } else if (err.code === 'auth/invalid-email') {
+   246→        errorMsg = 'Email inválido.';
+   247→      }
+   248→      setAdminError(errorMsg);
+   249→    }
+   250→    setAdminCreating(false);
+   251→  }
+   252→
+   253→  // ── Seed initial data ──
+   254→  async function seedInitialData() {
+   255→    setSeeding(true);
+   256→    setSeedError('');
+   257→    setSeedResults({});
+   258→
+   259→    try {
+   260→      const { firestoreClient } = await import('@/lib/firebase-client');
+   261→      if (!firestoreClient) {
+   262→        setSeedError('Firestore não disponível.');
+   263→        setSeeding(false);
+   264→        return;
+   265→      }
+   266→
+   267→      const { collection, addDoc, setDoc, doc } = await import('firebase/firestore');
+   268→      const results: Record<string, number> = {};
+   269→
+   270→      // ── Seed Services ──
+   271→      const services = [
+   272→        { name: 'Revisão Completa', description: 'Revisão completa do veículo com diagnóstico avançado', category: 'manutencao', price: 4500, currency: 'MZN', icon: 'wrench', isActive: true, order: 1, createdAt: new Date(), updatedAt: new Date() },
+   273→        { name: 'Mudança de Óleo', description: 'Substituição de óleo e filtro do motor', category: 'manutencao', price: 1200, currency: 'MZN', icon: 'droplet', isActive: true, order: 2, createdAt: new Date(), updatedAt: new Date() },
+   274→        { name: 'Alinhamento e Balanceamento', description: 'Alinhamento de direcção e balanceamento de pneus', category: 'pneus', price: 2000, currency: 'MZN', icon: 'circle', isActive: true, order: 3, createdAt: new Date(), updatedAt: new Date() },
+   275→        { name: 'Diagnóstico Electrónico', description: 'Leitura de códigos de falha e diagnóstico computadorizado', category: 'diagnostico', price: 1500, currency: 'MZN', icon: 'cpu', isActive: true, order: 4, createdAt: new Date(), updatedAt: new Date() },
+   276→        { name: 'Pintura Automóvel', description: 'Pintura e retoque de carroçaria', category: 'carroceria', price: 8000, currency: 'MZN', icon: 'paintbrush', isActive: true, order: 5, createdAt: new Date(), updatedAt: new Date() },
+   277→        { name: 'Ar Condicionado', description: 'Manutenção e reparação do sistema de ar condicionado', category: 'climatizacao', price: 3500, currency: 'MZN', icon: 'wind', isActive: true, order: 6, createdAt: new Date(), updatedAt: new Date() },
+   278→      ];
+   279→
+   280→      let count = 0;
+   281→      for (const service of services) {
+   282→        await addDoc(collection(firestoreClient, 'services'), service);
+   283→        count++;
+   284→      }
+   285→      results['Serviços'] = count;
+   286→
+   287→      // ── Seed Categories ──
+   288→      const categories = [
+   289→        { name: 'Manutenção', slug: 'manutencao', icon: 'wrench', color: '#3B82F6', order: 1, isActive: true, createdAt: new Date() },
+   290→        { name: 'Pneus', slug: 'pneus', icon: 'circle', color: '#10B981', order: 2, isActive: true, createdAt: new Date() },
+   291→        { name: 'Diagnóstico', slug: 'diagnostico', icon: 'cpu', color: '#F59E0B', order: 3, isActive: true, createdAt: new Date() },
+   292→        { name: 'Carroceria', slug: 'carroceria', icon: 'paintbrush', color: '#EF4444', order: 4, isActive: true, createdAt: new Date() },
+   293→        { name: 'Climatização', slug: 'climatizacao', icon: 'wind', color: '#8B5CF6', order: 5, isActive: true, createdAt: new Date() },
+   294→        { name: 'Eléctrica', slug: 'eletrica', icon: 'zap', color: '#F97316', order: 6, isActive: true, createdAt: new Date() },
+   295→      ];
+   296→
+   297→      count = 0;
+   298→      for (const cat of categories) {
+   299→        await addDoc(collection(firestoreClient, 'categories'), cat);
+   300→        count++;
+   301→      }
+   302→      results['Categorias'] = count;
+   303→
+   304→      // ── Seed App Settings ──
+   305→      await setDoc(doc(firestoreClient, 'settings', 'app'), {
+   306→        setupComplete: true,
+   307→        setupDate: new Date(),
+   308→        version: '1.0.0',
+   309→        appName: 'Carsai Mozambique',
+   310→        contactEmail: 'info@carsai.mz',
+   311→        contactPhone: '+258 21 000 000',
+   312→        address: 'Maputo, Moçambique',
+   313→        socialLinks: {
+   314→          facebook: 'https://facebook.com/carsaimz',
+   315→          instagram: 'https://instagram.com/carsaimz',
+   316→          whatsapp: '+258840000000',
+   317→        },
+   318→        features: {
+   319→          chat: true,
+   320→          forum: true,
+   321→          blog: true,
+   322→          newsletter: true,
+   323→        },
+   324→        currency: 'MZN',
+   325→        locale: 'pt-MZ',
+   326→      }, { merge: true });
+   327→
+   328→      results['Configurações'] = 1;
+   329→
+   330→      setSeedResults(results);
+   331→      setStep('done');
+   332→    } catch (err) {
+   333→      console.error('Seed error:', err);
+   334→      setSeedError('Erro ao criar dados iniciais. Pode tentar novamente.');
+   335→    }
+   336→    setSeeding(false);
+   337→  }
+   338→
+   339→  // ──────────────────────────────────────────────
+   340→  // Render
+   341→  // ──────────────────────────────────────────────
+   342→
+   343→  if (checking) {
+   344→    return (
+   345→      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+   346→        <div className="text-center space-y-3">
+   347→          <Loader2 className="size-8 animate-spin text-primary mx-auto" />
+   348→          <p className="text-muted-foreground">Verificando estado do Firebase...</p>
+   349→        </div>
+   350→      </div>
+   351→    );
+   352→  }
+   353→
+   354→  return (
+   355→    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8">
+   356→      <div className="w-full max-w-2xl space-y-6">
+   357→        {/* Header */}
+   358→        <div className="flex flex-col items-center gap-3">
+   359→          <div className="flex items-center justify-center size-16 rounded-full bg-primary/10">
+   360→            <Settings className="size-8 text-primary" />
+   361→          </div>
+   362→          <h1 className="text-2xl font-bold">Carsai Mozambique — Instalação</h1>
+   363→          <p className="text-muted-foreground text-sm text-center max-w-md">
+   364→            Configure o banco de dados, crie o administrador e popule dados iniciais.
+   365→            Este assistente só é necessário na primeira vez.
+   366→          </p>
+   367→        </div>
+   368→
+   369→        {/* Progress Steps */}
+   370→        <div className="flex items-center justify-center gap-2">
+   371→          {(['check', 'admin', 'seed', 'done'] as SetupStep[]).map((s, i) => (
+   372→            <div key={s} className="flex items-center gap-2">
+   373→              <div className={`flex items-center justify-center size-8 rounded-full text-xs font-bold transition-colors ${
+   374→                step === s ? 'bg-primary text-primary-foreground' :
+   375→                ['check', 'admin', 'seed', 'done'].indexOf(step) > i ? 'bg-green-500 text-white' :
+   376→                'bg-muted text-muted-foreground'
+   377→              }`}>
+   378→                {['check', 'admin', 'seed', 'done'].indexOf(step) > i ? (
+   379→                  <CheckCircle2 className="size-4" />
+   380→                ) : (
+   381→                  i + 1
+   382→                )}
+   383→              </div>
+   384→              {i < 3 && (
+   385→                <div className={`w-8 h-0.5 ${
+   386→                  ['check', 'admin', 'seed', 'done'].indexOf(step) > i ? 'bg-green-500' : 'bg-muted'
+   387→                }`} />
+   388→              )}
+   389→            </div>
+   390→          ))}
+   391→        </div>
+   392→
+   393→        {/* Step 1: Firebase Status Check */}
+   394→        {step === 'check' && (
+   395→          <Card>
+   396→            <CardHeader>
+   397→              <CardTitle className="flex items-center gap-2">
+   398→                <Database className="size-5" />
+   399→                Verificação do Firebase
+   400→              </CardTitle>
+   401→              <CardDescription>
+   402→                Verificando a ligação ao Firebase e estado do banco de dados
+   403→              </CardDescription>
+   404→            </CardHeader>
+   405→            <CardContent className="space-y-4">
+   406→              <StatusItem
+   407→                label="Firebase Configurado"
+   408→                ok={status.configured}
+   409→                detail={status.configured ? 'Credenciais encontradas' : 'Adicione as credenciais Firebase'}
+   410→              />
+   411→              <StatusItem
+   412→                label="Firestore Conectado"
+   413→                ok={status.connected}
+   414→                detail={status.connected ? 'Ligação estabelecida' : 'Não foi possível conectar'}
+   415→              />
+   416→              <StatusItem
+   417→                label="Utilizadores"
+   418→                ok={status.hasUsers}
+   419→                detail={status.hasUsers ? `${status.collections.length} colecções com dados` : 'Nenhum utilizador registado'}
+   420→              />
+   421→              <StatusItem
+   422→                label="Administrador"
+   423→                ok={status.hasAdmin}
+   424→                detail={status.hasAdmin ? 'Administrador já existe' : 'Necessário criar administrador'}
+   425→              />
+   426→
+   427→              <Separator />
+   428→
+   429→              {status.configured && status.connected ? (
+   430→                <Button onClick={() => setStep('admin')} className="w-full" disabled={!status.connected}>
+   431→                  Continuar
+   432→                  <ArrowRight className="size-4 ml-2" />
+   433→                </Button>
+   434→              ) : (
+   435→                <div className="space-y-3">
+   436→                  <div className="flex items-start gap-2 p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg border border-yellow-200 dark:border-yellow-900">
+   437→                    <AlertTriangle className="size-5 text-yellow-600 shrink-0 mt-0.5" />
+   438→                    <div className="text-sm">
+   439→                      <p className="font-medium text-yellow-800 dark:text-yellow-200">Firebase não configurado</p>
+   440→                      <p className="text-yellow-700 dark:text-yellow-300 mt-1">
+   441→                        Verifique se as credenciais Firebase estão correctas em <code className="text-xs bg-yellow-100 dark:bg-yellow-900 px-1 rounded">src/lib/client-config.ts</code>
+   442→                      </p>
+   443→                    </div>
+   444→                  </div>
+   445→                  <Button onClick={checkFirestoreStatus} variant="outline" className="w-full">
+   446→                    <RefreshCw className="size-4 mr-2" />
+   447→                    Verificar novamente
+   448→                  </Button>
+   449→                </div>
+   450→              )}
+   451→            </CardContent>
+   452→          </Card>
+   453→        )}
+   454→
+   455→        {/* Step 2: Create Admin */}
+   456→        {step === 'admin' && (
+   457→          <Card>
+   458→            <CardHeader>
+   459→              <CardTitle className="flex items-center gap-2">
+   460→                <Shield className="size-5" />
+   461→                Criar Administrador
+   462→              </CardTitle>
+   463→              <CardDescription>
+   464→                Crie a conta de super administrador. Esta conta terá acesso total ao painel de administração.
+   465→              </CardDescription>
+   466→            </CardHeader>
+   467→            <CardContent className="space-y-4">
+   468→              <div className="space-y-1.5">
+   469→                <Label htmlFor="admin-name">Nome completo</Label>
+   470→                <Input
+   471→                  id="admin-name"
+   472→                  type="text"
+   473→                  placeholder="Nome do administrador"
+   474→                  value={adminName}
+   475→                  onChange={(e) => setAdminName(e.target.value)}
+   476→                />
+   477→              </div>
+   478→              <div className="space-y-1.5">
+   479→                <Label htmlFor="admin-email">Email</Label>
+   480→                <Input
+   481→                  id="admin-email"
+   482→                  type="email"
+   483→                  placeholder="admin@carsai.mz"
+   484→                  value={adminEmail}
+   485→                  onChange={(e) => setAdminEmail(e.target.value)}
+   486→                />
+   487→              </div>
+   488→              <div className="space-y-1.5">
+   489→                <Label htmlFor="admin-password">Senha</Label>
+   490→                <Input
+   491→                  id="admin-password"
+   492→                  type="password"
+   493→                  placeholder="Mínimo 8 caracteres"
+   494→                  value={adminPassword}
+   495→                  onChange={(e) => setAdminPassword(e.target.value)}
+   496→                />
+   497→              </div>
+   498→
+   499→              {adminError && (
+   500→                <p className="text-sm text-destructive">{adminError}</p>
+   501→              )}
+   502→
+   503→              <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-900">
+   504→                <Lock className="size-5 text-blue-600 shrink-0 mt-0.5" />
+   505→                <div className="text-sm">
+   506→                  <p className="font-medium text-blue-800 dark:text-blue-200">Conta segura</p>
+   507→                  <p className="text-blue-700 dark:text-blue-300 mt-1">
+   508→                    A senha é armazenada com encriptação do Firebase Auth. O instalador será bloqueado após a criação do administrador.
+   509→                  </p>
+   510→                </div>
+   511→              </div>
+   512→
+   513→              <Button onClick={createSuperAdmin} className="w-full" disabled={adminCreating}>
+   514→                {adminCreating ? (
+   515→                  <>
+   516→                    <Loader2 className="size-4 mr-2 animate-spin" />
+   517→                    Criando administrador...
+   518→                  </>
+   519→                ) : (
+   520→                  <>
+   521→                    <UserPlus className="size-4 mr-2" />
+   522→                    Criar Administrador
+   523→                  </>
+   524→                )}
+   525→              </Button>
+   526→            </CardContent>
+   527→          </Card>
+   528→        )}
+   529→
+   530→        {/* Step 3: Seed Data */}
+   531→        {step === 'seed' && (
+   532→          <Card>
+   533→            <CardHeader>
+   534→              <CardTitle className="flex items-center gap-2">
+   535→                <Database className="size-5" />
+   536→                Dados Iniciais
+   537→              </CardTitle>
+   538→              <CardDescription>
+   539→                Popule o banco de dados com serviços, categorias e configurações padrão para Moçambique.
+   540→              </CardDescription>
+   541→            </CardHeader>
+   542→            <CardContent className="space-y-4">
+   543→              <div className="space-y-2">
+   544→                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+   545→                  <span className="text-sm font-medium">Serviços automotivos</span>
+   546→                  <Badge variant="secondary">6 itens</Badge>
+   547→                </div>
+   548→                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+   549→                  <span className="text-sm font-medium">Categorias de serviços</span>
+   550→                  <Badge variant="secondary">6 itens</Badge>
+   551→                </div>
+   552→                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+   553→                  <span className="text-sm font-medium">Configurações da aplicação</span>
+   554→                  <Badge variant="secondary">1 documento</Badge>
+   555→                </div>
+   556→              </div>
+   557→
+   558→              {seedError && (
+   559→                <p className="text-sm text-destructive">{seedError}</p>
+   560→              )}
+   561→
+   562→              {Object.keys(seedResults).length > 0 ? (
+   563→                <div className="space-y-2">
+   564→                  {Object.entries(seedResults).map(([key, val]) => (
+   565→                    <div key={key} className="flex items-center gap-2 text-sm text-green-600">
+   566→                      <CheckCircle2 className="size-4" />
+   567→                      {key}: {val} criado(s)
+   568→                    </div>
+   569→                  ))}
+   570→                  <Button onClick={() => setStep('done')} className="w-full mt-4">
+   571→                    Continuar
+   572→                    <ArrowRight className="size-4 ml-2" />
+   573→                  </Button>
+   574→                </div>
+   575→              ) : (
+   576→                <div className="flex gap-2">
+   577→                  <Button onClick={seedInitialData} className="flex-1" disabled={seeding}>
+   578→                    {seeding ? (
+   579→                      <>
+   580→                        <Loader2 className="size-4 mr-2 animate-spin" />
+   581→                        Criando dados...
+   582→                      </>
+   583→                    ) : (
+   584→                      <>
+   585→                        <Database className="size-4 mr-2" />
+   586→                        Popular Banco de Dados
+   587→                      </>
+   588→                    )}
+   589→                  </Button>
+   590→                  <Button onClick={() => setStep('done')} variant="outline">
+   591→                    Saltar
+   592→                  </Button>
+   593→                </div>
+   594→              )}
+   595→            </CardContent>
+   596→          </Card>
+   597→        )}
+   598→
+   599→        {/* Step 4: Done */}
+   600→        {step === 'done' && (
+   601→          <Card>
+   602→            <CardHeader>
+   603→              <CardTitle className="flex items-center gap-2">
+   604→                <CheckCircle2 className="size-5 text-green-500" />
+   605→                Instalação Completa!
+   606→              </CardTitle>
+   607→              <CardDescription>
+   608→                O Carsai Mozambique está pronto para usar.
+   609→              </CardDescription>
+   610→            </CardHeader>
+   611→            <CardContent className="space-y-4">
+   612→              <div className="space-y-2">
+   613→                <div className="flex items-center gap-2 text-sm">
+   614→                  <CheckCircle2 className="size-4 text-green-500" />
+   615→                  Firebase configurado e conectado
+   616→                </div>
+   617→                <div className="flex items-center gap-2 text-sm">
+   618→                  <CheckCircle2 className="size-4 text-green-500" />
+   619→                  Conta de administrador criada
+   620→                </div>
+   621→                <div className="flex items-center gap-2 text-sm">
+   622→                  <CheckCircle2 className="size-4 text-green-500" />
+   623→                  {Object.keys(seedResults).length > 0
+   624→                    ? 'Dados iniciais populados'
+   625→                    : 'Banco de dados pronto (sem dados iniciais)'}
+   626→                </div>
+   627→                <div className="flex items-center gap-2 text-sm">
+   628→                  <CheckCircle2 className="size-4 text-green-500" />
+   629→                  Instalador bloqueado (segurança)
+   630→                </div>
+   631→              </div>
+   632→
+   633→              <Separator />
+   634→
+   635→              <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-900">
+   636→                <Shield className="size-5 text-green-600 shrink-0 mt-0.5" />
+   637→                <div className="text-sm">
+   638→                  <p className="font-medium text-green-800 dark:text-green-200">Próximo passo</p>
+   639→                  <p className="text-green-700 dark:text-green-300 mt-1">
+   640→                    Faça login com as credenciais do administrador para acessar o painel de administração.
+   641→                  </p>
+   642→                </div>
+   643→              </div>
+   644→
+   645→              <Button onClick={() => router.push('/auth')} className="w-full" size="lg">
+   646→                Ir para Login
+   647→                <ArrowRight className="size-4 ml-2" />
+   648→              </Button>
+   649→            </CardContent>
+   650→          </Card>
+   651→        )}
+   652→      </div>
+   653→    </div>
+   654→  );
+   655→}
+   656→
+   657→// ──────────────────────────────────────────────
+   658→// Status Item Component
+   659→// ──────────────────────────────────────────────
+   660→
+   661→function StatusItem({ label, ok, detail }: { label: string; ok: boolean; detail: string }) {
+   662→  return (
+   663→    <div className="flex items-center justify-between">
+   664→      <div className="flex items-center gap-2">
+   665→        {ok ? (
+   666→          <CheckCircle2 className="size-5 text-green-500" />
+   667→        ) : (
+   668→          <XCircle className="size-5 text-red-500" />
+   669→        )}
+   670→        <span className="text-sm font-medium">{label}</span>
+   671→      </div>
+   672→      <span className="text-xs text-muted-foreground">{detail}</span>
+   673→    </div>
+   674→  );
+   675→}
+   676→

@@ -103,3 +103,29 @@ Stage Summary:
 - Registration now works even without API routes by falling back to client-side Firestore
 - Database setup component auto-detects empty Firestore and prompts user to seed initial data
 - next.config.ts now uses BUILD_TARGET=capacitor for static export, standard mode for web
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Reorder setup wizard (seed before admin), remove translations from installer, update google-services.json
+
+Work Log:
+- Analyzed setup page flow: was check→admin→seed→done, causing errors when admin references roles/permissions that don't exist yet
+- Rewrote setup page to new order: check→seed→admin→done
+- Seed step now uses client-seed.ts (roles, permissions, categories, settings, services, projects) instead of inline automotive services
+- After seed completes, user proceeds to admin creation where roles/permissions already exist
+- Removed useLanguage/t() from setup page (installer doesn't use translations)
+- Removed useLanguage/t() from database-setup.tsx component
+- Replaced t('admin.itemTitle') and t('common.skip') with hardcoded Portuguese strings
+- Updated google-services.json with new OAuth client config from uploaded file
+- Added hasData to FirestoreStatus check (uses isDatabaseSeeded() from client-seed.ts)
+- Smart routing after check: if data+admin exist → done, if data exists but no admin → admin, if no data → seed
+- Build compiles successfully
+- Committed and pushed (867004b)
+
+Stage Summary:
+- Setup wizard now initializes data (roles, permissions, categories, etc.) BEFORE admin creation
+- This prevents errors when admin creation references roles that don't exist
+- Installer components no longer use translations (all hardcoded Portuguese)
+- google-services.json updated with new Firebase config
+- All changes pushed to origin/main
