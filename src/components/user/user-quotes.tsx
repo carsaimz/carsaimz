@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/table';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
+import { apiFetch } from '@/lib/api-fetch';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -39,7 +40,7 @@ export function UserQuotes() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`/api/quotes?userId=${user?.id || 'demo-user-001'}`)
+    apiFetch(`/api/quotes?userId=${user?.id || 'demo-user-001'}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) setQuotes(data.data);

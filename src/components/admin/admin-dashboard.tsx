@@ -49,6 +49,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
+import { apiFetch } from '@/lib/api-fetch';
 
 // ── Animation variants ──
 const containerVariants = {
@@ -183,15 +184,15 @@ export function AdminDashboard() {
     if (!user?.id) return;
 
     Promise.all([
-      fetch('/api/stats').then((res) => {
+      apiFetch('/api/stats').then((res) => {
         if (!res.ok) throw new Error(`Stats: HTTP ${res.status}`);
         return res.json();
       }),
-      fetch('/api/stats/history').then((res) => {
+      apiFetch('/api/stats/history').then((res) => {
         if (!res.ok) throw new Error(`History: HTTP ${res.status}`);
         return res.json();
       }),
-      fetch(`/api/dashboard?role=${user?.role || 'admin'}&userId=${user.id}`).then((res) => {
+      apiFetch(`/api/dashboard?role=${user?.role || 'admin'}&userId=${user.id}`).then((res) => {
         if (!res.ok) throw new Error(`Dashboard: HTTP ${res.status}`);
         return res.json();
       }),

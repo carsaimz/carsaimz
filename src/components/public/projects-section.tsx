@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveI18nContent } from '@/lib/i18n-content';
+import { apiFetch } from '@/lib/api-fetch';
 
 const ParticleNetwork = dynamic(
   () => import('@/components/common/3d-elements').then((mod) => mod.ParticleNetwork),
@@ -71,7 +72,7 @@ export function ProjectsSection() {
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    fetch('/api/projects')
+    apiFetch('/api/projects')
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data?.length > 0) {

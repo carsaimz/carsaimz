@@ -50,6 +50,7 @@ import {
 } from '@/components/ui/select';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
+import { apiFetch } from '@/lib/api-fetch';
 
 // ── Animation variants ──
 const containerVariants = {
@@ -134,11 +135,11 @@ export function PartnerDashboard() {
 
     // Fetch dashboard data and projects in parallel
     Promise.all([
-      fetch(`/api/dashboard?role=partner&userId=${user.id}`).then((res) => {
+      apiFetch(`/api/dashboard?role=partner&userId=${user.id}`).then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       }),
-      fetch('/api/projects').then((res) => {
+      apiFetch('/api/projects').then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       }),

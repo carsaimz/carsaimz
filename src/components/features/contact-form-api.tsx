@@ -22,6 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
 import { useLanguage } from '@/contexts/language-context';
+import { apiFetch } from '@/lib/api-fetch';
 
 const TechPatternSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
@@ -93,7 +94,7 @@ export function ContactFormApi() {
     setApiError('');
 
     try {
-      const response = await fetch('/api/contact', {
+      const response = await apiFetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

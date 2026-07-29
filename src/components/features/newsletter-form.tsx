@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 
 import { useLanguage } from '@/contexts/language-context';
+import { apiFetch } from '@/lib/api-fetch';
 
 // ──────────────────────────────────────────────
 // Newsletter Form with API Integration
@@ -47,7 +48,7 @@ export function NewsletterForm() {
     setErrorMessage('');
 
     try {
-      const response = await fetch('/api/newsletter', {
+      const response = await apiFetch('/api/newsletter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),

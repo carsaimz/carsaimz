@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/language-context';
 import { useAuthStore } from '@/lib/store';
+import { apiFetch } from '@/lib/api-fetch';
 
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
 const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
@@ -25,7 +26,7 @@ export function AdminUsers() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`/api/admin/users?limit=100&excludeSuperAdmin=true`)
+    apiFetch(`/api/admin/users?limit=100&excludeSuperAdmin=true`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {

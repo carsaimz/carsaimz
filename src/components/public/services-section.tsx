@@ -20,6 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveI18nContent } from '@/lib/i18n-content';
 import { useRouter } from 'next/navigation';
+import { apiFetch } from '@/lib/api-fetch';
 
 const TechPatternSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
@@ -70,7 +71,7 @@ export function ServicesSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/services')
+    apiFetch('/api/services')
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data?.length > 0) {

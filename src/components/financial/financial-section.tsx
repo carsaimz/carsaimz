@@ -59,6 +59,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
+import { apiFetch } from '@/lib/api-fetch';
 
 // ── Animation variants ──
 const containerVariants = {
@@ -174,15 +175,15 @@ export function FinancialSection() {
     if (!user?.id) return;
 
     Promise.all([
-      fetch(`/api/quotes?userId=${user.id}`).then((res) => {
+      apiFetch(`/api/quotes?userId=${user.id}`).then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       }),
-      fetch(`/api/payments?userId=${user.id}`).then((res) => {
+      apiFetch(`/api/payments?userId=${user.id}`).then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       }),
-      fetch(`/api/invoices?userId=${user.id}`).then((res) => {
+      apiFetch(`/api/invoices?userId=${user.id}`).then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       }),
@@ -267,7 +268,7 @@ export function FinancialSection() {
 
     setSubmittingQuote(true);
     try {
-      const res = await fetch('/api/quotes', {
+      const res = await apiFetch('/api/quotes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -280,7 +281,7 @@ export function FinancialSection() {
       const json = await res.json();
       if (json.success) {
         // Refresh quotes list
-        const quotesRes = await fetch(`/api/quotes?userId=${user.id}`);
+        const quotesRes = await apiFetch(`/api/quotes?userId=${user.id}`);
         const quotesJson = await quotesRes.json();
         if (quotesJson.success) setQuotes(quotesJson.data || []);
 
@@ -363,9 +364,9 @@ export function FinancialSection() {
                 setError(null);
                 setLoading(true);
                 Promise.all([
-                  fetch(`/api/quotes?userId=${user?.id}`).then((r) => r.json()),
-                  fetch(`/api/payments?userId=${user?.id}`).then((r) => r.json()),
-                  fetch(`/api/invoices?userId=${user?.id}`).then((r) => r.json()),
+                  apiFetch(`/api/quotes?userId=${user?.id}`).then((r) => r.json()),
+                  apiFetch(`/api/payments?userId=${user?.id}`).then((r) => r.json()),
+                  apiFetch(`/api/invoices?userId=${user?.id}`).then((r) => r.json()),
                 ])
                   .then(([q, p, i]) => {
                     if (q.success) setQuotes(q.data || []);

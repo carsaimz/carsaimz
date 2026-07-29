@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
+import { apiFetch } from '@/lib/api-fetch';
 
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
 const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
@@ -24,7 +25,7 @@ export function PartnerCommissions() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`/api/dashboard?role=partner&userId=${user?.id || 'demo-partner-001'}`)
+    apiFetch(`/api/dashboard?role=partner&userId=${user?.id || 'demo-partner-001'}`)
       .then((res) => res.json())
       .then((data) => { if (data.success && data.data) setCommissions(data.data.recentActivity?.commissions || []); else setError(data.message); })
       .catch((err) => setError(err.message))

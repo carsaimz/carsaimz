@@ -24,6 +24,7 @@ import { useAppStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
 import { useRouter } from 'next/navigation';
 import { fetchWithFallback, fetchPostsClient, fetchForumClient } from '@/lib/client-firestore';
+import { apiFetch } from '@/lib/api-fetch';
 
 // ──────────────────────────────────────────────
 // Types
@@ -88,12 +89,12 @@ export function GlobalSearch() {
       // Fetch from multiple endpoints simultaneously
       // Use fetchWithFallback for blog/forum to handle static export
       const [servicesRes, projectsRes, postsResult, forumResult] = await Promise.allSettled([
-        fetch('/api/services').then(async (res) => {
+        apiFetch('/api/services').then(async (res) => {
           const ct = res.headers.get('content-type') || '';
           if (ct.includes('application/json') && res.ok) return res.json();
           throw new Error('Not JSON');
         }).catch(() => null),
-        fetch('/api/projects').then(async (res) => {
+        apiFetch('/api/projects').then(async (res) => {
           const ct = res.headers.get('content-type') || '';
           if (ct.includes('application/json') && res.ok) return res.json();
           throw new Error('Not JSON');

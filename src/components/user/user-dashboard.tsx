@@ -41,6 +41,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
+import { apiFetch } from '@/lib/api-fetch';
 
 // ── Animation variants ──
 const containerVariants = {
@@ -128,7 +129,7 @@ export function UserDashboard() {
   useEffect(() => {
     if (!user?.id) return;
 
-    fetch(`/api/dashboard?role=user&userId=${user.id}`)
+    apiFetch(`/api/dashboard?role=user&userId=${user.id}`)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -321,7 +322,7 @@ export function UserDashboard() {
               onClick={() => {
                 setError(null);
                 setLoading(true);
-                fetch(`/api/dashboard?role=user&userId=${user?.id}`)
+                apiFetch(`/api/dashboard?role=user&userId=${user?.id}`)
                   .then((res) => res.json())
                   .then((json) => {
                     if (json.success && json.data) setData(json.data as DashboardData);

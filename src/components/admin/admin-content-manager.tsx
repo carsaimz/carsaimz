@@ -27,6 +27,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { apiFetch } from '@/lib/api-fetch';
 import {
   Plus, Pencil, Trash2, Star, Globe, Eye, EyeOff,
 } from 'lucide-react';
@@ -196,7 +197,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
   const fetchCategories = useCallback(async () => {
     if (contentType !== 'posts') return;
     try {
-      const res = await fetch('/api/admin/categories');
+      const res = await apiFetch('/api/admin/categories');
       const data = await res.json();
       if (data.success) {
         setCategories(data.data);

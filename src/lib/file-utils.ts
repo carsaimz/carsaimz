@@ -108,6 +108,8 @@ export function formatFileSize(bytes: number): string {
   return `${size.toFixed(i > 0 ? 1 : 0)} ${units[i]}`
 }
 
+import { apiFetch } from '@/lib/api-fetch';
+
 /**
  * Upload a file to the server's base64 upload API endpoint.
  * Returns the data URI and metadata.
@@ -122,7 +124,7 @@ export async function uploadFileToBase64(
     formData.append('category', category)
   }
 
-  const response = await fetch('/api/upload', {
+  const response = await apiFetch('/api/upload', {
     method: 'POST',
     body: formData,
   })

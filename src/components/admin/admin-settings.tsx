@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/language-context';
 import { useToast } from '@/hooks/use-toast';
+import { apiFetch } from '@/lib/api-fetch';
 import { AdminAiProviders } from '@/components/admin/admin-ai-providers';
 
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
@@ -32,7 +33,7 @@ export function AdminSettings() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await fetch('/api/settings');
+        const res = await apiFetch('/api/settings');
         const data = await res.json();
         if (data.success && data.data?.map) {
           const map = data.data.map;
@@ -55,7 +56,7 @@ export function AdminSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await fetch('/api/settings', {
+      const res = await apiFetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

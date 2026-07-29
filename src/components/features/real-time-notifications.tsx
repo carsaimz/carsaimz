@@ -7,6 +7,7 @@ import { toast } from '@/hooks/use-toast';
 import { useNotificationStore, type NotificationType } from '@/lib/store';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
+import { apiFetch } from '@/lib/api-fetch';
 
 // ──────────────────────────────────────────────
 // Real-Time Notifications Component
@@ -47,7 +48,7 @@ export function RealTimeNotifications() {
     if (!isAuthenticated) return;
 
     try {
-      const response = await fetch('/api/notifications');
+      const response = await apiFetch('/api/notifications');
       const data = await response.json();
 
       if (data.success && data.data) {

@@ -24,6 +24,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/language-context';
 import { useToast } from '@/hooks/use-toast';
+import { apiFetch } from '@/lib/api-fetch';
 
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
 const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
@@ -71,7 +72,7 @@ export function AdminAiProviders() {
   const fetchProviders = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/ai-providers');
+      const res = await apiFetch('/api/admin/ai-providers');
       const data = await res.json();
       if (data.success) {
         setProviders(data.providers);
@@ -85,7 +86,7 @@ export function AdminAiProviders() {
 
   const handleAdd = async () => {
     try {
-      const res = await fetch('/api/admin/ai-providers', {
+      const res = await apiFetch('/api/admin/ai-providers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(addForm),
@@ -106,7 +107,7 @@ export function AdminAiProviders() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/admin/ai-providers?id=${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/admin/ai-providers?id=${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
         toast({ title: 'Provedor removido' });
@@ -119,7 +120,7 @@ export function AdminAiProviders() {
 
   const handleToggle = async (id: string, isActive: boolean) => {
     try {
-      const res = await fetch('/api/admin/ai-providers', {
+      const res = await apiFetch('/api/admin/ai-providers', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, isActive }),
@@ -136,7 +137,7 @@ export function AdminAiProviders() {
 
   const handlePriority = async (id: string, newPriority: number) => {
     try {
-      const res = await fetch('/api/admin/ai-providers', {
+      const res = await apiFetch('/api/admin/ai-providers', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, priority: newPriority }),

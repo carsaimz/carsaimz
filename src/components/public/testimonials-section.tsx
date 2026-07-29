@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveI18nContent } from '@/lib/i18n-content';
+import { apiFetch } from '@/lib/api-fetch';
 
 const FloatingOrbs = dynamic(
   () => import('@/components/common/3d-elements').then((mod) => mod.FloatingOrbs),
@@ -37,7 +38,7 @@ export function TestimonialsSection() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    fetch('/api/testimonials')
+    apiFetch('/api/testimonials')
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data?.length > 0) {

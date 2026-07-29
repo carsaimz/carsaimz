@@ -15,6 +15,7 @@ import {
   Globe,
 } from 'lucide-react';
 import { GITHUB_URL } from '@/lib/client-config';
+import { apiFetch } from '@/lib/api-fetch';
 
 export function Footer() {
   const { t } = useLanguage();
@@ -28,7 +29,7 @@ export function Footer() {
 
     setNewsletterStatus('loading');
     try {
-      const res = await fetch('/api/newsletter', {
+      const res = await apiFetch('/api/newsletter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: newsletterEmail.trim() }),

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
+import { apiFetch } from '@/lib/api-fetch';
 
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
 const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
@@ -31,7 +32,7 @@ export function PartnerWithdrawals() {
   const [withdrawMethod, setWithdrawMethod] = useState('');
 
   useEffect(() => {
-    fetch(`/api/dashboard?role=partner&userId=${user?.id || 'demo-partner-001'}`)
+    apiFetch(`/api/dashboard?role=partner&userId=${user?.id || 'demo-partner-001'}`)
       .then((res) => res.json())
       .then((data) => { if (data.success && data.data) { const paidCommissions = (data.data.recentActivity?.commissions || []).filter((c: any) => c.status === 'paid'); setWithdrawals(paidCommissions); } else setError(data.message); })
       .catch((err) => setError(err.message))

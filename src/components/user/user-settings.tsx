@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
+import { apiFetch } from '@/lib/api-fetch';
 import { toast } from 'sonner';
 
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
@@ -61,7 +62,7 @@ export function UserSettings() {
       }
 
       // Save profile data
-      const res = await fetch('/api/user/profile', {
+      const res = await apiFetch('/api/user/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -92,7 +93,7 @@ export function UserSettings() {
 
         // If password change was requested, update password separately
         if (newPassword) {
-          const passRes = await fetch('/api/user/profile', {
+          const passRes = await apiFetch('/api/user/profile', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
