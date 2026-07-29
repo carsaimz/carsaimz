@@ -7,7 +7,7 @@ import {
   type AuthProvider as AuthProviderType,
   type AuthResult,
 } from '@/lib/store';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 // ──────────────────────────────────────────────
 // Context Interface
@@ -82,7 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
           const contentType = res.headers.get('content-type') || '';
           if (contentType.includes('application/json')) {
-            const data = await res.json();
+            const data = await safeJson(res);
+            if (!data) return;
 
             if (data.user) {
               const userRole = data.user.role || 'user';
@@ -226,7 +227,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 const contentType = res.headers.get('content-type') || '';
                 if (contentType.includes('application/json')) {
-                  const data = await res.json();
+                  const data = await safeJson(res);
+                  if (!data) return;
 
                   if (data.user) {
                     const userRole = data.user.role || 'user';

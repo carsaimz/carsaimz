@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -41,8 +41,9 @@ export function UserQuotes() {
 
   useEffect(() => {
     apiFetch(`/api/quotes?userId=${user?.id || 'demo-user-001'}`)
-      .then((res) => res.json())
+      .then((res) => safeJson(res))
       .then((data) => {
+        if (!data) { setError('Server returned non-JSON response'); return; }
         if (data.success) setQuotes(data.data);
         else setError(data.message || 'Failed to load quotes');
       })

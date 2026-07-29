@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 
 import { useLanguage } from '@/contexts/language-context';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 // ──────────────────────────────────────────────
 // Newsletter Form with API Integration
@@ -54,7 +54,8 @@ export function NewsletterForm() {
         body: JSON.stringify({ email }),
       });
 
-      const data = await response.json();
+      const data = await safeJson(response);
+      if (!data) { setErrorMessage('Server returned non-JSON response'); setState('error'); return; }
 
       if (data.success) {
         setState('success');

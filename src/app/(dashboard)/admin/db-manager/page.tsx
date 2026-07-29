@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/contexts/language-context';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -87,7 +87,8 @@ export default function DbManagerPage() {
     setError(null);
     try {
       const res = await apiFetch('/api/admin/db-manager');
-      const json = await res.json();
+      const json = await safeJson(res);
+      if (!json) { setError('Server returned non-JSON response'); return; }
       if (json.success) {
         setCollections(json.data);
       } else {
@@ -108,7 +109,8 @@ export default function DbManagerPage() {
       const res = await apiFetch(
         `/api/admin/db-manager?collection=${encodeURIComponent(colName)}&page=${pageNum}&limit=20`
       );
-      const json = await res.json();
+      const json = await safeJson(res);
+      if (!json) { setError('Server returned non-JSON response'); return; }
       if (json.success) {
         setDocuments(json.data.documents);
         setTotalDocs(json.data.total);
@@ -131,7 +133,8 @@ export default function DbManagerPage() {
       const res = await apiFetch(
         `/api/admin/db-manager?collection=${encodeURIComponent(colName)}&docId=${encodeURIComponent(docId)}`
       );
-      const json = await res.json();
+      const json = await safeJson(res);
+      if (!json) return;
       if (json.success) {
         setSelectedDoc(json.data);
       }
@@ -149,7 +152,8 @@ export default function DbManagerPage() {
         `/api/admin/db-manager?collection=${encodeURIComponent(colName)}&docId=${encodeURIComponent(docId)}`,
         { method: 'DELETE' }
       );
-      const json = await res.json();
+      const json = await safeJson(res);
+      if (!json) return;
       if (json.success) {
         // Refresh documents
         if (selectedCollection) {
@@ -170,7 +174,8 @@ export default function DbManagerPage() {
       const res = await apiFetch(
         `/api/admin/db-manager?collection=${encodeURIComponent(colName)}&limit=10000`
       );
-      const json = await res.json();
+      const json = await safeJson(res);
+      if (!json) return;
       if (json.success) {
         const blob = new Blob([JSON.stringify(json.data.documents, null, 2)], {
           type: 'application/json',

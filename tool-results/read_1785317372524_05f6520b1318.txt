@@ -1,0 +1,815 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect } from 'react';
+     4→import { motion } from 'framer-motion';
+     5→import {
+     6→  FileText,
+     7→  CreditCard,
+     8→  Receipt,
+     9→  Download,
+    10→  Eye,
+    11→  Plus,
+    12→  CheckCircle2,
+    13→  Clock,
+    14→  XCircle,
+    15→  AlertCircle,
+    16→  Phone,
+    17→  Building2,
+    18→  BanknoteIcon,
+    19→  Send,
+    20→  ArrowRight,
+    21→  Search,
+    22→  Filter,
+    23→  DollarSign,
+    24→  TrendingUp,
+    25→  Inbox,
+    26→} from 'lucide-react';
+    27→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+    28→import { Badge } from '@/components/ui/badge';
+    29→import { Button } from '@/components/ui/button';
+    30→import { Input } from '@/components/ui/input';
+    31→import { Label } from '@/components/ui/label';
+    32→import { Textarea } from '@/components/ui/textarea';
+    33→import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+    34→import {
+    35→  Table,
+    36→  TableBody,
+    37→  TableCell,
+    38→  TableHead,
+    39→  TableHeader,
+    40→  TableRow,
+    41→} from '@/components/ui/table';
+    42→import {
+    43→  Select,
+    44→  SelectContent,
+    45→  SelectItem,
+    46→  SelectTrigger,
+    47→  SelectValue,
+    48→} from '@/components/ui/select';
+    49→import {
+    50→  Dialog,
+    51→  DialogContent,
+    52→  DialogDescription,
+    53→  DialogFooter,
+    54→  DialogHeader,
+    55→  DialogTitle,
+    56→  DialogTrigger,
+    57→} from '@/components/ui/dialog';
+    58→import { Separator } from '@/components/ui/separator';
+    59→import { Skeleton } from '@/components/ui/skeleton';
+    60→import { useAuthStore } from '@/lib/store';
+    61→import { useLanguage } from '@/contexts/language-context';
+    62→import { apiFetch } from '@/lib/api-fetch';
+    63→
+    64→// ── Animation variants ──
+    65→const containerVariants = {
+    66→  hidden: { opacity: 0 },
+    67→  visible: {
+    68→    opacity: 1,
+    69→    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
+    70→  },
+    71→};
+    72→
+    73→const itemVariants = {
+    74→  hidden: { opacity: 0, y: 20 },
+    75→  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+    76→};
+    77→
+    78→// ── Types for API data ──
+    79→interface ApiQuote {
+    80→  id: string;
+    81→  title: string;
+    82→  description: string | null;
+    83→  status: string;
+    84→  createdAt: string;
+    85→  proposals: {
+    86→    id: string;
+    87→    title: string;
+    88→    description: string | null;
+    89→    totalAmount: number | null;
+    90→    status: string;
+    91→    validUntil: string | null;
+    92→    createdAt: string;
+    93→  }[];
+    94→}
+    95→
+    96→interface ApiProposal {
+    97→  id: string;
+    98→  title: string;
+    99→  description: string | null;
+   100→  totalAmount: number | null;
+   101→  status: string;
+   102→  validUntil: string | null;
+   103→  createdAt: string;
+   104→  quote: {
+   105→    id: string;
+   106→    title: string;
+   107→    userId: string;
+   108→  };
+   109→}
+   110→
+   111→interface ApiPayment {
+   112→  id: string;
+   113→  amount: number;
+   114→  method: string;
+   115→  status: string;
+   116→  createdAt: string;
+   117→  proposal: {
+   118→    id: string;
+   119→    title: string;
+   120→    description: string | null;
+   121→    totalAmount: number | null;
+   122→    status: string;
+   123→    createdAt: string;
+   124→    quote: {
+   125→      id: string;
+   126→      title: string;
+   127→      status: string;
+   128→    };
+   129→  } | null;
+   130→}
+   131→
+   132→interface ApiInvoice {
+   133→  id: string;
+   134→  number: string;
+   135→  totalAmount: number;
+   136→  status: string;
+   137→  dueDate: string | null;
+   138→  createdAt: string;
+   139→  proposal: {
+   140→    id: string;
+   141→    title: string;
+   142→    quote: {
+   143→      id: string;
+   144→      title: string;
+   145→      userId: string;
+   146→    };
+   147→  };
+   148→  items: {
+   149→    id: string;
+   150→    description: string;
+   151→    quantity: number;
+   152→    unitPrice: number;
+   153→    total: number;
+   154→  }[];
+   155→}
+   156→
+   157→export function FinancialSection() {
+   158→  const { t, formatCurrency, formatDate } = useLanguage();
+   159→  const user = useAuthStore((s) => s.user);
+   160→
+   161→  const [activeTab, setActiveTab] = useState('quotes');
+   162→  const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
+   163→  const [newQuoteService, setNewQuoteService] = useState('');
+   164→  const [newQuoteDescription, setNewQuoteDescription] = useState('');
+   165→  const [newQuoteBudget, setNewQuoteBudget] = useState('');
+   166→
+   167→  const [quotes, setQuotes] = useState<ApiQuote[]>([]);
+   168→  const [payments, setPayments] = useState<ApiPayment[]>([]);
+   169→  const [invoices, setInvoices] = useState<ApiInvoice[]>([]);
+   170→  const [loading, setLoading] = useState(true);
+   171→  const [error, setError] = useState<string | null>(null);
+   172→  const [submittingQuote, setSubmittingQuote] = useState(false);
+   173→
+   174→  useEffect(() => {
+   175→    if (!user?.id) return;
+   176→
+   177→    Promise.all([
+   178→      apiFetch(`/api/quotes?userId=${user.id}`).then((res) => {
+   179→        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+   180→        return res.json();
+   181→      }),
+   182→      apiFetch(`/api/payments?userId=${user.id}`).then((res) => {
+   183→        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+   184→        return res.json();
+   185→      }),
+   186→      apiFetch(`/api/invoices?userId=${user.id}`).then((res) => {
+   187→        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+   188→        return res.json();
+   189→      }),
+   190→    ])
+   191→      .then(([quotesJson, paymentsJson, invoicesJson]) => {
+   192→        if (quotesJson.success) setQuotes(quotesJson.data || []);
+   193→        if (paymentsJson.success) setPayments(paymentsJson.data || []);
+   194→        if (invoicesJson.success) setInvoices(invoicesJson.data || []);
+   195→      })
+   196→      .catch((err) => {
+   197→        setError(err.message || 'Network error');
+   198→      })
+   199→      .finally(() => {
+   200→        setLoading(false);
+   201→      });
+   202→  }, [user?.id]);
+   203→
+   204→  // Derive proposals from quotes
+   205→  const proposals: ApiProposal[] = quotes.flatMap((q) =>
+   206→    q.proposals.map((p) => ({
+   207→      ...p,
+   208→      quote: { id: q.id, title: q.title, userId: q.id },
+   209→    }))
+   210→  );
+   211→
+   212→  const statusBadge = (status: string) => {
+   213→    switch (status) {
+   214→      case 'approved':
+   215→      case 'accepted':
+   216→      case 'confirmed':
+   217→      case 'paid':
+   218→      case 'resolved':
+   219→      case 'closed':
+   220→        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>;
+   221→      case 'pending':
+   222→      case 'sent':
+   223→      case 'open':
+   224→      case 'in_progress':
+   225→      case 'issued':
+   226→      case 'unpaid':
+   227→        return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{t('common.pending')}</Badge>;
+   228→      case 'rejected':
+   229→      case 'failed':
+   230→        return <Badge className="bg-red-100 text-red-700 border-red-200">{t('common.rejected')}</Badge>;
+   231→      case 'overdue':
+   232→        return <Badge className="bg-red-100 text-red-800 border-red-200">{t('financial.invoiceOverdue')}</Badge>;
+   233→      default:
+   234→        return <Badge variant="outline">{status}</Badge>;
+   235→    }
+   236→  };
+   237→
+   238→  const methodBadge = (method: string) => {
+   239→    switch (method) {
+   240→      case 'mpesa':
+   241→        return (
+   242→          <Badge variant="outline" className="text-emerald-600 border-emerald-200">
+   243→            <Phone className="h-3 w-3 mr-1" />
+   244→            {t('financial.mpesa')}
+   245→          </Badge>
+   246→        );
+   247→      case 'transfer':
+   248→        return (
+   249→          <Badge variant="outline" className="text-emerald-600 border-emerald-200">
+   250→            <Building2 className="h-3 w-3 mr-1" />
+   251→            {t('financial.transfer')}
+   252→          </Badge>
+   253→        );
+   254→      case 'deposit':
+   255→        return (
+   256→          <Badge variant="outline" className="text-emerald-600 border-emerald-200">
+   257→            <BanknoteIcon className="h-3 w-3 mr-1" />
+   258→            Deposit
+   259→          </Badge>
+   260→        );
+   261→      default:
+   262→        return <Badge variant="outline">{method}</Badge>;
+   263→    }
+   264→  };
+   265→
+   266→  const handleSubmitQuote = async () => {
+   267→    if (!user?.id || !newQuoteService) return;
+   268→
+   269→    setSubmittingQuote(true);
+   270→    try {
+   271→      const res = await apiFetch('/api/quotes', {
+   272→        method: 'POST',
+   273→        headers: { 'Content-Type': 'application/json' },
+   274→        body: JSON.stringify({
+   275→          userId: user.id,
+   276→          title: newQuoteService,
+   277→          description: newQuoteDescription,
+   278→        }),
+   279→      });
+   280→
+   281→      const json = await res.json();
+   282→      if (json.success) {
+   283→        // Refresh quotes list
+   284→        const quotesRes = await apiFetch(`/api/quotes?userId=${user.id}`);
+   285→        const quotesJson = await quotesRes.json();
+   286→        if (quotesJson.success) setQuotes(quotesJson.data || []);
+   287→
+   288→        setQuoteDialogOpen(false);
+   289→        setNewQuoteService('');
+   290→        setNewQuoteDescription('');
+   291→        setNewQuoteBudget('');
+   292→      }
+   293→    } catch (err) {
+   294→      console.error('Failed to submit quote:', err);
+   295→    } finally {
+   296→      setSubmittingQuote(false);
+   297→    }
+   298→  };
+   299→
+   300→  // Summary stats from real data
+   301→  const totalQuotesValue = proposals.reduce((s, p) => s + (p.totalAmount || 0), 0);
+   302→  const totalPaymentsValue = payments.reduce((s, p) => s + p.amount, 0);
+   303→  const totalInvoicesValue = invoices.reduce((s, i) => s + i.totalAmount, 0);
+   304→  const overdueInvoices = invoices.filter((i) => i.status === 'overdue').length;
+   305→  const acceptedProposals = proposals.filter((p) => p.status === 'accepted').length;
+   306→  const confirmedPayments = payments.filter((p) => p.status === 'confirmed').length;
+   307→
+   308→  // ── Loading skeletons ──
+   309→  if (loading) {
+   310→    return (
+   311→      <motion.div
+   312→        variants={containerVariants}
+   313→        initial="hidden"
+   314→        animate="visible"
+   315→        className="space-y-6"
+   316→      >
+   317→        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   318→          {[1, 2, 3, 4].map((i) => (
+   319→            <Card key={i} className="border-l-4 border-l-emerald-500">
+   320→              <CardContent className="p-4 sm:p-5">
+   321→                <Skeleton className="h-4 w-20 mb-2" />
+   322→                <Skeleton className="h-8 w-24 mb-1" />
+   323→                <Skeleton className="h-3 w-16" />
+   324→              </CardContent>
+   325→            </Card>
+   326→          ))}
+   327→        </div>
+   328→
+   329→        <Card>
+   330→          <CardContent className="p-6">
+   331→            <Skeleton className="h-10 w-full mb-4" />
+   332→            <div className="space-y-3">
+   333→              {[1, 2, 3, 4, 5].map((i) => (
+   334→                <Skeleton key={i} className="h-14 rounded-lg" />
+   335→              ))}
+   336→            </div>
+   337→          </CardContent>
+   338→        </Card>
+   339→      </motion.div>
+   340→    );
+   341→  }
+   342→
+   343→  // ── Error state ──
+   344→  if (error) {
+   345→    return (
+   346→      <motion.div
+   347→        variants={containerVariants}
+   348→        initial="hidden"
+   349→        animate="visible"
+   350→        className="space-y-6"
+   351→      >
+   352→        <Card className="border-l-4 border-l-red-500">
+   353→          <CardContent className="p-6">
+   354→            <div className="flex items-center gap-3">
+   355→              <AlertCircle className="h-6 w-6 text-red-500" />
+   356→              <div>
+   357→                <h3 className="font-semibold text-red-700">Failed to load financial data</h3>
+   358→                <p className="text-sm text-muted-foreground">{error}</p>
+   359→              </div>
+   360→            </div>
+   361→            <Button
+   362→              className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white"
+   363→              onClick={() => {
+   364→                setError(null);
+   365→                setLoading(true);
+   366→                Promise.all([
+   367→                  apiFetch(`/api/quotes?userId=${user?.id}`).then((r) => r.json()),
+   368→                  apiFetch(`/api/payments?userId=${user?.id}`).then((r) => r.json()),
+   369→                  apiFetch(`/api/invoices?userId=${user?.id}`).then((r) => r.json()),
+   370→                ])
+   371→                  .then(([q, p, i]) => {
+   372→                    if (q.success) setQuotes(q.data || []);
+   373→                    if (p.success) setPayments(p.data || []);
+   374→                    if (i.success) setInvoices(i.data || []);
+   375→                  })
+   376→                  .catch((err) => setError(err.message))
+   377→                  .finally(() => setLoading(false));
+   378→              }}
+   379→            >
+   380→              {t('common.retry') || 'Retry'}
+   381→            </Button>
+   382→          </CardContent>
+   383→        </Card>
+   384→      </motion.div>
+   385→    );
+   386→  }
+   387→
+   388→  return (
+   389→    <motion.div
+   390→      variants={containerVariants}
+   391→      initial="hidden"
+   392→      animate="visible"
+   393→      className="space-y-6"
+   394→    >
+   395→      {/* ── Summary Stats ── */}
+   396→      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   397→        <Card className="border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow">
+   398→          <CardContent className="p-4 sm:p-5">
+   399→            <div className="flex items-start justify-between">
+   400→              <div>
+   401→                <p className="text-sm text-muted-foreground">{t('dashboard.quotes')}</p>
+   402→                <p className="text-2xl font-bold">{quotes.length}</p>
+   403→                <p className="text-xs text-emerald-600 mt-1">
+   404→                  {totalQuotesValue > 0 ? `Value: ${formatCurrency(totalQuotesValue)}` : 'No proposals yet'}
+   405→                </p>
+   406→              </div>
+   407→              <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+   408→                <FileText className="h-5 w-5" />
+   409→              </div>
+   410→            </div>
+   411→          </CardContent>
+   412→        </Card>
+   413→
+   414→        <Card className="border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow">
+   415→          <CardContent className="p-4 sm:p-5">
+   416→            <div className="flex items-start justify-between">
+   417→              <div>
+   418→                <p className="text-sm text-muted-foreground">{t('financial.proposal')}</p>
+   419→                <p className="text-2xl font-bold">{proposals.length}</p>
+   420→                <p className="text-xs text-emerald-600 mt-1">{acceptedProposals} accepted</p>
+   421→              </div>
+   422→              <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+   423→                <Send className="h-5 w-5" />
+   424→              </div>
+   425→            </div>
+   426→          </CardContent>
+   427→        </Card>
+   428→
+   429→        <Card className="border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow">
+   430→          <CardContent className="p-4 sm:p-5">
+   431→            <div className="flex items-start justify-between">
+   432→              <div>
+   433→                <p className="text-sm text-muted-foreground">{t('financial.payment')}</p>
+   434→                <p className="text-2xl font-bold">{formatCurrency(totalPaymentsValue)}</p>
+   435→                <p className="text-xs text-emerald-600 mt-1">{confirmedPayments} confirmed</p>
+   436→              </div>
+   437→              <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+   438→                <CreditCard className="h-5 w-5" />
+   439→              </div>
+   440→            </div>
+   441→          </CardContent>
+   442→        </Card>
+   443→
+   444→        <Card className="border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow">
+   445→          <CardContent className="p-4 sm:p-5">
+   446→            <div className="flex items-start justify-between">
+   447→              <div>
+   448→                <p className="text-sm text-muted-foreground">{t('financial.invoice')}</p>
+   449→                <p className="text-2xl font-bold">{invoices.length}</p>
+   450→                <p className="text-xs text-red-600 mt-1">{overdueInvoices} overdue</p>
+   451→              </div>
+   452→              <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+   453→                <Receipt className="h-5 w-5" />
+   454→              </div>
+   455→            </div>
+   456→          </CardContent>
+   457→        </Card>
+   458→      </motion.div>
+   459→
+   460→      {/* ── Main Tabs ── */}
+   461→      <motion.div variants={itemVariants}>
+   462→        <Tabs value={activeTab} onValueChange={setActiveTab}>
+   463→          <TabsList className="bg-emerald-50 w-full sm:w-auto">
+   464→            <TabsTrigger value="quotes" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white flex-1 sm:flex-none">
+   465→              {t('dashboard.quotes')}
+   466→            </TabsTrigger>
+   467→            <TabsTrigger value="proposals" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white flex-1 sm:flex-none">
+   468→              {t('financial.proposal')}
+   469→            </TabsTrigger>
+   470→            <TabsTrigger value="payments" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white flex-1 sm:flex-none">
+   471→              {t('financial.payment')}
+   472→            </TabsTrigger>
+   473→            <TabsTrigger value="invoices" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white flex-1 sm:flex-none">
+   474→              {t('financial.invoice')}
+   475→            </TabsTrigger>
+   476→          </TabsList>
+   477→
+   478→          {/* ── Quotes Tab ── */}
+   479→          <TabsContent value="quotes" className="space-y-4 mt-4">
+   480→            {/* Request New Quote */}
+   481→            <Card>
+   482→              <CardHeader>
+   483→                <div className="flex items-center justify-between">
+   484→                  <CardTitle className="text-lg flex items-center gap-2">
+   485→                    <Plus className="h-5 w-5 text-emerald-600" />
+   486→                    {t('financial.quoteRequestTitle')}
+   487→                  </CardTitle>
+   488→                </div>
+   489→                <CardDescription>{t('financial.quoteRequestDesc')}</CardDescription>
+   490→              </CardHeader>
+   491→              <CardContent>
+   492→                <Dialog open={quoteDialogOpen} onOpenChange={setQuoteDialogOpen}>
+   493→                  <DialogTrigger asChild>
+   494→                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
+   495→                      <Plus className="h-4 w-4 mr-2" />
+   496→                      {t('dashboard.quoteRequest')}
+   497→                    </Button>
+   498→                  </DialogTrigger>
+   499→                  <DialogContent className="sm:max-w-lg">
+   500→                    <DialogHeader>
+   501→                      <DialogTitle>{t('financial.quoteRequestTitle')}</DialogTitle>
+   502→                      <DialogDescription>{t('financial.quoteRequestDesc')}</DialogDescription>
+   503→                    </DialogHeader>
+   504→                    <div className="space-y-4">
+   505→                      <div className="space-y-2">
+   506→                        <Label>{t('services.title')}</Label>
+   507→                        <Select value={newQuoteService} onValueChange={setNewQuoteService}>
+   508→                          <SelectTrigger className="w-full">
+   509→                            <SelectValue placeholder="Select a service" />
+   510→                          </SelectTrigger>
+   511→                          <SelectContent>
+   512→                            <SelectItem value="web-dev">{t('services.webDev')}</SelectItem>
+   513→                            <SelectItem value="mobile-dev">{t('services.mobileDev')}</SelectItem>
+   514→                            <SelectItem value="cloud">{t('services.cloud')}</SelectItem>
+   515→                            <SelectItem value="ai">{t('services.ai')}</SelectItem>
+   516→                            <SelectItem value="consulting">{t('services.consulting')}</SelectItem>
+   517→                            <SelectItem value="design">{t('services.design')}</SelectItem>
+   518→                            <SelectItem value="seo">{t('services.seo')}</SelectItem>
+   519→                            <SelectItem value="maintenance">{t('services.maintenance')}</SelectItem>
+   520→                          </SelectContent>
+   521→                        </Select>
+   522→                      </div>
+   523→                      <div className="space-y-2">
+   524→                        <Label>{t('financial.description')}</Label>
+   525→                        <Textarea
+   526→                          value={newQuoteDescription}
+   527→                          onChange={(e) => setNewQuoteDescription(e.target.value)}
+   528→                          placeholder="Describe your requirements..."
+   529→                        />
+   530→                      </div>
+   531→                      <div className="space-y-2">
+   532→                        <Label>{t('financial.amount')} ({t('financial.currency')})</Label>
+   533→                        <Input
+   534→                          type="number"
+   535→                          value={newQuoteBudget}
+   536→                          onChange={(e) => setNewQuoteBudget(e.target.value)}
+   537→                          placeholder="Estimated budget in MT"
+   538→                        />
+   539→                      </div>
+   540→                    </div>
+   541→                    <DialogFooter className="mt-4">
+   542→                      <Button variant="outline" onClick={() => setQuoteDialogOpen(false)}>
+   543→                        {t('common.cancel')}
+   544→                      </Button>
+   545→                      <Button
+   546→                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
+   547→                        onClick={handleSubmitQuote}
+   548→                        disabled={submittingQuote || !newQuoteService}
+   549→                      >
+   550→                        <Send className="h-4 w-4 mr-2" />
+   551→                        {submittingQuote ? 'Submitting...' : t('common.confirm')}
+   552→                      </Button>
+   553→                    </DialogFooter>
+   554→                  </DialogContent>
+   555→                </Dialog>
+   556→              </CardContent>
+   557→            </Card>
+   558→
+   559→            {/* Existing Quotes List */}
+   560→            <Card>
+   561→              <CardHeader>
+   562→                <CardTitle className="text-lg flex items-center gap-2">
+   563→                  <FileText className="h-5 w-5 text-emerald-600" />
+   564→                  {t('dashboard.quotesHistory')}
+   565→                </CardTitle>
+   566→              </CardHeader>
+   567→              <CardContent>
+   568→                {quotes.length === 0 ? (
+   569→                  <div className="text-center py-12">
+   570→                    <Inbox className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+   571→                    <p className="text-muted-foreground">{t('common.noData') || 'No quotes found'}</p>
+   572→                    <p className="text-sm text-muted-foreground mt-1">{t('financial.quoteRequestDesc') || 'Request your first quote'}</p>
+   573→                  </div>
+   574→                ) : (
+   575→                  <Table>
+   576→                    <TableHeader>
+   577→                      <TableRow>
+   578→                        <TableHead>ID</TableHead>
+   579→                        <TableHead>{t('financial.item')}</TableHead>
+   580→                        <TableHead>{t('financial.description')}</TableHead>
+   581→                        <TableHead>{t('common.status')}</TableHead>
+   582→                        <TableHead>{t('common.createdAt')}</TableHead>
+   583→                        <TableHead>{t('common.actions')}</TableHead>
+   584→                      </TableRow>
+   585→                    </TableHeader>
+   586→                    <TableBody>
+   587→                      {quotes.map((quote) => (
+   588→                        <TableRow key={quote.id}>
+   589→                          <TableCell className="font-medium">{quote.id.slice(0, 8)}</TableCell>
+   590→                          <TableCell>{quote.title}</TableCell>
+   591→                          <TableCell className="max-w-[200px] truncate">{quote.description || '—'}</TableCell>
+   592→                          <TableCell>{statusBadge(quote.status)}</TableCell>
+   593→                          <TableCell>{formatDate(quote.createdAt)}</TableCell>
+   594→                          <TableCell>
+   595→                            <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+   596→                              <Eye className="h-4 w-4" />
+   597→                            </Button>
+   598→                          </TableCell>
+   599→                        </TableRow>
+   600→                      ))}
+   601→                    </TableBody>
+   602→                  </Table>
+   603→                )}
+   604→              </CardContent>
+   605→            </Card>
+   606→          </TabsContent>
+   607→
+   608→          {/* ── Proposals Tab ── */}
+   609→          <TabsContent value="proposals" className="mt-4">
+   610→            <Card>
+   611→              <CardHeader>
+   612→                <CardTitle className="text-lg flex items-center gap-2">
+   613→                  <Send className="h-5 w-5 text-emerald-600" />
+   614→                  {t('financial.proposal')}
+   615→                </CardTitle>
+   616→              </CardHeader>
+   617→              <CardContent>
+   618→                {proposals.length === 0 ? (
+   619→                  <div className="text-center py-12">
+   620→                    <Send className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+   621→                    <p className="text-muted-foreground">{t('common.noData') || 'No proposals yet'}</p>
+   622→                    <p className="text-sm text-muted-foreground mt-1">Proposals are created when quotes are reviewed</p>
+   623→                  </div>
+   624→                ) : (
+   625→                  <Table>
+   626→                    <TableHeader>
+   627→                      <TableRow>
+   628→                        <TableHead>ID</TableHead>
+   629→                        <TableHead>Quote</TableHead>
+   630→                        <TableHead>{t('common.details')}</TableHead>
+   631→                        <TableHead>{t('financial.amount')}</TableHead>
+   632→                        <TableHead>{t('common.status')}</TableHead>
+   633→                        <TableHead>{t('common.createdAt')}</TableHead>
+   634→                        <TableHead>{t('common.actions')}</TableHead>
+   635→                      </TableRow>
+   636→                    </TableHeader>
+   637→                    <TableBody>
+   638→                      {proposals.map((proposal) => (
+   639→                        <TableRow key={proposal.id}>
+   640→                          <TableCell className="font-medium">{proposal.id.slice(0, 8)}</TableCell>
+   641→                          <TableCell>{proposal.quote.title}</TableCell>
+   642→                          <TableCell>{proposal.title}</TableCell>
+   643→                          <TableCell className="font-semibold">{formatCurrency(proposal.totalAmount || 0)}</TableCell>
+   644→                          <TableCell>{statusBadge(proposal.status)}</TableCell>
+   645→                          <TableCell>{formatDate(proposal.createdAt)}</TableCell>
+   646→                          <TableCell>
+   647→                            <div className="flex gap-1">
+   648→                              <Button variant="ghost" size="sm" className="text-emerald-600">
+   649→                                <Eye className="h-4 w-4" />
+   650→                              </Button>
+   651→                              {proposal.status === 'sent' && (
+   652→                                <>
+   653→                                  <Button variant="ghost" size="sm" className="text-emerald-600">
+   654→                                    <CheckCircle2 className="h-4 w-4" />
+   655→                                  </Button>
+   656→                                  <Button variant="ghost" size="sm" className="text-red-500">
+   657→                                    <XCircle className="h-4 w-4" />
+   658→                                  </Button>
+   659→                                </>
+   660→                              )}
+   661→                            </div>
+   662→                          </TableCell>
+   663→                        </TableRow>
+   664→                      ))}
+   665→                    </TableBody>
+   666→                  </Table>
+   667→                )}
+   668→              </CardContent>
+   669→            </Card>
+   670→          </TabsContent>
+   671→
+   672→          {/* ── Payments Tab ── */}
+   673→          <TabsContent value="payments" className="space-y-4 mt-4">
+   674→            {/* Payment Methods Info */}
+   675→            <Card className="border-l-4 border-l-emerald-500">
+   676→              <CardHeader>
+   677→                <CardTitle className="text-lg">{t('financial.paymentMethod')}</CardTitle>
+   678→              </CardHeader>
+   679→              <CardContent>
+   680→                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+   681→                  <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-100 hover:border-emerald-300 transition-colors">
+   682→                    <div className="flex items-center gap-2 mb-2">
+   683→                      <Phone className="h-5 w-5 text-emerald-600" />
+   684→                      <h4 className="font-semibold">{t('financial.mpesa')}</h4>
+   685→                    </div>
+   686→                    <p className="text-sm text-muted-foreground mb-3">{t('financial.mpesaPay')}</p>
+   687→                    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Instant</Badge>
+   688→                  </div>
+   689→                  <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-100 hover:border-emerald-300 transition-colors">
+   690→                    <div className="flex items-center gap-2 mb-2">
+   691→                      <Building2 className="h-5 w-5 text-emerald-600" />
+   692→                      <h4 className="font-semibold">{t('financial.transfer')}</h4>
+   693→                    </div>
+   694→                    <p className="text-sm text-muted-foreground mb-3">Direct bank transfer</p>
+   695→                    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">1-2 days</Badge>
+   696→                  </div>
+   697→                  <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-100 hover:border-emerald-300 transition-colors">
+   698→                    <div className="flex items-center gap-2 mb-2">
+   699→                      <BanknoteIcon className="h-5 w-5 text-emerald-600" />
+   700→                      <h4 className="font-semibold">Deposit</h4>
+   701→                    </div>
+   702→                    <p className="text-sm text-muted-foreground mb-3">Cash deposit at bank</p>
+   703→                    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Same day</Badge>
+   704→                  </div>
+   705→                </div>
+   706→              </CardContent>
+   707→            </Card>
+   708→
+   709→            {/* Payment History */}
+   710→            <Card>
+   711→              <CardHeader>
+   712→                <CardTitle className="text-lg flex items-center gap-2">
+   713→                  <CreditCard className="h-5 w-5 text-emerald-600" />
+   714→                  {t('dashboard.paymentHistory')}
+   715→                </CardTitle>
+   716→              </CardHeader>
+   717→              <CardContent>
+   718→                {payments.length === 0 ? (
+   719→                  <div className="text-center py-12">
+   720→                    <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+   721→                    <p className="text-muted-foreground">{t('common.noData') || 'No payments found'}</p>
+   722→                    <p className="text-sm text-muted-foreground mt-1">Payments are linked to accepted proposals</p>
+   723→                  </div>
+   724→                ) : (
+   725→                  <Table>
+   726→                    <TableHeader>
+   727→                      <TableRow>
+   728→                        <TableHead>ID</TableHead>
+   729→                        <TableHead>{t('financial.description')}</TableHead>
+   730→                        <TableHead>{t('financial.paymentMethod')}</TableHead>
+   731→                        <TableHead>{t('financial.amount')}</TableHead>
+   732→                        <TableHead>{t('common.status')}</TableHead>
+   733→                        <TableHead>{t('common.createdAt')}</TableHead>
+   734→                      </TableRow>
+   735→                    </TableHeader>
+   736→                    <TableBody>
+   737→                      {payments.map((payment) => (
+   738→                        <TableRow key={payment.id}>
+   739→                          <TableCell className="font-medium">{payment.id.slice(0, 8)}</TableCell>
+   740→                          <TableCell>{payment.proposal?.title || `Payment ${payment.id.slice(0, 8)}`}</TableCell>
+   741→                          <TableCell>{methodBadge(payment.method)}</TableCell>
+   742→                          <TableCell className="font-semibold">{formatCurrency(payment.amount)}</TableCell>
+   743→                          <TableCell>{statusBadge(payment.status)}</TableCell>
+   744→                          <TableCell>{formatDate(payment.createdAt)}</TableCell>
+   745→                        </TableRow>
+   746→                      ))}
+   747→                    </TableBody>
+   748→                  </Table>
+   749→                )}
+   750→              </CardContent>
+   751→            </Card>
+   752→          </TabsContent>
+   753→
+   754→          {/* ── Invoices Tab ── */}
+   755→          <TabsContent value="invoices" className="mt-4">
+   756→            <Card>
+   757→              <CardHeader>
+   758→                <CardTitle className="text-lg flex items-center gap-2">
+   759→                  <Receipt className="h-5 w-5 text-emerald-600" />
+   760→                  {t('financial.invoice')}
+   761→                </CardTitle>
+   762→              </CardHeader>
+   763→              <CardContent>
+   764→                {invoices.length === 0 ? (
+   765→                  <div className="text-center py-12">
+   766→                    <Receipt className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+   767→                    <p className="text-muted-foreground">{t('common.noData') || 'No invoices found'}</p>
+   768→                    <p className="text-sm text-muted-foreground mt-1">Invoices are generated from accepted proposals</p>
+   769→                  </div>
+   770→                ) : (
+   771→                  <Table>
+   772→                    <TableHeader>
+   773→                      <TableRow>
+   774→                        <TableHead>{t('financial.invoiceNumber')}</TableHead>
+   775→                        <TableHead>Proposal</TableHead>
+   776→                        <TableHead>{t('financial.amount')}</TableHead>
+   777→                        <TableHead>{t('common.status')}</TableHead>
+   778→                        <TableHead>{t('financial.invoiceDate')}</TableHead>
+   779→                        <TableHead>{t('financial.invoiceDueDate')}</TableHead>
+   780→                        <TableHead>{t('common.actions')}</TableHead>
+   781→                      </TableRow>
+   782→                    </TableHeader>
+   783→                    <TableBody>
+   784→                      {invoices.map((invoice) => (
+   785→                        <TableRow key={invoice.id}>
+   786→                          <TableCell className="font-medium">{invoice.number}</TableCell>
+   787→                          <TableCell>{invoice.proposal?.title || '—'}</TableCell>
+   788→                          <TableCell className="font-semibold">{formatCurrency(invoice.totalAmount)}</TableCell>
+   789→                          <TableCell>{statusBadge(invoice.status)}</TableCell>
+   790→                          <TableCell>{formatDate(invoice.createdAt)}</TableCell>
+   791→                          <TableCell>{invoice.dueDate ? formatDate(invoice.dueDate) : '—'}</TableCell>
+   792→                          <TableCell>
+   793→                            <div className="flex gap-1">
+   794→                              <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+   795→                                <Eye className="h-4 w-4" />
+   796→                              </Button>
+   797→                              <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+   798→                                <Download className="h-4 w-4" />
+   799→                              </Button>
+   800→                            </div>
+   801→                          </TableCell>
+   802→                        </TableRow>
+   803→                      ))}
+   804→                    </TableBody>
+   805→                  </Table>
+   806→                )}
+   807→              </CardContent>
+   808→            </Card>
+   809→          </TabsContent>
+   810→        </Tabs>
+   811→      </motion.div>
+   812→    </motion.div>
+   813→  );
+   814→}
+   815→

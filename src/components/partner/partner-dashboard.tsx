@@ -50,7 +50,7 @@ import {
 } from '@/components/ui/select';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { APP_PUBLIC_URL } from '@/lib/client-config';
 
 // ── Animation variants ──
@@ -136,13 +136,17 @@ export function PartnerDashboard() {
 
     // Fetch dashboard data and projects in parallel
     Promise.all([
-      apiFetch(`/api/dashboard?role=partner&userId=${user.id}`).then((res) => {
+      apiFetch(`/api/dashboard?role=partner&userId=${user.id}`).then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
+        const data = await safeJson(res);
+        if (!data) throw new Error('Server returned non-JSON response');
+        return data;
       }),
-      apiFetch('/api/projects').then((res) => {
+      apiFetch('/api/projects').then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
+        const data = await safeJson(res);
+        if (!data) throw new Error('Server returned non-JSON response');
+        return data;
       }),
     ])
       .then(([dashboardJson, projectsJson]) => {

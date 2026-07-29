@@ -127,3 +127,28 @@ export async function apiFetchJson<T = unknown>(
 
   return res.json() as Promise<T>;
 }
+
+/**
+ * Safe JSON parsing from an apiFetch Response.
+ * Never throws "Unexpected token '<'" — checks Content-Type first.
+ * Returns null if the response is not JSON (instead of crashing).
+ *
+ * Usage:
+ *   const res = await apiFetch('/api/dashboard');
+ *   const data = await safeJson(res);
+ *   if (data === null) { // handle non-JSON response }
+ *   if (data && data.success) { // use data.data }
+ */
+export async function safeJson<T = any>(res: Response): Promise<T | null> {
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    console.warn(`[safeJson] Non-JSON response (${contentType}), status=${res.status}`);
+    return null;
+  }
+  try {
+    return await res.json() as T;
+  } catch (err) {
+    console.warn('[safeJson] JSON parse failed:', err);
+    return null;
+  }
+}

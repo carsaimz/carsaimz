@@ -108,7 +108,7 @@ export function formatFileSize(bytes: number): string {
   return `${size.toFixed(i > 0 ? 1 : 0)} ${units[i]}`
 }
 
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 /**
  * Upload a file to the server's base64 upload API endpoint.
@@ -130,11 +130,12 @@ export async function uploadFileToBase64(
   })
 
   if (!response.ok) {
-    const errorData = await response.json()
-    throw new Error(errorData.error || 'Upload failed')
+    const errorData = await safeJson(response)
+    throw new Error(errorData?.error || 'Upload failed')
   }
 
-  const result = await response.json()
+  const result = await safeJson(response)
+  if (!result) throw new Error('Server returned non-JSON response')
   return {
     dataUri: result.dataUri,
     metadata: result.metadata,

@@ -5,7 +5,7 @@ import { motion, useInView, useMotionValue, useSpring } from 'framer-motion';
 import { Briefcase, Users, Clock, Award, type LucideIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/language-context';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 // ──────────────────────────────────────────────
 // Animated Stats Counter Component
@@ -92,9 +92,9 @@ export function StatsCounterSection() {
 
   useEffect(() => {
     apiFetch('/api/stats')
-      .then((res) => res.json())
+      .then((res) => safeJson(res))
       .then((data) => {
-        if (data.success && data.data) {
+        if (data && data.success && data.data) {
           setStats(data.data);
         }
       })

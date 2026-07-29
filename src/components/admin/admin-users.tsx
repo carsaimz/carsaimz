@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useLanguage } from '@/contexts/language-context';
 import { useAuthStore } from '@/lib/store';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { useToast } from '@/hooks/use-toast';
 
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
@@ -110,7 +110,8 @@ export function AdminUsers() {
       if (search) params.set('search', search);
 
       const res = await apiFetch(`/api/admin/users?${params.toString()}`);
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) { setError('Server returned non-JSON response'); return; }
       if (data.success) {
         setUsers(data.data || []);
         setTotal(data.meta?.total || 0);
@@ -148,7 +149,8 @@ export function AdminUsers() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(createData),
       });
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) { toast({ title: t('admin.error') || 'Error', description: 'Server returned non-JSON response', variant: 'destructive' }); return; }
       if (data.success) {
         toast({ title: t('admin.userCreated'), description: t('admin.createUserDesc') });
         setCreateOpen(false);
@@ -174,7 +176,8 @@ export function AdminUsers() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editData),
       });
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) { toast({ title: t('admin.error') || 'Error', description: 'Server returned non-JSON response', variant: 'destructive' }); return; }
       if (data.success) {
         toast({ title: t('admin.userUpdated'), description: t('admin.editUserDesc') });
         setEditOpen(false);
@@ -197,7 +200,8 @@ export function AdminUsers() {
       const res = await apiFetch(`/api/admin/users?id=${userId}`, {
         method: 'DELETE',
       });
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) { toast({ title: t('admin.error') || 'Error', description: 'Server returned non-JSON response', variant: 'destructive' }); return; }
       if (data.success) {
         toast({ title: t('admin.userDeactivated') });
         fetchUsers(currentPage, searchQuery);
@@ -220,7 +224,8 @@ export function AdminUsers() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: true }),
       });
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) { toast({ title: t('admin.error') || 'Error', description: 'Server returned non-JSON response', variant: 'destructive' }); return; }
       if (data.success) {
         toast({ title: t('admin.userUpdated') });
         fetchUsers(currentPage, searchQuery);

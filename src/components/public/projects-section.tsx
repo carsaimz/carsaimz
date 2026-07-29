@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveI18nContent } from '@/lib/i18n-content';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 const ParticleNetwork = dynamic(
   () => import('@/components/common/3d-elements').then((mod) => mod.ParticleNetwork),
@@ -73,9 +73,9 @@ export function ProjectsSection() {
 
   useEffect(() => {
     apiFetch('/api/projects')
-      .then((res) => res.json())
+      .then((res) => safeJson(res))
       .then((data) => {
-        if (data.success && data.data?.length > 0) {
+        if (data && data.success && data.data?.length > 0) {
           setProjects(data.data);
         }
       })

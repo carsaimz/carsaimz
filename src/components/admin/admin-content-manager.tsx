@@ -27,7 +27,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 import {
   Plus, Pencil, Trash2, Star, Globe, Eye, EyeOff,
 } from 'lucide-react';
@@ -183,7 +183,8 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
     setLoading(true);
     try {
       const res = await apiFetch(getApiEndpoint(contentType));
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) return;
       if (data.success) {
         setItems(data.data);
       }
@@ -198,7 +199,8 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
     if (contentType !== 'posts') return;
     try {
       const res = await apiFetch('/api/admin/categories');
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) return;
       if (data.success) {
         setCategories(data.data);
       }
@@ -292,7 +294,8 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
         body: JSON.stringify(body),
       });
 
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) { toast({ title: 'Error', description: 'Server returned non-JSON response', variant: 'destructive' }); return; }
       if (data.success) {
         toast({ title: isCreate ? t('admin.createNew') : t('admin.editItem'), description: 'Saved successfully' });
         setDialogOpen(false);
@@ -382,7 +385,8 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
       const res = await apiFetch(`${getApiEndpoint(contentType)}?id=${deleteTarget.id}`, {
         method: 'DELETE',
       });
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) { toast({ title: 'Error', description: 'Server returned non-JSON response', variant: 'destructive' }); return; }
       if (data.success) {
         toast({ title: t('admin.deleteItem'), description: 'Deleted successfully' });
         fetchItems();
@@ -418,7 +422,8 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
         body: JSON.stringify(updateBody),
       });
 
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) return;
       if (data.success) {
         toast({ title: t('admin.togglePublish'), description: 'Status updated' });
         fetchItems();

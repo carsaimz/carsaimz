@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/language-context';
 import { useToast } from '@/hooks/use-toast';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { AdminAiProviders } from '@/components/admin/admin-ai-providers';
 
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
@@ -34,7 +34,8 @@ export function AdminSettings() {
     const fetchSettings = async () => {
       try {
         const res = await apiFetch('/api/settings');
-        const data = await res.json();
+        const data = await safeJson(res);
+        if (!data) return;
         if (data.success && data.data?.map) {
           const map = data.data.map;
           setFormData({
@@ -69,7 +70,8 @@ export function AdminSettings() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ settings: settingsArray }),
       });
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) { toast({ title: t('admin.error'), description: 'Server returned non-JSON response', variant: 'destructive' }); return; }
       if (data.success) {
         toast({ title: t('admin.settingsSaved'), description: t('admin.settingsSavedDesc') });
       } else {

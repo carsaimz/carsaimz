@@ -41,7 +41,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 // ── Animation variants ──
 const containerVariants = {
@@ -132,9 +132,10 @@ export function UserDashboard() {
     apiFetch(`/api/dashboard?role=user&userId=${user.id}`)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
+        return safeJson(res);
       })
       .then((json) => {
+        if (!json) { setError('Server returned non-JSON response'); return; }
         if (json.success && json.data) {
           setData(json.data as DashboardData);
         } else {
@@ -325,9 +326,10 @@ export function UserDashboard() {
                 apiFetch(`/api/dashboard?role=user&userId=${user?.id}`)
                   .then((res) => {
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    return res.json();
+                    return safeJson(res);
                   })
                   .then((json) => {
+                    if (!json) { setError('Server returned non-JSON response'); return; }
                     if (json.success && json.data) setData(json.data as DashboardData);
                     else setError(json.message || 'Failed to load');
                   })

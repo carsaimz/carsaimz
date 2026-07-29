@@ -11,6 +11,7 @@
  */
 
 import { firestoreClient } from '@/lib/firebase-client'
+import { apiFetch, safeJson } from '@/lib/api-fetch'
 import {
   collection,
   getDocs,
@@ -500,13 +501,13 @@ export async function fetchWithFallback<T>(
 ): Promise<{ data: T; source: 'api' | 'client' }> {
   // Try API route first
   try {
-    const res = await fetch(apiPath)
+    const res = await apiFetch(apiPath)
     const contentType = res.headers.get('content-type') || ''
 
     // Only parse as JSON if the server explicitly says it's JSON
     if (contentType.includes('application/json') && res.ok) {
       try {
-        const json = await res.json()
+        const json = await safeJson(res)
         if (json && json.success && json.data !== undefined) {
           return { data: json.data, source: 'api' }
         }

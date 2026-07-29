@@ -15,7 +15,7 @@ import {
   Globe,
 } from 'lucide-react';
 import { GITHUB_URL } from '@/lib/client-config';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 export function Footer() {
   const { t } = useLanguage();
@@ -34,7 +34,8 @@ export function Footer() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: newsletterEmail.trim() }),
       });
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) { setNewsletterStatus('error'); setTimeout(() => setNewsletterStatus('idle'), 3000); return; }
       if (data.success) {
         setNewsletterStatus('success');
         setNewsletterEmail('');

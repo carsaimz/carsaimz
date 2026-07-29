@@ -59,7 +59,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 // ── Animation variants ──
 const containerVariants = {
@@ -175,17 +175,23 @@ export function FinancialSection() {
     if (!user?.id) return;
 
     Promise.all([
-      apiFetch(`/api/quotes?userId=${user.id}`).then((res) => {
+      apiFetch(`/api/quotes?userId=${user.id}`).then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
+        const data = await safeJson(res);
+        if (!data) throw new Error('Quotes: Server returned non-JSON response');
+        return data;
       }),
-      apiFetch(`/api/payments?userId=${user.id}`).then((res) => {
+      apiFetch(`/api/payments?userId=${user.id}`).then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
+        const data = await safeJson(res);
+        if (!data) throw new Error('Payments: Server returned non-JSON response');
+        return data;
       }),
-      apiFetch(`/api/invoices?userId=${user.id}`).then((res) => {
+      apiFetch(`/api/invoices?userId=${user.id}`).then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
+        const data = await safeJson(res);
+        if (!data) throw new Error('Invoices: Server returned non-JSON response');
+        return data;
       }),
     ])
       .then(([quotesJson, paymentsJson, invoicesJson]) => {
@@ -278,11 +284,13 @@ export function FinancialSection() {
         }),
       });
 
-      const json = await res.json();
+      const json = await safeJson(res);
+      if (!json) return;
       if (json.success) {
         // Refresh quotes list
         const quotesRes = await apiFetch(`/api/quotes?userId=${user.id}`);
-        const quotesJson = await quotesRes.json();
+        const quotesJson = await safeJson(quotesRes);
+        if (!quotesJson) return;
         if (quotesJson.success) setQuotes(quotesJson.data || []);
 
         setQuoteDialogOpen(false);
@@ -364,11 +372,12 @@ export function FinancialSection() {
                 setError(null);
                 setLoading(true);
                 Promise.all([
-                  apiFetch(`/api/quotes?userId=${user?.id}`).then((r) => r.json()),
-                  apiFetch(`/api/payments?userId=${user?.id}`).then((r) => r.json()),
-                  apiFetch(`/api/invoices?userId=${user?.id}`).then((r) => r.json()),
+                  apiFetch(`/api/quotes?userId=${user?.id}`).then((r) => safeJson(r)),
+                  apiFetch(`/api/payments?userId=${user?.id}`).then((r) => safeJson(r)),
+                  apiFetch(`/api/invoices?userId=${user?.id}`).then((r) => safeJson(r)),
                 ])
                   .then(([q, p, i]) => {
+                    if (!q || !p || !i) { setError('Server returned non-JSON response'); return; }
                     if (q.success) setQuotes(q.data || []);
                     if (p.success) setPayments(p.data || []);
                     if (i.success) setInvoices(i.data || []);

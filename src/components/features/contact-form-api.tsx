@@ -22,7 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
 import { useLanguage } from '@/contexts/language-context';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 const TechPatternSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
@@ -100,7 +100,8 @@ export function ContactFormApi() {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      const data = await safeJson(response);
+      if (!data) { setApiError('Server returned non-JSON response'); setState('error'); return; }
 
       if (data.success) {
         setState('success');

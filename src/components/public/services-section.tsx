@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveI18nContent } from '@/lib/i18n-content';
 import { useRouter } from 'next/navigation';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 const TechPatternSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
@@ -72,9 +72,9 @@ export function ServicesSection() {
 
   useEffect(() => {
     apiFetch('/api/services')
-      .then((res) => res.json())
+      .then((res) => safeJson(res))
       .then((data) => {
-        if (data.success && data.data?.length > 0) {
+        if (data && data.success && data.data?.length > 0) {
           setServices(data.data);
         }
       })

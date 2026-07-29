@@ -49,7 +49,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 // ── Animation variants ──
 const containerVariants = {
@@ -184,17 +184,23 @@ export function AdminDashboard() {
     if (!user?.id) return;
 
     Promise.all([
-      apiFetch('/api/stats').then((res) => {
+      apiFetch('/api/stats').then(async (res) => {
         if (!res.ok) throw new Error(`Stats: HTTP ${res.status}`);
-        return res.json();
+        const data = await safeJson(res);
+        if (!data) throw new Error('Stats: Server returned non-JSON response');
+        return data;
       }),
-      apiFetch('/api/stats/history').then((res) => {
+      apiFetch('/api/stats/history').then(async (res) => {
         if (!res.ok) throw new Error(`History: HTTP ${res.status}`);
-        return res.json();
+        const data = await safeJson(res);
+        if (!data) throw new Error('History: Server returned non-JSON response');
+        return data;
       }),
-      apiFetch(`/api/dashboard?role=${user?.role || 'admin'}&userId=${user.id}`).then((res) => {
+      apiFetch(`/api/dashboard?role=${user?.role || 'admin'}&userId=${user.id}`).then(async (res) => {
         if (!res.ok) throw new Error(`Dashboard: HTTP ${res.status}`);
-        return res.json();
+        const data = await safeJson(res);
+        if (!data) throw new Error('Dashboard: Server returned non-JSON response');
+        return data;
       }),
     ])
       .then(([statsJson, historyJson, dashboardJson]) => {

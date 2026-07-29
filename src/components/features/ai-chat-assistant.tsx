@@ -29,7 +29,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/language-context';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 // ──────────────────────────────────────────────
 // Types
@@ -562,7 +562,8 @@ export function AiChatAssistant() {
         }),
       });
 
-      const data = await response.json();
+      const data = await safeJson(response);
+      if (!data) { setHasError(true); return; }
 
       if (data.success && data.response) {
         const assistantMessage: ChatMessage = {

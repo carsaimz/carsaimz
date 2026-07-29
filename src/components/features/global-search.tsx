@@ -24,7 +24,7 @@ import { useAppStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
 import { useRouter } from 'next/navigation';
 import { fetchWithFallback, fetchPostsClient, fetchForumClient } from '@/lib/client-firestore';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 // ──────────────────────────────────────────────
 // Types
@@ -89,16 +89,8 @@ export function GlobalSearch() {
       // Fetch from multiple endpoints simultaneously
       // Use fetchWithFallback for blog/forum to handle static export
       const [servicesRes, projectsRes, postsResult, forumResult] = await Promise.allSettled([
-        apiFetch('/api/services').then(async (res) => {
-          const ct = res.headers.get('content-type') || '';
-          if (ct.includes('application/json') && res.ok) return res.json();
-          throw new Error('Not JSON');
-        }).catch(() => null),
-        apiFetch('/api/projects').then(async (res) => {
-          const ct = res.headers.get('content-type') || '';
-          if (ct.includes('application/json') && res.ok) return res.json();
-          throw new Error('Not JSON');
-        }).catch(() => null),
+        apiFetch('/api/services').then((res) => safeJson(res)).catch(() => null),
+        apiFetch('/api/projects').then((res) => safeJson(res)).catch(() => null),
         fetchWithFallback('/api/posts', fetchPostsClient).then(r => r.data).catch(() => []),
         fetchWithFallback('/api/forum', fetchForumClient).then(r => r.data).catch(() => []),
       ]);
@@ -106,9 +98,9 @@ export function GlobalSearch() {
       const allResults: SearchResult[] = [];
 
       // Process services
-      if (servicesRes.status === 'fulfilled') {
+      if (servicesRes.status === 'fulfilled' && servicesRes.value) {
         try {
-          const servicesData = await servicesRes.value.json();
+          const servicesData = servicesRes.value;
           if (servicesData.success && servicesData.data) {
             servicesData.data
               .filter((s: Record<string, unknown>) => {
@@ -130,9 +122,9 @@ export function GlobalSearch() {
       }
 
       // Process projects
-      if (projectsRes.status === 'fulfilled') {
+      if (projectsRes.status === 'fulfilled' && projectsRes.value) {
         try {
-          const projectsData = await projectsRes.value.json();
+          const projectsData = projectsRes.value;
           if (projectsData.success && projectsData.data) {
             projectsData.data
               .filter((p: Record<string, unknown>) => {

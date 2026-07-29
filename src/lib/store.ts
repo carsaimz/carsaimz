@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { apiFetch } from '@/lib/api-fetch'
+import { apiFetch, safeJson } from '@/lib/api-fetch'
 import {
   shouldUseNativeAuth,
   nativeSignInWithGoogle,
@@ -160,7 +160,8 @@ async function verifyWithServer(
     }
 
     if (res.ok) {
-      const data = await res.json()
+      const data = await safeJson(res)
+      if (!data) return await fallbackVerify(idToken, nativeResult)
 
       if (data.user) {
         const userRole = mapRole(data.user.role)
@@ -187,8 +188,8 @@ async function verifyWithServer(
     // Server returned non-OK status — try to parse error
     let errorMsg = 'Autenticação falhou.'
     try {
-      const errData = await res.json()
-      errorMsg = errData.error || errorMsg
+      const errData = await safeJson(res)
+      if (errData) errorMsg = errData.error || errorMsg
     } catch {}
 
     // If the error is not a permanent auth error, try client-side fallback
@@ -777,7 +778,8 @@ export const useAuthStore = create<AuthState>()(
             // Check if response is JSON (not HTML from static export)
             const contentType = res.headers.get('content-type') || ''
             if (contentType.includes('application/json')) {
-              const data = await res.json()
+              const data = await safeJson(res)
+              if (!data) return { success: false, error: 'Server returned non-JSON response' }
 
               if (data.user) {
                 const userRole = mapRole(data.user.role)

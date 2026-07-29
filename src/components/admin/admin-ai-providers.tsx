@@ -24,7 +24,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/language-context';
 import { useToast } from '@/hooks/use-toast';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
 const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
@@ -73,7 +73,8 @@ export function AdminAiProviders() {
     setLoading(true);
     try {
       const res = await apiFetch('/api/admin/ai-providers');
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) return;
       if (data.success) {
         setProviders(data.providers);
       }
@@ -91,7 +92,8 @@ export function AdminAiProviders() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(addForm),
       });
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) { toast({ title: 'Erro', description: 'Server returned non-JSON response', variant: 'destructive' }); return; }
       if (data.success) {
         toast({ title: 'Provedor adicionado', description: `${addForm.name} adicionado com sucesso` });
         setAddForm({ name: '', displayName: '', apiKey: '', baseUrl: '', model: '', priority: 10 });
@@ -108,7 +110,8 @@ export function AdminAiProviders() {
   const handleDelete = async (id: string) => {
     try {
       const res = await apiFetch(`/api/admin/ai-providers?id=${id}`, { method: 'DELETE' });
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) return;
       if (data.success) {
         toast({ title: 'Provedor removido' });
         fetchProviders();
@@ -125,7 +128,8 @@ export function AdminAiProviders() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, isActive }),
       });
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) return;
       if (data.success) {
         toast({ title: isActive ? 'Provedor activado' : 'Provedor desactivado' });
         fetchProviders();
@@ -142,7 +146,8 @@ export function AdminAiProviders() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, priority: newPriority }),
       });
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) return;
       if (data.success) fetchProviders();
     } catch (err) {
       toast({ title: 'Erro', variant: 'destructive' });

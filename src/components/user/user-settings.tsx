@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
-import { apiFetch } from '@/lib/api-fetch';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { toast } from 'sonner';
 
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
@@ -75,7 +75,8 @@ export function UserSettings() {
         }),
       });
 
-      const data = await res.json();
+      const data = await safeJson(res);
+      if (!data) { toast.error('Server returned non-JSON response'); return; }
 
       if (data.user) {
         // Update the store with the new user data
@@ -101,7 +102,8 @@ export function UserSettings() {
               newPassword,
             }),
           });
-          const passData = await passRes.json();
+          const passData = await safeJson(passRes);
+          if (!passData) { toast.error('Server returned non-JSON response'); return; }
           if (!passData.user) {
             toast.error(t('auth.passwordUpdateFailed') || 'Failed to update password');
           }
