@@ -88,7 +88,9 @@ export function PartnerShell({ children }: { children: React.ReactNode }) {
   const { user, logout, isAdmin, isSuperAdmin, isPartner } = useAuthStore();
   const { unreadCount, notifications, markAllAsRead } = useNotificationStore();
 
-  const isPrivileged = isAdmin || isSuperAdmin;
+  // Check both store flags AND user.role — role may not be resolved yet
+  const userRole = user?.role;
+  const isPrivileged = isAdmin || isSuperAdmin || userRole === 'admin' || userRole === 'super_admin';
 
   const currentFlag = getFlag(language);
   const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) : 'P';

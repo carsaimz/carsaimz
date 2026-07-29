@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import { AppUpdateCheck } from '@/components/common/app-update-check';
@@ -18,6 +18,19 @@ export default function DashboardLayout({
   const isAdmin = useAuthStore((s) => s.isAdmin);
   const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin);
   const isPartner = useAuthStore((s) => s.isPartner);
+  const isLoading = useAuthStore((s) => s.isLoading);
+
+  // Grace period: wait a short time after hydration before applying access control.
+  // This prevents race conditions where the role hasn't been resolved yet
+  // (e.g. server API returned 500, client-side Firestore fallback is still running).
+  const [roleGracePeriod, setRoleGracePeriod] = useState(true);
+
+  useEffect(() => {
+    if (hasHydrated) {
+      const timer = setTimeout(() => setRoleGracePeriod(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasHydrated]);
 
   // Derive role from the user object directly — this is more reliable
   // than the store's isAdmin/isPartner flags because it doesn't depend
@@ -35,7 +48,7 @@ export default function DashboardLayout({
       return;
     }
 
-    if (hasHydrated && isAuthenticated) {
+    if (hasHydrated && isAuthenticated && !isLoading && !roleGracePeriod) {
       // ── Default dashboard redirect ──
       // If user lands on the bare /dashboard path, redirect to their default dashboard.
       // admin/super_admin → /admin, partner → /partner, user → /user
@@ -63,10 +76,10 @@ export default function DashboardLayout({
         return;
       }
     }
-  }, [hasHydrated, isAuthenticated, isPrivileged, isPartnerRole, pathname, router]);
+  }, [hasHydrated, isAuthenticated, isPrivileged, isPartnerRole, isLoading, roleGracePeriod, pathname, router]);
 
-  // ── Show "Checking authentication..." during rehydration ──
-  if (!hasHydrated) {
+  // ── Show "Checking authentication..." during rehydration or loading ──
+  if (!hasHydrated || isLoading || roleGracePeriod) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-3">

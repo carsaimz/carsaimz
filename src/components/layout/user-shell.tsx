@@ -147,8 +147,11 @@ export function UserShell({ children }: { children: React.ReactNode }) {
   const { unreadCount, notifications, markAllAsRead } = useNotificationStore();
   const [loginModalOpen, setLoginModalOpen] = useState(false);
 
-  const isPrivileged = isAdmin || isSuperAdmin;
-  const canAccessAll = isPrivileged || isPartner;
+  // Check both store flags AND user.role — role may not be resolved yet
+  const userRole = user?.role;
+  const isPrivileged = isAdmin || isSuperAdmin || userRole === 'admin' || userRole === 'super_admin';
+  const isPartnerRole = isPartner || userRole === 'partner';
+  const canAccessAll = isPrivileged || isPartnerRole;
 
   const currentFlag = getFlag(language);
 

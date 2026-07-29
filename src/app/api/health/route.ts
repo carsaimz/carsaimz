@@ -11,18 +11,22 @@ export async function GET() {
     timestamp: new Date().toISOString(),
     env: {
       FIREBASE_ADMIN_PROJECT_ID: !!process.env.FIREBASE_ADMIN_PROJECT_ID,
+      FIREBASE_ADMIN_PROJECT_ID_VALUE: process.env.FIREBASE_ADMIN_PROJECT_ID || null,
       FIREBASE_ADMIN_CLIENT_EMAIL: !!process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
       FIREBASE_ADMIN_PRIVATE_KEY: !!process.env.FIREBASE_ADMIN_PRIVATE_KEY,
       FIREBASE_ADMIN_PRIVATE_KEY_LENGTH: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.length || 0,
       FIREBASE_ADMIN_PRIVATE_KEY_HAS_NEWLINES: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.includes('\\n') || false,
+      GOOGLE_APPLICATION_CREDENTIALS: !!process.env.GOOGLE_APPLICATION_CREDENTIALS,
     },
   }
 
   // Test Firebase Admin SDK initialization
   try {
-    const { getAdminFirestore } = await import('@/lib/firebase-admin')
+    const { getAdminFirestore, getAdminInitError } = await import('@/lib/firebase-admin')
     const db = getAdminFirestore()
-    diagnostics.firebaseAdminInit = 'OK'
+    const initErr = getAdminInitError()
+    diagnostics.firebaseAdminInit = initErr ? 'OK_WITH_WARNINGS' : 'OK'
+    if (initErr) diagnostics.initWarning = initErr
 
     // Test Firestore read
     try {
@@ -61,7 +65,7 @@ export async function GET() {
     diagnostics.initError = initErr.message
   }
 
-  const isHealthy = diagnostics.firebaseAdminInit === 'OK' && diagnostics.firestoreRead === 'OK'
+  const isHealthy = diagnostics.firebaseAdminInit !== 'FAILED' && diagnostics.firestoreRead === 'OK'
 
   return NextResponse.json(
     { success: isHealthy, diagnostics },

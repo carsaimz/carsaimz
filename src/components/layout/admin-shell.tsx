@@ -91,7 +91,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const { user, logout, isAdmin, isSuperAdmin } = useAuthStore();
   const { unreadCount, notifications, markAllAsRead } = useNotificationStore();
 
-  const isPrivileged = isAdmin || isSuperAdmin;
+  // Check both store flags AND user.role — role may not be resolved yet
+  // if the server API returned 500 and client-side fallback is still running
+  const userRole = user?.role;
+  const isPrivileged = isAdmin || isSuperAdmin || userRole === 'admin' || userRole === 'super_admin';
 
   const currentFlag = getFlag(language);
   const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) : 'A';

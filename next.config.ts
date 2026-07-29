@@ -12,7 +12,15 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
-  serverExternalPackages: ['firebase-admin'],
+  serverExternalPackages: [
+    'firebase-admin',
+    'jose',
+    'jwks-rsa',
+    'openid-client',
+    'google-auth-library',
+    'gaxios',
+    'gtoken',
+  ],
 };
 
 export default nextConfig;

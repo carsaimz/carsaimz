@@ -70,16 +70,27 @@ export async function safeQueryDocs<T = Record<string, any>>(
 /**
  * Check if Firebase Admin SDK is available (env vars configured).
  * Returns an error message if not available, null if OK.
+ *
+ * Now also accepts project ID only (with applicationDefault() fallback)
+ * or GOOGLE_APPLICATION_CREDENTIALS as alternatives to the full cert() path.
  */
 export function checkFirebaseAdmin(): string | null {
   const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID
   const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL
   const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY
+  const googleAppCreds = process.env.GOOGLE_APPLICATION_CREDENTIALS
 
-  if (!projectId || !clientEmail || !privateKey) {
-    return 'Firebase Admin SDK not configured. Set FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, and FIREBASE_ADMIN_PRIVATE_KEY as environment variables.'
+  // Full cert() credentials available
+  if (projectId && clientEmail && privateKey) {
+    return null
   }
-  return null
+
+  // applicationDefault() fallback — needs at least projectId
+  if (projectId || googleAppCreds) {
+    return null
+  }
+
+  return 'Firebase Admin SDK not configured. Set FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, and FIREBASE_ADMIN_PRIVATE_KEY as environment variables. Alternatively, set FIREBASE_ADMIN_PROJECT_ID with GOOGLE_APPLICATION_CREDENTIALS for ADC.'
 }
 
 /**
