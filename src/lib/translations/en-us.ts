@@ -365,6 +365,7 @@ export const enUS: TranslationObject = {
     title: 'User Dashboard',
     subtitle: 'Manage your account and activities',
     profile: 'Dashboard',
+    dashboard: 'Dashboard',
     loadError: 'Failed to load dashboard',
     profileEdit: 'Edit profile',
     profileView: 'View profile',
@@ -520,6 +521,7 @@ export const enUS: TranslationObject = {
     editUser: 'Edit User',
     deactivateUser: 'Deactivate User',
     activateUser: 'Activate User',
+    superAdmin: 'Super Admin',
     searchUsers: 'Search users...',
     userName: 'Name',
     userEmail: 'Email',
@@ -1200,6 +1202,11 @@ export const enUS: TranslationObject = {
     changelog: "What's new",
     remindLater: 'Remind me later',
     downloadApk: 'Download APK',
+    downloading: 'Downloading...',
+    downloadComplete: 'Download Complete',
+    installNow: 'Install Now',
+    installFailed: 'Installation Failed',
+    checkFailed: 'Failed to check for updates',
   },
 
   // ============================================================================

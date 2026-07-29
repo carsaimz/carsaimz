@@ -50,12 +50,14 @@ export default function DashboardLayout({
       // ── Access control ──
       // admin/super_admin can access ALL dashboard areas
       // Non-privileged users cannot access /admin routes
-      if (!isPrivileged && pathname.startsWith('/admin')) {
-        router.replace('/home');
-      }
       // Non-partner, non-privileged users cannot access /partner routes
+      if (!isPrivileged && pathname.startsWith('/admin')) {
+        router.replace('/user');
+        return;
+      }
       if (!isPartner && !isPrivileged && pathname.startsWith('/partner')) {
-        router.replace('/home');
+        router.replace('/user');
+        return;
       }
     }
   }, [hasHydrated, isAuthenticated, isAdmin, isSuperAdmin, isPartner, isUser, pathname, router]);

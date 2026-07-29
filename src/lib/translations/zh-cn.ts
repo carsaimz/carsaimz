@@ -364,7 +364,8 @@ export const zhCN: TranslationObject = {
   dashboard: {
     title: '用户控制面板',
     subtitle: '管理您的账户和活动',
-    profile: '控制面板',
+    profile: 'Dashboard',
+    dashboard: 'Dashboard',
     loadError: '加载控制面板失败',
     profileEdit: '编辑资料',
     profileView: '查看资料',
@@ -520,6 +521,7 @@ export const zhCN: TranslationObject = {
     editUser: '编辑用户',
     deactivateUser: '停用用户',
     activateUser: '激活用户',
+    superAdmin: '超级管理员',
     searchUsers: '搜索用户...',
     userName: '姓名',
     userEmail: '邮箱',
@@ -1199,6 +1201,11 @@ export const zhCN: TranslationObject = {
     changelog: '更新内容',
     remindLater: '稍后提醒',
     downloadApk: '下载APK',
+    downloading: '下载中...',
+    downloadComplete: '下载完成',
+    installNow: '立即安装',
+    installFailed: '安装失败',
+    checkFailed: '检查更新失败',
   },
 
   // ============================================================================

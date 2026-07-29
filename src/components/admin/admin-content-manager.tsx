@@ -182,7 +182,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
   const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(getApiEndpoint(contentType));
+      const res = await apiFetch(getApiEndpoint(contentType));
       const data = await res.json();
       if (data.success) {
         setItems(data.data);
@@ -286,7 +286,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
       const method = isCreate ? 'POST' : 'PUT';
       const body = buildRequestBody();
 
-      const res = await fetch(endpoint, {
+      const res = await apiFetch(endpoint, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -379,7 +379,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
-      const res = await fetch(`${getApiEndpoint(contentType)}?id=${deleteTarget.id}`, {
+      const res = await apiFetch(`${getApiEndpoint(contentType)}?id=${deleteTarget.id}`, {
         method: 'DELETE',
       });
       const data = await res.json();
@@ -412,7 +412,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
         ? { id: item.id, published: !currentPublished }
         : { id: item.id, isPublished: !currentPublished };
 
-      const res = await fetch(getApiEndpoint(contentType), {
+      const res = await apiFetch(getApiEndpoint(contentType), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateBody),

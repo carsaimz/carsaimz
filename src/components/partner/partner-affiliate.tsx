@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
-import { API_BASE_URL } from '@/lib/client-config';
+import { APP_PUBLIC_URL } from '@/lib/client-config';
 
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
 const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
@@ -18,7 +18,7 @@ export function PartnerAffiliate() {
   const user = useAuthStore((s) => s.user);
   const [copied, setCopied] = useState(false);
 
-  const affiliateLink = `${API_BASE_URL}/ref/${user?.id || 'demo-partner-001'}`;
+  const affiliateLink = `${APP_PUBLIC_URL}/ref/${user?.id || 'demo-partner-001'}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(affiliateLink).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });

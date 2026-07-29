@@ -253,3 +253,36 @@ Stage Summary:
 - New API routes: /api/admin/db-manager, /api/admin/users (POST/PUT/DELETE)
 - New components: AppUpdateCheck, AdminDbManager
 - Translation files updated with 50+ new keys across 7 languages
+---
+Task ID: 1
+Agent: Main Agent
+Task: Comprehensive improvements to Carsai Mozambique authenticated pages
+
+Work Log:
+- Added Google Web Client ID (117955101988984767727) to .env and client-config.ts
+- Fixed apiFetch for web: on web, relative paths (/api/...) work natively — no external URL needed
+- Added APP_PUBLIC_URL constant for affiliate links (always uses carsaimz.vercel.app)
+- Fixed db-manager page to use apiFetch instead of buildApiUrl (eliminates "Unexpected token '<'" on mobile)
+- Fixed ai-chat-assistant to use apiFetch instead of buildApiUrl + fetch
+- Fixed admin-content-manager to use apiFetch instead of raw fetch
+- Fixed role access: super_admin and admin can access /admin, /user, /partner routes
+- Added db-manager to admin sidebar in user-shell and partner-shell
+- Added isPartner to user-shell and partner-shell for partner menu visibility
+- Added super_admin role to create/edit user dialogs
+- Added super_admin badge (purple) in admin-users role badges
+- Added bio, company, address fields to edit user dialog in admin-users
+- Changed "Perfil" to "Dashboard" in navigation across all 7 languages
+- Added update section translations (downloading, downloadComplete, installNow, installFailed, checkFailed) to all 7 languages
+- Added admin.superAdmin and dashboard.dashboard translations to all 7 languages
+- Fixed affiliate links to use APP_PUBLIC_URL instead of API_BASE_URL
+- Improved app-update-check: added Capacitor Browser plugin for native APK download, download states (downloading/complete/failed), translated UI
+- Fixed loading overlay: documented that it shows BEFORE page loads and hides WHEN page loads, never hides errors
+- Fixed dashboard layout: non-privileged users redirected to /user instead of /home when trying to access /admin or /partner
+
+Stage Summary:
+- All API calls now use apiFetch (no more raw fetch in components except GitHub API)
+- Web mode: no external API URL needed — relative paths work natively
+- Capacitor mode: apiFetch uses API_BASE_URL for external server
+- Affiliate links use APP_PUBLIC_URL (carsaimz.vercel.app) regardless of environment
+- All 7 language files updated with missing translations
+- Build passes successfully

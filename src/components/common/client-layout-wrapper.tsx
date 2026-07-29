@@ -6,13 +6,18 @@ import { LoadingOverlay } from '@/components/common/loading-overlay';
 /**
  * Client-side layout wrapper that manages the loading overlay.
  *
- * Shows the overlay immediately on mount, then hides it when:
- *   1. The page content has rendered (detected via requestAnimationFrame),
- *   2. An error boundary catches an error, OR
- *   3. A safety timeout of 3 seconds elapses.
+ * Shows the overlay immediately on mount (before content renders),
+ * then hides it when the page content has painted.
  *
- * This ensures the loading overlay never blocks error messages or
- * stays visible longer than necessary.
+ * IMPORTANT: The overlay is ALWAYS hidden after the page paints,
+ * even if there are errors. This ensures errors are never hidden
+ * behind a loading spinner. The user can see what went wrong.
+ *
+ * Flow:
+ *   1. Mount → show overlay immediately (isLoading = true by default)
+ *   2. Content renders → double rAF detects paint → hide overlay
+ *   3. Safety timeout (3s) → hide overlay regardless
+ *   4. If there's an error, the overlay is already hidden → error visible
  */
 export function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
@@ -25,19 +30,18 @@ export function ClientLayoutWrapper({ children }: { children: React.ReactNode })
     // ── Safety timeout: maximum 3 seconds ──
     // Ensures the overlay never stays visible indefinitely,
     // even if content rendering is slow or errors occur.
+    // This is the KEY: errors should never be hidden behind loading.
     const safetyTimer = setTimeout(() => {
       setIsLoading(false);
     }, 3000);
 
     // ── Content readiness check ──
-    // Use requestAnimationFrame to wait for the next paint cycle,
-    // which means the DOM has been rendered and the browser has
-    // had a chance to paint the content.
+    // Use double requestAnimationFrame to wait for the next paint cycle.
+    // This means the DOM has been rendered and the browser has painted.
+    // Once painted, we hide the overlay — errors will be visible.
     let rafId: number;
     const checkReady = () => {
       rafId = requestAnimationFrame(() => {
-        // Double rAF — one to wait for the current frame to finish,
-        // another to wait for the next frame to paint.
         requestAnimationFrame(() => {
           setIsLoading(false);
         });

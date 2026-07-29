@@ -27,9 +27,11 @@ export const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0'
 export const APP_BUILD = process.env.NEXT_PUBLIC_APP_BUILD || '1'
 
 // ─── API base URL ───
-// For Capacitor mobile app, set NEXT_PUBLIC_API_URL to your deployed server.
-// For local development, leave empty (relative URLs work on same-origin).
-// Hardcoded fallback: the Vercel deployment URL (used when env var is not set in mobile builds).
+// ONLY needed for Capacitor mobile app (static export, no local server).
+// On web (Next.js server mode), relative paths like /api/... work natively —
+// no external URL needed at all! apiFetch handles this automatically.
+//
+// The hardcoded fallback is used when building for Capacitor without NEXT_PUBLIC_API_URL.
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://carsaimz.vercel.app'
 
@@ -41,11 +43,14 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://carsaimz
 // Format: XXXXXXXXXXXX.apps.googleusercontent.com
 // If not set, Google Sign-In may fail on Android (no account picker completion).
 
-export const GOOGLE_WEB_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID || ''
+export const GOOGLE_WEB_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID || '117955101988984767727'
 
 // ─── Site URLs ───
+// Used for affiliate links, sharing, etc. — always the public-facing URL.
+// This is NOT the same as API_BASE_URL (which is only for API calls from Capacitor).
 
 export const SITE_URL = 'https://carsai.mz'
+export const APP_PUBLIC_URL = 'https://carsaimz.vercel.app'  // Used for affiliate links
 export const GITHUB_URL = 'https://github.com/carsaimz'
 
 // ─── Firebase Config (client-side — env vars with hardcoded fallbacks) ───

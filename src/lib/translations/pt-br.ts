@@ -385,7 +385,8 @@ export const ptBR: TranslationObject = {
   dashboard: {
     title: 'Painel do Usuário',
     subtitle: 'Gerenciar a sua conta e atividades',
-    profile: 'Painel',
+    profile: 'Dashboard',
+    dashboard: 'Dashboard',
     loadError: 'Falha ao carregar o painel',
     profileEdit: 'Editar perfil',
     profileView: 'Ver perfil',
@@ -541,6 +542,7 @@ export const ptBR: TranslationObject = {
     editUser: 'Editar Usuário',
     deactivateUser: 'Desativar Usuário',
     activateUser: 'Ativar Usuário',
+    superAdmin: 'Super Administrador',
     searchUsers: 'Pesquisar usuários...',
     userName: 'Nome',
     userEmail: 'Email',
@@ -1221,6 +1223,11 @@ export const ptBR: TranslationObject = {
     changelog: 'Novidades',
     remindLater: 'Lembrar mais tarde',
     downloadApk: 'Baixar APK',
+    downloading: 'Baixando...',
+    downloadComplete: 'Download concluído',
+    installNow: 'Instalar agora',
+    installFailed: 'Falha na instalação',
+    checkFailed: 'Falha ao verificar atualizações',
   },
 
   // ============================================================================

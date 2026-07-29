@@ -13,7 +13,7 @@ import {
   Shield, Scale, Cookie, HelpCircle,
   // Admin menu icons
   LayoutDashboard, Users, FileText, BarChart3, Settings, ScrollText,
-  Globe, MessageSquare,
+  Globe, MessageSquare, Database,
   // User menu icons
   UserCircle, ClipboardList, CreditCard, Headphones,
 } from 'lucide-react';
@@ -54,6 +54,7 @@ const ADMIN_MENU_ITEMS: SidebarLink[] = [
   { path: '/admin/reports', labelKey: 'admin.reports', icon: BarChart3 },
   { path: '/admin/analytics', labelKey: 'admin.systemLogs', icon: ScrollText },
   { path: '/admin/settings', labelKey: 'admin.systemSettings', icon: Settings },
+  { path: '/admin/db-manager', labelKey: 'admin.dbManager', icon: Database },
 ];
 
 const USER_MENU_ITEMS: SidebarLink[] = [
@@ -78,7 +79,7 @@ export function PartnerShell({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout, isAdmin, isSuperAdmin } = useAuthStore();
+  const { user, logout, isAdmin, isSuperAdmin, isPartner } = useAuthStore();
   const { unreadCount, notifications, markAllAsRead } = useNotificationStore();
 
   const isPrivileged = isAdmin || isSuperAdmin;
@@ -136,7 +137,7 @@ export function PartnerShell({ children }: { children: React.ReactNode }) {
               </SidebarGroupContent>
             </SidebarGroup>
 
-            {/* ── User section (shown for admin/super_admin) ── */}
+            {/* ── User section (shown for admin/super_admin/partner) ── */}
             {isPrivileged && (
               <SidebarGroup>
                 <SidebarGroupLabel>{t('dashboard.title')}</SidebarGroupLabel>

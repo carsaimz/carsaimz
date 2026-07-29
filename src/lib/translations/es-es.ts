@@ -364,7 +364,8 @@ export const esES: TranslationObject = {
   dashboard: {
     title: 'Panel de control del usuario',
     subtitle: 'Gestiona tu cuenta y actividades',
-    profile: 'Panel de control',
+    profile: 'Dashboard',
+    dashboard: 'Dashboard',
     loadError: 'Error al cargar el panel de control',
     profileEdit: 'Editar perfil',
     profileView: 'Ver perfil',
@@ -520,6 +521,7 @@ export const esES: TranslationObject = {
     editUser: 'Editar usuario',
     deactivateUser: 'Desactivar usuario',
     activateUser: 'Activar usuario',
+    superAdmin: 'Super Administrador',
     searchUsers: 'Buscar usuarios...',
     userName: 'Nombre',
     userEmail: 'Correo electrónico',
@@ -1199,6 +1201,11 @@ export const esES: TranslationObject = {
     changelog: 'Novedades',
     remindLater: 'Recordar más tarde',
     downloadApk: 'Descargar APK',
+    downloading: 'Descargando...',
+    downloadComplete: 'Descarga completa',
+    installNow: 'Instalar ahora',
+    installFailed: 'Error de instalación',
+    checkFailed: 'Error al comprobar actualizaciones',
   },
 
   // ============================================================================

@@ -365,6 +365,7 @@ export const deDE: TranslationObject = {
     title: 'Benutzer-Dashboard',
     subtitle: 'Verwalten Sie Ihr Konto und Ihre Aktivitäten',
     profile: 'Dashboard',
+    dashboard: 'Dashboard',
     loadError: 'Dashboard konnte nicht geladen werden',
     profileEdit: 'Profil bearbeiten',
     profileView: 'Profil anzeigen',
@@ -520,6 +521,7 @@ export const deDE: TranslationObject = {
     editUser: 'Benutzer bearbeiten',
     deactivateUser: 'Benutzer deaktivieren',
     activateUser: 'Benutzer aktivieren',
+    superAdmin: 'Super-Admin',
     searchUsers: 'Benutzer suchen...',
     userName: 'Name',
     userEmail: 'E-Mail',
@@ -1199,6 +1201,11 @@ export const deDE: TranslationObject = {
     changelog: 'Neuigkeiten',
     remindLater: 'Später erinnern',
     downloadApk: 'APK herunterladen',
+    downloading: 'Wird heruntergeladen...',
+    downloadComplete: 'Download abgeschlossen',
+    installNow: 'Jetzt installieren',
+    installFailed: 'Installation fehlgeschlagen',
+    checkFailed: 'Update-Prüfung fehlgeschlagen',
   },
 
   // ============================================================================

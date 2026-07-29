@@ -65,6 +65,7 @@ import {
   Globe,
   FolderOpen,
   MessageSquare,
+  Database,
   // Partner menu icons
   Link2,
   Percent,
@@ -110,6 +111,7 @@ const ADMIN_MENU_ITEMS: SidebarLink[] = [
   { path: '/admin/reports', labelKey: 'admin.reports', icon: BarChart3 },
   { path: '/admin/analytics', labelKey: 'admin.systemLogs', icon: ScrollText },
   { path: '/admin/settings', labelKey: 'admin.systemSettings', icon: Settings },
+  { path: '/admin/db-manager', labelKey: 'admin.dbManager', icon: Database },
 ];
 
 const PARTNER_MENU_ITEMS: SidebarLink[] = [
@@ -136,11 +138,12 @@ export function UserShell({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout, isAdmin, isSuperAdmin } = useAuthStore();
+  const { user, logout, isAdmin, isSuperAdmin, isPartner } = useAuthStore();
   const { unreadCount, notifications, markAllAsRead } = useNotificationStore();
   const [loginModalOpen, setLoginModalOpen] = useState(false);
 
   const isPrivileged = isAdmin || isSuperAdmin;
+  const canAccessAll = isPrivileged || isPartner;
 
   const currentFlag = LANGUAGE_FLAGS[language] || '🌐';
 
@@ -209,8 +212,8 @@ export function UserShell({ children }: { children: React.ReactNode }) {
               </SidebarGroupContent>
             </SidebarGroup>
 
-            {/* ── Partner section (shown for admin/super_admin) ── */}
-            {isPrivileged && (
+            {/* ── Partner section (shown for admin/super_admin/partner) ── */}
+            {canAccessAll && (
               <SidebarGroup>
                 <SidebarGroupLabel>{t('partner.title')}</SidebarGroupLabel>
                 <SidebarGroupContent>

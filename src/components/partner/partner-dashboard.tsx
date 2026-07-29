@@ -51,7 +51,7 @@ import {
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
 import { apiFetch } from '@/lib/api-fetch';
-import { API_BASE_URL } from '@/lib/client-config';
+import { APP_PUBLIC_URL } from '@/lib/client-config';
 
 // ── Animation variants ──
 const containerVariants = {
@@ -126,7 +126,7 @@ export function PartnerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [affiliateLink] = useState(`${API_BASE_URL}/ref/${user?.id || 'demo-partner-001'}`);
+  const [affiliateLink] = useState(`${APP_PUBLIC_URL}/ref/${user?.id || 'demo-partner-001'}`);
   const [copied, setCopied] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawMethod, setWithdrawMethod] = useState('');

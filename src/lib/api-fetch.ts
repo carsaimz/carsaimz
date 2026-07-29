@@ -29,8 +29,14 @@ let _needsExternalServer: boolean | null = null;
 
 /**
  * Check if the current environment needs to use an external server URL
- * for API calls. Returns true for Capacitor apps or when we've detected
- * that relative API paths return HTML instead of JSON.
+ * for API calls. Returns true ONLY for Capacitor apps.
+ *
+ * On web (Next.js server mode), relative paths like /api/... work natively
+ * because the API routes are served by the same Next.js server.
+ * There is NO need for an external URL — the code is the same server!
+ *
+ * This is the key insight: on web, /api/auth/login is handled by the same
+ * process that serves the HTML. No cross-origin, no external URL needed.
  */
 function needsExternalServer(): boolean {
   if (_needsExternalServer !== null) return _needsExternalServer;
@@ -47,11 +53,10 @@ function needsExternalServer(): boolean {
     return true;
   }
 
-  // Web mode: unknown until we try a request.
-  // If running on the same origin as the server, relative paths work.
-  // If it's a static export served from a different origin, they don't.
-  // We'll detect this dynamically via response Content-Type.
-  return false; // Will be updated after first request
+  // Web mode: relative paths ALWAYS work when Next.js server is running.
+  // No need to detect or fallback — the server serves both HTML and API.
+  _needsExternalServer = false;
+  return false;
 }
 
 /**
@@ -87,41 +92,15 @@ export async function apiFetch(
   // ── String URL ──
   const path = input;
 
-  // If we already know we need the external server, go directly
+  // Capacitor: always use external server URL (no local server available)
   if (needsExternalServer() && API_BASE_URL) {
     const externalUrl = `${API_BASE_URL.replace(/\/$/, '')}${path}`;
     return fetch(externalUrl, init);
   }
 
-  // Try relative path first (works for web with server, Electron)
-  const res = await fetch(path, init);
-
-  // If the response is JSON or an error status, it's a real API response
-  if (!isHtmlResponse(res) || !res.ok) {
-    return res;
-  }
-
-  // Response is HTML with OK status → this is the SPA fallback page,
-  // meaning the app is a static export with no local server.
-  // Cache this discovery so future calls skip the relative-path attempt.
-  console.warn('[apiFetch] Relative API path returned HTML — switching to external server URL');
-  _needsExternalServer = true;
-
-  // Retry with external server URL
-  if (API_BASE_URL) {
-    const externalUrl = `${API_BASE_URL.replace(/\/$/, '')}${path}`;
-    const retryRes = await fetch(externalUrl, init);
-
-    if (!isHtmlResponse(retryRes) || !retryRes.ok) {
-      return retryRes;
-    }
-
-    // External server also returned HTML — throw clear error
-    throw new Error(`API endpoint not available: ${path}. Both local and external URLs returned HTML.`);
-  }
-
-  // No external URL configured — can't recover
-  throw new Error(`API endpoint not available: ${path}. App is running as static export with no NEXT_PUBLIC_API_URL configured.`);
+  // Web / Electron: use relative paths — the Next.js server handles /api/* natively
+  // No external URL needed. The server serves both the HTML and the API.
+  return fetch(path, init);
 }
 
 /**

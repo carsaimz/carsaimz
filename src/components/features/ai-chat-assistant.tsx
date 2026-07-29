@@ -29,7 +29,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/language-context';
-import { buildApiUrl } from '@/lib/api-base';
+import { apiFetch } from '@/lib/api-fetch';
 
 // ──────────────────────────────────────────────
 // Types
@@ -552,7 +552,7 @@ export function AiChatAssistant() {
         content: m.content,
       }));
 
-      const response = await fetch(buildApiUrl('/api/chat'), {
+      const response = await apiFetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

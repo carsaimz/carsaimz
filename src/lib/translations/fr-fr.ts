@@ -364,7 +364,8 @@ export const frFR: TranslationObject = {
   dashboard: {
     title: 'Tableau de bord utilisateur',
     subtitle: 'Gérez votre compte et vos activités',
-    profile: 'Tableau de bord',
+    profile: 'Dashboard',
+    dashboard: 'Dashboard',
     loadError: 'Échec du chargement du tableau de bord',
     profileEdit: 'Modifier le profil',
     profileView: 'Voir le profil',
@@ -520,6 +521,7 @@ export const frFR: TranslationObject = {
     editUser: 'Modifier l\'utilisateur',
     deactivateUser: 'Désactiver l\'utilisateur',
     activateUser: 'Activer l\'utilisateur',
+    superAdmin: 'Super Administrateur',
     searchUsers: 'Rechercher des utilisateurs...',
     userName: 'Nom',
     userEmail: 'E-mail',
@@ -1199,6 +1201,11 @@ export const frFR: TranslationObject = {
     changelog: 'Nouveautés',
     remindLater: 'Me rappeler plus tard',
     downloadApk: 'Télécharger APK',
+    downloading: 'Téléchargement...',
+    downloadComplete: 'Téléchargement terminé',
+    installNow: 'Installer maintenant',
+    installFailed: 'Échec de l\'installation',
+    checkFailed: 'Échec de la vérification des mises à jour',
   },
 
   // ============================================================================

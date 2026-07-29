@@ -7,7 +7,9 @@
  * with the latest GitHub release tag. Shows a dialog when an update
  * is available with download APK button.
  *
- * Only shown on Capacitor native apps (isCapacitorApp()).
+ * On Capacitor native apps, uses the Filesystem + Browser plugins to
+ * download and install the APK directly. On web, opens the download URL.
+ *
  * Auto-checks on mount with a 24h cooldown (stored in localStorage).
  */
 
@@ -25,7 +27,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, RefreshCw, X } from 'lucide-react';
+import { Download, RefreshCw, X, Loader2, CheckCircle2 } from 'lucide-react';
 
 // ─── Constants ───
 
@@ -51,10 +53,13 @@ interface GitHubRelease {
   }>;
 }
 
+// ─── Download states ───
+
+type DownloadState = 'idle' | 'downloading' | 'complete' | 'failed';
+
 // ─── Semver comparison ───
 
 function parseSemver(version: string): [number, number, number] {
-  // Strip leading 'v' if present
   const clean = version.replace(/^v/, '');
   const parts = clean.split('.');
   return [
@@ -79,6 +84,21 @@ function findApkAsset(assets: Array<{ name: string; browser_download_url: string
   return apk?.browser_download_url || null;
 }
 
+// ─── Native download helper ───
+// Uses Capacitor Browser plugin to open the APK download URL in the system browser,
+// which triggers the native Android download manager.
+
+async function nativeDownloadApk(url: string): Promise<void> {
+  try {
+    // Try using Capacitor Browser plugin (opens in system browser for download)
+    const { Browser } = await import('@capacitor/browser');
+    await Browser.open({ url });
+  } catch {
+    // Fallback: open in current window
+    window.open(url, '_system');
+  }
+}
+
 // ─── Component ───
 
 export function AppUpdateCheck() {
@@ -91,6 +111,7 @@ export function AppUpdateCheck() {
   const [showDialog, setShowDialog] = useState(false);
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [downloadState, setDownloadState] = useState<DownloadState>('idle');
 
   // ── Check if running on native app ──
   useEffect(() => {
@@ -115,7 +136,6 @@ export function AppUpdateCheck() {
         // Check if user skipped this version
         const skippedVersion = localStorage.getItem(SKIPPED_VERSION_KEY);
         if (skippedVersion === latestTag) {
-          // User chose "remind me later" for this exact version
           setChecking(false);
           return;
         }
@@ -147,11 +167,9 @@ export function AppUpdateCheck() {
     const now = Date.now();
 
     if (lastCheck && now - parseInt(lastCheck, 10) < CHECK_COOLDOWN_MS) {
-      // Cooldown not elapsed — skip this check
       return;
     }
 
-    // Delay check slightly to avoid blocking initial render
     const timer = setTimeout(() => {
       checkForUpdates();
     }, 3000);
@@ -168,17 +186,51 @@ export function AppUpdateCheck() {
   };
 
   // ── Handle download APK ──
-  const handleDownloadApk = () => {
-    if (apkUrl) {
-      window.open(apkUrl, '_blank');
+  const handleDownloadApk = async () => {
+    if (!apkUrl) return;
+
+    setDownloadState('downloading');
+
+    try {
+      if (isCapacitorApp()) {
+        // On native app: use Capacitor Browser plugin to open download URL
+        // This triggers the Android system download manager
+        await nativeDownloadApk(apkUrl);
+        setDownloadState('complete');
+      } else {
+        // On web: open in new tab
+        window.open(apkUrl, '_blank');
+        setDownloadState('complete');
+      }
+    } catch (err) {
+      console.error('[AppUpdateCheck] Download failed:', err);
+      setDownloadState('failed');
     }
-    setShowDialog(false);
   };
 
   // ── Don't render anything if not on native app ──
   if (!isNative) {
     return null;
   }
+
+  // ── Download button text based on state ──
+  const getDownloadButtonText = () => {
+    switch (downloadState) {
+      case 'downloading': return t('update.downloading') || 'Downloading...';
+      case 'complete': return t('update.downloadComplete') || 'Download Complete';
+      case 'failed': return t('update.installFailed') || 'Installation Failed';
+      default: return t('update.downloadApk') || 'Download APK';
+    }
+  };
+
+  const getDownloadButtonIcon = () => {
+    switch (downloadState) {
+      case 'downloading': return <Loader2 className="size-4 animate-spin" />;
+      case 'complete': return <CheckCircle2 className="size-4" />;
+      case 'failed': return <RefreshCw className="size-4" />;
+      default: return <Download className="size-4" />;
+    }
+  };
 
   return (
     <>
@@ -219,7 +271,7 @@ export function AppUpdateCheck() {
               {t('update.available')}
             </DialogTitle>
             <DialogDescription>
-              A new version of Carsai Mozambique is available.
+              {t('update.available')} — v{latestVersion}
             </DialogDescription>
           </DialogHeader>
 
@@ -245,6 +297,25 @@ export function AppUpdateCheck() {
                 </div>
               </div>
             )}
+
+            {/* Download progress */}
+            {downloadState === 'downloading' && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" />
+                {t('update.downloading') || 'Downloading...'}
+              </div>
+            )}
+            {downloadState === 'complete' && (
+              <div className="flex items-center gap-2 text-sm text-emerald-600">
+                <CheckCircle2 className="size-4" />
+                {t('update.downloadComplete') || 'Download Complete'}
+              </div>
+            )}
+            {downloadState === 'failed' && (
+              <div className="flex items-center gap-2 text-sm text-destructive">
+                {t('update.installFailed') || 'Installation Failed'}
+              </div>
+            )}
           </div>
 
           <DialogFooter className="flex-col sm:flex-row gap-2">
@@ -252,9 +323,13 @@ export function AppUpdateCheck() {
               {t('update.remindLater')}
             </Button>
             {apkUrl && (
-              <Button onClick={handleDownloadApk} className="gap-2">
-                <Download className="size-4" />
-                {t('update.downloadApk')}
+              <Button
+                onClick={handleDownloadApk}
+                className="gap-2"
+                disabled={downloadState === 'downloading'}
+              >
+                {getDownloadButtonIcon()}
+                {getDownloadButtonText()}
               </Button>
             )}
           </DialogFooter>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/contexts/language-context';
-import { buildApiUrl } from '@/lib/api-base';
+import { apiFetch } from '@/lib/api-fetch';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -86,7 +86,7 @@ export default function DbManagerPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(buildApiUrl('/api/admin/db-manager'));
+      const res = await apiFetch('/api/admin/db-manager');
       const json = await res.json();
       if (json.success) {
         setCollections(json.data);
@@ -105,8 +105,8 @@ export default function DbManagerPage() {
     setDocLoading(true);
     setError(null);
     try {
-      const res = await fetch(
-        buildApiUrl(`/api/admin/db-manager?collection=${encodeURIComponent(colName)}&page=${pageNum}&limit=20`)
+      const res = await apiFetch(
+        `/api/admin/db-manager?collection=${encodeURIComponent(colName)}&page=${pageNum}&limit=20`
       );
       const json = await res.json();
       if (json.success) {
@@ -128,8 +128,8 @@ export default function DbManagerPage() {
   const fetchDocument = useCallback(async (colName: string, docId: string) => {
     setDocLoading(true);
     try {
-      const res = await fetch(
-        buildApiUrl(`/api/admin/db-manager?collection=${encodeURIComponent(colName)}&docId=${encodeURIComponent(docId)}`)
+      const res = await apiFetch(
+        `/api/admin/db-manager?collection=${encodeURIComponent(colName)}&docId=${encodeURIComponent(docId)}`
       );
       const json = await res.json();
       if (json.success) {
@@ -145,8 +145,8 @@ export default function DbManagerPage() {
   // ── Delete document ──
   const deleteDocument = useCallback(async (colName: string, docId: string) => {
     try {
-      const res = await fetch(
-        buildApiUrl(`/api/admin/db-manager?collection=${encodeURIComponent(colName)}&docId=${encodeURIComponent(docId)}`),
+      const res = await apiFetch(
+        `/api/admin/db-manager?collection=${encodeURIComponent(colName)}&docId=${encodeURIComponent(docId)}`,
         { method: 'DELETE' }
       );
       const json = await res.json();
@@ -167,8 +167,8 @@ export default function DbManagerPage() {
   // ── Export collection as JSON ──
   const exportCollection = useCallback(async (colName: string) => {
     try {
-      const res = await fetch(
-        buildApiUrl(`/api/admin/db-manager?collection=${encodeURIComponent(colName)}&limit=10000`)
+      const res = await apiFetch(
+        `/api/admin/db-manager?collection=${encodeURIComponent(colName)}&limit=10000`
       );
       const json = await res.json();
       if (json.success) {

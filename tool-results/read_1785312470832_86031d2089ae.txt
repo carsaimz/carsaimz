@@ -1,0 +1,420 @@
+   801→   801→    faq22A: 'O programa de parceiros Carsai oferece múltiplos benefícios: comissões de 10-20% sobre cada referência convertida, acesso a materiais de marketing exclusivos, dashboard com estatísticas detalhadas de cliques e conversões, suporte dedicado para parceiros, acesso antecipado a novos serviços e funcionalidades, e certificado de parceiro oficial Carsai. É uma excelente forma de monetizar a sua rede de contactos.',
+   802→   802→    faq23Q: 'Como são calculadas as comissões de afiliados?',
+   803→   803→    faq23A: 'As comissões são calculadas como percentagem do valor do serviço contratado pelo cliente referido: 10% para serviços standard (websites, hosting), 15% para serviços premium (apps mobile, cloud), e 20% para serviços enterprise (sistemas complexos, consultoria). O cliente deve completar o pagamento para que a comissão seja validada. Não há limite máximo de comissões.',
+   804→   804→    faq24Q: 'Quando recebo os pagamentos de comissão?',
+   805→   805→    faq24A: 'As comissões são processadas mensalmente. Os pagamentos são efectuados no último dia útil de cada mês, após validação de todas as referências. Comissões mínimas de MT 500 podem ser sacadas; valores menores acumulam-se até atingir o mínimo. Recebemos pagamentos via M-Pesa ou transferência bancária, conforme a preferência do parceiro.',
+   806→   806→    faq25Q: 'A hospedagem web da Carsai é realmente gratuita? Como funciona?',
+   807→   807→    faq25A: 'Sim, a Carsai oferece hospedagem web gratuita através da nossa parceria com a iFastNet/Byet! Funciona assim: quando desenvolvemos o seu website, incluímos hospedagem gratuita sem custos mensais. Esta hospedagem inclui espaço em disco, bandwidth e suporte técnico. Os serviços de desenvolvimento web, design e outras soluções digitais são cobrados conforme a complexidade do projecto. A hospedagem gratuita é apenas para websites desenvolvidos pela Carsai.',
+   808→   808→    faq26Q: 'Onde está localizada a Carsai?',
+   809→   809→    faq26A: 'A Carsai Mozambique opera online desde Montepuez, Cabo Delgado, Mozambique. Não temos sede física — toda a nossa operação é digital, permitindo-nos servir clientes em qualquer parte de Mozambique e do mundo. Esta abordagem online permite maior eficiência, custos reduzidos e disponibilidade contínua para os nossos clientes.',
+   810→   810→    faq27Q: 'Quem está por detrás da Carsai?',
+   811→   811→    faq27A: 'A Carsai Mozambique foi fundada e é liderada por Carimo Saide Mpinda, CEO e fundador, que gere todas as áreas da empresa — desenvolvimento, design, suporte e estratégia. O desenvolvimento técnico é realizado por CarsaiDev (carsaideveloper@gmail.com). A nossa equipa é pequena mas altamente competente, focada em entregar qualidade e transformação digital real para Mozambique.',
+   812→   812→    faq28Q: 'Que tecnologias utilizam?',
+   813→   813→    faq28A: 'Utilizamos tecnologias modernas e de referência internacional: Next.js, React, TypeScript para frontend e backend, Firebase Firestore e Auth para dados e autenticação para bases de dados, Tailwind CSS para design, Docker e cloud providers (AWS, GCP) para infraestrutura, e integração com APIs de IA para funcionalidades inteligentes. Priorizamos segurança, performance e manutenibilidade.',
+   814→   814→    faq29Q: 'Os meus dados estão seguros com a Carsai?',
+   815→   815→    faq29A: 'Sim, a segurança dos dados é prioridade máxima. Implementamos: criptografia de dados (SSL/TLS para comunicações, hashing para passwords), conformidade com a legislação moçambicana de protecção de dados, backups automáticos e redundância, monitorização contínua de segurança, e política de privacidade transparente. Nunca partilhamos dados com terceiros sem consentimento explícito.',
+   816→   816→    faq30Q: 'Posso solicitar um projecto customizado?',
+   817→   817→    faq30A: 'Sim, a Carsai especializa-se em projectos customizados! Desde sistemas de gestão empresarial, plataformas educacionais, e-commerce, aplicações mobile, integrações com APIs, até soluções de IA. O processo começa com uma consulta gratuita onde discutimos as suas necessidades, seguida de uma proposta detalhada com cronograma, custos e metodologia.',
+   818→   818→    faq31Q: 'Como posso acompanhar o progresso do meu projecto?',
+   819→   819→    faq31A: 'Oferecemos múltiplas formas de acompanhar o progresso: dashboard do projecto na plataforma Carsai com actualizações em tempo real, reuniões de acompanhamento semanais via WhatsApp ou videochamada, relatórios de progresso detalhados enviados por e-mail, e acesso ao repositório do projecto (GitHub) para clientes técnicos. Garantimos transparência total em todas as fases.',
+   820→   820→    faq32Q: 'Como é que a Carsai protege os meus dados e privacidade?',
+   821→   821→    faq32A: 'A segurança dos dados é nossa prioridade máxima. Utilizamos criptografia SSL/TLS para todas as comunicações, armazenamento seguro com controle de acesso baseado em funções (RBAC), backups regulares e automáticos, e conformidade com as melhores práticas de protecção de dados. Nunca compartilhamos informações pessoais com terceiros sem consentimento explícito.',
+   822→   822→    faq33Q: 'Qual é a política de reembolso e cancelamento?',
+   823→   823→    faq33A: 'Oferecemos uma política transparente: cancelamentos antes do início do projecto são totalmente reembolsáveis. Durante o desenvolvimento, o reembolso é calculado proporcionalmente ao trabalho não realizado. Projetos concluídos não são reembolsáveis, mas garantimos satisfação com correcções gratuitas por 30 dias após entrega.',
+   824→   824→    faq34Q: 'Qual é o tempo típico de entrega de um projecto?',
+   825→   825→    faq34A: 'Os tempos de entrega variam por tipo de projecto: websites simples (1-2 semanas), websites com funcionalidades avançadas (3-6 semanas), aplicações mobile (4-8 semanas), sistemas empresariais (6-12 semanas). Cada projecto inclui um cronograma detalhado aprovado pelo cliente antes do início.',
+   826→   826→    faq35Q: 'Como posso solicitar um orçamento personalizado?',
+   827→   827→    faq35A: 'Pode solicitar um orçamento personalizado através do nosso formulário de contacto na plataforma, por e-mail (carsaimozambique@gmail.com), ou via WhatsApp (847545020). Descreva o seu projecto e receba uma proposta detalhada em 24-48 horas, incluindo preço, timeline e especificações técnicas.',
+   828→   828→    faq36Q: 'A plataforma Carsai tem funcionalidades de acessibilidade?',
+   829→   829→    faq36A: 'Sim, a nossa plataforma segue as directrizes WCAG 2.1 para acessibilidade: suporte a leitores de screen, navegação por teclado, contraste adequado, texto alternativo em imagens, e modo de alto contraste. Continuamos a melhorar a acessibilidade com base no feedback dos utilizadores.',
+   830→   830→    faq37Q: 'Existe uma aplicação mobile da Carsai?',
+   831→   831→    faq37A: 'Actualmente, a Carsai opera como plataforma web responsiva, optimizada para todos os dispositivos móveis. Uma aplicação mobile nativa está em desenvolvimento e será lançada em breve, oferecendo funcionalidades offline e notificações push.',
+   832→   832→    faq38Q: 'Como posso eliminar a minha conta?',
+   833→   833→    faq38A: 'Para eliminar a sua conta, aceda às Configurações do seu perfil e selecione "Eliminar Conta". Os seus dados serão removidos permanentemente dentro de 30 dias, incluindo projectos, mensagens e informações pessoais. Antes da eliminação, recomendamos exportar qualquer dados importante.',
+   834→   834→    faq39Q: 'Como posso gerir as cookies do site?',
+   835→   835→    faq39A: 'Pode gerir as cookies através das configurações do seu navegador ou da nossa Política de Cookies. Oferecemos controle granular: cookies essenciais (necessárias para funcionamento), cookies de preferências (idioma, tema), e cookies analíticos (opcionais, para melhorar o serviço).',
+   836→   836→    faq40Q: 'A Carsai serve clientes internacionais?',
+   837→   837→    faq40A: 'Sim! Embora a nossa base seja em Mozambique, servimos clientes em todo o mundo. Oferecemos comunicação em 7 idiomas (Português, English, Français, Español, 中文, Deutsch), suporte remoto via videoconferência, e adaptação cultural para mercados diferentes.',
+   838→   838→    faq41Q: 'Quais são os requisitos para se tornar parceiro?',
+   839→   839→    faq41A: 'Para se tornar parceiro da Carsai: deve ter experiência relevante em tecnologia ou negócios, completar o formulário de candidatura online, passar por uma entrevista de avaliação, e assinar o acordo de parceria. Parceiros beneficia-se de comissões por referências, acesso a ferramentas exclusivas, e suporte prioritário.',
+   840→   840→  },
+   841→   841→
+   842→   842→  // ============================================================================
+   843→   843→  // About Section
+   844→   844→  // ============================================================================
+   845→   845→  about: {
+   846→   846→    title: 'Sobre Nós',
+   847→   847→    description: 'Conheça a equipa Carsai Mozambique',
+   848→   848→    subtitle: 'A nossa história e missão',
+   849→   849→    mission: 'Missão',
+   850→   850→    missionText: 'Democratizar a tecnologia em Mozambique, oferecendo soluções digitais acessíveis e de qualidade para empresas de todas as dimensões.',
+   851→   851→    vision: 'Visão',
+   852→   852→    visionText: 'Ser a principal plataforma tecnológica de Mozambique, impulsionando a transformação digital e a inclusão económica.',
+   853→   853→    values: 'Valores',
+   854→   854→    valueInnovation: 'Inovação',
+   855→   855→    valueInnovationDesc: 'Busca constante de soluções criativas e tecnológicas',
+   856→   856→    valueIntegrity: 'Integridade',
+   857→   857→    valueIntegrityDesc: 'Transparência e honestidade em todas as interacções',
+   858→   858→    valueExcellence: 'Excelência',
+   859→   859→    valueExcellenceDesc: 'Compromisso com a qualidade e melhoria contínua',
+   860→   860→    valueCommunity: 'Comunidade',
+   861→   861→    valueCommunityDesc: 'Impacto positivo na sociedade moçambicana',
+   862→   862→    team: 'Equipa',
+   863→   863→    teamTitle: 'Nossa Equipa',
+   864→   864→    teamSubtitle: 'Profissionais dedicados à transformação digital',
+   865→   865→    teamMemberCeo: 'Carimo Saide Mpinda',
+   866→   866→    teamMemberCeoRole: 'CEO & Fundador',
+   867→   867→    teamMemberCeoNote: 'Gere todas as áreas da empresa',
+   868→   868→    statFounded: 'Fundado',
+   869→   869→    statTeamSize: 'Membro',
+   870→   870→    statLocation: 'Localização',
+   871→   871→    statLocationValue: 'Montepuez',
+   872→   872→    statProjects: 'Projectos',
+   873→   873→    history: 'História',
+   874→   874→    historyText: 'Fundada em Mozambique com o propósito de transformar o panorama tecnológico do país.',
+   875→   875→    partners: 'Parceiros',
+   876→   876→    awards: 'Prémios',
+   877→   877→    certifications: 'Certificações',
+   878→   878→    contactTitle: 'Contacte-nos',
+   879→   879→    contactInfo: 'M-Pesa: 847545020 · Tel: 874512581, 84246463, 835020143',
+   880→   880→  },
+   881→   881→
+   882→   882→  // ============================================================================
+   883→   883→  // Accessibility & Misc
+   884→   884→  // ============================================================================
+   885→   885→  accessibility: {
+   886→   886→    skipToMain: 'Saltar para o conteúdo principal',
+   887→   887→    darkMode: 'Modo escuro',
+   888→   888→    lightMode: 'Modo claro',
+   889→   889→    highContrast: 'Contraste elevado',
+   890→   890→    fontSize: 'Tamanho do texto',
+   891→   891→    languageSwitch: 'Alterar idioma',
+   892→   892→    screenReader: 'Optimizado para leitores de tela',
+   893→   893→    keyboardNav: 'Navegação por teclado',
+   894→   894→  },
+   895→   895→
+   896→   896→  // ============================================================================
+   897→   897→  // Notification Section
+   898→   898→  // ============================================================================
+   899→   899→  notif: {
+   900→   900→    title: 'Notificações',
+   901→   901→    markAllRead: 'Marcar todas como lidas',
+   902→   902→    noNotifications: 'Nenhuma notificação ainda',
+   903→   903→    newNotification: 'Nova notificação',
+   904→   904→    pollInterval: 'Verificando novas notificações...',
+   905→   905→  },
+   906→   906→
+   907→   907→  // ============================================================================
+   908→   908→  // Global Search
+   909→   909→  // ============================================================================
+   910→   910→  search: {
+   911→   911→    title: 'Pesquisar',
+   912→   912→    placeholder: 'Pesquisar serviços, projectos, artigos...',
+   913→   913→    noResults: 'Nenhum resultado encontrado',
+   914→   914→    shortcut: 'Ctrl+K',
+   915→   915→    services: 'Serviços',
+   916→   916→    projects: 'Projectos',
+   917→   917→    blog: 'Artigos do Blog',
+   918→   918→    forum: 'Tópicos do Fórum',
+   919→   919→    openSearch: 'Abrir pesquisa',
+   920→   920→  },
+   921→   921→
+   922→   922→  // ============================================================================
+   923→   923→  // AI Chat Assistant
+   924→   924→  // ============================================================================
+   925→   925→  chat: {
+   926→   926→    title: 'Assistente Carsai',
+   927→   927→    subtitle: 'Pergunte-me qualquer coisa sobre os nossos serviços',
+   928→   928→    placeholder: 'Escreva a sua mensagem...',
+   929→   929→    sendMessage: 'Enviar',
+   930→   930→    greeting: 'Olá! Sou o assistente Carsai. Como posso ajudar hoje? Contacte-nos: carsaimozambique@gmail.com | WhatsApp: wa.me/258847545020',
+   931→   931→    quickQuestion1: 'Que serviços oferece a Carsai?',
+   932→   932→    quickQuestion2: 'Como posso pedir uma cotação?',
+   933→   933→    quickQuestion3: 'Que métodos de pagamento estão disponíveis?',
+   934→   934→    quickQuestion4: 'Como tornar-se parceiro?',
+   935→   935→    thinking: 'A pensar...',
+   936→   936→    error: 'Lamento, não consegui processar o seu pedido. Por favor, tente novamente.',
+   937→   937→    close: 'Fechar chat',
+   938→   938→    open: 'Abrir assistente',
+   939→   939→    newMessage: 'Nova mensagem do assistente',
+   940→   940→    poweredBy: 'Powered by Carsai AI · Conectado ao banco de dados · Memória local por sessão',
+   941→   941→    dbConnected: 'DB Conectado',
+   942→   942→    messagesInMemory: 'mensagens na memória',
+   943→   943→    frequentQuestions: 'Perguntas frequentes:',
+   944→   944→  },
+   945→   945→
+   946→   946→  // ============================================================================
+   947→   947→  // Newsletter (Enhanced)
+   948→   948→  // ============================================================================
+   949→   949→  newsletter: {
+   950→   950→    title: 'Newsletter',
+   951→   951→    subtitle: 'Fique actualizado com as últimas notícias da Carsai',
+   952→   952→    emailPlaceholder: 'Introduza o seu endereço de e-mail',
+   953→   953→    subscribe: 'Subscrever',
+   954→   954→    subscribeSuccess: 'Obrigado! Subscrição realizada com sucesso.',
+   955→   955→    subscribeError: 'Algo correu mal. Por favor, tente novamente.',
+   956→   956→    emailInvalid: 'Por favor, introduza um e-mail válido.',
+   957→   957→    emailRequired: 'O e-mail é obrigatório.',
+   958→   958→    alreadySubscribed: 'Este e-mail já está subscrito.',
+   959→   959→    privacyNote: 'Respeitamos a sua privacidade e nunca partilharemos o seu e-mail.',
+   960→   960→  },
+   961→   961→
+   962→   962→  // ============================================================================
+   963→   963→  // Contact Form (Enhanced)
+   964→   964→  // ============================================================================
+   965→   965→  contactForm: {
+   966→   966→    submitSuccess: 'A sua mensagem foi enviada com sucesso! Responderemos em breve.',
+   967→   967→    submitError: 'Falha ao enviar a mensagem. Por favor, tente novamente.',
+   968→   968→    nameRequired: 'O nome é obrigatório.',
+   969→   969→    emailRequired: 'O e-mail é obrigatório.',
+   970→   970→    emailInvalid: 'Por favor, introduza um e-mail válido.',
+   971→   971→    subjectRequired: 'O assunto é obrigatório.',
+   972→   972→    messageRequired: 'A mensagem é obrigatória.',
+   973→   973→    messageMinLength: 'A mensagem deve ter pelo menos 10 caracteres.',
+   974→   974→    submitting: 'A enviar...',
+   975→   975→  },
+   976→   976→
+   977→   977→  // ============================================================================
+   978→   978→  // Stats Counter
+   979→   979→  // ============================================================================
+   980→   980→  stats: {
+   981→   981→    projects: 'Projectos Concluídos',
+   982→   982→    clients: 'Clientes Satisfeitos',
+   983→   983→    years: 'Anos de Experiência',
+   984→   984→    support: 'Suporte Disponível',
+   985→   985→  },
+   986→   986→
+   987→   987→  // ============================================================================
+   988→   988→  // Legal Pages
+   989→   989→  // ============================================================================
+   990→   990→  legal: {
+   991→   991→    terms: {
+   992→   992→      pageTitle: 'Termos e Condições',
+   993→   993→      pageSubtitle: 'Carsai Mozambique — Regulamento de utilização dos nossos serviços',
+   994→   994→      lastUpdate: 'Última actualização: Janeiro 2026',
+   995→   995→      seeAlso: 'Consulte também:',
+   996→   996→      seeAlsoPrivacy: 'Política de Privacidade',
+   997→   997→      seeAlsoCookies: 'Política de Cookies',
+   998→   998→      sections: {
+   999→   999→        general: {
+  1000→  1000→          title: 'Termos Gerais',
+  1001→  1001→          content: 'Estes Termos e Condições ("Termos") regulam a utilização dos serviços tecnológicos fornecidos pela Carsai Mozambique Lda., incluindo o nosso website, plataforma digital, aplicações mobile, soluções cloud e serviços de inteligência artificial. Ao aceder ou utilizar qualquer dos nossos serviços, você aceita estes Termos na sua totalidade. Se não concorda com qualquer parte dos Termos, não deverá utilizar os nossos serviços. A Carsai Mozambique está registada em Montepuez, Cabo Delgado, Mozambique, e opera conforme a legislação comercial e tecnológica moçambicana. Estes Termos constituem um contrato legal entre você ("Utilizador") e a Carsai Mozambique Lda. ("Empresa").',
+  1002→  1002→        },
+  1003→  1003→        services: {
+  1004→  1004→          title: 'Serviços Fornecidos',
+  1005→  1005→          content: 'A Carsai Mozambique fornece serviços de transformação digital incluindo: desenvolvimento de websites e aplicações web, desenvolvimento de aplicações mobile para iOS e Android, soluções de infraestrutura cloud e hosting, serviços de inteligência artificial e automação, consultoria tecnológica e estratégia digital, e manutenção e suporte técnico continuado. Os serviços específicos fornecidos a cada utilizador são definidos no contrato de serviço ou proposta comercial acordada. A empresa reserva-se o direito de modificar, suspender ou descontinuar qualquer serviço com notificação prévia de 30 dias, excepto em casos de força maior ou emergência técnica.',
+  1006→  1006→        },
+  1007→  1007→        obligations: {
+  1008→  1008→          title: 'Obrigações do Utilizador',
+  1009→  1009→          content: 'Como utilizador dos nossos serviços, você compromete-se a: fornecer informações verdadeiras e completas durante o registo e utilização da plataforma, utilizar os serviços apenas para fins legais e conforme a legislação moçambicana, não tentar acessar áreas restritas do sistema sem autorização, não realizar actividades que possam danificar, desabilitar ou sobrecarregar os servidores da Carsai, proteger as suas credenciais de acesso e não partilhá-las com terceiros, cumprir com todas as políticas de pagamento e cobrança acordadas, e comunicar imediatamente qualquer utilização não autorizada dos seus dados de acesso.',
+  1010→  1010→        },
+  1011→  1011→        intellectualProperty: {
+  1012→  1012→          title: 'Propriedade Intelectual',
+  1013→  1013→          content: 'Todos os conteúdos, design, código, gráficos, logos e materiais presentes nos serviços da Carsai Mozambique são propriedade da empresa ou dos seus licenciadores, protegidos pela legislação de propriedade intelectual moçambicana e internacional. O nome "Carsai", o logo da empresa, e os designs da plataforma são marcas registadas. O código-fonte desenvolvido pela Carsai para os seus serviços internos é propriedade exclusiva da empresa. Para trabalhos desenvolidos especificamente para clientes, os direitos de propriedade intelectual são definidos no contrato de serviço específico, sendo que a Carsai reserva-se o direito de utilizar técnicas e metodologias gerais desenvolidas durante o projecto.',
+  1014→  1014→        },
+  1015→  1015→        liability: {
+  1016→  1016→          title: 'Limitações de Responsabilidade',
+  1017→  1017→          content: 'A Carsai Mozambique não será responsável por: perdas indirectas, consequenciais ou incidentais resultantes da utilização dos serviços, interrupções de serviço causadas por factores externos (falhas de internet, problemas de fornecedores de infraestrutura), danos resultantes de utilização não autorizada da plataforma, perdas resultantes de falhas de pagamento do utilizador, ou qualquer impossibilidade de utilização dos serviços por causas fora do controle da empresa. A responsabilidade total da Carsai em qualquer circunstância não excederá o valor dos serviços pagos pelo utilizador nos 12 meses anteriores. Esta limitação aplica-se conforme a legislação comercial moçambicana.',
+  1018→  1018→        },
+  1019→  1019→        termination: {
+  1020→  1020→          title: 'Rescisão',
+  1021→  1021→          content: 'A Carsai Mozambique pode rescindir o contrato com qualquer utilizador que viole estes Termos, com notificação prévia de 15 dias para violações menores, ou imediatamente para violações graves incluindo actividades fraudulentas, acesso não autorizado, ou violação de propriedade intelectual. O utilizador pode rescindir o contrato a qualquer momento, com notificação prévia de 30 dias para serviços com contrato de duração. Após rescisão, a Carsai manterá os dados do utilizador por um período de 90 dias, após o qual serão eliminados permanentemente, excepto quando exigido por lei. Taxas já pagas não são reembolsáveis excepto conforme condições específicas do contrato de serviço.',
+  1022→  1022→        },
+  1023→  1023→        law: {
+  1024→  1024→          title: 'Lei Aplicável e Jurisdição',
+  1025→  1025→          content: 'Estes Termos são regidos e interpretados conforme a legislação da República de Mozambique, incluindo o Código Comercial, legislação de proteção de dados, e regulamentos tecnológicos aplicáveis. Quaisquer disputas relacionadas com estes Termos serão resolvidas preferencialmente através de negociação directa entre as partes. Se a negociação não for possível dentro de 60 dias, a disputa será submetida à arbitragem conforme as normas do Centro de Arbitragem de Mozambique, ou aos tribunais da cidade de Montepuez, Cabo Delgado, Mozambique, como jurisdição exclusiva. As partes reconhecem a competência exclusiva dos tribunais moçambicanos para resolver conflitos decorrentes destes Termos.',
+  1026→  1026→        },
+  1027→  1027→      },
+  1028→  1028→    },
+  1029→  1029→    privacy: {
+  1030→  1030→      pageTitle: 'Política de Privacidade',
+  1031→  1031→      pageSubtitle: 'Carsai Mozambique — Proteger os seus dados é nossa prioridade',
+  1032→  1032→      lastUpdate: 'Última actualização: Janeiro 2026',
+  1033→  1033→      seeAlso: 'Consulte também:',
+  1034→  1034→      seeAlsoTerms: 'Termos e Condições',
+  1035→  1035→      seeAlsoCookies: 'Política de Cookies',
+  1036→  1036→      sections: {
+  1037→  1037→        introduction: {
+  1038→  1038→          title: 'Introdução',
+  1039→  1039→          content: 'A Carsai Mozambique Lda. ("Carsai", "nós", "a empresa") respeita a privacidade de todos os utilizadores dos nossos serviços digitais. Esta Política de Privacidade descreve como recolhemos, utilizamos, armazenamos e protegemos os seus dados pessoais quando utiliza a nossa plataforma tecnológica, website e serviços relacionados. A nossa sede está localizada em Montepuez, Cabo Delgado, Mozambique, e estamos registados conforme a legislação moçambicana. Esta política aplica-se a todos os serviços fornecidos pela Carsai, incluindo desenvolvimento web, aplicações mobile, soluções cloud e serviços de inteligência artificial.',
+  1040→  1040→        },
+  1041→  1041→        dataCollection: {
+  1042→  1042→          title: 'Recolha de Dados',
+  1043→  1043→          content: 'Recolhemos dados pessoais que você nos fornecer directamente quando se regista na nossa plataforma, submete formulários de contacto, solicita serviços ou comunica com nossa equipa. Estes dados podem incluir: nome completo, endereço de email, número de telefone, endereço físico, informações da empresa, dados de pagamento e preferências de comunicação. Também recolhemos dados de utilização automaticamente quando visita nosso website, incluindo: endereço IP, tipo de browser, páginas visitadas, tempo de visita, dados de cookies e informações sobre o dispositivo utilizado. Não recolhemos dados sensíveis como informações de saúde, orientação política ou dados biométricos sem o seu consentimento explícito.',
+  1044→  1044→        },
+  1045→  1045→        dataUsage: {
+  1046→  1046→          title: 'Utilização dos Dados',
+  1047→  1047→          content: 'Utilizamos os seus dados pessoais para fornecer e melhorar os nossos serviços tecnológicos, processar transações e pagamentos, comunicar com você sobre serviços, actualizações e promoções, personalizar a sua experiência na plataforma, realizar análises de mercado e estatísticas internas, cumprir obrigações legais e regulatórias moçambicanas, e prevenir fraudes e actividades ilegais. Todos os dados são processados de forma legítima, com base no consentimento, execução de contrato ou interesse legítimo da empresa, conforme a legislação de proteção de dados aplicável em Mozambique.',
+  1048→  1048→        },
+  1049→  1049→        cookiesAndTracking: {
+  1050→  1050→          title: 'Cookies e Tecnologias de Rastreamento',
+  1051→  1051→          content: 'Utilizamos cookies e tecnologias similares para melhorar a funcionalidade do nosso website e personalizar a sua experiência. Os cookies que utilizamos incluem: cookies essenciais para o funcionamento básico do site, cookies de performance para analisar como os utilizadores interagem com o site, cookies de funcionalidade para recordar as suas preferências, e cookies de marketing para apresentar conteúdo relevante. Você pode gerir as suas preferências de cookies através das configurações do browser. Para mais detalhes, consulte nossa Política de Cookies separada disponível em /cookies.',
+  1052→  1052→        },
+  1053→  1053→        thirdPartySharing: {
+  1054→  1054→          title: 'Partilha com Terceiros',
+  1055→  1055→          content: 'Não vendemos, alugamos ou comercializamos os seus dados pessoais a terceiros. Podemos partilhar dados limitados com: prestadores de serviços que nos assistem na operação da plataforma (hosting, processamento de pagamentos via M-Pesa, análise de dados), parceiros de afiliados conforme o nosso programa de parcerias, autoridades governamentais quando exigido por lei ou ordem judicial moçambicana, e outros entidades com o seu consentimento explícito. Todos os prestadores de serviços estão vinculados por contratos de confidencialidade e proteção de dados.',
+  1056→  1056→        },
+  1057→  1057→        userRights: {
+  1058→  1058→          title: 'Direitos do Utilizador',
+  1059→  1059→          content: 'Conforme a legislação moçambicana de proteção de dados, você tem os seguintes direitos: direito de acesso aos seus dados pessoais, direito de rectificação de dados incorrectos, direito de eliminação dos seus dados ("direito ao oblivio"), direito de portabilidade dos seus dados, direito de oposição ao processamento, direito de retirar o consentimento a qualquer momento. Para exercer qualquer destes direitos, contacte-nos através de suporte.carsaimz@gmail.com ou via WhatsApp em 847545020. Responderemos dentro de 30 dias conforme a legislação aplicável.',
+  1060→  1060→        },
+  1061→  1061→        contact: {
+  1062→  1062→          title: 'Contacto e Actualizações',
+  1063→  1063→          content: 'Esta Política de Privacidade foi actualizada pela última vez em Janeiro de 2026. Podemos actualizar esta política periodicamente para reflectir alterações nos nossos serviços ou na legislação. Notificaremos os utilizadores sobre alterações significativas via email ou através do nosso website. Para questões sobre privacidade, contacte: Email: suporte.carsaimz@gmail.com | Telefone: 847545020 / 874512581 / 84246463 / 835020143 | Localização: Montepuez, Cabo Delgado, Mozambique (operação online). O responsável pela proteção de dados é Carimo Saide Mpinda, CEO & Fundador da Carsai Mozambique.',
+  1064→  1064→        },
+  1065→  1065→      },
+  1066→  1066→    },
+  1067→  1067→    cookies: {
+  1068→  1068→      pageTitle: 'Política de Cookies',
+  1069→  1069→      pageSubtitle: 'Carsai Mozambique — Transparência sobre a utilização de cookies',
+  1070→  1070→      lastUpdate: 'Última actualização: Janeiro 2026',
+  1071→  1071→      seeAlso: 'Consulte também:',
+  1072→  1072→      seeAlsoPrivacy: 'Política de Privacidade',
+  1073→  1073→      seeAlsoTerms: 'Termos e Condições',
+  1074→  1074→      sections: {
+  1075→  1075→        whatAreCookies: {
+  1076→  1076→          title: 'O que são Cookies',
+  1077→  1077→          content: 'Cookies são pequenos arquivos de texto que são armazenados no seu dispositivo (computador, tablet ou smartphone) quando você visita um website. Eles permitem que o website reconheça o seu dispositivo e armazene informações sobre as suas preferências ou ações anteriores. Os cookies são uma tecnologia padrão utilizada por quase todos os websites modernos e são essenciais para o funcionamento de muitas funcionalidades web. Existem diferentes tipos de cookies: cookies de sessão (eliminados quando você fecha o browser), cookies persistentes (mantidos entre sessões), cookies primários (definidos pelo website que você está visitando), e cookies de terceiros (definidos por outros serviços integrados no website).',
+  1078→  1078→        },
+  1079→  1079→        types: {
+  1080→  1080→          title: 'Tipos de Cookies que Utilizamos',
+  1081→  1081→          content: 'Utilizamos vários tipos de cookies na plataforma Carsai Mozambique: Cookies Essenciais — necessários para o funcionamento básico do site, incluindo autenticação, segurança e preferências de idioma. Sem estes cookies, o site não funciona correctamente. Cookies de Performance — recolhem informações sobre como os utilizadores utilizam o site, como páginas mais visitadas e tempo de navegação. Utilizamos Google Analytics para estas análises, ajudando-nos a melhorar a experiência do utilizador. Cookies de Funcionalidade — permitem que o site recorde escolhas que você faz (como idioma seleccionado, região, ou configurações de tema) e proporcionam funcionalidades personalizadas. Cookies de Marketing — utilizados para apresentar conteúdo relevante e limitar a frequência de anúncios. Estes cookies podem ser definidos por nós ou por nossos parceiros de advertising.',
+  1082→  1082→        },
+  1083→  1083→        howWeUse: {
+  1084→  1084→          title: 'Como Utilizamos os Cookies',
+  1085→  1085→          content: 'Utilizamos cookies para: garantir que o website funciona correctamente e de forma segura, recordar as suas preferências de idioma e configurações de tema (claro/escuro), analisar o tráfego e comportamento dos utilizadores para melhorar os nossos serviços, personalizar o conteúdo e funcionalidades apresentados, processar transações de pagamento de forma segura via M-Pesa e outros métodos, manter a sua sessão de autenticação ativa durante a navegação, fornecer funcionalidades de chat e assistência AI com memória de sessão, e medir a eficácia das nossas campanhas de marketing e comunicações. Todos os dados recolhidos através de cookies são processados de forma anónima ou pseudonimizada, e nunca são utilizados para identificar directamente um indivíduo sem o seu consentimento.',
+  1086→  1086→        },
+  1087→  1087→        management: {
+  1088→  1088→          title: 'Gestão de Cookies',
+  1089→  1089→          content: 'Você pode gerir e controlar os cookies de várias formas: Configurações do Browser — maioria dos browsers permitem que você veja, elimine e bloque cookies nas configurações. Consulte a documentação do seu browser para instruções específicas. Opt-out de Google Analytics — pode instalar o plugin de opt-out do Google Analytics para impedir a recolha de dados. Consentimento na Platforma — quando visita o nosso site pela primeira vez, apresentamos um banner de consentimento de cookies onde pode aceitar ou rejeitar categorias específicas. Configurações de Conta — utilizadores registados podem ajustar as preferências de cookies nas configurações da sua conta. Note-se que a eliminação de cookies essenciais pode afectar o funcionamento do site. Cookies de funcionalidade e marketing podem ser rejeitados sem impacto significativo.',
+  1090→  1090→        },
+  1091→  1091→        thirdParty: {
+  1092→  1092→          title: 'Cookies de Terceiros',
+  1093→  1093→          content: 'O nosso website integra serviços de terceiros que podem definir os seus próprios cookies: Google Analytics — para análise de tráfego e comportamento dos utilizadores. Google define cookies _ga e _gid para estas finalidades. M-Pesa / Vodacom — para processamento de pagamentos seguros. Estes serviços podem definir cookies temporários durante o processo de pagamento. Cloudflare — para segurança e performance do website, incluindo protecção contra ataques DDoS e optimização de conteúdo. Social Media Plugins — Facebook, Twitter, LinkedIn e Instagram podem definir cookies quando você utiliza funcionalidades de partilha social presentes no nosso site. Chat AI Services — serviços de assistência AI podem manter cookies de sessão para preservar o contexto da conversa.',
+  1094→  1094→        },
+  1095→  1095→        updates: {
+  1096→  1096→          title: 'Actualizações da Política',
+  1097→  1097→          content: 'Esta Política de Cookies foi actualizada pela última vez em Janeiro de 2026. A Carsai Mozambique revisa periodicamente esta política para garantir que reflecte as práticas actuais e a legislação relevante. Alterações significativas serão comunicadas através do nosso website e por email quando aplicável. A utilização continuada dos nossos serviços após alterações na política constitui aceitação dos novos termos. Para questões sobre cookies, contacte: Email: suporte.carsaimz@gmail.com | Telefone: 847545020 / 874512581 / 84246463 / 835020143 | Localização: Montepuez, Cabo Delgado, Mozambique (operação online). Para exercer os seus direitos relativos a dados recolhidos via cookies, consulte também nossa Política de Privacidade disponível em /privacy.',
+  1098→  1098→        },
+  1099→  1099→      },
+  1100→  1100→    },
+  1101→  1101→  },
+  1102→  1102→
+  1103→  1103→  social: {
+  1104→  1104→    title: 'Siga-nos nas Redes Sociais',
+  1105→  1105→    subtitle: 'Conecte-se com a Carsai Mozambique nas plataformas sociais',
+  1106→  1106→  },
+  1107→  1107→
+  1108→  1108→  meta: {
+  1109→  1109→    siteTitle: 'Carsai Mozambique',
+  1110→  1110→    siteDescription: 'Plataforma tecnológica para transformação digital em Mozambique',
+  1111→  1111→    ogTitle: 'Carsai Mozambique - Transformação Digital',
+  1112→  1112→    ogDescription: 'Soluções tecnológicas inovadoras para empresas moçambicanas',
+  1113→  1113→  },
+  1114→  1114→
+  1115→  1115→  // ============================================================================
+  1116→  1116→  // Setup / Installer
+  1117→  1117→  // ============================================================================
+  1118→  1118→  setup: {
+  1119→  1119→    title: 'Carsai Mozambique — Instalação',
+  1120→  1120→    subtitle: 'Configure o banco de dados, popule dados iniciais e crie o administrador. Este assistente só é necessário na primeira vez.',
+  1121→  1121→    checking: 'Verificando estado do Firebase...',
+  1122→  1122→    check: {
+  1123→  1123→      title: 'Verificação do Firebase',
+  1124→  1124→      description: 'Verificando a ligação ao Firebase e estado do banco de dados',
+  1125→  1125→      firebaseConfigured: 'Firebase Configurado',
+  1126→  1126→      credentialsFound: 'Credenciais encontradas',
+  1127→  1127→      addCredentials: 'Adicione as credenciais Firebase',
+  1128→  1128→      firestoreConnected: 'Firestore Conectado',
+  1129→  1129→      connectionEstablished: 'Ligação estabelecida',
+  1130→  1130→      couldNotConnect: 'Não foi possível conectar',
+  1131→  1131→      initialData: 'Dados Iniciais',
+  1132→  1132→      collectionsWithData: '{{count}} colecções com dados',
+  1133→  1133→      needToPopulate: 'Necessário popular dados iniciais',
+  1134→  1134→      administrator: 'Administrador',
+  1135→  1135→      adminExists: 'Administrador já existe',
+  1136→  1136→      needAdmin: 'Necessário criar administrador',
+  1137→  1137→      notConfigured: 'Firebase não configurado',
+  1138→  1138→      checkCredentials: 'Verifique se as credenciais Firebase estão correctas em',
+  1139→  1139→    },
+  1140→  1140→    seed: {
+  1141→  1141→      title: 'Dados Iniciais',
+  1142→  1142→      description: 'Popule o banco de dados com roles, permissões, categorias, serviços e configurações padrão. Isto deve ser feito ANTES de criar o administrador.',
+  1143→  1143→      roles: 'Roles (super_admin, admin, partner, user)',
+  1144→  1144→      permissions: 'Permissões do sistema',
+  1145→  1145→      blogCategories: 'Categorias do blog',
+  1146→  1146→      forumCategories: 'Categorias do fórum',
+  1147→  1147→      services: 'Serviços',
+  1148→  1148→      projects: 'Projectos de exemplo',
+  1149→  1149→      appSettings: 'Configurações da aplicação',
+  1150→  1150→      creating: 'Criando dados...',
+  1151→  1151→      populate: 'Popular Banco de Dados',
+  1152→  1152→      error: 'Erro ao criar dados iniciais. Pode tentar novamente.',
+  1153→  1153→      created: 'criado(s)',
+  1154→  1154→      continueToAdmin: 'Continuar para Criar Administrador',
+  1155→  1155→    },
+  1156→  1156→    admin: {
+  1157→  1157→      title: 'Criar Administrador',
+  1158→  1158→      description: 'Crie a conta de super administrador. Esta conta terá acesso total ao painel de administração. Os dados iniciais (roles, permissões) já foram criados no passo anterior.',
+  1159→  1159→      fullName: 'Nome completo',
+  1160→  1160→      namePlaceholder: 'Nome do administrador',
+  1161→  1161→      emailLabel: 'Email',
+  1162→  1162→      emailPlaceholder: 'admin@carsai.mz',
+  1163→  1163→      passwordLabel: 'Senha',
+  1164→  1164→      passwordPlaceholder: 'Mínimo 8 caracteres',
+  1165→  1165→      secureAccount: 'Conta segura',
+  1166→  1166→      secureAccountDesc: 'A senha é armazenada com encriptação do Firebase Auth. O instalador será bloqueado após a criação do administrador.',
+  1167→  1167→      creating: 'Criando administrador...',
+  1168→  1168→      createButton: 'Criar Administrador',
+  1169→  1169→      error: 'Erro ao criar administrador.',
+  1170→  1170→      emailInUse: 'Este email já está registado no Firebase Auth.',
+  1171→  1171→      weakPassword: 'Senha demasiado fraca. Use pelo menos 8 caracteres.',
+  1172→  1172→      invalidEmail: 'Email inválido.',
+  1173→  1173→      fillAllFields: 'Preencha todos os campos.',
+  1174→  1174→      passwordMinLength: 'A senha deve ter pelo menos 8 caracteres.',
+  1175→  1175→    },
+  1176→  1176→    done: {
+  1177→  1177→      title: 'Instalação Completa!',
+  1178→  1178→      description: 'O Carsai Mozambique está pronto para usar.',
+  1179→  1179→      firebaseConfigured: 'Firebase configurado e conectado',
+  1180→  1180→      dataPopulated: 'Dados iniciais populados',
+  1181→  1181→      dbReady: 'Banco de dados pronto (sem dados iniciais)',
+  1182→  1182→      adminCreated: 'Conta de administrador criada',
+  1183→  1183→      installerLocked: 'Instalador bloqueado (segurança)',
+  1184→  1184→      nextStep: 'Próximo passo',
+  1185→  1185→      nextStepDesc: 'Faça login com as credenciais do administrador para acessar o painel de administração.',
+  1186→  1186→      goToLogin: 'Ir para Login',
+  1187→  1187→    },
+  1188→  1188→    dbSetup: {
+  1189→  1189→      title: 'Configuração da Base de Dados',
+  1190→  1190→      description: 'A base de dados Firestore está vazia. Para que o app funcione correctamente, precisa de dados iniciais (roles, permissões, categorias, etc.).',
+  1191→  1191→      authRequired: 'Precisa de estar autenticado para inicializar a base de dados. Crie uma conta primeiro.',
+  1192→  1192→      clickInitialize: 'Clique em "Inicializar" para criar os dados automaticamente.',
+  1193→  1193→      createAccountFirst: 'Precisa de criar uma conta primeiro antes de inicializar a base de dados.',
+  1194→  1194→      initializing: 'A inicializar...',
+  1195→  1195→      initialize: 'Inicializar Dados',
+  1196→  1196→    },
+  1197→  1197→  },
+  1198→  1198→
+  1199→  1199→  // ============================================================================
+  1200→  1200→  // App Update
+  1201→  1201→  // ============================================================================
+  1202→  1202→  update: {
+  1203→  1203→    available: 'Actualização disponível',
+  1204→  1204→    currentVersion: 'Versão actual',
+  1205→  1205→    latestVersion: 'Última versão',
+  1206→  1206→    download: 'Descarregar',
+  1207→  1207→    changelog: 'Novidades',
+  1208→  1208→    remindLater: 'Lembrar mais tarde',
+  1209→  1209→    downloadApk: 'Descarregar APK',
+  1210→  1210→  },
+  1211→  1211→
+  1212→  1212→  // ============================================================================
+  1213→  1213→  // Loading Overlay
+  1214→  1214→  // ============================================================================
+  1215→  1215→  loading: {
+  1216→  1216→    title: 'Carregando...',
+  1217→  1217→  },
+  1218→  1218→};
+  1219→
+  1220→[showing lines 1-1218 of 1219; use offset=1219 with limit to continue reading]

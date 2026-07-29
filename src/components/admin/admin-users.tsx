@@ -59,6 +59,9 @@ interface EditUserData {
   phone: string;
   role: string;
   isActive: boolean;
+  bio: string;
+  company: string;
+  address: string;
 }
 
 const PAGE_SIZE = 10;
@@ -88,7 +91,7 @@ export function AdminUsers() {
   const [editOpen, setEditOpen] = useState(false);
   const [editUser, setEditUser] = useState<UserData | null>(null);
   const [editData, setEditData] = useState<EditUserData>({
-    name: '', email: '', phone: '', role: 'user', isActive: true,
+    name: '', email: '', phone: '', role: 'user', isActive: true, bio: '', company: '', address: '',
   });
   const [editing, setEditing] = useState(false);
 
@@ -234,6 +237,7 @@ export function AdminUsers() {
   // ── Role badge ──
   const roleBadge = (role: string) => {
     switch (role) {
+      case 'super_admin': return <Badge className="bg-purple-100 text-purple-700 border-purple-200">Super Admin</Badge>;
       case 'admin': return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Admin</Badge>;
       case 'partner': return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">Partner</Badge>;
       case 'user': return <Badge className="bg-blue-100 text-blue-700 border-blue-200">User</Badge>;
@@ -258,6 +262,9 @@ export function AdminUsers() {
       phone: u.phone || '',
       role: u.role,
       isActive: u.isActive !== false,
+      bio: (u as any).bio || '',
+      company: (u as any).company || '',
+      address: (u as any).address || '',
     });
     setEditOpen(true);
   };
@@ -362,6 +369,7 @@ export function AdminUsers() {
                       <SelectItem value="user">User</SelectItem>
                       <SelectItem value="partner">Partner</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="super_admin">Super Admin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -570,6 +578,33 @@ export function AdminUsers() {
                 className="focus-visible:ring-emerald-500"
               />
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-company">{t('dashboard.company') || 'Company'}</Label>
+              <Input
+                id="edit-company"
+                value={editData.company}
+                onChange={(e) => setEditData(prev => ({ ...prev, company: e.target.value }))}
+                className="focus-visible:ring-emerald-500"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-bio">{t('dashboard.bio') || 'Bio'}</Label>
+              <Input
+                id="edit-bio"
+                value={editData.bio}
+                onChange={(e) => setEditData(prev => ({ ...prev, bio: e.target.value }))}
+                className="focus-visible:ring-emerald-500"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-address">{t('dashboard.address') || 'Address'}</Label>
+              <Input
+                id="edit-address"
+                value={editData.address}
+                onChange={(e) => setEditData(prev => ({ ...prev, address: e.target.value }))}
+                className="focus-visible:ring-emerald-500"
+              />
+            </div>
             <Separator />
             <div className="grid gap-2">
               <Label>{t('admin.userRole') || 'Role'}</Label>
@@ -584,6 +619,7 @@ export function AdminUsers() {
                   <SelectItem value="user">User</SelectItem>
                   <SelectItem value="partner">Partner</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="super_admin">Super Admin</SelectItem>
                 </SelectContent>
               </Select>
             </div>
