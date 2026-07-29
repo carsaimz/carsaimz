@@ -486,6 +486,13 @@ export async function fetchForumTopicBySlugClient(slug: string): Promise<ForumTo
 /**
  * Try to fetch data from an API route, falling back to client-side Firestore.
  * This is the unified pattern used by blog, forum, and other data-fetching components.
+ *
+ * Handles edge cases:
+ * - API route returns HTML (e.g., 404 page from static export) → falls back to client
+ * - API route returns JSON with { success: false } → falls back to client
+ * - API route returns JSON with non-standard format → falls back to client
+ * - Network error → falls back to client
+ * - Client-side Firestore also fails → returns empty array as last resort
  */
 export async function fetchWithFallback<T>(
   apiPath: string,
@@ -496,18 +503,29 @@ export async function fetchWithFallback<T>(
     const res = await fetch(apiPath)
     const contentType = res.headers.get('content-type') || ''
 
+    // Only parse as JSON if the server explicitly says it's JSON
     if (contentType.includes('application/json') && res.ok) {
-      const json = await res.json()
-      if (json.success) {
-        return { data: json.data, source: 'api' }
+      try {
+        const json = await res.json()
+        if (json && json.success && json.data !== undefined) {
+          return { data: json.data, source: 'api' }
+        }
+      } catch {
+        // JSON parse failed (e.g., malformed JSON) — fall through to client
       }
     }
-    // API returned non-JSON or error — fall through to client
+    // API returned non-JSON, error, or unexpected format — fall through to client
   } catch {
     // Network error — fall through to client
   }
 
   // Fallback to client-side Firestore
-  const data = await clientFallback()
-  return { data, source: 'client' }
+  try {
+    const data = await clientFallback()
+    return { data, source: 'client' }
+  } catch (clientErr) {
+    console.warn('[fetchWithFallback] Client-side Firestore also failed:', clientErr)
+    // Return empty array as last resort so the UI doesn't crash
+    return { data: [] as unknown as T, source: 'client' }
+  }
 }

@@ -60,15 +60,26 @@ NEXT_PUBLIC_FIREBASE_VAPID_KEY=...
 | Provider | Free on Spark? | Setup Required |
 |----------|---------------|----------------|
 | **Email/Password** | Yes | None — just enable |
-| **Google** | Yes | Select support email |
+| **Google** | Yes | Select support email + SHA-1 fingerprint |
+| **GitHub** | Yes | Create GitHub OAuth App |
 | **Phone (SMS OTP)** | Yes | Enable + set test numbers |
 | **Anonymous** | Yes | Just enable |
 
-3. For **Google Sign-In**:
+3. For **Google Sign-In** (critical for Android app):
    - Select a **support email** from your project
    - The authorized domains are auto-configured
+   - **IMPORTANT**: Add the SHA-1 fingerprint of your Android signing certificate
+     - Go to **Project Settings** → Your Android app → **Add fingerprint**
+     - Debug SHA-1: Run `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android`
+     - Release SHA-1: Run `keytool -list -v -keystore upload/release.jks -alias carsai`
+     - **Without the SHA-1 fingerprint, Google Sign-In will NOT work in the Android app**
 
-4. For **Phone Auth**:
+4. For **GitHub Sign-In**:
+   - Create a GitHub OAuth App at https://github.com/settings/developers
+   - Set the **Authorization callback URL** to: `https://carsai-mozambique-d5983.firebaseapp.com/__/auth/handler`
+   - Copy the **Client ID** and **Client Secret** into Firebase Console → Authentication → GitHub provider
+
+5. For **Phone Auth**:
    - Enable it
    - Add **test phone numbers** and **test verification codes** for development
    - Example: `+258847545020` → code `123456`
@@ -140,9 +151,35 @@ FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVA
 
 1. Go to **Firestore Database** in Firebase Console
 2. Click **"Create database"**
-3. Choose **Start in test mode** (for development)
+3. Choose **Start in test mode** (for development — allows all reads/writes)
 4. Select a location (e.g. `eur3` for Europe)
-5. Later, add security rules for production
+
+### Deploy Firestore Security Rules
+
+The project includes a `firestore.rules` file that should be deployed to Firebase:
+
+```bash
+# Install Firebase CLI if not already installed
+npm install -g firebase-tools
+
+# Login to Firebase
+firebase login
+
+# Initialize Firebase in the project (if not already done)
+firebase init
+
+# Deploy Firestore rules
+firebase deploy --only firestore:rules
+```
+
+**IMPORTANT**: If you chose "Start in test mode" when creating the database, Firebase uses default rules that expire after 30 days. Deploy the project's `firestore.rules` file before the test mode expires, otherwise all client-side Firestore operations will fail.
+
+### About the Firestore Rules
+
+The `firestore.rules` file in this project:
+- **Public reads** on: `roles`, `settings`, `categories`, `forum_categories`, `services`, `projects`, `testimonials`, `posts`, `tags`, `post_tags`, `comments`, `forum_topics`, `forum_posts`, `forum_likes`, `pages` — these are needed so the app can display content even without authentication, and so the seed check (`isDatabaseSeeded()`) can work before the user signs in.
+- **Authenticated reads/writes** on: `users`, `quotes`, `proposals`, `payments`, `invoices`, `notifications`, `support_tickets`, etc.
+- **Public writes allowed** on: `subscribers` (newsletter), `affiliate_clicks` — for anonymous subscription/click tracking
 
 ### Firestore Collections
 
@@ -220,8 +257,8 @@ gh secret set NEXT_PUBLIC_FIREBASE_VAPID_KEY         -b "BOWPwKVMZEKR..."
 gh secret set NEXT_PUBLIC_API_URL                    -b "https://carsai.mz"
 
 # Optional: App version overrides
-gh secret set NEXT_PUBLIC_APP_VERSION                -b "0.2.1"
-gh secret set NEXT_PUBLIC_APP_BUILD                  -b "2"
+gh secret set NEXT_PUBLIC_APP_VERSION                -b "1.0.0"
+gh secret set NEXT_PUBLIC_APP_BUILD                  -b "1"
 
 # Firebase Admin SDK (truly secret — server-side only)
 gh secret set FIREBASE_ADMIN_PROJECT_ID              -b "carsai-mozambique-d5983"
@@ -262,66 +299,49 @@ The CI workflow decodes `KEYSTORE_FILE` and creates `keystore.properties` for Gr
 
 ---
 
-## 11. Security Rules (Production)
+## 12. Android google-services.json
 
-After development, switch from test mode to proper security rules:
+**CRITICAL**: The `google-services.json` file must be downloaded from the Firebase Console with the correct OAuth client IDs and SHA-1 fingerprint. The placeholder file in the repo will NOT work for Google Sign-In.
 
-### Firestore Rules
+### Steps:
+1. Go to **Project Settings** → Your Android app (`com.carsaimz`)
+2. Make sure you have added the **SHA-1 fingerprint** of your signing certificate
+3. Click **Download google-services.json**
+4. Replace the file at `android/app/google-services.json` with the downloaded file
+5. **DO NOT commit the real google-services.json to GitHub** — add it to `.gitignore` and use the CI workflow to inject it
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Authenticated users can read their own profile
-    match /users/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Public readable collections
-    match /posts/{postId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-    match /services/{serviceId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-    match /projects/{projectId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-    
-    // Admin-only collections
-    match /settings/{settingId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-    match /roles/{roleId} {
-      allow read: if request.auth != null;
-      allow write: if false; // Only via Admin SDK
-    }
-  }
-}
-```
+### The CI workflow handles this automatically:
+- The `android-build.yml` workflow downloads `google-services.json` from GitHub Secrets
+- The secret name is `GOOGLE_SERVICES_JSON` (the JSON content, base64-encoded)
+- To set it: `gh secret set GOOGLE_SERVICES_JSON -b "$(base64 -w 0 android/app/google-services.json)"`
 
-### Storage Rules
+---
 
-```javascript
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    // Allow authenticated users to upload
-    match /uploads/{userId}/{allPaths=**} {
-      allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Public avatars
-    match /avatars/{avatarId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-  }
-}
-```
+## 13. Troubleshooting Common Issues
+
+### "Unexpected token '<'" error on Blog/Forum pages
+- **Cause**: The API route returns HTML (404 page) instead of JSON
+- **Fix**: This is handled automatically by the `fetchWithFallback` function — it falls back to client-side Firestore. If the database is empty, the pages will show "No posts" / "No topics" instead of crashing.
+- **Make sure**: Firestore security rules are deployed (Section 7) and the database is seeded (Section 8)
+
+### Account creation fails (Auth succeeds but Firestore write fails)
+- **Cause**: Firestore security rules block client-side writes
+- **Fix**: Deploy the `firestore.rules` file (Section 7). The rules allow authenticated users to create their own profile in the `users` collection.
+
+### Google Sign-In doesn't work in the Android app
+- **Cause 1**: The `google-services.json` has placeholder values instead of real OAuth client IDs
+- **Fix 1**: Download the correct `google-services.json` from Firebase Console (Section 12)
+- **Cause 2**: The SHA-1 fingerprint of the signing certificate is not added to Firebase
+- **Fix 2**: Add the SHA-1 fingerprint in Firebase Console → Project Settings → Your Android app → Add fingerprint (Section 3)
+
+### GitHub Sign-In shows Portuguese text in English mode
+- **Cause**: This was a translation bug that has been fixed. The `signInWithGithub` key is now correctly translated in all 7 language files.
+- **If still occurring**: Clear browser cache and hard-refresh the page
+
+### Database is empty (no collections)
+- **Cause**: Firestore was created but not seeded
+- **Fix**: Use the `/setup` page (http://localhost:3000/setup) to create a super admin and seed the database. Or use the `DatabaseSetup` component that auto-detects an empty database and prompts you to seed.
+
+### Firestore Security Rules expire after 30 days
+- **Cause**: "Start in test mode" rules expire after 30 days
+- **Fix**: Deploy the project's `firestore.rules` file (Section 7) before the test mode expires

@@ -23,8 +23,8 @@
 
 // ─── App version (embedded at build time) ───
 
-export const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || '0.2.1'
-export const APP_BUILD = process.env.NEXT_PUBLIC_APP_BUILD || '2'
+export const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0'
+export const APP_BUILD = process.env.NEXT_PUBLIC_APP_BUILD || '1'
 
 // ─── API base URL ───
 // For Capacitor mobile app, set NEXT_PUBLIC_API_URL to your deployed server.

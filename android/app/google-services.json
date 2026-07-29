@@ -14,15 +14,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "136334398331-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
+          "client_id": "136334398331-REPLACE_WITH_YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.carsaimz",
-            "certificate_hash": ""
+            "certificate_hash": "REPLACE_WITH_YOUR_SHA1_FINGERPRINT"
           }
         },
         {
-          "client_id": "136334398331-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
+          "client_id": "136334398331-REPLACE_WITH_YOUR_WEB_CLIENT_ID.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -35,7 +35,7 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "136334398331-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
+              "client_id": "136334398331-REPLACE_WITH_YOUR_WEB_CLIENT_ID.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

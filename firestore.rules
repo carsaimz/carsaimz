@@ -1,0 +1,205 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ──
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ── Users collection ──
+    // Anyone authenticated can read user profiles
+    // Users can create/update their own profile
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if false; // Only via Admin SDK
+    }
+
+    // ── Roles & Permissions ──
+    // Allow reads so the seed check works even before auth
+    match /roles/{roleId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /permissions/{permId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /role_permissions/{rpId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // ── Settings ──
+    // Allow reads so the seed check works even before auth
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // ── Blog: posts, categories, tags, comments ──
+    match /posts/{postId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /categories/{catId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /tags/{tagId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /post_tags/{ptId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    // ── Forum ──
+    match /forum_categories/{catId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /forum_topics/{topicId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    match /forum_posts/{postId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    match /forum_likes/{likeId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    // ── Services & Projects ──
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /projects/{projectId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /testimonials/{testimonialId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // ── Business: quotes, proposals, payments, invoices ──
+    match /quotes/{quoteId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /proposals/{proposalId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /payments/{paymentId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /invoices/{invoiceId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /invoice_items/{itemId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    // ── Affiliate ──
+    match /affiliate_clicks/{clickId} {
+      allow read: if isAuthenticated();
+      allow create: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /affiliate_commissions/{commissionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    // ── Notifications ──
+    match /notifications/{notifId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    // ── Support ──
+    match /support_tickets/{ticketId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /ticket_replies/{replyId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    // ── File attachments ──
+    match /file_attachments/{fileId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    // ── AI providers ──
+    match /ai_providers/{providerId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    // ── Audit logs ──
+    match /logs/{logId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only via Admin SDK
+    }
+
+    // ── Pages ──
+    match /pages/{pageId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // ── Newsletter subscribers ──
+    match /subscribers/{subId} {
+      allow read: if isAuthenticated();
+      allow create: if true; // Allow anonymous subscription
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+  }
+}

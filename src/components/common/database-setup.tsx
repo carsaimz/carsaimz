@@ -13,24 +13,42 @@
 import { useState, useEffect } from 'react';
 import { seedInitialData, isDatabaseSeeded } from '@/lib/client-seed';
 import { useLanguage } from '@/contexts/language-context';
+import { useAuth } from '@/contexts/auth-context';
 
 export function DatabaseSetup() {
   const { t } = useLanguage();
+  const { isAuthenticated } = useAuth();
   const [show, setShow] = useState(false);
   const [seeding, setSeeding] = useState(false);
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     async function check() {
-      const seeded = await isDatabaseSeeded();
-      if (!seeded) {
-        setShow(true);
+      try {
+        const seeded = await isDatabaseSeeded();
+        if (!seeded) {
+          setShow(true);
+        }
+      } catch (err) {
+        // If we can't check (e.g., Firestore not configured), don't show
+        console.warn('[DatabaseSetup] Could not check seed status:', err);
+      } finally {
+        setChecking(false);
       }
     }
     check();
   }, []);
 
   const handleSeed = async () => {
+    if (!isAuthenticated) {
+      setResult({
+        success: false,
+        message: 'Precisa de estar autenticado para inicializar a base de dados. Crie uma conta primeiro.',
+      });
+      return;
+    }
+
     setSeeding(true);
     try {
       const res = await seedInitialData();
@@ -45,7 +63,7 @@ export function DatabaseSetup() {
     }
   };
 
-  if (!show) return null;
+  if (!show || checking) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -56,7 +74,7 @@ export function DatabaseSetup() {
           </div>
           <div>
             <h3 className="font-semibold text-foreground">
-              Configuração da Base de Dados
+              {t('admin.itemTitle') || 'Configuração da Base de Dados'}
             </h3>
             <p className="text-sm text-muted-foreground">
               Database Setup
@@ -65,15 +83,18 @@ export function DatabaseSetup() {
         </div>
 
         <p className="text-sm text-muted-foreground mb-4">
-          A base de dados Firestore está vazia. Para que o app funcione correctamente, 
-          precisa de dados iniciais (roles, permissões, categorias, etc.). 
-          Clique em &quot;Inicializar&quot; para criar os dados automaticamente.
+          A base de dados Firestore está vazia. Para que o app funcione correctamente,
+          precisa de dados iniciais (roles, permissões, categorias, etc.).
+          {isAuthenticated
+            ? ' Clique em "Inicializar" para criar os dados automaticamente.'
+            : ' Precisa de criar uma conta primeiro antes de inicializar a base de dados.'
+          }
         </p>
 
         {result && (
           <div className={`text-sm p-3 rounded-lg mb-4 ${
-            result.success 
-              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+            result.success
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
               : 'bg-red-50 text-red-700 border border-red-200'
           }`}>
             {result.message}
@@ -81,13 +102,15 @@ export function DatabaseSetup() {
         )}
 
         <div className="flex gap-3">
-          <button
-            onClick={handleSeed}
-            disabled={seeding}
-            className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
-          >
-            {seeding ? 'A inicializar...' : 'Inicializar Dados'}
-          </button>
+          {isAuthenticated && (
+            <button
+              onClick={handleSeed}
+              disabled={seeding}
+              className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+            >
+              {seeding ? 'A inicializar...' : 'Inicializar Dados'}
+            </button>
+          )}
           <button
             onClick={() => setShow(false)}
             disabled={seeding}
