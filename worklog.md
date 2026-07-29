@@ -193,3 +193,30 @@ Stage Summary:
 - Release workflow creates GitHub releases with changelogs and attached artifacts
 - Android splash screen now shows the Carsai logo on red background
 - Firestore rules now properly guard against null.data errors in isSetupMode()
+
+---
+Task ID: auth-mobile-fix
+Agent: Main Agent
+Task: Fix mobile auth issues — "usuário não autenticado" on email/password login, Google Sign-In not completing on mobile, and dashboard "Unexpected token '<'" JSON parse error
+
+Work Log:
+- Investigated the auth architecture: dual-path (Web SDK vs native Capacitor plugin), verifyWithServer → verifyWithClientFirestore fallback chain
+- Found root cause #1: No CORS middleware → Capacitor WebView cross-origin requests to https://carsaimz.vercel.app/api/* blocked, causing fetch to fail or return HTML
+- Found root cause #2: nativeSignInWithEmailPassword/anonymous don't sync to Firebase Web SDK → auth.currentUser is null → verifyWithClientFirestore returns "Utilizador não autenticado"
+- Found root cause #3: Google Sign-In on Android needs Web OAuth Client ID → google-services.json has empty oauth_client → native signInWithGoogle can't complete the OAuth redirect
+- Found root cause #4: store.ts and auth-context.tsx use raw fetch instead of apiFetch → no HTML detection/retry for Capacitor
+
+- Created src/middleware.ts: CORS middleware for /api/* routes — allows Capacitor origins (https://localhost, com.carsaimz://) + localhost + deployment URLs
+- Updated src/lib/native-auth.ts: Added syncToWebSdk() function that syncs native auth results to Firebase Web SDK; added ensureWebSdkAuth() for email/password/anonymous; updated nativeSignInWithGoogle() to pass GOOGLE_WEB_CLIENT_ID from client-config
+- Updated src/lib/client-config.ts: Added NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID env var with documentation
+- Updated src/lib/firebase-client.ts: Added EmailAuthProvider to exports
+- Updated src/lib/store.ts: Replaced raw fetch with apiFetch in verifyWithServer; added fallbackVerify() that tries client Firestore first, then native result; added verifyWithNativeResult() that creates profile from native auth data; all login methods now pass nativeAuthResult to verifyWithServer
+- Updated src/contexts/auth-context.tsx: Replaced raw fetch with apiFetch for redirect result handler and auth state listener; removed buildApiUrl import dependency
+
+Stage Summary:
+- CORS middleware added (src/middleware.ts) — fixes cross-origin API requests from Capacitor
+- Native auth now syncs to Web SDK (native-auth.ts) — prevents "usuário não autenticado"
+- verifyWithServer uses apiFetch (store.ts) — fixes "Unexpected token '<'" JSON parse errors
+- Google Sign-In now supports Web OAuth Client ID (client-config.ts + native-auth.ts)
+- All auth methods pass native auth result to fallback (store.ts) — robust 3-tier fallback
+- Build passes successfully with middleware enabled

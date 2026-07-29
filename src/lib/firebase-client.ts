@@ -26,6 +26,7 @@ import {
   Auth,
   GoogleAuthProvider,
   GithubAuthProvider,
+  EmailAuthProvider,
   PhoneAuthProvider,
   signInWithPopup,
   signInWithRedirect,
@@ -227,6 +228,7 @@ export {
   PhoneAuthProvider,
   GoogleAuthProvider,
   GithubAuthProvider,
+  EmailAuthProvider,
   RecaptchaVerifier,
 }
 

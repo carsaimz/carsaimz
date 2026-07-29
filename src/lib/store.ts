@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { buildApiUrl } from '@/lib/api-base'
+import { apiFetch } from '@/lib/api-fetch'
 import {
   shouldUseNativeAuth,
   nativeSignInWithGoogle,
@@ -9,6 +9,7 @@ import {
   nativeSignInWithEmailPassword,
   nativeCreateUserWithEmailAndPassword,
   nativeSignOut,
+  type NativeAuthResult,
 } from '@/lib/native-auth'
 
 // ──────────────────────────────────────────────
@@ -123,18 +124,41 @@ function mapRole(roleData: any): UserRole {
 
 /**
  * Verify authentication with server API route.
- * If server is unavailable (static export / Capacitor), falls back to
- * client-side Firestore profile lookup/creation.
+ * Uses apiFetch (instead of raw fetch) to handle:
+ *   - Capacitor CORS bypass (external URL + CORS middleware)
+ *   - HTML response detection/retry (static export fallback)
+ *   - Proper error handling without "Unexpected token '<'" crashes
+ *
+ * If server is unavailable, falls back to client-side Firestore or
+ * native auth result data.
+ *
+ * @param nativeResult Optional native auth result with user info,
+ *   used when the Web SDK's auth.currentUser is not yet synced.
  */
-async function verifyWithServer(idToken: string, endpoint: string): Promise<{ success: boolean; user?: User; error?: string }> {
+async function verifyWithServer(
+  idToken: string,
+  endpoint: string,
+  nativeResult?: NativeAuthResult
+): Promise<{ success: boolean; user?: User; error?: string }> {
   try {
-    const res = await fetch(buildApiUrl(endpoint), {
+    // Use apiFetch instead of raw fetch — it handles CORS, HTML detection,
+    // and automatic retry with external URL for Capacitor apps.
+    // Pass the relative path (e.g., '/api/auth/login') — apiFetch handles
+    // the full URL resolution internally (don't use buildApiUrl here).
+    const res = await apiFetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ idToken }),
     })
 
-    // If the server returned a valid response (not 404), use it
+    // Check if response is JSON before parsing
+    const contentType = res.headers.get('content-type') || ''
+    if (!contentType.includes('application/json')) {
+      console.warn('[Auth] Server returned non-JSON response:', contentType)
+      // Not JSON — fall back
+      return await fallbackVerify(idToken, nativeResult)
+    }
+
     if (res.ok) {
       const data = await res.json()
 
@@ -160,13 +184,147 @@ async function verifyWithServer(idToken: string, endpoint: string): Promise<{ su
       }
     }
 
-    // Server returned 404 or other error — fall back to client-side Firestore
-    console.warn('[Auth] Server API unavailable, falling back to client-side Firestore')
-    return await verifyWithClientFirestore(idToken)
+    // Server returned non-OK status — try to parse error
+    let errorMsg = 'Autenticação falhou.'
+    try {
+      const errData = await res.json()
+      errorMsg = errData.error || errorMsg
+    } catch {}
+
+    // If the error is not a permanent auth error, try client-side fallback
+    if (res.status !== 401 && res.status !== 403) {
+      console.warn('[Auth] Server API error, falling back to client-side:', errorMsg)
+      return await fallbackVerify(idToken, nativeResult)
+    }
+
+    return { success: false, error: errorMsg }
   } catch (err) {
-    // Network error — server not available (static export / Capacitor)
-    console.warn('[Auth] Server API not reachable, falling back to client-side Firestore:', err)
-    return await verifyWithClientFirestore(idToken)
+    // Network error — server not available (static export / Capacitor / CORS blocked)
+    console.warn('[Auth] Server API not reachable, falling back:', err)
+    return await fallbackVerify(idToken, nativeResult)
+  }
+}
+
+/**
+ * Smart fallback: tries client-side Firestore first (if auth.currentUser available),
+ * then uses native auth result data if provided.
+ * This prevents the "Utilizador não autenticado" error on mobile.
+ */
+async function fallbackVerify(
+  idToken: string,
+  nativeResult?: NativeAuthResult
+): Promise<{ success: boolean; user?: User; error?: string }> {
+  // Try client-side Firestore (needs auth.currentUser)
+  const clientResult = await verifyWithClientFirestore(idToken)
+  if (clientResult.success) return clientResult
+
+  // If client-side Firestore failed AND we have native auth result,
+  // use the native result data directly
+  if (nativeResult) {
+    return verifyWithNativeResult(nativeResult)
+  }
+
+  return clientResult
+}
+
+/**
+ * Create user profile from native auth result data.
+ * Used when both the server API and client-side Firestore are unavailable,
+ * but we have the native auth result with user info.
+ *
+ * This prevents the "Utilizador não autenticado" error on mobile.
+ */
+async function verifyWithNativeResult(nativeResult: NativeAuthResult): Promise<{ success: boolean; user?: User; error?: string }> {
+  try {
+    // Try to create/update the Firestore profile using client-side Firestore
+    // even if auth.currentUser is not yet synced
+    const { firestoreClient, isFirebaseConfigured } = await import('@/lib/firebase-client')
+
+    if (isFirebaseConfigured() && firestoreClient) {
+      const { doc, getDoc, setDoc } = await import('firebase/firestore')
+      const uid = nativeResult.uid
+
+      // Try to read existing profile
+      const userRef = doc(firestoreClient, 'users', uid)
+      const userSnap = await getDoc(userRef)
+
+      if (userSnap.exists()) {
+        const profile = userSnap.data()
+        const user: User = {
+          id: uid,
+          name: profile.name || nativeResult.displayName || 'Utilizador',
+          email: profile.email || nativeResult.email || null,
+          role: mapRole(profile.role),
+          avatar: profile.avatar || nativeResult.photoUrl || null,
+          phone: profile.phone || nativeResult.phoneNumber || null,
+          authProvider: nativeResult.providerId as AuthProvider || 'unknown',
+          isAnonymous: nativeResult.isAnonymous,
+          emailVerified: nativeResult.emailVerified,
+        }
+        return { success: true, user }
+      }
+
+      // Profile doesn't exist — create it from native auth result
+      const authProvider = nativeResult.providerId as AuthProvider
+      await setDoc(userRef, {
+        name: nativeResult.displayName || nativeResult.email?.split('@')[0] || 'Utilizador',
+        email: nativeResult.email || null,
+        phone: nativeResult.phoneNumber || null,
+        avatar: nativeResult.photoUrl || null,
+        company: null,
+        bio: null,
+        address: null,
+        role: 'user',
+        isActive: true,
+        emailVerified: nativeResult.emailVerified,
+        authProvider,
+        isAnonymous: nativeResult.isAnonymous,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+
+      const user: User = {
+        id: uid,
+        name: nativeResult.displayName || 'Utilizador',
+        email: nativeResult.email,
+        role: 'user',
+        avatar: nativeResult.photoUrl || null,
+        phone: nativeResult.phoneNumber || null,
+        authProvider,
+        isAnonymous: nativeResult.isAnonymous,
+        emailVerified: nativeResult.emailVerified,
+      }
+      return { success: true, user }
+    }
+
+    // Firestore not available — use native result data as last resort
+    const user: User = {
+      id: nativeResult.uid,
+      name: nativeResult.displayName || 'Utilizador',
+      email: nativeResult.email,
+      role: 'user',
+      avatar: nativeResult.photoUrl || null,
+      phone: nativeResult.phoneNumber || null,
+      authProvider: nativeResult.providerId as AuthProvider || 'unknown',
+      isAnonymous: nativeResult.isAnonymous,
+      emailVerified: nativeResult.emailVerified,
+    }
+    return { success: true, user }
+  } catch (err) {
+    console.error('[Auth] Native result fallback error:', err)
+    // Last resort: use native result data directly without Firestore
+    const user: User = {
+      id: nativeResult.uid,
+      name: nativeResult.displayName || 'Utilizador',
+      email: nativeResult.email,
+      role: 'user',
+      avatar: nativeResult.photoUrl || null,
+      phone: nativeResult.phoneNumber || null,
+      authProvider: nativeResult.providerId as AuthProvider || 'unknown',
+      isAnonymous: nativeResult.isAnonymous,
+      emailVerified: nativeResult.emailVerified,
+    }
+    return { success: true, user }
   }
 }
 
@@ -316,11 +474,13 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           let idToken: string
+          let nativeAuthResult: NativeAuthResult | undefined
 
           if (shouldUseNativeAuth()) {
             // ── Native path: @capacitor-firebase/authentication ──
             const nativeResult = await nativeSignInWithEmailPassword(email, password)
             idToken = nativeResult.idToken
+            nativeAuthResult = nativeResult // Pass to fallback if server fails
           } else {
             // ── Web path: Firebase Web SDK ──
             const { signInWithEmailAndPassword, auth } = await getFirebaseAuth()
@@ -328,7 +488,7 @@ export const useAuthStore = create<AuthState>()(
             idToken = await credential.user.getIdToken()
           }
 
-          const result = await verifyWithServer(idToken, '/api/auth/login')
+          const result = await verifyWithServer(idToken, '/api/auth/login', nativeAuthResult)
 
           if (result.success && result.user) {
             setUserInStore(set, result.user)
@@ -367,6 +527,7 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           let idToken: string
+          let nativeAuthResult: NativeAuthResult | undefined
           const isNative = shouldUseNativeAuth()
           console.log('[Auth] loginWithGoogle — isNative:', isNative)
 
@@ -376,6 +537,7 @@ export const useAuthStore = create<AuthState>()(
             console.log('[Auth] Calling nativeSignInWithGoogle...')
             const nativeResult = await nativeSignInWithGoogle()
             idToken = nativeResult.idToken
+            nativeAuthResult = nativeResult
             console.log('[Auth] Native Google sign-in succeeded, got ID token')
           } else {
             // ── Web path: Firebase Web SDK signInWithRedirect ──
@@ -391,7 +553,7 @@ export const useAuthStore = create<AuthState>()(
             return { success: true }
           }
 
-          const result = await verifyWithServer(idToken, '/api/auth/social')
+          const result = await verifyWithServer(idToken, '/api/auth/social', nativeAuthResult)
 
           if (result.success && result.user) {
             setUserInStore(set, result.user)
@@ -430,6 +592,7 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           let idToken: string
+          let nativeAuthResult: NativeAuthResult | undefined
           const isNative = shouldUseNativeAuth()
           console.log('[Auth] loginWithGithub — isNative:', isNative)
 
@@ -438,6 +601,7 @@ export const useAuthStore = create<AuthState>()(
             console.log('[Auth] Calling nativeSignInWithGithub...')
             const nativeResult = await nativeSignInWithGithub()
             idToken = nativeResult.idToken
+            nativeAuthResult = nativeResult
             console.log('[Auth] Native GitHub sign-in succeeded, got ID token')
           } else {
             // ── Web path: Firebase Web SDK signInWithRedirect ──
@@ -448,7 +612,7 @@ export const useAuthStore = create<AuthState>()(
             return { success: true }
           }
 
-          const result = await verifyWithServer(idToken, '/api/auth/social')
+          const result = await verifyWithServer(idToken, '/api/auth/social', nativeAuthResult)
 
           if (result.success && result.user) {
             setUserInStore(set, result.user)
@@ -557,11 +721,13 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           let idToken: string
+          let nativeAuthResult: NativeAuthResult | undefined
 
           if (shouldUseNativeAuth()) {
             // ── Native path: @capacitor-firebase/authentication ──
             const nativeResult = await nativeSignInAnonymously()
             idToken = nativeResult.idToken
+            nativeAuthResult = nativeResult
           } else {
             // ── Web path: Firebase Web SDK ──
             const { signInAnonymously, auth } = await getFirebaseAuth()
@@ -569,7 +735,7 @@ export const useAuthStore = create<AuthState>()(
             idToken = await credential.user.getIdToken()
           }
 
-          const result = await verifyWithServer(idToken, '/api/auth/anonymous')
+          const result = await verifyWithServer(idToken, '/api/auth/anonymous', nativeAuthResult)
 
           if (result.success && result.user) {
             setUserInStore(set, result.user)
@@ -602,7 +768,7 @@ export const useAuthStore = create<AuthState>()(
           // Try server API first to create Firestore profile
           let serverProfileCreated = false
           try {
-            const res = await fetch(buildApiUrl('/api/auth/register'), {
+            const res = await apiFetch('/api/auth/register', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ name, email, phone }),

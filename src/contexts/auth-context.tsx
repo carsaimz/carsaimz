@@ -7,6 +7,7 @@ import {
   type AuthProvider as AuthProviderType,
   type AuthResult,
 } from '@/lib/store';
+import { apiFetch } from '@/lib/api-fetch';
 
 // ──────────────────────────────────────────────
 // Context Interface
@@ -72,10 +73,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // User returned from a redirect-based sign-in (Google/GitHub)
         const idToken = await result.user.getIdToken();
-        const { buildApiUrl } = await import('@/lib/api-base');
-
         try {
-          const res = await fetch(buildApiUrl('/api/auth/social'), {
+          const res = await apiFetch('/api/auth/social', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ idToken }),
@@ -215,13 +214,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // This happens when the user returns after closing the browser
             try {
               const idToken = await firebaseUser.getIdToken();
-              const { buildApiUrl } = await import('@/lib/api-base');
-
               let profileRestored = false;
 
-              // Try server API first
+              // Try server API first (using apiFetch for CORS/HTML handling)
               try {
-                const res = await fetch(buildApiUrl('/api/auth/login'), {
+                const res = await apiFetch('/api/auth/login', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ idToken }),

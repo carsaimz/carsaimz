@@ -33,6 +33,16 @@ export const APP_BUILD = process.env.NEXT_PUBLIC_APP_BUILD || '1'
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://carsaimz.vercel.app'
 
+// ─── Google Sign-In Web OAuth Client ID ───
+// Required for Google Sign-In on Android via @capacitor-firebase/authentication.
+// This is the "Client ID for Web application" found in:
+//   Firebase Console → Project Settings → Your apps → Web app
+//   OR Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client IDs
+// Format: XXXXXXXXXXXX.apps.googleusercontent.com
+// If not set, Google Sign-In may fail on Android (no account picker completion).
+
+export const GOOGLE_WEB_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID || ''
+
 // ─── Site URLs ───
 
 export const SITE_URL = 'https://carsai.mz'
