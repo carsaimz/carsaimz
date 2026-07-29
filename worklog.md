@@ -286,3 +286,31 @@ Stage Summary:
 - Affiliate links use APP_PUBLIC_URL (carsaimz.vercel.app) regardless of environment
 - All 7 language files updated with missing translations
 - Build passes successfully
+
+---
+Task ID: session-2026-07-29
+Agent: Main Agent
+Task: Fix API errors, translations, settings, CRUD, affiliate links, and app update
+
+Work Log:
+- Added NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID=117955101988984767727 to .env
+- Added safeJson() helper to api-fetch.ts — checks Content-Type before JSON parse, never crashes with "Unexpected token '<'"
+- Replaced all 31+ unsafe .json() calls with safeJson() across all components and libraries
+- Fixed client-firestore.ts: use apiFetch instead of raw fetch()
+- Added 49+ missing translation keys to all 7 language files (pt-pt, pt-br, en-us, fr-fr, es-es, zh-cn, de-de)
+- Replaced 71 hardcoded English strings with t() calls across 13 components
+- Removed all 't(key) || English fallback' patterns (50+ occurrences)
+- user-settings: combined profile + password into single API call, fixed saving state, fixed password min length (8→6), added fresh profile data fetch on mount
+- admin-users: added bio/company/address to UserData type and GET response
+- admin/users route: added bio/company/address to GET list response
+- Affiliate link: detect window.location.origin for production URLs, fallback to hardcoded carsaimz.vercel.app
+- App update check: removed all English fallback strings, use t() only
+- All builds pass, all changes pushed to GitHub
+
+Stage Summary:
+- "Unexpected token '<'" errors completely eliminated via safeJson() + apiFetch
+- All dashboard components fully translated (7 languages)
+- Settings and user profile update work correctly
+- Admin users CRUD supports all fields (bio, company, address)
+- Affiliate links use detected URL with hardcoded fallback
+- 4 commits pushed to GitHub
