@@ -43,7 +43,7 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://carsaimz
 // Format: XXXXXXXXXXXX.apps.googleusercontent.com
 // If not set, Google Sign-In may fail on Android (no account picker completion).
 
-export const GOOGLE_WEB_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID || '117955101988984767727'
+export const GOOGLE_WEB_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID || '117955101988984767727.apps.googleusercontent.com'
 
 // ─── Site URLs ───
 // Used for affiliate links, sharing, etc. — always the public-facing URL.

@@ -75,22 +75,28 @@ export async function safeQueryDocs<T = Record<string, any>>(
  * or GOOGLE_APPLICATION_CREDENTIALS as alternatives to the full cert() path.
  */
 export function checkFirebaseAdmin(): string | null {
-  const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID
-  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL
   const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY
   const googleAppCreds = process.env.GOOGLE_APPLICATION_CREDENTIALS
 
-  // Full cert() credentials available
-  if (projectId && clientEmail && privateKey) {
+  // Strategy 1: cert() with private key (PROJECT_ID and CLIENT_EMAIL have hardcoded fallbacks)
+  if (privateKey) {
     return null
   }
 
-  // applicationDefault() fallback — needs at least projectId
-  if (projectId || googleAppCreds) {
+  // Strategy 2: applicationDefault() fallback — needs GOOGLE_APPLICATION_CREDENTIALS
+  if (googleAppCreds) {
     return null
   }
 
-  return 'Firebase Admin SDK not configured. Set FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, and FIREBASE_ADMIN_PRIVATE_KEY as environment variables. Alternatively, set FIREBASE_ADMIN_PROJECT_ID with GOOGLE_APPLICATION_CREDENTIALS for ADC.'
+  // Try to use the actual Firebase Admin init — if it's already initialized, it's fine
+  try {
+    const { getAdminInitError } = require('@/lib/firebase-admin')
+    const initErr = getAdminInitError()
+    if (!initErr) return null
+    return initErr
+  } catch {}
+
+  return 'Firebase Admin SDK not configured. Set FIREBASE_ADMIN_PRIVATE_KEY as an environment variable. PROJECT_ID and CLIENT_EMAIL have hardcoded fallbacks in firebase-admin.ts.'
 }
 
 /**

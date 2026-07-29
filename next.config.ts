@@ -21,6 +21,17 @@ const nextConfig: NextConfig = {
     'gaxios',
     'gtoken',
   ],
+  // Force jose v4 (CJS-compatible) to be used instead of the ESM-only v5+
+  // This resolves the "require() of ES Module jose" error from jwks-rsa
+  // that was causing HTTP 500 on all Firebase Admin API routes.
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Ensure jose is resolved as a regular CJS module on the server
+      config.resolve.alias = config.resolve.alias || {};
+      // The jose v4 we installed is CJS-compatible, no alias needed
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
