@@ -129,3 +129,25 @@ Stage Summary:
 - Installer components no longer use translations (all hardcoded Portuguese)
 - google-services.json updated with new Firebase config
 - All changes pushed to origin/main
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Add i18n to installer/setup, fix database-setup mixed languages, fix Card spacing
+
+Work Log:
+- Added setup.* translation section to all 7 language files with ~80 keys each (pt-pt, en-us, pt-br, fr-fr, es-es, zh-cn, de-de)
+- Added common.skip and common.continue keys to all 7 files
+- Rewrote setup page to use t() for all UI strings (was hardcoded Portuguese)
+- Rewrote database-setup.tsx to use t() for all UI strings
+- Fixed mixed languages bug: title was 'Titre' (French from t('admin.itemTitle')), subtitle was 'Database Setup' (English), body was Portuguese, 'common.skip' was raw key
+- Replaced Card/CardHeader/CardContent components with plain divs to avoid extra top/bottom spacing when injecting child components
+- Fixed interpolation syntax: {count} → {{count}} to match i18n.ts {{param}} convention
+- Build passes successfully
+- Committed and pushed (4490014)
+
+Stage Summary:
+- Installer/setup now fully supports i18n across all 7 languages
+- Database-setup overlay no longer shows mixed languages
+- Card spacing issue fixed by using plain divs instead of Card components
+- All setup.* and common.skip/continue keys added to all translation files
