@@ -27,9 +27,11 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/language-context';
+import { resolveI18nContent } from '@/lib/i18n-content';
 import { fetchWithFallback, fetchPostsClient } from '@/lib/client-firestore';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 // ──────────────────────────────────────────────
 // Types
@@ -67,9 +69,12 @@ interface CommentData {
 interface PostData {
   id: string;
   title: string;
+  titleI18n: string | null;
   slug: string;
   excerpt: string | null;
+  excerptI18n: string | null;
   content: string | null;
+  contentI18n: string | null;
   featuredImage: string | null;
   published: boolean;
   authorId: string;
@@ -96,7 +101,7 @@ const fadeInVariants = {
 // ──────────────────────────────────────────────
 
 export function PostDetail({ slug: propSlug }: { slug?: string }) {
-  const { t, formatDate, formatRelativeTime } = useLanguage();
+  const { t, language, formatDate, formatRelativeTime } = useLanguage();
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
 
@@ -155,38 +160,51 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
     router.push(`/blog/${slug}`);
   };
 
-  // Submit comment (mock)
+  // Submit comment
   const handleSubmitComment = async () => {
-    if (!commentText.trim()) return;
+    if (!commentText.trim() || !post || !user) return;
     setSubmitting(true);
-    // Simulated comment submission
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    if (post && user) {
-      const newComment: CommentData = {
-        id: `comment-${Date.now()}`,
-        content: commentText,
-        postId: post.id,
-        authorId: user.id,
-        author: {
-          id: user.id,
-          name: user.name,
-          email: user.email || '',
-          avatar: user.avatar,
-        },
-        isApproved: true,
-        createdAt: new Date().toISOString(),
-      };
-      setPost({ ...post, comments: [...(post.comments || []), newComment] });
+    try {
+      const res = await apiFetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          postId: post.id,
+          content: commentText.trim(),
+          authorId: user.id,
+        }),
+      });
+      const data = await safeJson(res);
+      if (data?.success) {
+        const newComment: CommentData = {
+          id: data.data.id || `comment-${Date.now()}`,
+          content: commentText,
+          postId: post.id,
+          authorId: user.id,
+          author: {
+            id: user.id,
+            name: user.name,
+            email: user.email || '',
+            avatar: user.avatar,
+          },
+          isApproved: true,
+          createdAt: new Date().toISOString(),
+        };
+        setPost({ ...post, comments: [...(post.comments || []), newComment] });
+        setCommentText('');
+      }
+    } catch (err) {
+      console.error('Failed to submit comment:', err);
+    } finally {
+      setSubmitting(false);
     }
-    setCommentText('');
-    setSubmitting(false);
   };
 
   // Share functionality
   const handleShare = (platform: string) => {
     if (!post) return;
     const url = `${window.location.origin}/blog/${post.slug}`;
-    const text = post.title;
+    const text = resolveI18nContent(post.titleI18n, post.title, language);
     switch (platform) {
       case 'facebook':
         window.open(`https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
@@ -316,7 +334,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
             )}
             <div className="flex items-center gap-2 text-white/70 text-sm">
               <Clock className="w-3.5 h-3.5" />
-              {getReadTime(post.content)}
+              {getReadTime(resolveI18nContent(post.contentI18n, post.content || '', language))}
             </div>
           </div>
         </motion.div>
@@ -329,7 +347,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
           transition={{ delay: 0.1 }}
         >
           <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-            {post.title}
+            {resolveI18nContent(post.titleI18n, post.title, language)}
           </h1>
 
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-4">
@@ -351,7 +369,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
             </span>
             <span className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />
-              {getReadTime(post.content)}
+              {getReadTime(resolveI18nContent(post.contentI18n, post.content || '', language))}
             </span>
           </div>
 
@@ -382,7 +400,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
           transition={{ delay: 0.2 }}
           className="mb-8"
         >
-          {renderContent(post.content)}
+          {renderContent(resolveI18nContent(post.contentI18n, post.content || '', language))}
         </motion.div>
 
         {/* Action bar: like & share */}

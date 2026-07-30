@@ -176,14 +176,14 @@ export function AdminForumManager() {
 
       const data = await safeJson(res);
       if (data && data.success) {
-        toast({ title: catIsCreate ? 'Created' : 'Updated', description: 'Category saved' });
+        toast({ title: catIsCreate ? t('admin.created') : t('admin.updated'), description: t('admin.itemSaved') });
         setCatDialogOpen(false);
         fetchCategories();
       } else {
-        toast({ title: 'Error', description: data?.message || 'Failed to save', variant: 'destructive' });
+        toast({ title: t('common.error'), description: data?.message || t('admin.failedSave'), variant: 'destructive' });
       }
     } catch (err) {
-      toast({ title: 'Error', description: 'Failed to save', variant: 'destructive' });
+      toast({ title: t('common.error'), description: t('admin.failedSave'), variant: 'destructive' });
     } finally {
       setCatSaving(false);
     }
@@ -218,14 +218,14 @@ export function AdminForumManager() {
 
       const data = await safeJson(res);
       if (data && data.success) {
-        toast({ title: 'Updated', description: 'Topic updated' });
+        toast({ title: t('admin.updated'), description: t('admin.itemUpdated') });
         setTopicDialogOpen(false);
         fetchTopics();
       } else {
-        toast({ title: 'Error', description: data?.message || 'Failed to update', variant: 'destructive' });
+        toast({ title: t('common.error'), description: data?.message || t('admin.failedUpdate'), variant: 'destructive' });
       }
     } catch (err) {
-      toast({ title: 'Error', description: 'Failed to update', variant: 'destructive' });
+      toast({ title: t('common.error'), description: t('admin.failedUpdate'), variant: 'destructive' });
     } finally {
       setTopicSaving(false);
     }
@@ -242,12 +242,12 @@ export function AdminForumManager() {
       const res = await apiFetch(endpoint, { method: 'DELETE' });
       const data = await safeJson(res);
       if (data && data.success) {
-        toast({ title: 'Deleted', description: 'Item deleted' });
+        toast({ title: t('admin.deleted'), description: t('admin.itemDeleted') });
         if (deleteTarget.type === 'category') fetchCategories();
         else fetchTopics();
       }
     } catch (err) {
-      toast({ title: 'Error', description: 'Failed to delete', variant: 'destructive' });
+      toast({ title: t('common.error'), description: t('admin.failedDelete'), variant: 'destructive' });
     } finally {
       setDeleteTarget(null);
     }
@@ -310,7 +310,7 @@ export function AdminForumManager() {
             </CardHeader>
             <CardContent className="p-0">
               {categoriesLoading ? (
-                <div className="p-8 text-center text-muted-foreground">Loading...</div>
+                <div className="p-8 text-center text-muted-foreground">{t('common.loading')}</div>
               ) : categories.length === 0 ? (
                 <div className="p-8 text-center text-muted-foreground">{t('admin.noItems') || 'No categories'}</div>
               ) : (
@@ -318,7 +318,7 @@ export function AdminForumManager() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>{t('admin.itemTitle') || 'Name'}</TableHead>
-                      <TableHead>Slug</TableHead>
+                      <TableHead>{t('admin.slug')}</TableHead>
                       <TableHead>{t('admin.order') || 'Order'}</TableHead>
                       <TableHead>{t('admin.actions') || 'Actions'}</TableHead>
                     </TableRow>
@@ -358,7 +358,7 @@ export function AdminForumManager() {
             </CardHeader>
             <CardContent className="p-0">
               {topicsLoading ? (
-                <div className="p-8 text-center text-muted-foreground">Loading...</div>
+                <div className="p-8 text-center text-muted-foreground">{t('common.loading')}</div>
               ) : topics.length === 0 ? (
                 <div className="p-8 text-center text-muted-foreground">{t('admin.noItems') || 'No topics'}</div>
               ) : (
@@ -366,8 +366,8 @@ export function AdminForumManager() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>{t('admin.itemTitle') || 'Title'}</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>{t('admin.category')}</TableHead>
+                      <TableHead>{t('admin.status')}</TableHead>
                       <TableHead>{t('admin.actions') || 'Actions'}</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -387,9 +387,9 @@ export function AdminForumManager() {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
-                            {topic.isPinned && <Badge variant="secondary" className="text-xs bg-emerald-50 text-emerald-700">Pinned</Badge>}
-                            {topic.isLocked && <Badge variant="secondary" className="text-xs bg-orange-50 text-orange-700">Locked</Badge>}
-                            {topic.isResolved && <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700">Resolved</Badge>}
+                            {topic.isPinned && <Badge variant="secondary" className="text-xs bg-emerald-50 text-emerald-700">{t('admin.pinned')}</Badge>}
+                            {topic.isLocked && <Badge variant="secondary" className="text-xs bg-orange-50 text-orange-700">{t('admin.locked')}</Badge>}
+                            {topic.isResolved && <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700">{t('admin.resolved')}</Badge>}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -431,12 +431,12 @@ export function AdminForumManager() {
                   setCatName(e.target.value);
                   if (catIsCreate && !catSlug) setCatSlug(slugify(e.target.value));
                 }}
-                placeholder="Category name"
+                placeholder={t('admin.categoryName')}
                 className="focus-visible:ring-emerald-500"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Slug</Label>
+              <Label className="text-sm font-medium">{t('admin.slug')}</Label>
               <Input
                 value={catSlug}
                 onChange={(e) => setCatSlug(e.target.value)}
@@ -449,7 +449,7 @@ export function AdminForumManager() {
               <Textarea
                 value={catDescription}
                 onChange={(e) => setCatDescription(e.target.value)}
-                placeholder="Category description"
+                placeholder={t('admin.categoryDescription')}
                 rows={2}
                 className="focus-visible:ring-emerald-500"
               />
@@ -468,7 +468,7 @@ export function AdminForumManager() {
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setCatDialogOpen(false)}>{t('admin.cancel') || 'Cancel'}</Button>
             <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={saveCategory} disabled={catSaving}>
-              {catSaving ? 'Saving...' : t('admin.save') || 'Save'}
+              {catSaving ? t('admin.saving') : t('admin.save') || 'Save'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -493,7 +493,7 @@ export function AdminForumManager() {
               <Label className="text-sm font-medium">{t('admin.category') || 'Category'}</Label>
               <Select value={topicCategoryId} onValueChange={setTopicCategoryId}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder={t('admin.selectCategory')} />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
@@ -505,22 +505,22 @@ export function AdminForumManager() {
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <Switch checked={topicIsPinned} onCheckedChange={setTopicIsPinned} />
-                <Label className="text-sm"><Pin className="h-3 w-3 mr-1 inline" />Pinned</Label>
+                <Label className="text-sm"><Pin className="h-3 w-3 mr-1 inline" />{t('admin.pinned')}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Switch checked={topicIsLocked} onCheckedChange={setTopicIsLocked} />
-                <Label className="text-sm"><Lock className="h-3 w-3 mr-1 inline" />Locked</Label>
+                <Label className="text-sm"><Lock className="h-3 w-3 mr-1 inline" />{t('admin.locked')}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Switch checked={topicIsResolved} onCheckedChange={setTopicIsResolved} />
-                <Label className="text-sm"><CheckCircle2 className="h-3 w-3 mr-1 inline" />Resolved</Label>
+                <Label className="text-sm"><CheckCircle2 className="h-3 w-3 mr-1 inline" />{t('admin.resolved')}</Label>
               </div>
             </div>
           </div>
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setTopicDialogOpen(false)}>{t('admin.cancel') || 'Cancel'}</Button>
             <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={saveTopic} disabled={topicSaving}>
-              {topicSaving ? 'Saving...' : t('admin.save') || 'Save'}
+              {topicSaving ? t('admin.saving') : t('admin.save') || 'Save'}
             </Button>
           </DialogFooter>
         </DialogContent>

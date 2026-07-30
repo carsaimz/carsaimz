@@ -33,11 +33,36 @@ export function PartnerAffiliate() {
   const { t } = useLanguage();
   const user = useAuthStore((s) => s.user);
   const [copied, setCopied] = useState(false);
+  const [showQR, setShowQR] = useState(false);
 
   const affiliateLink = `${getAffiliateBaseUrl()}/ref/${user?.id || 'demo-partner-001'}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(affiliateLink).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Carsai Mozambique',
+          text: t('partner.shareText') || 'Conheça a Carsai Mozambique — Soluções Digitais e Hospedagem Web Gratuita!',
+          url: affiliateLink,
+        });
+      } catch (err: any) {
+        // User cancelled share — not an error
+        if (err.name !== 'AbortError') {
+          handleCopy();
+        }
+      }
+    } else {
+      // Fallback: copy to clipboard
+      handleCopy();
+    }
+  };
+
+  const handleShowQR = () => {
+    setShowQR(!showQR);
   };
 
   return (
@@ -55,9 +80,26 @@ export function PartnerAffiliate() {
               <Button onClick={handleCopy} className="bg-yellow-400 hover:bg-yellow-300 text-emerald-900 font-semibold rounded-lg"><Copy className="h-4 w-4 mr-2" />{copied ? t('common.copied') : t('common.copy')}</Button>
             </div>
             <div className="flex gap-3 mt-3">
-              <Button variant="ghost" size="sm" className="text-emerald-200 hover:text-white hover:bg-white/10"><Share2 className="h-4 w-4 mr-1" />{t('common.share')}</Button>
-              <Button variant="ghost" size="sm" className="text-emerald-200 hover:text-white hover:bg-white/10"><ExternalLink className="h-4 w-4 mr-1" />{t('common.qrCode')}</Button>
+              <Button variant="ghost" size="sm" className="text-emerald-200 hover:text-white hover:bg-white/10" onClick={handleShare}>
+                <Share2 className="h-4 w-4 mr-1" />
+                {t('common.share')}
+              </Button>
+              <Button variant="ghost" size="sm" className="text-emerald-200 hover:text-white hover:bg-white/10" onClick={handleShowQR}>
+                <ExternalLink className="h-4 w-4 mr-1" />
+                {t('common.qrCode')}
+              </Button>
             </div>
+            {/* QR Code Display */}
+            {showQR && (
+              <div className="mt-3 bg-white rounded-xl p-4 flex flex-col items-center">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(affiliateLink)}&color=065f46&bgcolor=ffffff`}
+                  alt="QR Code"
+                  className="h-40 w-40"
+                />
+                <p className="text-emerald-800 text-xs mt-2 text-center">{t('partner.scanQR') || 'Scan para visitar o link de afiliado'}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>

@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, subject, priority, description } = body
+    const { userId, subject, priority, description, message } = body
 
     if (!userId || !subject) {
       return NextResponse.json(
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
     const ticketId = await createDoc('support_tickets', {
       userId,
       subject,
-      description: description || null,
+      description: description || message || null,
       priority: priority || 'medium',
       status: 'open',
     })

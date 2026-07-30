@@ -22,6 +22,24 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 import {
   Table,
   TableBody,
@@ -36,6 +54,7 @@ import { useLanguage } from '@/contexts/language-context';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { fetchWithFallback, fetchForumClient } from '@/lib/client-firestore';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 const TechPatternSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
@@ -109,7 +128,7 @@ const itemVariants = {
 export function ForumPage() {
   const { t, formatRelativeTime } = useLanguage();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const [categories, setCategories] = useState<ForumCategoryData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,6 +136,11 @@ export function ForumPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showNewTopicDialog, setShowNewTopicDialog] = useState(false);
+  const [newTopicTitle, setNewTopicTitle] = useState('');
+  const [newTopicCategory, setNewTopicCategory] = useState('');
+  const [newTopicContent, setNewTopicContent] = useState('');
+  const [submittingTopic, setSubmittingTopic] = useState(false);
+  const { toast } = useToast();
 
   // Fetch forum data, with client-side Firestore fallback
   useEffect(() => {
@@ -168,6 +192,55 @@ export function ForumPage() {
     router.push(`/forum/${slug}`);
   };
 
+  // Generate slug from title
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  };
+
+  // Submit new topic
+  const handleSubmitNewTopic = async () => {
+    if (!newTopicTitle.trim() || !newTopicCategory || !newTopicContent.trim()) return;
+    if (!user?.id) return;
+
+    setSubmittingTopic(true);
+    try {
+      const slug = generateSlug(newTopicTitle);
+      const res = await apiFetch('/api/forum/topics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newTopicTitle.trim(),
+          slug,
+          content: newTopicContent.trim(),
+          categoryId: newTopicCategory,
+          authorId: user.id,
+        }),
+      });
+      const data = await safeJson(res);
+      if (data?.success) {
+        toast({ title: t('forum.createTopic'), description: 'Topic created successfully' });
+        setShowNewTopicDialog(false);
+        setNewTopicTitle('');
+        setNewTopicCategory('');
+        setNewTopicContent('');
+        // Refresh the topics list
+        const result = await fetchWithFallback('/api/forum', fetchForumClient);
+        setCategories(result.data);
+      } else {
+        toast({ title: t('common.error') || 'Error', description: data?.message || 'Failed to create topic', variant: 'destructive' });
+      }
+    } catch (err) {
+      toast({ title: t('common.error') || 'Error', description: 'Failed to create topic', variant: 'destructive' });
+    } finally {
+      setSubmittingTopic(false);
+    }
+  };
+
   // Category color mapping
   const getCategoryColor = (slug: string) => {
     switch (slug) {
@@ -186,6 +259,70 @@ export function ForumPage() {
 
   return (
     <div className="relative min-h-screen bg-background overflow-hidden">
+      {/* New Topic Dialog */}
+      <Dialog open={showNewTopicDialog} onOpenChange={setShowNewTopicDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t('forum.createTopic')}</DialogTitle>
+            <DialogDescription>
+              {t('forum.createTopicDescription') || 'Create a new topic for discussion in the community forum.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="topic-title">{t('forum.topicTitle') || 'Title'}</Label>
+              <Input
+                id="topic-title"
+                placeholder={t('forum.topicTitlePlaceholder') || 'Enter topic title...'}
+                value={newTopicTitle}
+                onChange={(e) => setNewTopicTitle(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{t('forum.category') || 'Category'}</Label>
+              <Select value={newTopicCategory} onValueChange={setNewTopicCategory}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t('forum.selectCategory') || 'Select a category...'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="topic-content">{t('forum.content') || 'Content'}</Label>
+              <Textarea
+                id="topic-content"
+                placeholder={t('forum.contentPlaceholder') || 'Write your topic content...'}
+                value={newTopicContent}
+                onChange={(e) => setNewTopicContent(e.target.value)}
+                className="min-h-[120px] resize-none"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowNewTopicDialog(false)}
+              disabled={submittingTopic}
+            >
+              {t('common.cancel') || 'Cancel'}
+            </Button>
+            <Button
+              className="bg-emerald-600 text-white hover:bg-emerald-700"
+              onClick={handleSubmitNewTopic}
+              disabled={!newTopicTitle.trim() || !newTopicCategory || !newTopicContent.trim() || submittingTopic}
+            >
+              {submittingTopic ? t('common.loading') : t('forum.createTopic')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Decorative background */}
       <Suspense fallback={null}>
         <TechPatternSVG className="bottom-[5%] left-[2%] w-[200px] h-[200px]" opacity={0.03} />
@@ -573,19 +710,19 @@ export function ForumPage() {
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
-                      <span>Respeite todos os membros da comunidade</span>
+                      <span>{t('forum.rule1')}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
-                      <span>Partilhe conhecimento e experiências relevantes</span>
+                      <span>{t('forum.rule2')}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
-                      <span>Não publique conteúdo spam ou ofensivo</span>
+                      <span>{t('forum.rule3')}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
-                      <span>Marque tópicos como resolvidos quando encontrar a solução</span>
+                      <span>{t('forum.rule4')}</span>
                     </li>
                   </ul>
                 </CardContent>

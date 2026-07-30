@@ -55,6 +55,10 @@ const ADMIN_MENU_ITEMS: SidebarLink[] = [
   { path: '/admin/testimonials', labelKey: 'admin.testimonials', icon: MessageSquare },
   { path: '/admin/forum', labelKey: 'admin.forum', icon: MessagesSquare },
   { path: '/admin/users', labelKey: 'admin.users', icon: Users },
+  { path: '/admin/support', labelKey: 'admin.support', icon: Headphones },
+  { path: '/admin/quotes', labelKey: 'admin.quotes', icon: ClipboardList },
+  { path: '/admin/payments', labelKey: 'admin.payments', icon: CreditCard },
+  { path: '/admin/partner', labelKey: 'admin.partner', icon: Briefcase },
   { path: '/admin/reports', labelKey: 'admin.reports', icon: BarChart3 },
   { path: '/admin/analytics', labelKey: 'admin.systemLogs', icon: ScrollText },
   { path: '/admin/settings', labelKey: 'admin.systemSettings', icon: Settings },
@@ -171,7 +175,7 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
             )}
 
             <SidebarGroup>
-              <SidebarGroupLabel>Legal</SidebarGroupLabel>
+              <SidebarGroupLabel>{t('common.legal')}</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {LEGAL_LINKS.map((item) => (
@@ -247,7 +251,7 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
           <main className="flex-1 p-4 md:p-6">{children}</main>
 
           <footer className="border-t px-4 py-3 text-center text-xs text-muted-foreground">
-            © 2026 Carsai Mozambique · <Link href="/privacy" className="hover:text-foreground">Privacy</Link> · <Link href="/terms" className="hover:text-foreground">Terms</Link> · <Link href="/cookies" className="hover:text-foreground">Cookies</Link>
+            © 2026 Carsai Mozambique · <Link href="/privacy" className="hover:text-foreground">{t('common.privacy')}</Link> · <Link href="/terms" className="hover:text-foreground">{t('common.terms')}</Link> · <Link href="/cookies" className="hover:text-foreground">{t('common.cookies')}</Link>
           </footer>
         </SidebarInset>
       </>

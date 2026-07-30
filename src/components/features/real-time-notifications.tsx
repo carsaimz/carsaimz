@@ -48,7 +48,9 @@ export function RealTimeNotifications() {
     if (!isAuthenticated) return;
 
     try {
-      const response = await apiFetch('/api/notifications');
+      const userId = useAuthStore.getState().user?.id;
+      if (!userId) return;
+      const response = await apiFetch(`/api/notifications?userId=${userId}`);
       const data = await safeJson(response);
       if (!data) return;
 

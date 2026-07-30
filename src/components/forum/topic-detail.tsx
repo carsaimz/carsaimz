@@ -25,6 +25,7 @@ import { useLanguage } from '@/contexts/language-context';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { fetchWithFallback, fetchForumClient } from '@/lib/client-firestore';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 // ──────────────────────────────────────────────
 // Types
@@ -154,34 +155,47 @@ export function TopicDetail({ slug: propSlug }: { slug?: string }) {
     router.push('/forum');
   };
 
-  // Submit reply (mock)
+  // Submit reply
   const handleSubmitReply = async () => {
-    if (!replyText.trim()) return;
+    if (!replyText.trim() || !topic || !user) return;
     setSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    if (topic && user) {
-      const newReply: ForumReply = {
-        id: `reply-${Date.now()}`,
-        content: replyText,
-        topicId: topic.id,
-        authorId: user.id,
-        createdAt: new Date().toISOString(),
-        author: {
-          id: user.id,
-          name: user.name,
-          email: user.email || '',
-          avatar: user.avatar,
-        },
-      };
-      setTopic({
-        ...topic,
-        replies: [...(topic.replies || []), newReply],
-        _count: { ...topic._count, replies: topic._count.replies + 1 },
+    try {
+      const res = await apiFetch('/api/forum/replies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topicId: topic.id,
+          content: replyText.trim(),
+          authorId: user.id,
+        }),
       });
+      const data = await safeJson(res);
+      if (data?.success) {
+        const newReply: ForumReply = {
+          id: data.data.id || `reply-${Date.now()}`,
+          content: replyText,
+          topicId: topic.id,
+          authorId: user.id,
+          createdAt: new Date().toISOString(),
+          author: {
+            id: user.id,
+            name: user.name,
+            email: user.email || '',
+            avatar: user.avatar,
+          },
+        };
+        setTopic({
+          ...topic,
+          replies: [...(topic.replies || []), newReply],
+          _count: { ...topic._count, replies: topic._count.replies + 1 },
+        });
+        setReplyText('');
+      }
+    } catch (err) {
+      console.error('Failed to submit reply:', err);
+    } finally {
+      setSubmitting(false);
     }
-    setReplyText('');
-    setSubmitting(false);
   };
 
   // Handle like
@@ -454,7 +468,7 @@ export function TopicDetail({ slug: propSlug }: { slug?: string }) {
                     {t('forum.locked')}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    This topic is locked and no new replies can be posted.
+                    {t('forum.lockedMessage')}
                   </p>
                 </div>
               </CardContent>

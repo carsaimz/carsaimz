@@ -52,6 +52,7 @@ import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { APP_PUBLIC_URL } from '@/lib/client-config';
+import { useToast } from '@/hooks/use-toast';
 
 // ── Animation variants ──
 const containerVariants = {
@@ -131,6 +132,9 @@ export function PartnerDashboard() {
   const [showQR, setShowQR] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawMethod, setWithdrawMethod] = useState('');
+  const [accountDetails, setAccountDetails] = useState('');
+  const [withdrawSubmitting, setWithdrawSubmitting] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!user?.id) return;
@@ -180,7 +184,7 @@ export function PartnerDashboard() {
       try {
         await navigator.share({
           title: 'Carsai Mozambique',
-          text: 'Conheça a Carsai Mozambique — Soluções Digitais e Hospedagem Web Gratuita!',
+          text: t('partner.shareText'),
           url: affiliateLink,
         });
       } catch (err: any) {
@@ -197,6 +201,47 @@ export function PartnerDashboard() {
 
   const handleShowQR = () => {
     setShowQR(!showQR);
+  };
+
+  const handleRequestWithdrawal = async () => {
+    if (!withdrawAmount || !withdrawMethod) {
+      toast({ title: t('common.error') || 'Error', description: t('partner.selectMethod') || 'Please fill in all required fields', variant: 'destructive' });
+      return;
+    }
+
+    const parsedAmount = parseFloat(withdrawAmount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      toast({ title: t('common.error') || 'Error', description: t('partner.amountPlaceholder') || 'Please enter a valid amount', variant: 'destructive' });
+      return;
+    }
+
+    setWithdrawSubmitting(true);
+    try {
+      const res = await apiFetch('/api/partner/withdrawals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          partnerId: user?.id || 'demo-partner-001',
+          amount: parsedAmount,
+          method: withdrawMethod,
+          accountDetails: accountDetails || null,
+        }),
+      });
+
+      const data = await safeJson(res);
+      if (data && data.success) {
+        toast({ title: t('common.approved') || 'Success', description: t('partner.withdrawalsRequest') || 'Withdrawal request submitted' });
+        setWithdrawAmount('');
+        setWithdrawMethod('');
+        setAccountDetails('');
+      } else {
+        toast({ title: t('common.error') || 'Error', description: data?.message || 'Failed to submit withdrawal', variant: 'destructive' });
+      }
+    } catch (err: any) {
+      toast({ title: t('common.error') || 'Error', description: err.message || 'Failed to submit withdrawal', variant: 'destructive' });
+    } finally {
+      setWithdrawSubmitting(false);
+    }
   };
 
   const totalClicks = data?.stats.totalClicks ?? 0;
@@ -398,7 +443,7 @@ export function PartnerDashboard() {
                     alt="QR Code"
                     className="h-40 w-40"
                   />
-                  <p className="text-emerald-800 text-xs mt-2 text-center">Scan para visitar o link de afiliado</p>
+                  <p className="text-emerald-800 text-xs mt-2 text-center">{t('partner.qrScanText')}</p>
                 </div>
               )}
             </div>
@@ -582,7 +627,7 @@ export function PartnerDashboard() {
               {withdrawMethod === 'mpesa' && (
                 <div className="space-y-2">
                   <Label htmlFor="mpesa-number">{t('financial.mpesaNumber')}</Label>
-                  <Input id="mpesa-number" placeholder="+258 84 XXX XXX" />
+                  <Input id="mpesa-number" placeholder="+258 84 XXX XXX" value={accountDetails} onChange={(e) => setAccountDetails(e.target.value)} />
                 </div>
               )}
 
@@ -594,15 +639,22 @@ export function PartnerDashboard() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="account-number">{t('financial.transferAccount')}</Label>
-                    <Input id="account-number" placeholder={t('partner.accountNumber')} />
+                    <Input id="account-number" placeholder={t('partner.accountNumber')} value={accountDetails} onChange={(e) => setAccountDetails(e.target.value)} />
                   </div>
                 </div>
               )}
 
+              {withdrawMethod === 'deposit' && (
+                <div className="space-y-2">
+                  <Label htmlFor="deposit-details">{t('partner.accountDetails') || 'Account Details'}</Label>
+                  <Input id="deposit-details" placeholder={t('partner.accountNumber')} value={accountDetails} onChange={(e) => setAccountDetails(e.target.value)} />
+                </div>
+              )}
+
               <div className="flex items-center gap-3 pt-2">
-                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
+                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold" onClick={handleRequestWithdrawal} disabled={withdrawSubmitting}>
                   <ArrowDownToLine className="h-4 w-4 mr-2" />
-                  {t('partner.withdrawalsRequest')}
+                  {withdrawSubmitting ? (t('common.loading') || 'Submitting...') : t('partner.withdrawalsRequest')}
                 </Button>
                 <p className="text-sm text-muted-foreground">
                   {t('partner.processingTime')}
