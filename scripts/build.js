@@ -162,6 +162,24 @@ if (fs.existsSync(nestedJose)) {
   console.log("[build] Removed nested jose v6 (ESM-only) — using top-level jose v4 (CJS)");
 }
 
+// ── Generate embedded Firebase credentials ──────────────────────────────────
+// The firebase-admin-embedded.ts file is auto-generated from the obfuscated
+// firebase-admin.json file. This must run before next build because the
+// embedded credentials are imported by firebase-admin.ts.
+const embedScript = path.join(projectRoot, "scripts", "embed-firebase-credentials.js");
+const embeddedFile = path.join(projectRoot, "src", "lib", "firebase-admin-embedded.ts");
+if (fs.existsSync(embedScript)) {
+  try {
+    console.log("[build] Generating embedded Firebase credentials...");
+    execSync(`node "${embedScript}"`, { stdio: "inherit", cwd: projectRoot });
+  } catch (err) {
+    console.warn("[build] Embedded credentials generation failed (continuing with existing file):", err.message);
+  }
+} else if (!fs.existsSync(embeddedFile)) {
+  console.warn("[build] WARNING: Neither embed script nor embedded credentials file found.");
+  console.warn("[build] Firebase Admin may not initialize on Vercel without embedded credentials.");
+}
+
 // ── Main Build ──────────────────────────────────────────────────────────────
 
 const buildTarget = getBuildTarget();
