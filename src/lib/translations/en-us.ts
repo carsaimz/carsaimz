@@ -493,6 +493,7 @@ export const enUS: TranslationObject = {
     usersEdit: 'Edit user',
     usersDelete: 'Delete user',
     usersActive: 'Active users',
+    activeCount: '{count} active',
     usersInactive: 'Inactive users',
     usersTotal: 'Total users',
     roles: 'Roles',

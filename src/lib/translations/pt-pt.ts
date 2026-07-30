@@ -503,6 +503,7 @@ export const ptPT: TranslationObject = {
     usersEdit: 'Editar utilizador',
     usersDelete: 'Eliminar utilizador',
     usersActive: 'Utilizadores activos',
+    activeCount: '{count} activos',
     usersInactive: 'Utilizadores inactivos',
     usersTotal: 'Total de utilizadores',
     roles: 'Funções',

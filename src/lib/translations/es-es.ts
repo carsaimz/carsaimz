@@ -494,6 +494,7 @@ export const esES: TranslationObject = {
     usersEdit: 'Editar usuario',
     usersDelete: 'Eliminar usuario',
     usersActive: 'Usuarios activos',
+    activeCount: '{count} activos',
     usersInactive: 'Usuarios inactivos',
     usersTotal: 'Total de usuarios',
     roles: 'Roles',

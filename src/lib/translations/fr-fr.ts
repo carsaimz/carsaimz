@@ -494,6 +494,7 @@ export const frFR: TranslationObject = {
     usersEdit: 'Modifier l\'utilisateur',
     usersDelete: 'Supprimer l\'utilisateur',
     usersActive: 'Utilisateurs actifs',
+    activeCount: '{count} actifs',
     usersInactive: 'Utilisateurs inactifs',
     usersTotal: 'Total des utilisateurs',
     roles: 'Rôles',

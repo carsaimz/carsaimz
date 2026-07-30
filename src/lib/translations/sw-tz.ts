@@ -501,6 +501,7 @@ export const swTZ: TranslationObject = {
     usersEdit: 'Hariri mtumiaji',
     usersDelete: 'Futa mtumiaji',
     usersActive: 'Watumiaji hai',
+    activeCount: '{count} hai',
     usersInactive: 'Watumiaji wasio hai',
     usersTotal: 'Jumla ya watumiaji',
     roles: 'Majukumu',

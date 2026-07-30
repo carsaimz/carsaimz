@@ -494,6 +494,7 @@ export const zhCN: TranslationObject = {
     usersEdit: '编辑用户',
     usersDelete: '删除用户',
     usersActive: '活跃用户',
+    activeCount: '{count} 活跃',
     usersInactive: '非活跃用户',
     usersTotal: '用户总数',
     roles: '角色',

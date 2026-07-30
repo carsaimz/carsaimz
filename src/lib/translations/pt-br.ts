@@ -517,6 +517,7 @@ export const ptBR: TranslationObject = {
     usersEdit: 'Editar usuário',
     usersDelete: 'Excluir usuário',
     usersActive: 'Usuários ativos',
+    activeCount: '{count} ativos',
     usersInactive: 'Usuários inativos',
     usersTotal: 'Total de usuários',
     roles: 'Funções',

@@ -494,6 +494,7 @@ export const deDE: TranslationObject = {
     usersEdit: 'Benutzer bearbeiten',
     usersDelete: 'Benutzer löschen',
     usersActive: 'Aktive Benutzer',
+    activeCount: '{count} aktiv',
     usersInactive: 'Inaktive Benutzer',
     usersTotal: 'Benutzer insgesamt',
     roles: 'Rollen',
