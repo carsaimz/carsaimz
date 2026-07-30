@@ -53,8 +53,9 @@ let adminAuth: FirebaseAdminAuth | null = null
 let adminFirestore: FirebaseAdminFirestore | null = null
 let adminMessaging: FirebaseAdminMessaging | null = null
 
-// Track initialization error for diagnostics
+// Track initialization error and strategy for diagnostics
 let initError: string | null = null
+let initStrategy: string = 'none'
 
 // ─── Hardcoded fallbacks for non-secret values ───
 // These are already exposed in client-side code (client-config.ts),
@@ -75,6 +76,30 @@ const HARDCODED_CLIENT_EMAIL = 'firebase-adminsdk-fbsvc@carsai-mozambique-d5983.
 
 let _embeddedCredCache: Record<string, string> | null = null
 
+/**
+ * Pre-process obfuscated content to make it eval-safe.
+ * Converts ES6 Unicode code point escapes (\u{XXXXX}) to \uXXXX sequences
+ * or surrogate pairs, which are more widely supported and don't cause
+ * "Invalid Unicode escape sequence" errors in some environments.
+ */
+function preprocessObfuscatedContent(content: string): string {
+  // Replace \u{XXXXX} with the actual character, then re-escape as \uXXXX
+  // This handles both BMP (<= 0xFFFF) and supplementary (>= 0x10000) code points
+  return content.replace(/\\u\{([0-9a-fA-F]+)\}/g, (_match, hexStr: string) => {
+    const codePoint = parseInt(hexStr, 16)
+    if (codePoint <= 0xFFFF) {
+      // BMP character — use \uXXXX
+      const hex = codePoint.toString(16).padStart(4, '0')
+      return '\\u' + hex
+    } else {
+      // Supplementary character — use surrogate pair \uHHHH\uLLLL
+      const high = Math.floor((codePoint - 0x10000) / 0x400) + 0xD800
+      const low = ((codePoint - 0x10000) % 0x400) + 0xDC00
+      return '\\u' + high.toString(16).padStart(4, '0') + '\\u' + low.toString(16).padStart(4, '0')
+    }
+  })
+}
+
 function loadEmbeddedServiceAccount(): { projectId: string; clientEmail: string; privateKey: string } | null {
   try {
     // Only works on the server (Node.js) — never in browser
@@ -91,10 +116,23 @@ function loadEmbeddedServiceAccount(): { projectId: string; clientEmail: string;
       return null
     }
 
-    // Decode base64 → obfuscated content → eval → actual values
+    // Decode base64 → obfuscated content
     const decoded = Buffer.from(EMBEDDED_CRED_B64, 'base64').toString('utf8')
-    // eslint-disable-next-line no-eval
-    const data = eval('(' + decoded + ')') as Record<string, string>
+
+    // Try direct eval first (fastest path)
+    let data: Record<string, string>
+    try {
+      // eslint-disable-next-line no-eval
+      data = eval('(' + decoded + ')') as Record<string, string>
+    } catch (_directEvalErr: any) {
+      // Direct eval failed — likely due to \u{XXXXX} escapes.
+      // Pre-process to convert \u{XXXXX} → \uXXXX, then retry.
+      console.warn('[Firebase Admin] Direct eval failed, trying pre-processed fallback:', _directEvalErr.message)
+      const preprocessed = preprocessObfuscatedContent(decoded)
+      // eslint-disable-next-line no-eval
+      data = eval('(' + preprocessed + ')') as Record<string, string>
+    }
+
     _embeddedCredCache = data
 
     if (data.type === 'service_account' && data.private_key && data.project_id && data.client_email) {
@@ -104,6 +142,7 @@ function loadEmbeddedServiceAccount(): { projectId: string; clientEmail: string;
         privateKey: data.private_key,
       }
     }
+    console.warn('[Firebase Admin] Embedded credentials parsed but missing required fields. type:', data.type, 'has_key:', !!data.private_key)
     return null
   } catch (err: any) {
     console.warn('[Firebase Admin] Embedded credentials parse failed:', err.message)
@@ -137,9 +176,18 @@ function loadObfuscatedServiceAccount(): { projectId: string; clientEmail: strin
     if (!filePath) return null
 
     const raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '')
-    // The file uses JS-style escapes (not valid JSON), so we use eval()
-    // eslint-disable-next-line no-eval
-    const data = eval('(' + raw + ')') as Record<string, string>
+
+    // Try direct eval first, then pre-processed fallback
+    let data: Record<string, string>
+    try {
+      // eslint-disable-next-line no-eval
+      data = eval('(' + raw + ')') as Record<string, string>
+    } catch (_directEvalErr: any) {
+      console.warn('[Firebase Admin] JSON file direct eval failed, trying pre-processed fallback:', _directEvalErr.message)
+      const preprocessed = preprocessObfuscatedContent(raw)
+      // eslint-disable-next-line no-eval
+      data = eval('(' + preprocessed + ')') as Record<string, string>
+    }
 
     if (data.type === 'service_account' && data.private_key && data.project_id && data.client_email) {
       return {
@@ -213,6 +261,7 @@ function getAdminApp(): FirebaseAdminApp | null {
         projectId: embedded.projectId,
       })
       initError = null
+      initStrategy = 'embedded'
       console.log('[Firebase Admin] Initialized with embedded credentials')
       return adminApp
     } catch (err: any) {
@@ -234,6 +283,7 @@ function getAdminApp(): FirebaseAdminApp | null {
         projectId: obfuscated.projectId,
       })
       initError = null
+      initStrategy = 'json_file'
       console.log('[Firebase Admin] Initialized with obfuscated JSON file')
       return adminApp
     } catch (err: any) {
@@ -259,6 +309,7 @@ function getAdminApp(): FirebaseAdminApp | null {
           projectId,
         })
         initError = null
+        initStrategy = 'encrypted_env'
         console.log('[Firebase Admin] Initialized with encrypted env var key')
         return adminApp
       }
@@ -282,6 +333,7 @@ function getAdminApp(): FirebaseAdminApp | null {
         projectId,
       })
       initError = null
+      initStrategy = 'plain_env'
       console.log('[Firebase Admin] Initialized with plain env var key')
       return adminApp
     } catch (err: any) {
@@ -293,13 +345,16 @@ function getAdminApp(): FirebaseAdminApp | null {
   // Strategy 3: Application Default Credentials with explicit projectId
   // This works on Cloud Run, Cloud Functions, App Engine, and when
   // GOOGLE_APPLICATION_CREDENTIALS is set.
+  // WARNING: This will succeed but Firestore reads will fail if no
+  // real credentials are available (e.g., on Vercel without env vars).
   try {
     adminApp = initializeApp({
       credential: applicationDefault(),
       projectId,
     })
-    initError = null
-    console.log('[Firebase Admin] Initialized with Application Default Credentials')
+    initError = 'WARNING: Initialized with Application Default Credentials — Firestore reads will fail unless running on GCP or GOOGLE_APPLICATION_CREDENTIALS is set.'
+    initStrategy = 'application_default'
+    console.warn('[Firebase Admin] Initialized with Application Default Credentials — Firestore reads may fail on Vercel!')
     return adminApp
   } catch (err: any) {
     initError = `applicationDefault() failed: ${err.message}. Set FIREBASE_ADMIN_KEY_SECRET and FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED env vars.`
@@ -307,15 +362,25 @@ function getAdminApp(): FirebaseAdminApp | null {
 
   // No credentials available
   initError = 'Firebase Admin SDK not configured. Set FIREBASE_ADMIN_KEY_SECRET + FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED (encrypted) or FIREBASE_ADMIN_PRIVATE_KEY (plain) as environment variables. PROJECT_ID and CLIENT_EMAIL have hardcoded fallbacks.'
+  initStrategy = 'failed'
   return null
 }
 
 /**
  * Get the last initialization error (for diagnostics).
- * Returns null if initialization was successful.
+ * Returns null if initialization was successful with real credentials.
  */
 export function getAdminInitError(): string | null {
   return initError
+}
+
+/**
+ * Get the initialization strategy used (for diagnostics).
+ * Returns one of: 'embedded', 'json_file', 'encrypted_env', 'plain_env',
+ * 'application_default', 'failed', or 'none'.
+ */
+export function getAdminInitStrategy(): string {
+  return initStrategy
 }
 
 // ─── Lazy getters (initialize on first use) ───

@@ -14,13 +14,17 @@ export async function GET() {
 
   // Test Firebase Admin SDK initialization
   try {
-    const { getAdminFirestore, getAdminInitError } = await import('@/lib/firebase-admin')
+    const { getAdminFirestore, getAdminInitError, getAdminInitStrategy } = await import('@/lib/firebase-admin')
     const db = getAdminFirestore()
+    const strategy = getAdminInitStrategy()
+    const initErr = getAdminInitError()
+
+    diagnostics.initStrategy = strategy
+
     if (!db) {
       diagnostics.firebaseAdminInit = 'FAILED'
-      diagnostics.initError = getAdminInitError() || 'Firebase Admin Firestore not configured'
+      diagnostics.initError = initErr || 'Firebase Admin Firestore not configured'
     } else {
-      const initErr = getAdminInitError()
       diagnostics.firebaseAdminInit = initErr ? 'OK_WITH_WARNINGS' : 'OK'
       if (initErr) diagnostics.initWarning = initErr
 
