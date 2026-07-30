@@ -1,11 +1,14 @@
 /**
- * Carsai Mozambique — CORS Middleware
+ * Carsai Mozambique — CORS Proxy
+ *
+ * Next.js 16 replaces the "middleware" convention with "proxy".
+ * This file replaces the former middleware.ts to comply with the new convention.
  *
  * Allows cross-origin API requests from the Capacitor mobile app
  * (running on https://localhost or com.carsaimz://) and other
  * authorized origins.
  *
- * Without this middleware, fetch() calls from the Capacitor WebView
+ * Without this proxy, fetch() calls from the Capacitor WebView
  * to https://carsaimz.vercel.app/api/* would be blocked by CORS,
  * causing "Unexpected token '<'" errors (HTML error pages instead
  * of JSON) and auth failures ("Utilizador não autenticado").
@@ -34,7 +37,7 @@ function isLocalhost(origin: string): boolean {
   }
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Only handle API routes
   if (!request.nextUrl.pathname.startsWith('/api/')) {
     return NextResponse.next()

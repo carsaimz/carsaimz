@@ -89,14 +89,10 @@ function findApkAsset(assets: Array<{ name: string; browser_download_url: string
 // which triggers the native Android download manager.
 
 async function nativeDownloadApk(url: string): Promise<void> {
-  try {
-    // Try using Capacitor Browser plugin (opens in system browser for download)
-    const { Browser } = await import('@capacitor/browser');
-    await Browser.open({ url });
-  } catch {
-    // Fallback: open in current window
-    window.open(url, '_system');
-  }
+  // On Capacitor native apps, window.open with _system target
+  // triggers the Android system download manager / browser.
+  // No need for @capacitor/browser plugin — the WebView handles it.
+  window.open(url, '_system');
 }
 
 // ─── Component ───

@@ -248,9 +248,16 @@ jobs:
           NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID }}
           NEXT_PUBLIC_FIREBASE_VAPID_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_VAPID_KEY }}
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
           FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
           FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
-          FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
+          FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED }}
+          FIREBASE_ADMIN_KEY_SECRET: ${{ secrets.FIREBASE_ADMIN_KEY_SECRET }}
+          ZAI_BASE_URL: ${{ secrets.ZAI_BASE_URL }}
+          ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
+          ZAI_CHAT_ID: ${{ secrets.ZAI_CHAT_ID }}
+          ZAI_USER_ID: ${{ secrets.ZAI_USER_ID }}
+          ZAI_TOKEN: ${{ secrets.ZAI_TOKEN }}
         run: bun run build
 
       - name: Verify standalone output
@@ -320,9 +327,16 @@ jobs:
           NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID }}
           NEXT_PUBLIC_FIREBASE_VAPID_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_VAPID_KEY }}
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
           FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
           FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
-          FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
+          FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED }}
+          FIREBASE_ADMIN_KEY_SECRET: ${{ secrets.FIREBASE_ADMIN_KEY_SECRET }}
+          ZAI_BASE_URL: ${{ secrets.ZAI_BASE_URL }}
+          ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
+          ZAI_CHAT_ID: ${{ secrets.ZAI_CHAT_ID }}
+          ZAI_USER_ID: ${{ secrets.ZAI_USER_ID }}
+          ZAI_TOKEN: ${{ secrets.ZAI_TOKEN }}
         run: bun run build
 
       - name: Verify static export
@@ -448,9 +462,16 @@ jobs:
           NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID }}
           NEXT_PUBLIC_FIREBASE_VAPID_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_VAPID_KEY }}
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
           FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
           FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
-          FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
+          FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED }}
+          FIREBASE_ADMIN_KEY_SECRET: ${{ secrets.FIREBASE_ADMIN_KEY_SECRET }}
+          ZAI_BASE_URL: ${{ secrets.ZAI_BASE_URL }}
+          ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
+          ZAI_CHAT_ID: ${{ secrets.ZAI_CHAT_ID }}
+          ZAI_USER_ID: ${{ secrets.ZAI_USER_ID }}
+          ZAI_TOKEN: ${{ secrets.ZAI_TOKEN }}
         run: bun run build
 
       - name: Verify standalone output
