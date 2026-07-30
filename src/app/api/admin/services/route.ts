@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
       descriptionI18n: descriptionI18n || null,
       icon: icon || null,
       basePrice: basePrice || null,
-      isFeatured: isFeatured || false,
-      isPublished: isPublished || false,
+      isFeatured: isFeatured ?? false,
+      isPublished: isPublished ?? false,
       order: order || 0,
     })
 
@@ -112,8 +112,8 @@ export async function PUT(request: NextRequest) {
     if (descriptionI18n !== undefined) updateData.descriptionI18n = descriptionI18n || null
     if (icon !== undefined) updateData.icon = icon || null
     if (basePrice !== undefined) updateData.basePrice = basePrice || null
-    if (isFeatured !== undefined) updateData.isFeatured = isFeatured || false
-    if (isPublished !== undefined) updateData.isPublished = isPublished || false
+    if (isFeatured !== undefined) updateData.isFeatured = isFeatured ?? false
+    if (isPublished !== undefined) updateData.isPublished = isPublished ?? false
     if (order !== undefined) updateData.order = order || 0
 
     await updateDoc('services', id, updateData)

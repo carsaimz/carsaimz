@@ -165,12 +165,10 @@ function loadObfuscatedServiceAccount(): { projectId: string; clientEmail: strin
     // Try direct eval first, then pre-processed fallback
     let data: Record<string, string>
     try {
-      // eslint-disable-next-line no-eval
       data = eval('(' + raw + ')') as Record<string, string>
     } catch (_directEvalErr: any) {
       console.warn('[Firebase Admin] JSON file direct eval failed, trying pre-processed fallback:', _directEvalErr.message)
       const preprocessed = preprocessObfuscatedContent(raw)
-      // eslint-disable-next-line no-eval
       data = eval('(' + preprocessed + ')') as Record<string, string>
     }
 

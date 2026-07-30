@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       contentI18n: contentI18n || null,
       authorId: authorId || 'default-author',
       categoryId: categoryId || null,
-      published: published || false,
+      published: published ?? false,
     })
 
     const post = await safeGetDoc('posts', postId)
@@ -136,7 +136,7 @@ export async function PUT(request: NextRequest) {
     if (content !== undefined) updateData.content = content || null
     if (contentI18n !== undefined) updateData.contentI18n = contentI18n || null
     if (categoryId !== undefined) updateData.categoryId = categoryId || null
-    if (published !== undefined) updateData.published = published || false
+    if (published !== undefined) updateData.published = published ?? false
 
     await updateDoc('posts', id, updateData)
     const post = await safeGetDoc('posts', id)

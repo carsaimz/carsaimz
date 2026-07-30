@@ -1,13 +1,27 @@
 import { NextResponse } from 'next/server'
+import { safeQueryDocs, safeGetDocs, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { queryDocs, getDocByField, createDoc, getDoc } from '@/lib/db'
 import { buildI18nJson } from '@/lib/i18n-content'
 import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET() {
   try {
-    const projects = await queryDocs('projects', [
+    // Try indexed query first (requires Firestore composite index)
+    let projects = await safeQueryDocs('projects', [
       { field: 'isPublished', op: '==', value: true },
     ], 'createdAt', 'desc')
+
+    // Fallback: if indexed query returns empty, try fetching all and filtering client-side
+    if (projects.length === 0) {
+      const allProjects = await safeGetDocs('projects')
+      projects = allProjects
+        .filter((p: any) => p.isPublished === true)
+        .sort((a: any, b: any) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+          return dateB - dateA
+        })
+    }
 
     return NextResponse.json({
       success: true,
@@ -17,11 +31,7 @@ export async function GET() {
   } catch (error) {
     console.error('Projects fetch error:', error)
     return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to fetch projects',
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
+      { success: false, message: 'Failed to fetch projects', error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

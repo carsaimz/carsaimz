@@ -96,7 +96,7 @@ function getNotifBg(type: string, isRead: boolean) {
 const PAGE_SIZE = 20;
 
 export function UserNotifications() {
-  const { t } = useLanguage();
+  const { t, languageConfig } = useLanguage();
   const user = useAuthStore((s) => s.user);
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -150,11 +150,11 @@ export function UserNotifications() {
         setPrefs({ channels: data.preferences.channels });
       }
     } catch (err: any) {
-      setError(err.message || 'Erro ao carregar notificações');
+      setError(err.message || t('notifications.loadError'));
     } finally {
       setLoading(false);
     }
-  }, [user?.id, filter]);
+  }, [user?.id, filter, t]);
 
   useEffect(() => {
     setPage(0);
@@ -251,11 +251,11 @@ export function UserNotifications() {
       const hours = Math.floor(diff / 3600000);
       const days = Math.floor(diff / 86400000);
 
-      if (minutes < 1) return 'Agora';
-      if (minutes < 60) return `${minutes}min atrás`;
-      if (hours < 24) return `${hours}h atrás`;
-      if (days < 7) return `${days}d atrás`;
-      return date.toLocaleDateString('pt-MZ', { day: '2-digit', month: 'short', year: 'numeric' });
+      if (minutes < 1) return t('notifications.justNow');
+      if (minutes < 60) return t('notifications.minutesAgo', { count: minutes });
+      if (hours < 24) return t('notifications.hoursAgo', { count: hours });
+      if (days < 7) return t('notifications.daysAgo', { count: days });
+      return date.toLocaleDateString(languageConfig.locale, { day: '2-digit', month: 'short', year: 'numeric' });
     } catch {
       return dateStr;
     }
@@ -285,7 +285,7 @@ export function UserNotifications() {
             <div className="flex items-center gap-3">
               <XCircle className="h-6 w-6 text-red-500" />
               <div>
-                <h3 className="font-semibold text-red-700">Erro ao carregar notificações</h3>
+                <h3 className="font-semibold text-red-700">{t('notifications.loadError')}</h3>
                 <p className="text-sm text-muted-foreground">{error}</p>
               </div>
             </div>
@@ -294,7 +294,7 @@ export function UserNotifications() {
               onClick={() => fetchNotifications(0, false)}
             >
               <RefreshCw className="h-4 w-4 mr-2" />
-              Tentar novamente
+              {t('common.retry')}
             </Button>
           </CardContent>
         </Card>
@@ -309,12 +309,14 @@ export function UserNotifications() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Bell className="h-6 w-6 text-emerald-600" />
-            Notificações
+            {t('notifications.title')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             {unreadCount > 0
-              ? `${unreadCount} notificação${unreadCount !== 1 ? 'ões' : ''} não lida${unreadCount !== 1 ? 's' : ''}`
-              : 'Todas as notificações foram lidas'
+              ? unreadCount === 1
+                ? t('notifications.unreadCount', { count: unreadCount })
+                : t('notifications.unreadCountPlural', { count: unreadCount })
+              : t('notifications.allRead')
             }
           </p>
         </div>
@@ -326,7 +328,7 @@ export function UserNotifications() {
             disabled={loading}
           >
             <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
-            Atualizar
+            {t('common.refresh')}
           </Button>
           {unreadCount > 0 && (
             <Button
@@ -335,7 +337,7 @@ export function UserNotifications() {
               onClick={markAllAsRead}
             >
               <CheckCheck className="h-4 w-4 mr-1" />
-              Marcar todas como lidas
+              {t('notifications.markAllRead')}
             </Button>
           )}
         </div>
@@ -346,7 +348,7 @@ export function UserNotifications() {
         <TabsList>
           <TabsTrigger value="notifications" className="gap-1">
             <Bell className="h-4 w-4" />
-            Notificações
+            {t('notifications.title')}
             {unreadCount > 0 && (
               <Badge className="ml-1 bg-emerald-100 text-emerald-700 text-xs px-1.5 py-0">
                 {unreadCount}
@@ -355,7 +357,7 @@ export function UserNotifications() {
           </TabsTrigger>
           <TabsTrigger value="preferences" className="gap-1">
             <Settings2 className="h-4 w-4" />
-            Preferências
+            {t('notifications.preferences')}
           </TabsTrigger>
         </TabsList>
 
@@ -366,12 +368,12 @@ export function UserNotifications() {
             <div className="flex items-center gap-2 flex-wrap">
               <Filter className="h-4 w-4 text-muted-foreground" />
               {[
-                { key: 'all', label: 'Todas' },
-                { key: 'unread', label: 'Não lidas' },
-                { key: 'info', label: 'Informação' },
-                { key: 'success', label: 'Sucesso' },
-                { key: 'warning', label: 'Aviso' },
-                { key: 'error', label: 'Erro' },
+                { key: 'all', label: t('notifications.all') },
+                { key: 'unread', label: t('notifications.unread') },
+                { key: 'info', label: t('notifications.info') },
+                { key: 'success', label: t('notifications.success') },
+                { key: 'warning', label: t('notifications.warning') },
+                { key: 'error', label: t('notifications.error') },
               ].map(({ key, label }) => (
                 <Button
                   key={key}
@@ -392,11 +394,11 @@ export function UserNotifications() {
               <Card>
                 <CardContent className="p-12 text-center">
                   <BellOff className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                  <h3 className="font-semibold text-lg">Sem notificações</h3>
+                  <h3 className="font-semibold text-lg">{t('notifications.noNotifications')}</h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     {filter === 'all'
-                      ? 'Não tem notificações neste momento. Quando receber notificações, elas aparecerão aqui.'
-                      : 'Não tem notificações que correspondam a este filtro.'
+                      ? t('notifications.noNotificationsDesc')
+                      : t('notifications.noNotificationsFiltered')
                     }
                   </p>
                 </CardContent>
@@ -460,7 +462,7 @@ export function UserNotifications() {
                             }}
                           >
                             <ExternalLink className="h-3 w-3 mr-1" />
-                            Ver detalhes
+                            {t('notifications.viewDetails')}
                           </Button>
                         )}
                         {!notif.isRead && (
@@ -471,7 +473,7 @@ export function UserNotifications() {
                             onClick={() => markAsRead(notif.id)}
                           >
                             <MailOpen className="h-3 w-3 mr-1" />
-                            Marcar como lida
+                            {t('notifications.markAsRead')}
                           </Button>
                         )}
                         <Button
@@ -481,7 +483,7 @@ export function UserNotifications() {
                           onClick={() => deleteNotification(notif.id)}
                         >
                           <Trash2 className="h-3 w-3 mr-1" />
-                          Eliminar
+                          {t('common.delete')}
                         </Button>
                       </div>
                     </div>
@@ -505,10 +507,10 @@ export function UserNotifications() {
                 }}
               >
                 <ChevronLeft className="h-4 w-4" />
-                Anterior
+                {t('notifications.previous')}
               </Button>
               <span className="text-sm text-muted-foreground">
-                Página {page + 1}
+                {t('notifications.page')} {page + 1}
               </span>
               <Button
                 variant="outline"
@@ -520,7 +522,7 @@ export function UserNotifications() {
                   fetchNotifications(newPage, true);
                 }}
               >
-                Próxima
+                {t('notifications.next')}
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -534,10 +536,10 @@ export function UserNotifications() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Settings2 className="h-5 w-5 text-emerald-600" />
-                  Preferências de Notificação
+                  {t('notifications.preferencesTitle')}
                 </CardTitle>
                 <CardDescription>
-                  Escolha como deseja receber as notificações. Pode ativar ou desativar cada canal individualmente.
+                  {t('notifications.preferencesDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -548,9 +550,9 @@ export function UserNotifications() {
                       <Monitor className="h-5 w-5" />
                     </div>
                     <div>
-                      <Label className="text-sm font-semibold">Notificações Web</Label>
+                      <Label className="text-sm font-semibold">{t('notifications.webNotifications')}</Label>
                       <p className="text-xs text-muted-foreground">
-                        Receber notificações no site quando estiver online
+                        {t('notifications.webNotificationsDesc')}
                       </p>
                     </div>
                   </div>
@@ -570,9 +572,9 @@ export function UserNotifications() {
                       <Mail className="h-5 w-5" />
                     </div>
                     <div>
-                      <Label className="text-sm font-semibold">Notificações por Email</Label>
+                      <Label className="text-sm font-semibold">{t('notifications.emailNotifications')}</Label>
                       <p className="text-xs text-muted-foreground">
-                        Receber notificações automaticamente no seu email
+                        {t('notifications.emailNotificationsDesc')}
                       </p>
                     </div>
                   </div>
@@ -592,9 +594,9 @@ export function UserNotifications() {
                       <Smartphone className="h-5 w-5" />
                     </div>
                     <div>
-                      <Label className="text-sm font-semibold">Notificações Push</Label>
+                      <Label className="text-sm font-semibold">{t('notifications.pushNotifications')}</Label>
                       <p className="text-xs text-muted-foreground">
-                        Receber notificações no telemóvel (requer permissão do navegador)
+                        {t('notifications.pushNotificationsDesc')}
                       </p>
                     </div>
                   </div>
@@ -635,24 +637,24 @@ export function UserNotifications() {
                 <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800">
                   <h4 className="font-semibold text-emerald-800 dark:text-emerald-200 flex items-center gap-2">
                     <Info className="h-4 w-4" />
-                    Resumo das Preferências
+                    {t('notifications.preferencesSummary')}
                   </h4>
                   <div className="mt-2 space-y-1 text-sm text-emerald-700 dark:text-emerald-300">
                     <p>
                       <Monitor className="h-3 w-3 inline mr-1" />
-                      Web: {prefs.channels.web ? '✓ Ativado' : '✗ Desativado'}
+                      Web: {prefs.channels.web ? `✓ ${t('notifications.enabled')}` : `✗ ${t('notifications.disabled')}`}
                     </p>
                     <p>
                       <Mail className="h-3 w-3 inline mr-1" />
-                      Email: {prefs.channels.email ? '✓ Ativado' : '✗ Desativado'}
+                      Email: {prefs.channels.email ? `✓ ${t('notifications.enabled')}` : `✗ ${t('notifications.disabled')}`}
                     </p>
                     <p>
                       <Smartphone className="h-3 w-3 inline mr-1" />
-                      Push: {prefs.channels.push ? '✓ Ativado' : '✗ Desativado'}
+                      Push: {prefs.channels.push ? `✓ ${t('notifications.enabled')}` : `✗ ${t('notifications.disabled')}`}
                     </p>
                   </div>
                   <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2">
-                    As alterações são guardadas automaticamente. As notificações por email são enviadas para o endereço associado à sua conta.
+                    {t('notifications.autoSaveDesc')}
                   </p>
                 </div>
               </CardContent>

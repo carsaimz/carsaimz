@@ -71,18 +71,21 @@ export function ProjectsSection() {
   const router = useRouter();
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
     apiFetch('/api/projects')
       .then((res) => safeJson(res))
       .then((data) => {
-        if (data && data.success && data.data?.length > 0) {
-          setProjects(data.data);
+        if (data && data.success) {
+          setProjects(data.data || []);
+        } else {
+          setError(data?.message || 'Failed to load projects');
         }
       })
       .catch(() => {
-        // Error - show empty state, no fallback
+        setError('Network error');
       })
       .finally(() => setLoading(false));
   }, []);
@@ -153,7 +156,7 @@ export function ProjectsSection() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t('projects.allCategories')}</SelectItem>
-              <SelectItem value="featured">Featured</SelectItem>
+              <SelectItem value="featured">{t('common.featured')}</SelectItem>
               {uniqueClients.map((client) => (
                 <SelectItem key={client} value={client.toLowerCase()}>
                   {client}
@@ -257,7 +260,13 @@ export function ProjectsSection() {
           })}
         </motion.div>
 
-        {filteredProjects.length === 0 && (
+        {error && (
+          <div className="text-center py-12">
+            <p className="text-destructive mb-2">{error}</p>
+            <p className="text-muted-foreground text-sm">{t('common.noResults')}</p>
+          </div>
+        )}
+        {!error && filteredProjects.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
             {t('common.noResults')}
           </div>

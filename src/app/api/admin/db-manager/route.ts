@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { safeCountDocs, safeGetDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
-import { deleteDoc } from '@/lib/db'
+import { deleteDoc, createDoc, updateDoc, getDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 
 // Known Firestore collections (from the db.ts schema)
@@ -149,6 +149,94 @@ export async function DELETE(request: NextRequest) {
       {
         success: false,
         message: 'Failed to delete document',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    )
+  }
+}
+
+// POST — Create a new document
+export async function POST(request: NextRequest) {
+  try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
+    const body = await request.json()
+    const { collection: collectionName, data } = body
+
+    if (!collectionName || !data || typeof data !== 'object') {
+      return NextResponse.json(
+        { success: false, message: 'collection and data are required' },
+        { status: 400 }
+      )
+    }
+
+    const docId = await createDoc(collectionName, data)
+    const doc = await getDoc(collectionName, docId)
+
+    return NextResponse.json(
+      { success: true, data: serializeFirestore(doc) },
+      { status: 201 }
+    )
+  } catch (error) {
+    console.error('DB Manager POST error:', error)
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Failed to create document',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    )
+  }
+}
+
+// PUT — Update a document
+export async function PUT(request: NextRequest) {
+  try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) {
+      return NextResponse.json(
+        { success: false, message: adminError },
+        { status: 503 }
+      )
+    }
+
+    const body = await request.json()
+    const { collection: collectionName, docId, data } = body
+
+    if (!collectionName || !docId || !data || typeof data !== 'object') {
+      return NextResponse.json(
+        { success: false, message: 'collection, docId and data are required' },
+        { status: 400 }
+      )
+    }
+
+    // Verify document exists
+    const existingDoc = await safeGetDoc(collectionName, docId)
+    if (!existingDoc) {
+      return NextResponse.json(
+        { success: false, message: 'Document not found' },
+        { status: 404 }
+      )
+    }
+
+    await updateDoc(collectionName, docId, data)
+    const doc = await getDoc(collectionName, docId)
+
+    return NextResponse.json({ success: true, data: serializeFirestore(doc) })
+  } catch (error) {
+    console.error('DB Manager PUT error:', error)
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Failed to update document',
         error: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }

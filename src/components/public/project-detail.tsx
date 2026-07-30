@@ -59,12 +59,11 @@ export function ProjectDetail() {
   const slug = params?.slug as string;
 
   const [project, setProject] = useState<ProjectData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !!slug && slug !== '__dynamic__');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!slug || slug === '__dynamic__') {
-      setLoading(false);
       return;
     }
 

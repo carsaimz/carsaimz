@@ -67,12 +67,11 @@ export function ServiceDetail() {
   const slug = params?.slug as string;
 
   const [service, setService] = useState<ServiceData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !!slug && slug !== '__dynamic__');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!slug || slug === '__dynamic__') {
-      setLoading(false);
       return;
     }
 

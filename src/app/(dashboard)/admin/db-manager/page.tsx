@@ -6,6 +6,7 @@ import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +14,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -46,6 +46,8 @@ import {
   ChevronRight,
   Loader2,
   Hash,
+  Plus,
+  Pencil,
 } from 'lucide-react';
 
 interface CollectionInfo {
@@ -81,6 +83,13 @@ export default function DbManagerPage() {
   const [docLoading, setDocLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ── Dialog state ──
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [jsonInput, setJsonInput] = useState('');
+  const [jsonError, setJsonError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
   // ── Fetch collections ──
   const fetchCollections = useCallback(async () => {
     setLoading(true);
@@ -88,7 +97,6 @@ export default function DbManagerPage() {
     try {
       const res = await apiFetch('/api/admin/db-manager');
       if (!res.ok) {
-        // Try to get the actual error message from the response body
         try {
           const errJson = await safeJson(res);
           if (errJson?.error) { setError(errJson.error); return; }
@@ -165,7 +173,6 @@ export default function DbManagerPage() {
       const json = await safeJson(res);
       if (!json) return;
       if (json.success) {
-        // Refresh documents
         if (selectedCollection) {
           fetchDocuments(selectedCollection, page);
         }
@@ -177,6 +184,55 @@ export default function DbManagerPage() {
       // ignore
     }
   }, [selectedCollection, page, fetchDocuments, selectedDoc]);
+
+  // ── Create document ──
+  const createDocument = useCallback(async (colName: string, data: Record<string, any>) => {
+    setSaving(true);
+    try {
+      const res = await apiFetch('/api/admin/db-manager', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ collection: colName, data }),
+      });
+      const json = await safeJson(res);
+      if (!json) return false;
+      if (json.success) {
+        fetchDocuments(colName, 1);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }, [fetchDocuments]);
+
+  // ── Update document ──
+  const updateDocument = useCallback(async (colName: string, docId: string, data: Record<string, any>) => {
+    setSaving(true);
+    try {
+      const res = await apiFetch('/api/admin/db-manager', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ collection: colName, docId, data }),
+      });
+      const json = await safeJson(res);
+      if (!json) return false;
+      if (json.success) {
+        // Refresh the document detail
+        fetchDocument(colName, docId);
+        // Also refresh the list
+        fetchDocuments(colName, page);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }, [fetchDocument, fetchDocuments, page]);
 
   // ── Export collection as JSON ──
   const exportCollection = useCallback(async (colName: string) => {
@@ -232,6 +288,63 @@ export default function DbManagerPage() {
     setSelectedDoc(null);
   };
 
+  // ── Handle create document ──
+  const handleCreateDocument = () => {
+    setJsonInput('{\n  \n}');
+    setJsonError(null);
+    setCreateDialogOpen(true);
+  };
+
+  // ── Handle edit document ──
+  const handleEditDocument = () => {
+    if (!selectedDoc) return;
+    const { id, ...data } = selectedDoc;
+    setJsonInput(JSON.stringify(data, null, 2));
+    setJsonError(null);
+    setEditDialogOpen(true);
+  };
+
+  // ── Validate and save JSON ──
+  const handleSaveCreate = async () => {
+    try {
+      const parsed = JSON.parse(jsonInput);
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+        setJsonError(t('admin.invalidJson'));
+        return;
+      }
+      setJsonError(null);
+      const success = await createDocument(selectedCollection!, parsed);
+      if (success) {
+        setCreateDialogOpen(false);
+        setJsonInput('');
+      } else {
+        setJsonError(t('admin.invalidJson'));
+      }
+    } catch {
+      setJsonError(t('admin.invalidJson'));
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      const parsed = JSON.parse(jsonInput);
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+        setJsonError(t('admin.invalidJson'));
+        return;
+      }
+      setJsonError(null);
+      const success = await updateDocument(selectedCollection!, selectedDoc!.id, parsed);
+      if (success) {
+        setEditDialogOpen(false);
+        setJsonInput('');
+      } else {
+        setJsonError(t('admin.invalidJson'));
+      }
+    } catch {
+      setJsonError(t('admin.invalidJson'));
+    }
+  };
+
   // ── Render a value for the table ──
   const renderValue = (value: any): string => {
     if (value === null || value === undefined) return '—';
@@ -255,7 +368,7 @@ export default function DbManagerPage() {
         if (key !== 'id') keySet.add(key);
       });
     });
-    return Array.from(keySet).slice(0, 5); // Show at most 5 fields in the table
+    return Array.from(keySet).slice(0, 5);
   };
 
   // ── Document detail view ──
@@ -266,13 +379,24 @@ export default function DbManagerPage() {
 
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={handleBackToDocuments}>
-              <ArrowLeft className="size-4 mr-1" />
-              {t('admin.documents')}
-            </Button>
-          </div>
+        {/* Breadcrumb row */}
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={handleBackToDocuments}>
+            <ArrowLeft className="size-4 mr-1" />
+            {t('admin.documents')}
+          </Button>
+          <span className="text-muted-foreground">/</span>
+          <span className="font-mono text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-none">
+            {selectedDoc.id}
+          </span>
+        </div>
+
+        {/* Action buttons row */}
+        <div className="flex items-center justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={handleEditDocument}>
+            <Pencil className="size-4 mr-1" />
+            {t('admin.editDocument')}
+          </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm">
@@ -307,7 +431,7 @@ export default function DbManagerPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <FileText className="size-4" />
-              {selectedDoc.id}
+              <span className="truncate">{selectedDoc.id}</span>
             </CardTitle>
             <CardDescription>
               {selectedCollection} / {selectedDoc.id}
@@ -318,9 +442,9 @@ export default function DbManagerPage() {
               {entries.map(([key, value]) => (
                 <div
                   key={key}
-                  className="flex items-start gap-3 py-2 border-b last:border-b-0"
+                  className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-2 border-b last:border-b-0"
                 >
-                  <span className="text-sm font-medium text-muted-foreground min-w-[160px] shrink-0">
+                  <span className="text-sm font-medium text-muted-foreground sm:min-w-[160px] sm:shrink-0">
                     {key}
                   </span>
                   <span className="text-sm break-all">
@@ -347,35 +471,44 @@ export default function DbManagerPage() {
 
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={handleBackToCollections}>
-              <ArrowLeft className="size-4 mr-1" />
-              {t('admin.collections')}
-            </Button>
-            <span className="text-muted-foreground">/</span>
-            <span className="font-medium">{selectedCollection}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">
-              {totalDocs} {t('admin.documents').toLowerCase()}
-            </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => exportCollection(selectedCollection!)}
-            >
-              <Download className="size-4 mr-1" />
-              {t('admin.exportCollection')}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => fetchDocuments(selectedCollection!, page)}
-            >
-              <RefreshCw className="size-4" />
-            </Button>
-          </div>
+        {/* Breadcrumb row — full width */}
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={handleBackToCollections}>
+            <ArrowLeft className="size-4 mr-1" />
+            {t('admin.collections')}
+          </Button>
+          <span className="text-muted-foreground">/</span>
+          <span className="font-medium">{selectedCollection}</span>
+        </div>
+
+        {/* Actions row — full width, right-aligned */}
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Badge variant="secondary">
+            {totalDocs} {t('admin.documents').toLowerCase()}
+          </Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCreateDocument}
+          >
+            <Plus className="size-4 mr-1" />
+            {t('admin.addDocument')}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => exportCollection(selectedCollection!)}
+          >
+            <Download className="size-4 mr-1" />
+            {t('admin.exportCollection')}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fetchDocuments(selectedCollection!, page)}
+          >
+            <RefreshCw className="size-4" />
+          </Button>
         </div>
 
         {docLoading ? (
@@ -396,9 +529,11 @@ export default function DbManagerPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[200px]">ID</TableHead>
+                        <TableHead className="w-[180px] sm:w-[200px]">ID</TableHead>
                         {fieldKeys.map((key) => (
-                          <TableHead key={key}>{truncate(key, 20)}</TableHead>
+                          <TableHead key={key} className="hidden sm:table-cell">
+                            {truncate(key, 20)}
+                          </TableHead>
                         ))}
                         <TableHead className="w-[100px] text-right">
                           {t('admin.actions')}
@@ -416,7 +551,7 @@ export default function DbManagerPage() {
                             {truncate(doc.id, 20)}
                           </TableCell>
                           {fieldKeys.map((key) => (
-                            <TableCell key={key} className="text-sm">
+                            <TableCell key={key} className="text-sm hidden sm:table-cell">
                               {truncate(renderValue(doc[key]), 40)}
                             </TableCell>
                           ))}
@@ -517,7 +652,7 @@ export default function DbManagerPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {collections.map((col) => (
             <Card
               key={col.name}
@@ -564,6 +699,84 @@ export default function DbManagerPage() {
         : selectedCollection
           ? renderDocuments()
           : renderCollections()}
+
+      {/* Create Document Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>{t('admin.addDocument')}</DialogTitle>
+            <DialogDescription>
+              {selectedCollection}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Textarea
+              value={jsonInput}
+              onChange={(e) => {
+                setJsonInput(e.target.value);
+                setJsonError(null);
+              }}
+              placeholder={t('admin.jsonPlaceholder')}
+              className="font-mono text-sm min-h-[300px] resize-y"
+            />
+            {jsonError && (
+              <p className="text-sm text-destructive">{jsonError}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCreateDialogOpen(false)}
+              disabled={saving}
+            >
+              {t('admin.cancel')}
+            </Button>
+            <Button onClick={handleSaveCreate} disabled={saving}>
+              {saving && <Loader2 className="size-4 mr-1 animate-spin" />}
+              {t('admin.createDocument')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Document Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>{t('admin.editDocument')}</DialogTitle>
+            <DialogDescription>
+              {selectedCollection} / {selectedDoc?.id}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Textarea
+              value={jsonInput}
+              onChange={(e) => {
+                setJsonInput(e.target.value);
+                setJsonError(null);
+              }}
+              placeholder={t('admin.jsonPlaceholder')}
+              className="font-mono text-sm min-h-[300px] resize-y"
+            />
+            {jsonError && (
+              <p className="text-sm text-destructive">{jsonError}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditDialogOpen(false)}
+              disabled={saving}
+            >
+              {t('admin.cancel')}
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={saving}>
+              {saving && <Loader2 className="size-4 mr-1 animate-spin" />}
+              {t('admin.saveDocument')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

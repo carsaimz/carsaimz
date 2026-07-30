@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
       client: client || null,
       technologies: technologies || null,
       demoUrl: demoUrl || null,
-      isFeatured: isFeatured || false,
-      isPublished: isPublished || false,
+      isFeatured: isFeatured ?? false,
+      isPublished: isPublished ?? false,
     })
 
     const project = await safeGetDoc('projects', projectId)
@@ -111,8 +111,8 @@ export async function PUT(request: NextRequest) {
     if (client !== undefined) updateData.client = client || null
     if (technologies !== undefined) updateData.technologies = technologies || null
     if (demoUrl !== undefined) updateData.demoUrl = demoUrl || null
-    if (isFeatured !== undefined) updateData.isFeatured = isFeatured || false
-    if (isPublished !== undefined) updateData.isPublished = isPublished || false
+    if (isFeatured !== undefined) updateData.isFeatured = isFeatured ?? false
+    if (isPublished !== undefined) updateData.isPublished = isPublished ?? false
 
     await updateDoc('projects', id, updateData)
     const project = await safeGetDoc('projects', id)

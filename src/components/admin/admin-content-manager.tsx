@@ -197,7 +197,6 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
   }, [contentType]);
 
   const fetchCategories = useCallback(async () => {
-    if (contentType !== 'posts') return;
     try {
       const res = await apiFetch('/api/admin/categories');
       const data = await safeJson(res);
@@ -208,7 +207,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
     } catch (err) {
       console.error('Categories fetch error:', err);
     }
-  }, [contentType]);
+  }, []);
 
   useEffect(() => {
     fetchItems();
@@ -335,6 +334,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
           order: parseInt(formOrder) || 0,
           isFeatured: formFeatured,
           isPublished: formPublished,
+          categoryId: formCategoryId || null,
         };
       case 'projects':
         return {
@@ -349,6 +349,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
           demoUrl: formDemoUrl,
           isFeatured: formFeatured,
           isPublished: formPublished,
+          categoryId: formCategoryId || null,
         };
       case 'posts':
         return {
@@ -559,6 +560,21 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
         </div>
       </div>
 
+      {/* Category */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">{t('admin.category')}</Label>
+        <Select value={formCategoryId} onValueChange={setFormCategoryId}>
+          <SelectTrigger className="w-full focus-visible:ring-emerald-500">
+            <SelectValue placeholder="Select category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Featured & Published toggles */}
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
@@ -673,6 +689,21 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
             className="focus-visible:ring-emerald-500"
           />
         </div>
+      </div>
+
+      {/* Category */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">{t('admin.category')}</Label>
+        <Select value={formCategoryId} onValueChange={setFormCategoryId}>
+          <SelectTrigger className="w-full focus-visible:ring-emerald-500">
+            <SelectValue placeholder="Select category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Featured & Published toggles */}
