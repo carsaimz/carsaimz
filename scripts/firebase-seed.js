@@ -14,15 +14,47 @@ const { getFirestore } = require('firebase-admin/firestore')
 const { getAuth } = require('firebase-admin/auth')
 
 // ─── Firebase Admin init ───
+// Uses obfuscated JSON file first, then env vars as fallback
 
-const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID
-const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL
-const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n')
+const fs = require('fs')
+const path = require('path')
 
-if (!projectId || !clientEmail || !privateKey) {
-  console.error('[Seed] ERROR: Firebase Admin credentials not set in .env')
-  console.error('[Seed] Required: FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, FIREBASE_ADMIN_PRIVATE_KEY')
-  process.exit(1)
+const HARDCODED_PROJECT_ID = 'carsai-mozambique-d5983'
+const HARDCODED_CLIENT_EMAIL = 'firebase-adminsdk-fbsvc@carsai-mozambique-d5983.iam.gserviceaccount.com'
+
+function loadObfuscatedServiceAccount() {
+  try {
+    const filePath = path.join(__dirname, '..', 'src', 'lib', 'firebase-admin.json')
+    if (!fs.existsSync(filePath)) return null
+    const raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '')
+    // eslint-disable-next-line no-eval
+    const data = eval('(' + raw + ')')
+    if (data.type === 'service_account' && data.private_key && data.project_id && data.client_email) {
+      return { projectId: data.project_id, clientEmail: data.client_email, privateKey: data.private_key }
+    }
+    return null
+  } catch (err) { return null }
+}
+
+let projectId, clientEmail, privateKey
+
+const obfuscated = loadObfuscatedServiceAccount()
+if (obfuscated) {
+  projectId = obfuscated.projectId
+  clientEmail = obfuscated.clientEmail
+  privateKey = obfuscated.privateKey
+  console.log('[Seed] Using obfuscated JSON file (firebase-admin.json)')
+} else {
+  projectId = process.env.FIREBASE_ADMIN_PROJECT_ID || HARDCODED_PROJECT_ID
+  clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL || HARDCODED_CLIENT_EMAIL
+  privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n')
+  if (!privateKey) {
+    console.error('[Seed] ERROR: No credentials found.')
+    console.error('[Seed] The obfuscated JSON file (src/lib/firebase-admin.json) was not found.')
+    console.error('[Seed] Alternatively, set FIREBASE_ADMIN_PRIVATE_KEY in .env')
+    process.exit(1)
+  }
+  console.log('[Seed] Using env vars (FIREBASE_ADMIN_*)')
 }
 
 const app = initializeApp({

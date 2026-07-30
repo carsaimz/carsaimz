@@ -22,7 +22,7 @@ function getAffiliateBaseUrl(): string {
   if (typeof window === 'undefined') return APP_PUBLIC_URL;
   const origin = window.location.origin;
   // If we're on a known production URL, use it
-  if (origin.includes('carsaimz.vercel.app') || origin.includes('carsai.mz')) {
+  if (origin.includes('carsai.mz')) {
     return origin;
   }
   // Fallback to hardcoded production URL

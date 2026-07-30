@@ -203,7 +203,7 @@ export async function nativeSignInWithGoogle(): Promise<NativeAuthResult> {
     options.clientId = GOOGLE_WEB_CLIENT_ID
     console.log('[NativeAuth] Using configured Google Web Client ID for native sign-in')
   } else {
-    console.warn('[NativeAuth] GOOGLE_WEB_CLIENT_ID not configured — Google Sign-In may fail on Android. Set NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID in .env or Firebase Console.')
+    console.warn('[NativeAuth] GOOGLE_WEB_CLIENT_ID not configured — Google Sign-In may fail on Android.')
   }
 
   const result: CapacitorSignInResult = await FirebaseAuthentication.signInWithGoogle(options)

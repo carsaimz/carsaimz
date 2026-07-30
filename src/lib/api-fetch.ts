@@ -19,7 +19,7 @@
  *   if (res.ok) { const data = await res.json(); }
  */
 
-import { API_BASE_URL } from '@/lib/client-config';
+import { SITE_URL } from '@/lib/client-config';
 import { isCapacitorApp, isElectronApp, buildApiUrl } from '@/lib/api-base';
 
 // ── Runtime detection cache ──────────────────────────────────────────────────
@@ -93,8 +93,8 @@ export async function apiFetch(
   const path = input;
 
   // If we already know we need the external server → use it directly
-  if (needsExternalServer() && API_BASE_URL) {
-    const externalUrl = `${API_BASE_URL.replace(/\/$/, '')}${path}`;
+  if (needsExternalServer() && SITE_URL) {
+    const externalUrl = `${SITE_URL.replace(/\/$/, '')}${path}`;
     return fetch(externalUrl, init);
   }
 
@@ -103,10 +103,10 @@ export async function apiFetch(
 
   // If the response is HTML (e.g. SPA fallback from static export),
   // cache this fact and retry with the external server URL
-  if (isHtmlResponse(res) && API_BASE_URL) {
+  if (isHtmlResponse(res) && SITE_URL) {
     console.warn(`[apiFetch] HTML response for ${path} — retrying with external URL`);
     _needsExternalServer = true;
-    const externalUrl = `${API_BASE_URL.replace(/\/$/, '')}${path}`;
+    const externalUrl = `${SITE_URL.replace(/\/$/, '')}${path}`;
     return fetch(externalUrl, init);
   }
 

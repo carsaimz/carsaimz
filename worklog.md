@@ -389,3 +389,36 @@ Stage Summary:
 - Build successful after all changes
 - Files modified: ai-chat-assistant.tsx, 8 translation files
 - Social section confirmed present in repo (already committed)
+
+---
+Task ID: 6
+Agent: Main Agent
+Task: Eliminate all secrets, env vars, and external API URL (carsaimz.vercel.app) dependencies
+
+Work Log:
+- Scanned entire project for all process.env references, API URLs, and secrets
+- Identified 30+ files referencing env vars and carsaimz.vercel.app
+- Fixed HTTP 500 root cause: checkFirebaseAdmin() in db-helpers.ts was checking env vars first instead of forcing Firebase Admin init (which uses obfuscated JSON file)
+- Removed all NEXT_PUBLIC_* env var dependencies from client-config.ts — all values now hardcoded
+- Changed API_BASE_URL from 'https://carsaimz.vercel.app' to '' (empty = relative paths)
+- Updated api-base.ts to use SITE_URL instead of API_BASE_URL for Capacitor
+- Updated api-fetch.ts to use SITE_URL instead of API_BASE_URL
+- Removed carsaimz.vercel.app from CORS allowed origins in proxy.ts
+- Removed CAPACITOR_SERVER_URL from capacitor.config.ts
+- Removed KEYSTORE_ALIAS and KEYSTORE_PASSWORD env var dependencies from capacitor.config.ts
+- Removed sensitive info from health endpoint (PRIVATE_KEY_LENGTH, PROJECT_ID_VALUE)
+- Updated firebase-init.js and firebase-seed.js scripts to use obfuscated JSON first
+- Removed unencrypted service account key from upload/ directory
+- Removed duplicate firebase-admin.json from upload/ directory
+- Updated SETUP.md docs to reflect zero-config approach
+- Verified: Firebase Admin SDK works with obfuscated JSON (tested Firestore read successfully)
+- Verified: Build succeeds with all changes
+- Verified: No NEXT_PUBLIC_* references remain in src/
+
+Stage Summary:
+- Project now works with ZERO env vars or secrets — all hardcoded or file-based
+- carsaimz.vercel.app completely eliminated from all source code
+- Firebase Admin uses obfuscated JSON file (firebase-admin.json) as primary auth
+- API calls use relative paths (same server) — no external URL needed
+- Capacitor apps use SITE_URL (carsai.mz) for API calls
+- HTTP 500 root cause fixed: checkFirebaseAdmin() now forces Firebase Admin init

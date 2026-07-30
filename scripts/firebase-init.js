@@ -5,25 +5,66 @@
  * 
  * Validates Firebase configuration and tests connection.
  * Run: bun run firebase:init
+ * 
+ * No env vars needed — uses the obfuscated JSON file (firebase-admin.json)
+ * or falls back to FIREBASE_ADMIN_* env vars.
  */
 
 const { initializeApp, cert } = require('firebase-admin/app')
 const { getFirestore } = require('firebase-admin/firestore')
 const { getAuth } = require('firebase-admin/auth')
+const fs = require('fs')
+const path = require('path')
 
-const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID
-const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL
-const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n')
+// ─── Load credentials from obfuscated JSON or env vars ───
 
-if (!projectId || !clientEmail || !privateKey) {
-  console.error('[Firebase Init] ERROR: Credentials not configured.')
-  console.error('[Firebase Init] Set these in .env:')
-  console.error('  FIREBASE_ADMIN_PROJECT_ID')
-  console.error('  FIREBASE_ADMIN_CLIENT_EMAIL')
-  console.error('  FIREBASE_ADMIN_PRIVATE_KEY')
-  console.error('')
-  console.error('[Firebase Init] Also set NEXT_PUBLIC_FIREBASE_* vars for client SDK.')
-  process.exit(1)
+const HARDCODED_PROJECT_ID = 'carsai-mozambique-d5983'
+const HARDCODED_CLIENT_EMAIL = 'firebase-adminsdk-fbsvc@carsai-mozambique-d5983.iam.gserviceaccount.com'
+
+function loadObfuscatedServiceAccount() {
+  try {
+    const filePath = path.join(__dirname, '..', 'src', 'lib', 'firebase-admin.json')
+    if (!fs.existsSync(filePath)) return null
+
+    const raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '')
+    // eslint-disable-next-line no-eval
+    const data = eval('(' + raw + ')')
+
+    if (data.type === 'service_account' && data.private_key && data.project_id && data.client_email) {
+      return {
+        projectId: data.project_id,
+        clientEmail: data.client_email,
+        privateKey: data.private_key,
+      }
+    }
+    return null
+  } catch (err) {
+    console.warn('[Firebase Init] Obfuscated JSON load failed:', err.message)
+    return null
+  }
+}
+
+// Try obfuscated JSON first, then env vars
+let projectId, clientEmail, privateKey
+
+const obfuscated = loadObfuscatedServiceAccount()
+if (obfuscated) {
+  projectId = obfuscated.projectId
+  clientEmail = obfuscated.clientEmail
+  privateKey = obfuscated.privateKey
+  console.log('[Firebase Init] Using obfuscated JSON file (firebase-admin.json)')
+} else {
+  projectId = process.env.FIREBASE_ADMIN_PROJECT_ID || HARDCODED_PROJECT_ID
+  clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL || HARDCODED_CLIENT_EMAIL
+  privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n')
+
+  if (!privateKey) {
+    console.error('[Firebase Init] ERROR: No credentials found.')
+    console.error('[Firebase Init] The obfuscated JSON file (src/lib/firebase-admin.json) was not found.')
+    console.error('[Firebase Init] Alternatively, set FIREBASE_ADMIN_PRIVATE_KEY in .env')
+    process.exit(1)
+  }
+  console.log('[Firebase Init] Using env vars (FIREBASE_ADMIN_*)')
 }
 
 console.log('[Firebase Init] Initializing Firebase Admin...')

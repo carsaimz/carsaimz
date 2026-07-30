@@ -1,14 +1,14 @@
 /**
  * Carsai Mozambique - API Base URL Resolver
  *
- * In web mode (Next.js SSR), API calls go to relative paths like /api/...
- * In Capacitor mobile app (static export), API calls must go to the
- * actual server URL since there's no local server running.
+ * All API calls use relative paths (same server) by default.
+ * No external API URL needed — the app is its own server.
  *
- * Config sourced from client-config.ts (env vars with hardcoded fallbacks).
+ * For Capacitor mobile apps (static export), the site URL is used
+ * as the API server since there's no local server running.
  */
 
-import { API_BASE_URL } from '@/lib/client-config';
+import { SITE_URL } from '@/lib/client-config';
 
 /**
  * Detect if we're running inside a Capacitor native app
@@ -38,7 +38,7 @@ export function isElectronApp(): boolean {
 /**
  * Get the API base URL for fetch calls
  * - Web (Next.js server): empty string (relative paths work)
- * - Capacitor (mobile app): API_BASE_URL (absolute URL to server)
+ * - Capacitor (mobile app): SITE_URL (the production server)
  * - Electron: empty string (local server runs within Electron)
  */
 export function getApiBaseUrl(): string {
@@ -48,13 +48,8 @@ export function getApiBaseUrl(): string {
   }
 
   if (isCapacitorApp()) {
-    // Capacitor static export needs to call the external server
-    if (!API_BASE_URL) {
-      console.warn('[API] NEXT_PUBLIC_API_URL not set - mobile app API calls will fail!');
-      // Fallback: try relative paths (won't work for static export)
-      return '';
-    }
-    return API_BASE_URL.replace(/\/$/, ''); // Remove trailing slash
+    // Capacitor static export needs to call the production server
+    return SITE_URL.replace(/\/$/, ''); // Remove trailing slash
   }
 
   // Web (Next.js server running) - relative paths work

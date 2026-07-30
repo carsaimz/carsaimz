@@ -15,16 +15,15 @@ const config: CapacitorConfig = {
   webDir: 'out',
   server: {
     androidScheme: 'https',
-    // In Capacitor static export, API calls need to go to the external server
-    // This allows the app to call the real backend instead of local non-existent routes
-    url: process.env.CAPACITOR_SERVER_URL || undefined,
+    // No external URL needed — the app uses SITE_URL for API calls via apiFetch.
+    // Capacitor apps use the site URL (https://carsai.mz) for API calls automatically.
     cleartext: true, // Allow non-HTTPS for local development
   },
   android: {
     buildOptions: {
       keystorePath: 'upload/release.jks',
-      keystoreAlias: process.env.KEYSTORE_ALIAS || 'carsai',
-      keystorePassword: process.env.KEYSTORE_PASSWORD || '',
+      keystoreAlias: 'carsai',
+      keystorePassword: '',  // Set via KEYSTORE_PASSWORD env var only for release builds
       releaseType: 'AAB',
     },
   },

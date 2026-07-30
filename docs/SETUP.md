@@ -199,38 +199,26 @@ firebase deploy --only firestore:rules
 
 ### 4.3 Variáveis de Ambiente na Vercel
 
-Vá a **Settings** → **Environment Variables** e adicione:
+> **Nota**: O projeto funciona sem NENHUMA variável de ambiente! Todos os valores estão hardcoded nos ficheiros do projeto:
+> - Firebase Client: hardcoded em `src/lib/client-config.ts`
+> - Firebase Admin: ficheiro ofuscado `src/lib/firebase-admin.json` (auto-detectado)
+> - Chatbot IA: auto-detectado pelo SDK (`ZAI.create()`)
+>
+> Apenas configure variáveis se precisar sobrescrever os valores padrão.
 
-#### Firebase Client (públicas — NEXT_PUBLIC_*)
-
-```
-NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSy...
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=carsai-mozambique-d5983.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=carsai-mozambique-d5983
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=carsai-mozambique-d5983.firebasestorage.app
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=136334398331
-NEXT_PUBLIC_FIREBASE_APP_ID=1:136334398331:web:...
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-4P1J5KZHXF
-NEXT_PUBLIC_FIREBASE_VAPID_KEY=BOWPwKVMZEKR...
-NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID=117955101988984767727.apps.googleusercontent.com
-NEXT_PUBLIC_API_URL=https://carsaimz.vercel.app
-```
-
-#### Firebase Admin (secretas — server-side only)
+#### Variáveis Opcionais (apenas para sobrescrever defaults)
 
 ```
-FIREBASE_ADMIN_KEY_SECRET=7ce02cfc25f5182faebc7c83e23ae70384dbf09dd026993c511d6cee344a86ef
-FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED=i0eRgLYBqEvYPkvPNAOkgtQ0n...
+# Firebase Admin — apenas se NÃO usar o ficheiro ofuscado (firebase-admin.json)
+FIREBASE_ADMIN_KEY_SECRET=...
+FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED=...
+
+# Chatbot IA — apenas se NÃO usar .z-ai-config ou admin dashboard
+ZAI_BASE_URL=...
+ZAI_API_KEY=...
 ```
 
-#### Chatbot IA (z-ai-web-dev-sdk)
-
-```
-ZAI_BASE_URL=https://internal-api.z.ai/v1
-ZAI_API_KEY=Z.ai
-```
-
-> **Nota**: Na Vercel, o ficheiro `.z-ai-config` não existe. O API route `/api/chat` usa as variáveis `ZAI_BASE_URL` e `ZAI_API_KEY` como fallback.
+> **Nota**: O ficheiro `firebase-admin.json` (ofuscado) é a forma primária de autenticação do Firebase Admin. Não precisa de env vars. O chatbot usa o SDK auto-detectado (`ZAI.create()`) ou a configuração do admin dashboard.
 
 ### 4.4 Domínio Personalizado
 

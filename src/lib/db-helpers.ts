@@ -69,43 +69,40 @@ export async function safeQueryDocs<T = Record<string, any>>(
 }
 
 /**
- * Check if Firebase Admin SDK is available (env vars configured).
+ * Check if Firebase Admin SDK is available.
  * Returns an error message if not available, null if OK.
  *
- * Supports 3 authentication strategies:
+ * Supports 4 authentication strategies (auto-detected, no env vars required):
+ * 0. Obfuscated JSON file (firebase-admin.json — highest priority, no env vars needed)
  * 1. Encrypted private key (FIREBASE_ADMIN_KEY_SECRET + FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED)
  * 2. Plain private key (FIREBASE_ADMIN_PRIVATE_KEY)
  * 3. Application Default Credentials (GOOGLE_APPLICATION_CREDENTIALS)
+ *
+ * IMPORTANT: This function now forces Firebase Admin initialization to check
+ * if the obfuscated JSON file works. Previous versions only checked env vars,
+ * which caused HTTP 500 errors when the JSON file was present but no env vars were set.
  */
 export function checkFirebaseAdmin(): string | null {
-  const encryptedKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED
-  const keySecret = process.env.FIREBASE_ADMIN_KEY_SECRET
-  const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY
-  const googleAppCreds = process.env.GOOGLE_APPLICATION_CREDENTIALS
+  // Force Firebase Admin initialization by calling getAdminFirestore()
+  // which internally calls getAdminApp() → tries all strategies:
+  // 0. Obfuscated JSON file (no env vars needed)
+  // 1. Encrypted private key env vars
+  // 2. Plain private key env var
+  // 3. Application Default Credentials
+  try {
+    const { getAdminFirestore } = require('@/lib/firebase-admin')
+    const db = getAdminFirestore()
+    if (db) return null
+  } catch {}
 
-  // Strategy 1: Encrypted private key (preferred)
-  if (encryptedKey && keySecret) {
-    return null
-  }
-
-  // Strategy 2: Plain private key (legacy)
-  if (privateKey) {
-    return null
-  }
-
-  // Strategy 3: Application Default Credentials
-  if (googleAppCreds) {
-    return null
-  }
-
-  // Try to use the actual Firebase Admin init — if it's already initialized, it's fine
+  // If getAdminFirestore() returned null, check the init error
   try {
     const initErr = getAdminInitError()
     if (!initErr) return null
     return initErr
   } catch {}
 
-  return 'Firebase Admin SDK not configured. Set FIREBASE_ADMIN_KEY_SECRET + FIREBASE_ADMIN_PRIVATE_KEY_ENCRYPTED (encrypted) or FIREBASE_ADMIN_PRIVATE_KEY (plain) as environment variables. PROJECT_ID and CLIENT_EMAIL have hardcoded fallbacks.'
+  return 'Firebase Admin SDK not configured. The obfuscated JSON file (firebase-admin.json) or environment variables are required. No env vars needed if the JSON file is present.'
 }
 
 /**

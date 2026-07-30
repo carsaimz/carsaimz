@@ -2,12 +2,14 @@
  * Carsai Mozambique — Client-Side Configuration
  *
  * Holds only values that are safe to expose in browser code.
+ * ALL values are hardcoded — no env vars or external URLs needed.
  *
- * Firebase client config uses env vars with hardcoded fallbacks:
- *   - CI/Workflows: env vars injected from GitHub Secrets (override)
- *   - Local dev: hardcoded fallbacks work without .env
- *
- * This keeps secrets out of .env while allowing CI override capability.
+ * Design principle: The app works out-of-the-box with zero configuration.
+ * No secrets, no env vars, no external API URLs required.
+ * - Firebase client config: hardcoded (public by design, safe in client bundle)
+ * - Firebase Admin: uses obfuscated JSON file (firebase-admin.json)
+ * - API calls: use relative paths (same server), no external URL needed
+ * - Capacitor: uses the site URL only when running as a native app
  *
  * Firebase Spark Plan (Free) Features:
  * ✅ Authentication (Email/Password, Google, Phone, Anonymous)
@@ -23,56 +25,46 @@
 
 // ─── App version (embedded at build time) ───
 
-export const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0'
-export const APP_BUILD = process.env.NEXT_PUBLIC_APP_BUILD || '1'
+export const APP_VERSION = '1.0.0'
+export const APP_BUILD = '1'
 
 // ─── API base URL ───
-// ONLY needed for Capacitor mobile app (static export, no local server).
-// On web (Next.js server mode), relative paths like /api/... work natively —
-// no external URL needed at all! apiFetch handles this automatically.
-//
-// The hardcoded fallback is used when building for Capacitor without NEXT_PUBLIC_API_URL.
+// On web (Next.js server mode) and Electron, relative paths like /api/... work natively.
+// For Capacitor mobile app (static export), the site URL is used as fallback.
+// No external deployment URL needed — the app works with its own server.
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://carsaimz.vercel.app'
+export const API_BASE_URL = ''  // Empty = relative paths (same server)
 
 // ─── Google Sign-In Web OAuth Client ID ───
 // Required for Google Sign-In on Android via @capacitor-firebase/authentication.
-// This is the "Client ID for Web application" found in:
-//   Firebase Console → Project Settings → Your apps → Web app
-//   OR Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client IDs
-// Format: XXXXXXXXXXXX.apps.googleusercontent.com
-// If not set, Google Sign-In may fail on Android (no account picker completion).
 
-export const GOOGLE_WEB_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID || '117955101988984767727.apps.googleusercontent.com'
+export const GOOGLE_WEB_CLIENT_ID = '117955101988984767727.apps.googleusercontent.com'
 
 // ─── Site URLs ───
 // Used for affiliate links, sharing, etc. — always the public-facing URL.
-// This is NOT the same as API_BASE_URL (which is only for API calls from Capacitor).
 
 export const SITE_URL = 'https://carsai.mz'
-export const APP_PUBLIC_URL = 'https://carsaimz.vercel.app'  // Used for affiliate links
+export const APP_PUBLIC_URL = 'https://carsai.mz'  // Used for affiliate links
 export const GITHUB_URL = 'https://github.com/carsaimz'
 
-// ─── Firebase Config (client-side — env vars with hardcoded fallbacks) ───
+// ─── Firebase Config (client-side — hardcoded, no env vars needed) ───
 // These values are public by design — they end up in the client bundle.
-// Hardcoded fallbacks allow local dev without .env.
-// CI workflows inject env vars from GitHub Secrets to override if needed.
+// No secrets here. Firebase client config is not sensitive.
 
 export const FIREBASE_CONFIG = {
-  apiKey:             process.env.NEXT_PUBLIC_FIREBASE_API_KEY             || 'AIzaSyBAqWCPbR_ExDUYSH__1CvFZ7ONo2JZXKU',
-  authDomain:         process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN         || 'carsai-mozambique-d5983.firebaseapp.com',
-  projectId:          process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID          || 'carsai-mozambique-d5983',
-  storageBucket:      process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET      || 'carsai-mozambique-d5983.firebasestorage.app',
-  messagingSenderId:  process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '136334398331',
-  appId:              process.env.NEXT_PUBLIC_FIREBASE_APP_ID              || '1:136334398331:web:4a81fc100951ed4835e3de',
-  measurementId:      process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID      || 'G-4P1J5KZHXF',
+  apiKey:             'AIzaSyBAqWCPbR_ExDUYSH__1CvFZ7ONo2JZXKU',
+  authDomain:         'carsai-mozambique-d5983.firebaseapp.com',
+  projectId:          'carsai-mozambique-d5983',
+  storageBucket:      'carsai-mozambique-d5983.firebasestorage.app',
+  messagingSenderId:  '136334398331',
+  appId:              '1:136334398331:web:4a81fc100951ed4835e3de',
+  measurementId:      'G-4P1J5KZHXF',
 }
 
 // ─── Firebase VAPID Key (for FCM push notifications) ───
 // Public key — safe to hardcode (used client-side for web push).
-// CI can override via NEXT_PUBLIC_FIREBASE_VAPID_KEY GitHub Secret.
 
-export const FIREBASE_VAPID_KEY = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || 'BOWPwKVMZEKRdoPsEKm-VZNd7QMvCGFYj-NUhGqdrufuycM0t4sfteUh3MJPPS5AdvIAqXs-tsNte7mcn7hpOqE'
+export const FIREBASE_VAPID_KEY = 'BOWPwKVMZEKRdoPsEKm-VZNd7QMvCGFYj-NUhGqdrufuycM0t4sfteUh3MJPPS5AdvIAqXs-tsNte7mcn7hpOqE'
 
 export function isFirebaseConfigured(): boolean {
   return !!FIREBASE_CONFIG.apiKey && !!FIREBASE_CONFIG.projectId

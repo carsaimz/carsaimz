@@ -5,23 +5,16 @@
  * This file replaces the former middleware.ts to comply with the new convention.
  *
  * Allows cross-origin API requests from the Capacitor mobile app
- * (running on https://localhost or com.carsaimz://) and other
- * authorized origins.
- *
- * Without this proxy, fetch() calls from the Capacitor WebView
- * to https://carsaimz.vercel.app/api/* would be blocked by CORS,
- * causing "Unexpected token '<'" errors (HTML error pages instead
- * of JSON) and auth failures ("Utilizador não autenticado").
+ * and other authorized origins. No external API URL needed.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 
-// Allowed origins — Capacitor app origins + deployment URLs
+// Allowed origins — Capacitor app origins + production domain
 const ALLOWED_ORIGINS = [
   'https://localhost',            // Capacitor Android (androidScheme: 'https')
   'http://localhost',             // Capacitor Android (legacy http scheme)
   'capacitor://localhost',        // Capacitor iOS default scheme
-  'https://carsaimz.vercel.app',  // Vercel deployment
   'https://carsai.mz',            // Production domain
   'com.carsaimz://',              // Capacitor custom URL scheme
   'com.carsaimz://localhost',     // Capacitor custom scheme variant
