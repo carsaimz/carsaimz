@@ -197,6 +197,10 @@ export const swTZ: TranslationObject = {
     unread: 'hazijasomwa',
     na: 'Hakuna',
     title: 'Kichwa',
+    back: 'Rudi',
+    notFound: 'Hakupatikana',
+    noDescription: 'Hakuna maelezo',
+    requestQuote: 'Omba nukuu',
   },
 
   // ============================================================================
@@ -268,6 +272,8 @@ export const swTZ: TranslationObject = {
     pricingStartAt: 'Inaanza kwa {{price}}',
     getStarted: 'Anza Sasa',
     contactSales: 'Wasiliana na Mauzo',
+    interested: 'Ukipendezwa na huduma hii?',
+    contactUs: 'Wasiliana nasi kwa nukuu ya kibinafsi na turuhusu tukusaidie kufikia malengo yako.',
   },
 
   // ============================================================================
@@ -488,6 +494,9 @@ export const swTZ: TranslationObject = {
     projects: 'Miradi',
     posts: 'Blogu',
     testimonials: 'Ushuhuda',
+    forum: 'Jukwaa',
+    categories: 'Makundi',
+    topics: 'Mada',
     contentManager: 'Meneja wa Maudhui',
     createNew: 'Unda mpya',
     editItem: 'Hariri',

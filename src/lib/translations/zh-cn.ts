@@ -190,6 +190,10 @@ export const zhCN: TranslationObject = {
     unread: '未读',
     na: '不适用',
     title: '标题',
+    back: '返回',
+    notFound: '未找到',
+    noDescription: '暂无描述',
+    requestQuote: '请求报价',
   },
 
   // ============================================================================
@@ -261,6 +265,8 @@ export const zhCN: TranslationObject = {
     pricingStartAt: '起步价 {{price}}',
     getStarted: '开始使用',
     contactSales: '联系销售',
+    interested: '对此服务感兴趣？',
+    contactUs: '联系我们获取个性化报价，让我们帮助您实现目标。',
   },
 
   // ============================================================================
@@ -481,6 +487,9 @@ export const zhCN: TranslationObject = {
     projects: '项目',
     posts: '博客',
     testimonials: '客户评价',
+    forum: '论坛',
+    categories: '分类',
+    topics: '主题',
     contentManager: '内容管理',
     createNew: '新建',
     editItem: '编辑',

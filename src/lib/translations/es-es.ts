@@ -190,6 +190,10 @@ export const esES: TranslationObject = {
     unread: 'no leídas',
     na: 'N/D',
     title: 'Título',
+    back: 'Volver',
+    notFound: 'No encontrado',
+    noDescription: 'Sin descripción disponible',
+    requestQuote: 'Solicitar cotización',
   },
 
   // ============================================================================
@@ -261,6 +265,8 @@ export const esES: TranslationObject = {
     pricingStartAt: 'A partir de {{price}}',
     getStarted: 'Comenzar',
     contactSales: 'Contactar ventas',
+    interested: '¿Interesado en este servicio?',
+    contactUs: 'Contáctenos para una cotización personalizada y permítanos ayudarle a alcanzar sus objetivos.',
   },
 
   // ============================================================================
@@ -481,6 +487,9 @@ export const esES: TranslationObject = {
     projects: 'Proyectos',
     posts: 'Blog',
     testimonials: 'Testimonios',
+    forum: 'Foro',
+    categories: 'Categorías',
+    topics: 'Temas',
     contentManager: 'Gestión de contenido',
     createNew: 'Crear nuevo',
     editItem: 'Editar',

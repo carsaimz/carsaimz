@@ -12,7 +12,7 @@ import {
   Sun, Moon, Bell, LogOut, ChevronDown,
   LayoutDashboard, Users, FileText, BarChart3, Settings, ScrollText,
   Shield, Scale, Cookie, HelpCircle,
-  Globe, FolderOpen, MessageSquare,
+  Globe, FolderOpen, MessageSquare, MessagesSquare,
   Database,
   // User menu icons
   UserCircle, ClipboardList, CreditCard, Headphones,
@@ -53,6 +53,7 @@ const ADMIN_MENU_ITEMS: SidebarLink[] = [
   { path: '/admin/projects', labelKey: 'admin.projects', icon: FolderOpen },
   { path: '/admin/blog', labelKey: 'admin.posts', icon: FileText },
   { path: '/admin/testimonials', labelKey: 'admin.testimonials', icon: MessageSquare },
+  { path: '/admin/forum', labelKey: 'admin.forum', icon: MessagesSquare },
   { path: '/admin/users', labelKey: 'admin.users', icon: Users },
   { path: '/admin/reports', labelKey: 'admin.reports', icon: BarChart3 },
   { path: '/admin/analytics', labelKey: 'admin.systemLogs', icon: ScrollText },

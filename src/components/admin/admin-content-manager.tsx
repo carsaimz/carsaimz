@@ -496,12 +496,11 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
         defaultLanguageFields={
           <div className="space-y-2">
             <Label className="text-sm font-medium">{t('admin.description')}</Label>
-            <Textarea
+            <RichTextEditor
               value={formDescription}
-              onChange={(e) => setFormDescription(e.target.value)}
+              onChange={setFormDescription}
+              level="full"
               placeholder="Descrição do serviço"
-              rows={3}
-              className="focus-visible:ring-emerald-500"
             />
           </div>
         }
@@ -510,12 +509,11 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
             lang,
             <div className="space-y-2" key={lang}>
               <Label className="text-sm font-medium">{t('admin.description')} ({lang})</Label>
-              <Textarea
+              <RichTextEditor
                 value={formDescI18n[lang] || ''}
-                onChange={(e) => setI18nValue(setFormDescI18n, lang, e.target.value)}
+                onChange={(val) => setI18nValue(setFormDescI18n, lang, val)}
+                level="full"
                 placeholder={`Description in ${lang}`}
-                rows={3}
-                className="focus-visible:ring-emerald-500"
               />
             </div>,
           ])
@@ -622,12 +620,11 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
         defaultLanguageFields={
           <div className="space-y-2">
             <Label className="text-sm font-medium">{t('admin.description')}</Label>
-            <Textarea
+            <RichTextEditor
               value={formDescription}
-              onChange={(e) => setFormDescription(e.target.value)}
+              onChange={setFormDescription}
+              level="full"
               placeholder="Descrição do projeto"
-              rows={3}
-              className="focus-visible:ring-emerald-500"
             />
           </div>
         }
@@ -636,12 +633,11 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
             lang,
             <div className="space-y-2" key={lang}>
               <Label className="text-sm font-medium">{t('admin.description')} ({lang})</Label>
-              <Textarea
+              <RichTextEditor
                 value={formDescI18n[lang] || ''}
-                onChange={(e) => setI18nValue(setFormDescI18n, lang, e.target.value)}
+                onChange={(val) => setI18nValue(setFormDescI18n, lang, val)}
+                level="full"
                 placeholder={`Description in ${lang}`}
-                rows={3}
-                className="focus-visible:ring-emerald-500"
               />
             </div>,
           ])

@@ -190,6 +190,10 @@ export const frFR: TranslationObject = {
     unread: 'non lues',
     na: 'N/D',
     title: 'Titre',
+    back: 'Retour',
+    notFound: 'Non trouvé',
+    noDescription: 'Aucune description disponible',
+    requestQuote: 'Demander un devis',
   },
 
   // ============================================================================
@@ -261,6 +265,8 @@ export const frFR: TranslationObject = {
     pricingStartAt: 'À partir de {{price}}',
     getStarted: 'Commencer',
     contactSales: 'Contacter les ventes',
+    interested: 'Intéressé par ce service ?',
+    contactUs: 'Contactez-nous pour un devis personnalisé et laissez-nous vous aider à atteindre vos objectifs.',
   },
 
   // ============================================================================
@@ -481,6 +487,9 @@ export const frFR: TranslationObject = {
     projects: 'Projets',
     posts: 'Blog',
     testimonials: 'Témoignages',
+    forum: 'Forum',
+    categories: 'Catégories',
+    topics: 'Sujets',
     contentManager: 'Gestion du contenu',
     createNew: 'Créer nouveau',
     editItem: 'Modifier',

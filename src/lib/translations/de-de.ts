@@ -190,6 +190,10 @@ export const deDE: TranslationObject = {
     unread: 'ungelesen',
     na: 'N/A',
     title: 'Titel',
+    back: 'Zurück',
+    notFound: 'Nicht gefunden',
+    noDescription: 'Keine Beschreibung verfügbar',
+    requestQuote: 'Angebot anfordern',
   },
 
   // ============================================================================
@@ -261,6 +265,8 @@ export const deDE: TranslationObject = {
     pricingStartAt: 'Starting at {{price}}',
     getStarted: 'Jetzt starten',
     contactSales: 'Vertrieb kontaktieren',
+    interested: 'An diesem Service interessiert?',
+    contactUs: 'Kontaktieren Sie uns für ein individuelles Angebot und lassen Sie uns Ihnen helfen, Ihre Ziele zu erreichen.',
   },
 
   // ============================================================================
@@ -481,6 +487,9 @@ export const deDE: TranslationObject = {
     projects: 'Projekte',
     posts: 'Blog',
     testimonials: 'Testimonials',
+    forum: 'Forum',
+    categories: 'Kategorien',
+    topics: 'Themen',
     contentManager: 'Content-Verwaltung',
     createNew: 'Neu erstellen',
     editItem: 'Bearbeiten',

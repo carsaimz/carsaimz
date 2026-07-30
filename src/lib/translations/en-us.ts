@@ -190,6 +190,10 @@ export const enUS: TranslationObject = {
     unread: 'unread',
     na: 'N/A',
     title: 'Title',
+    back: 'Back',
+    notFound: 'Not found',
+    noDescription: 'No description available',
+    requestQuote: 'Request quote',
   },
 
   // ============================================================================
@@ -261,6 +265,8 @@ export const enUS: TranslationObject = {
     pricingStartAt: 'Starting at {{price}}',
     getStarted: 'Get Started',
     contactSales: 'Contact Sales',
+    interested: 'Interested in this service?',
+    contactUs: 'Contact us for a personalized quote and let us help you achieve your goals.',
   },
 
   // ============================================================================
@@ -481,6 +487,9 @@ export const enUS: TranslationObject = {
     projects: 'Projects',
     posts: 'Blog',
     testimonials: 'Testimonials',
+    forum: 'Forum',
+    categories: 'Categories',
+    topics: 'Topics',
     contentManager: 'Content Management',
     createNew: 'Create new',
     editItem: 'Edit',

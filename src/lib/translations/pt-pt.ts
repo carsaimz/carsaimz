@@ -197,6 +197,10 @@ export const ptPT: TranslationObject = {
     unread: 'não lidas',
     na: 'N/D',
     title: 'Título',
+    back: 'Voltar',
+    notFound: 'Não encontrado',
+    noDescription: 'Sem descrição disponível',
+    requestQuote: 'Solicitar orçamento',
   },
 
   // ============================================================================
@@ -268,6 +272,8 @@ export const ptPT: TranslationObject = {
     pricingStartAt: 'Começa em {{price}}',
     getStarted: 'Iniciar Agora',
     contactSales: 'Contactar Vendas',
+    interested: 'Interessado neste serviço?',
+    contactUs: 'Contacte-nos para um orçamento personalizado e deixe-nos ajudá-lo a alcançar os seus objectivos.',
   },
 
   // ============================================================================
@@ -488,6 +494,9 @@ export const ptPT: TranslationObject = {
     projects: 'Projetos',
     posts: 'Blog',
     testimonials: 'Testemunhos',
+    forum: 'Fórum',
+    categories: 'Categorias',
+    topics: 'Tópicos',
     contentManager: 'Gestão de Conteúdo',
     createNew: 'Criar novo',
     editItem: 'Editar',

@@ -3,7 +3,7 @@ import { safeQueryDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { getDocByField, createDoc, updateDoc, deleteDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 
-// GET all categories for admin
+// GET all forum categories
 export async function GET() {
   try {
     const adminError = checkFirebaseAdmin()
@@ -14,18 +14,18 @@ export async function GET() {
       )
     }
 
-    const categories = await safeQueryDocs('categories', [], 'name', 'asc')
+    const categories = await safeQueryDocs('forum_categories', [], 'order', 'asc')
     return NextResponse.json({ success: true, data: serializeFirestore(categories) })
   } catch (error) {
-    console.error('Admin categories fetch error:', error)
+    console.error('Admin forum categories fetch error:', error)
     return NextResponse.json(
-      { success: false, message: 'Failed to fetch categories' },
+      { success: false, message: 'Failed to fetch forum categories' },
       { status: 500 }
     )
   }
 }
 
-// POST create a new category
+// POST create a forum category
 export async function POST(request: NextRequest) {
   try {
     const adminError = checkFirebaseAdmin()
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, slug } = body
+    const { name, slug, description, order } = body
 
     if (!name || !slug) {
       return NextResponse.json(
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const existing = await getDocByField('categories', 'slug', slug)
+    const existing = await getDocByField('forum_categories', 'slug', slug)
     if (existing) {
       return NextResponse.json(
         { success: false, message: 'Slug already exists' },
@@ -54,24 +54,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const categoryId = await createDoc('categories', {
+    const categoryId = await createDoc('forum_categories', {
       name,
       slug,
+      description: description || null,
+      order: order || 0,
       createdAt: new Date().toISOString(),
     })
 
-    const category = await safeGetDoc('categories', categoryId)
+    const category = await safeGetDoc('forum_categories', categoryId)
     return NextResponse.json({ success: true, data: serializeFirestore(category) })
   } catch (error) {
-    console.error('Admin category create error:', error)
+    console.error('Admin forum category create error:', error)
     return NextResponse.json(
-      { success: false, message: 'Failed to create category' },
+      { success: false, message: 'Failed to create forum category' },
       { status: 500 }
     )
   }
 }
 
-// PUT update a category
+// PUT update a forum category
 export async function PUT(request: NextRequest) {
   try {
     const adminError = checkFirebaseAdmin()
@@ -83,7 +85,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, name, slug } = body
+    const { id, name, slug, description, order } = body
 
     if (!id) {
       return NextResponse.json(
@@ -93,7 +95,7 @@ export async function PUT(request: NextRequest) {
     }
 
     if (slug) {
-      const existing = await getDocByField('categories', 'slug', slug)
+      const existing = await getDocByField('forum_categories', 'slug', slug)
       if (existing && existing.id !== id) {
         return NextResponse.json(
           { success: false, message: 'Slug already exists' },
@@ -105,20 +107,22 @@ export async function PUT(request: NextRequest) {
     const updateData: Record<string, any> = {}
     if (name !== undefined) updateData.name = name
     if (slug !== undefined) updateData.slug = slug
+    if (description !== undefined) updateData.description = description || null
+    if (order !== undefined) updateData.order = order
 
-    await updateDoc('categories', id, updateData)
-    const category = await safeGetDoc('categories', id)
+    await updateDoc('forum_categories', id, updateData)
+    const category = await safeGetDoc('forum_categories', id)
     return NextResponse.json({ success: true, data: serializeFirestore(category) })
   } catch (error) {
-    console.error('Admin category update error:', error)
+    console.error('Admin forum category update error:', error)
     return NextResponse.json(
-      { success: false, message: 'Failed to update category' },
+      { success: false, message: 'Failed to update forum category' },
       { status: 500 }
     )
   }
 }
 
-// DELETE a category
+// DELETE a forum category
 export async function DELETE(request: NextRequest) {
   try {
     const adminError = checkFirebaseAdmin()
@@ -139,12 +143,12 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    await deleteDoc('categories', id)
+    await deleteDoc('forum_categories', id)
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Admin category delete error:', error)
+    console.error('Admin forum category delete error:', error)
     return NextResponse.json(
-      { success: false, message: 'Failed to delete category' },
+      { success: false, message: 'Failed to delete forum category' },
       { status: 500 }
     )
   }

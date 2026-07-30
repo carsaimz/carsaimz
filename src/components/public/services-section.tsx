@@ -151,7 +151,8 @@ export function ServicesSection() {
             return (
               <motion.div key={service.id} variants={cardVariants}>
                 <Card
-                  className="group hover:shadow-lg hover:border-emerald-500/50 transition-all duration-300 h-full"
+                  className="group hover:shadow-lg hover:border-emerald-500/50 transition-all duration-300 h-full cursor-pointer"
+                  onClick={() => router.push(`/services/${service.slug}`)}
                 >
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3">
@@ -186,7 +187,10 @@ export function ServicesSection() {
                       variant="ghost"
                       size="sm"
                       className="text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 group-hover:bg-emerald-100"
-                      onClick={() => router.push('/services')}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/services/${service.slug}`);
+                      }}
                     >
                       {t('common.more')}
                       <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />

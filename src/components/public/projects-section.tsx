@@ -23,6 +23,7 @@ import {
 import { useLanguage } from '@/contexts/language-context';
 import { resolveI18nContent } from '@/lib/i18n-content';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
+import { useRouter } from 'next/navigation';
 
 const ParticleNetwork = dynamic(
   () => import('@/components/common/3d-elements').then((mod) => mod.ParticleNetwork),
@@ -67,6 +68,7 @@ const colorPalettes = [
 
 export function ProjectsSection() {
   const { t, language } = useLanguage();
+  const router = useRouter();
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -179,7 +181,10 @@ export function ProjectsSection() {
 
             return (
               <motion.div key={project.id} variants={cardVariants}>
-                <Card className="group hover:shadow-lg transition-all duration-300 h-full overflow-hidden">
+                <Card
+                  className="group hover:shadow-lg transition-all duration-300 h-full overflow-hidden cursor-pointer"
+                  onClick={() => router.push(`/projects/${project.slug}`)}
+                >
                   {/* Image placeholder */}
                   <div
                     className={`h-40 bg-gradient-to-br ${gradient} relative flex items-center justify-center`}
@@ -236,6 +241,10 @@ export function ProjectsSection() {
                         variant="ghost"
                         size="sm"
                         className="text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(project.demoUrl!, '_blank');
+                        }}
                       >
                         <ExternalLink className="mr-1 h-4 w-4" />
                         {t('projects.viewDemo')}
