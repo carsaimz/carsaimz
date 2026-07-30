@@ -285,15 +285,26 @@ function resolveKey(obj: TranslationObject, key: string): string | undefined {
 
 /**
  * Interpolate parameters into a translation string.
- * Supports {{param}} syntax: "Hello {{name}}" with {name: "World"} => "Hello World"
+ * Supports both {{param}} and {param} syntax:
+ *   "Hello {{name}}" with {name: "World"} => "Hello World"
+ *   "{count} activos" with {count: 5} => "5 activos"
+ *
+ * Double-brace {{param}} is checked first (higher priority),
+ * then single-brace {param} as fallback for convenience.
  */
 function interpolate(template: string, params?: TranslationParams): string {
   if (!params) return template;
 
   return Object.entries(params).reduce(
     (result, [key, value]) => {
-      const pattern = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
-      return result.replace(pattern, String(value));
+      const strValue = String(value);
+      // Replace double-brace {{key}} first (standard i18n syntax)
+      const doublePattern = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+      const afterDouble = result.replace(doublePattern, strValue);
+      // Then replace single-brace {key} (convenience / legacy)
+      // Only match {key} that is NOT inside {{...}} to avoid partial replacements
+      const singlePattern = new RegExp(`(?<!\\{)\\{${key}\\}(?!\\})`, 'g');
+      return afterDouble.replace(singlePattern, strValue);
     },
     template
   );

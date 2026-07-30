@@ -5,12 +5,9 @@ import { checkFirebaseAdmin } from '@/lib/db-helpers'
 /**
  * Carsai Mozambique - AI Chat API Endpoint
  *
- * Uses direct OpenAI-compatible API calls (fetch) instead of z-ai-web-dev-sdk.
- * This is more reliable and supports any OpenAI-compatible provider.
- *
- * Configuration priority (first available wins):
- * 1. Database (Firestore `ai_providers` collection — active providers sorted by priority)
- * 2. Environment variables (AI_BASE_URL, AI_API_KEY, AI_MODEL — Vercel/fallback)
+ * Uses direct OpenAI-compatible API calls (fetch).
+ * All providers come from the Firestore `ai_providers` collection.
+ * No built-in providers — configure providers in the admin dashboard.
  *
  * Supported providers (all OpenAI-compatible):
  * - Groq (fast, free tier)
@@ -73,7 +70,7 @@ const PROVIDERS_CACHE_TTL = 60_000 // 1 minute cache
 
 /**
  * Load active AI providers from Firestore, sorted by priority.
- * Excludes z.ai — we use direct API calls instead.
+ * All providers come from the database — no built-in providers.
  */
 async function loadProviders(): Promise<ProviderConfig[]> {
   const now = Date.now()
@@ -99,8 +96,6 @@ async function loadProviders(): Promise<ProviderConfig[]> {
     const providers: ProviderConfig[] = []
     for (const doc of snapshot.docs) {
       const data = doc.data()
-      // Skip z.ai — we use direct API calls instead
-      if (data.name === 'z-ai' || data.name === 'zai') continue
       if (!data.baseUrl || !data.apiKey) continue
 
       providers.push({
@@ -119,26 +114,6 @@ async function loadProviders(): Promise<ProviderConfig[]> {
   } catch (error) {
     console.warn('[Chat] Could not load providers from database:', error instanceof Error ? error.message : error)
     return []
-  }
-}
-
-/**
- * Get fallback config from environment variables.
- */
-function getEnvFallback(): ProviderConfig | null {
-  const baseUrl = process.env.AI_BASE_URL
-  const apiKey = process.env.AI_API_KEY
-  const model = process.env.AI_MODEL || 'gpt-3.5-turbo'
-
-  if (!baseUrl || !apiKey) return null
-
-  return {
-    id: 'env-fallback',
-    name: 'Environment Config',
-    baseUrl: baseUrl.replace(/\/+$/, ''),
-    apiKey,
-    model,
-    priority: 999,
   }
 }
 
@@ -250,29 +225,22 @@ export async function POST(request: NextRequest) {
     // Add the current user message
     aiMessages.push({ role: 'user', content: message })
 
-    // ── Try providers in priority order ──
+    // ── Try providers from database in priority order ──
     const dbProviders = await loadProviders()
-    const envFallback = getEnvFallback()
 
-    // Combine: DB providers first (sorted by priority), then env fallback
-    const allProviders = [...dbProviders]
-    if (envFallback) {
-      allProviders.push(envFallback)
-    }
-
-    if (allProviders.length === 0) {
+    if (dbProviders.length === 0) {
       return NextResponse.json(
         {
           success: false,
-          error: 'O assistente de IA não está configurado. Por favor, contacte o administrador.',
-          debug: 'Configure an AI provider in the admin dashboard, or set AI_BASE_URL/AI_API_KEY env vars.',
+          error: 'O assistente de IA não está configurado. Adicione um provedor de IA no painel de administração.',
+          debug: 'Configure an AI provider in the admin dashboard (Settings → AI Providers).',
         },
         { status: 503 }
       )
     }
 
     // Try each provider in order until one succeeds
-    for (const provider of allProviders) {
+    for (const provider of dbProviders) {
       const response = await callProvider(provider, aiMessages)
 
       if (response) {

@@ -629,6 +629,10 @@ export const useAuthStore = create<AuthState>()(
             errorMsg = 'Operação cancelada.'
           } else if (err.code === 'auth/unauthorized-domain') {
             errorMsg = 'Domínio não autorizado. Adicione este domínio no Firebase Console → Authentication → Settings → Authorized domains.'
+          } else if (err.code === 'auth/operation-not-allowed') {
+            errorMsg = 'Login com Google não está activado. Active no Firebase Console → Authentication → Sign-in method.'
+          } else if (err.code === 'auth/account-exists-with-different-credential') {
+            errorMsg = 'Já existe uma conta com este email. Tente outro método de login.'
           } else if (err.code === 'auth/redirect-operation-pending') {
             errorMsg = 'Operação de redirecionamento em curso. Aguarde.'
           } else if (err.code === 'auth/network-request-failed') {

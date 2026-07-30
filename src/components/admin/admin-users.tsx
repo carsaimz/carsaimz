@@ -32,6 +32,7 @@ import { useAuthStore } from '@/lib/store';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { useToast } from '@/hooks/use-toast';
 import { getGravatarUrl } from '@/lib/utils';
+import { ImageUpload } from '@/components/common/image-upload';
 
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
 const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
@@ -67,6 +68,7 @@ interface EditUserData {
   bio: string;
   company: string;
   address: string;
+  avatar: string | null;
 }
 
 const PAGE_SIZE = 10;
@@ -96,7 +98,7 @@ export function AdminUsers() {
   const [editOpen, setEditOpen] = useState(false);
   const [editUser, setEditUser] = useState<UserData | null>(null);
   const [editData, setEditData] = useState<EditUserData>({
-    name: '', email: '', phone: '', role: 'user', isActive: true, bio: '', company: '', address: '',
+    name: '', email: '', phone: '', role: 'user', isActive: true, bio: '', company: '', address: '', avatar: null,
   });
   const [editing, setEditing] = useState(false);
 
@@ -275,6 +277,7 @@ export function AdminUsers() {
       bio: u.bio || '',
       company: u.company || '',
       address: u.address || '',
+      avatar: u.avatar || null,
     });
     setEditOpen(true);
   };
@@ -565,6 +568,12 @@ export function AdminUsers() {
             <DialogDescription>{t('admin.editUserDesc')}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            <ImageUpload
+              value={editData.avatar}
+              onChange={(avatar) => setEditData(prev => ({ ...prev, avatar }))}
+              type="avatar"
+              email={editData.email}
+            />
             <div className="grid gap-2">
               <Label htmlFor="edit-name">{t('admin.userName')}</Label>
               <Input

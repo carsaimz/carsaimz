@@ -186,25 +186,7 @@ export function AdminAiProviders() {
         </p>
       </motion.div>
 
-      {/* ── Built-in Z.ai (always first) ── */}
-      <motion.div variants={itemVariants}>
-        <Card className="border-red-200/60 dark:border-red-800/60">
-          <CardContent className="pt-4 flex items-center gap-3">
-            <div className="size-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
-              <Zap className="size-5 text-red-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">Z.ai (Built-in)</span>
-                <Badge variant="default" className="bg-red-600 text-white text-xs">Primário</Badge>
-                <Badge variant="outline" className="text-xs">Prioridade: 0</Badge>
-              </div>
-              <p className="text-xs text-muted-foreground">Provedor padrão, sempre activo. Sem necessidade de API key.</p>
-            </div>
-            <Shield className="size-4 text-green-500 shrink-0" />
-          </CardContent>
-        </Card>
-      </motion.div>
+      {/* ── No built-in provider — all providers come from the database ── */}
 
       {/* ── Getting Started Guide (when no providers) ── */}
       {providers.length === 0 && (
@@ -361,10 +343,11 @@ export function AdminAiProviders() {
               Sistema de Failover
             </h3>
             <p className="text-sm text-muted-foreground">
-              Quando um utilizador envia uma mensagem, o chatbot tenta os provedores em ordem de prioridade:
+              Quando um utilizador envia uma mensagem, o chatbot tenta os provedores em ordem de prioridade (número menor = tentado primeiro).
+              Se um falhar, o próximo assume automaticamente (failover).
             </p>
             <ol className="text-sm text-muted-foreground mt-2 space-y-1 list-decimal ml-4">
-              <li>Provedores externos em ordem de prioridade (número menor = tentado primeiro)</li>
+              <li>Provedores da base de dados em ordem de prioridade</li>
               <li>Se todos falharem, o utilizador recebe uma mensagem de erro</li>
             </ol>
             <p className="text-xs text-muted-foreground mt-3">

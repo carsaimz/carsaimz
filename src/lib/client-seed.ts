@@ -179,21 +179,87 @@ async function seedCategories(): Promise<number> {
 }
 
 /**
- * Seed forum categories if they don't exist
+ * Seed forum categories if they don't exist.
+ * Also updates existing categories with nameI18n if they don't have it.
  */
 async function seedForumCategories(): Promise<number> {
   const hasCats = await collectionHasDocs('forum_categories')
-  if (hasCats) {
-    console.log('[Seed] Forum categories already exist, skipping')
-    return 0
+
+  const i18nData: Record<string, Record<string, string>> = {
+    'discussao-geral': {
+      'pt-pt': 'Discussão Geral', 'en-us': 'General Discussion', 'pt-br': 'Discussão Geral',
+      'fr-fr': 'Discussion Générale', 'es-es': 'Discusión General', 'zh-cn': '综合讨论',
+      'de-de': 'Allgemeine Diskussion', 'sw-tz': 'Majadiliano ya Kawaida',
+    },
+    'ajuda-suporte': {
+      'pt-pt': 'Ajuda & Suporte', 'en-us': 'Help & Support', 'pt-br': 'Ajuda & Suporte',
+      'fr-fr': 'Aide & Support', 'es-es': 'Ayuda & Soporte', 'zh-cn': '帮助与支持',
+      'de-de': 'Hilfe & Support', 'sw-tz': 'Msaada & Usaidizi',
+    },
+    'projectos-portfolio': {
+      'pt-pt': 'Projectos & Portfolio', 'en-us': 'Projects & Portfolio', 'pt-br': 'Projetos & Portfólio',
+      'fr-fr': 'Projets & Portfolio', 'es-es': 'Proyectos & Portafolio', 'zh-cn': '项目与作品集',
+      'de-de': 'Projekte & Portfolio', 'sw-tz': 'Miradi & Portfolio',
+    },
+    'emprego-freelance': {
+      'pt-pt': 'Emprego & Freelance', 'en-us': 'Jobs & Freelance', 'pt-br': 'Emprego & Freelance',
+      'fr-fr': 'Emploi & Freelance', 'es-es': 'Empleo & Freelance', 'zh-cn': '工作与自由职业',
+      'de-de': 'Jobs & Freelance', 'sw-tz': 'Kazi & Freelance',
+    },
+  }
+
+  // Update existing categories with nameI18n if they don't have it
+  if (hasCats && firestoreClient) {
+    try {
+      const { getDocs, collection, doc, setDoc, getDoc } = await import('firebase/firestore')
+      const snap = await getDocs(collection(firestoreClient, 'forum_categories'))
+      for (const d of snap.docs) {
+        const data = d.data()
+        if (!data.nameI18n && data.slug && i18nData[data.slug]) {
+          await setDoc(doc(firestoreClient, 'forum_categories', d.id), {
+            ...data,
+            nameI18n: i18nData[data.slug],
+            updatedAt: new Date(),
+          })
+          console.log(`[Seed] Updated forum category "${data.slug}" with nameI18n`)
+        }
+      }
+    } catch (err) {
+      console.warn('[Seed] Could not update forum categories with nameI18n:', err)
+    }
+    return 0 // No new categories created
   }
 
   console.log('[Seed] Creating forum categories...')
   const categories = [
-    { name: 'Discussão Geral', slug: 'discussao-geral', description: 'Discussão geral sobre qualquer assunto relacionado ao Carsai Mozambique', order: 1 },
-    { name: 'Ajuda & Suporte', slug: 'ajuda-suporte', description: 'Tire suas dúvidas e obtenha ajuda da comunidade', order: 2 },
-    { name: 'Projectos & Portfolio', slug: 'projectos-portfolio', description: 'Partilhe os seus projectos e trabalhos', order: 3 },
-    { name: 'Emprego & Freelance', slug: 'emprego-freelance', description: 'Oportunidades de emprego e trabalho freelance', order: 4 },
+    {
+      name: 'Discussão Geral',
+      slug: 'discussao-geral',
+      description: 'Discussão geral sobre qualquer assunto relacionado ao Carsai Mozambique',
+      order: 1,
+      nameI18n: i18nData['discussao-geral'],
+    },
+    {
+      name: 'Ajuda & Suporte',
+      slug: 'ajuda-suporte',
+      description: 'Tire suas dúvidas e obtenha ajuda da comunidade',
+      order: 2,
+      nameI18n: i18nData['ajuda-suporte'],
+    },
+    {
+      name: 'Projectos & Portfolio',
+      slug: 'projectos-portfolio',
+      description: 'Partilhe os seus projectos e trabalhos',
+      order: 3,
+      nameI18n: i18nData['projectos-portfolio'],
+    },
+    {
+      name: 'Emprego & Freelance',
+      slug: 'emprego-freelance',
+      description: 'Oportunidades de emprego e trabalho freelance',
+      order: 4,
+      nameI18n: i18nData['emprego-freelance'],
+    },
   ]
 
   let count = 0
@@ -369,15 +435,19 @@ export async function seedInitialData(): Promise<SeedResult> {
 
 /**
  * Check if the database has been seeded with essential data.
+ * Returns true if:
+ *   - Firestore is not available (don't show banner — it's a config issue, not a seeding issue)
+ *   - Essential collections (roles, settings) exist
+ * Returns false only if Firestore is available AND data is missing.
  */
 export async function isDatabaseSeeded(): Promise<boolean> {
-  if (!firestoreClient) return false
+  if (!firestoreClient) return true // Don't show banner if Firestore is not available
 
   try {
     const hasRoles = await collectionHasDocs('roles')
     const hasSettings = await collectionHasDocs('settings')
-    return hasRoles && hasSettings
+    return hasRoles || hasSettings // If either exists, DB is seeded (partial is OK)
   } catch {
-    return false
+    return true // On error, assume seeded — don't show banner
   }
 }

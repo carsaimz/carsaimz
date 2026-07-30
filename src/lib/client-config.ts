@@ -56,7 +56,7 @@ export const GITHUB_URL = 'https://github.com/carsaimz'
 
 export const FIREBASE_CONFIG = {
   apiKey:             'AIzaSyBAqWCPbR_ExDUYSH__1CvFZ7ONo2JZXKU',
-  authDomain:         'carsai-mozambique-d5983.firebaseapp.com',
+  authDomain:         'carsaimz.vercel.app',
   projectId:          'carsai-mozambique-d5983',
   storageBucket:      'carsai-mozambique-d5983.firebasestorage.app',
   messagingSenderId:  '136334398331',
