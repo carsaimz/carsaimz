@@ -6,7 +6,7 @@
   "author": "Carsai Mozambique",
   "main": "electron/main.js",
   "scripts": {
-    "postinstall": "node -e \"const fs=require('fs'),p='node_modules/jwks-rsa/node_modules/jose';if(fs.existsSync(p)){fs.rmSync(p,{recursive:true,force:true});console.log('[postinstall] Removed nested jose v6 (ESM-only) — using top-level jose v4 (CJS)')}\"",
+    "postinstall": "echo '[postinstall] jwks-rsa pinned to v3.2.2 via overrides - uses jose v4 CJS'",
     "dev": "next dev -p 3000 2>&1 | tee dev.log",
     "build": "node scripts/build.js",
     "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",
@@ -138,7 +138,7 @@
     "firebase-admin": "^14.2.0",
     "framer-motion": "^12.23.2",
     "input-otp": "^1.4.2",
-    "jose": "^4.15.0",
+    "jose": "4.15.9",
     "lucide-react": "^0.525.0",
     "next": "^16.1.1",
     "next-intl": "^4.3.4",
@@ -165,7 +165,7 @@
   },
   "overrides": {
     "@codesandbox/sandpack-client": "2.19.8",
-    "jose": "4.15.9"
+    "jwks-rsa": "3.2.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

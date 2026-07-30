@@ -235,7 +235,7 @@ const bubbleVariants = {
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { type: 'spring', stiffness: 400, damping: 20 },
+    transition: { type: 'spring' as const, stiffness: 400, damping: 20 },
   },
   exit: {
     opacity: 0,
@@ -256,7 +256,7 @@ const windowVariants = {
     scale: 1,
     y: 0,
     transformOrigin: 'bottom right',
-    transition: { type: 'spring', stiffness: 300, damping: 24 },
+    transition: { type: 'spring' as const, stiffness: 300, damping: 24 },
   },
   exit: {
     opacity: 0,
@@ -279,7 +279,7 @@ const minimizedVariants = {
     y: 0,
     scale: 1,
     transformOrigin: 'bottom center',
-    transition: { type: 'spring', stiffness: 350, damping: 25 },
+    transition: { type: 'spring' as const, stiffness: 350, damping: 25 },
   },
   exit: {
     opacity: 0,
@@ -298,7 +298,7 @@ const fullscreenVariants = {
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { type: 'spring', stiffness: 250, damping: 22 },
+    transition: { type: 'spring' as const, stiffness: 250, damping: 22 },
   },
   exit: {
     opacity: 0,
@@ -1010,15 +1010,9 @@ export function AiChatAssistant() {
           <motion.button
             variants={bubbleVariants}
             initial="hidden"
-            animate="visible"
-            exit="hidden"
-            onClick={openNormal}
-            className="fixed bottom-6 right-6 z-50 flex items-center justify-center size-14 rounded-full bg-gradient-to-br from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg shadow-red-600/30 hover:shadow-xl hover:shadow-red-600/40 transition-colors group"
-            aria-label={t('chat.open')}
-            // Pulsing animation when idle (no unread)
-            {...(!hasUnread
-              ? {
-                  animate: {
+            animate={
+              !hasUnread
+                ? {
                     ...bubbleVariants.visible,
                     scale: [1, 1.05, 1],
                     boxShadow: [
@@ -1026,21 +1020,29 @@ export function AiChatAssistant() {
                       '0 0 0 12px rgba(211, 47, 47, 0)',
                       '0 0 0 0 rgba(211, 47, 47, 0)',
                     ],
-                  },
-                  transition: {
+                  }
+                : 'visible'
+            }
+            transition={
+              !hasUnread
+                ? {
                     scale: {
                       repeat: Infinity,
                       duration: 2.5,
-                      ease: 'easeInOut',
+                      ease: 'easeInOut' as const,
                     },
                     boxShadow: {
                       repeat: Infinity,
                       duration: 2.5,
-                      ease: 'easeInOut',
+                      ease: 'easeInOut' as const,
                     },
-                  },
-                }
-              : {})}
+                  }
+                : undefined
+            }
+            exit="hidden"
+            onClick={openNormal}
+            className="fixed bottom-6 right-6 z-50 flex items-center justify-center size-14 rounded-full bg-gradient-to-br from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg shadow-red-600/30 hover:shadow-xl hover:shadow-red-600/40 transition-colors group"
+            aria-label={t('chat.open')}
           >
             <MessageCircle
               className="size-6 group-hover:scale-110 transition-transform"

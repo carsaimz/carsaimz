@@ -12,7 +12,10 @@ import { checkFirebaseAdmin } from '@/lib/db-helpers'
  * 1. Database (Firestore `ai_providers` collection — active, highest priority)
  * 2. .z-ai-config file (auto-detected by SDK — local dev)
  * 3. Environment variables (ZAI_BASE_URL, ZAI_API_KEY, ZAI_TOKEN — Vercel)
- * 4. Hardcoded fallback (z.ai internal API — works in this environment)
+ *
+ * The ZAI SDK has a private constructor — instances are created via ZAI.create().
+ * When a database provider is found, we set environment variables so ZAI.create()
+ * picks up the config automatically.
  *
  * IMPORTANT: z-ai-web-dev-sdk MUST be used in backend code only.
  * System prompts use role: 'assistant' (not 'system') per SDK convention.
@@ -56,28 +59,9 @@ const CARSAI_CONTEXT = `You are the Carsai Mozambique assistant — a knowledgea
 // ── ZAI Instance Cache ──
 // Cache key = config source, so we reinitialize when config changes.
 
-let zaiInstance: InstanceType<typeof ZAI> | null = null
-let zaiInitPromise: Promise<InstanceType<typeof ZAI>> | null = null
+let zaiInstance: any = null
+let zaiInitPromise: Promise<any> | null = null
 let cachedConfigKey: string | null = null
-
-/**
- * Build ZAI config from environment variables.
- * Used as fallback when .z-ai-config file is not available (e.g. Vercel).
- */
-function buildConfigFromEnv() {
-  const baseUrl = process.env.ZAI_BASE_URL
-  const apiKey = process.env.ZAI_API_KEY
-
-  if (!baseUrl || !apiKey) return null
-
-  return {
-    baseUrl,
-    apiKey,
-    chatId: process.env.ZAI_CHAT_ID || '',
-    userId: process.env.ZAI_USER_ID || '',
-    token: process.env.ZAI_TOKEN || '',
-  }
-}
 
 /**
  * Try to load AI provider config from Firestore (ai_providers collection).
@@ -146,9 +130,16 @@ async function getZaiInstance() {
       return zaiInstance
     }
 
-    // Create new instance with DB config
+    // Set env vars so ZAI.create() picks up the database config
+    // The SDK reads from process.env at creation time
     try {
-      const zai = new ZAI(dbProvider.config)
+      process.env.ZAI_BASE_URL = dbProvider.config.baseUrl
+      process.env.ZAI_API_KEY = dbProvider.config.apiKey
+      if (dbProvider.config.chatId) process.env.ZAI_CHAT_ID = dbProvider.config.chatId
+      if (dbProvider.config.userId) process.env.ZAI_USER_ID = dbProvider.config.userId
+      if (dbProvider.config.token) process.env.ZAI_TOKEN = dbProvider.config.token
+
+      const zai = await ZAI.create()
       zaiInstance = zai
       cachedConfigKey = dbProvider.key
       return zai
@@ -167,21 +158,12 @@ async function getZaiInstance() {
 
   zaiInitPromise = (async () => {
     try {
-      // ── Try 2: Use SDK's auto-detection (.z-ai-config file) ──
+      // ── Try 2: Use SDK's auto-detection (.z-ai-config file or env vars) ──
       const zai = await ZAI.create()
       zaiInstance = zai
-      cachedConfigKey = 'fallback:file'
+      cachedConfigKey = 'fallback:auto'
       return zai
     } catch {
-      // ── Try 3: Use environment variables (for Vercel/serverless) ──
-      const envConfig = buildConfigFromEnv()
-      if (envConfig) {
-        const zai = new ZAI(envConfig)
-        zaiInstance = zai
-        cachedConfigKey = 'fallback:env'
-        return zai
-      }
-
       // No config available — throw descriptive error
       throw new Error(
         'ZAI SDK not configured. Configure an AI provider in the admin dashboard, create .z-ai-config file, or set ZAI_BASE_URL and ZAI_API_KEY environment variables.'

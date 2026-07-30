@@ -85,7 +85,7 @@ export function useCapacitorBackButton() {
           const appPlugin = appModule.App;
           if (appPlugin) {
             appPlugin.addListener('backButton', handleBackPress);
-            cleanup = () => appPlugin.removeAllListeners('backButton');
+            cleanup = () => appPlugin.removeAllListeners();
           }
         } catch {
           console.warn('[Capacitor] @capacitor/app plugin not available');
