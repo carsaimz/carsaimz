@@ -194,6 +194,7 @@ export const deDE: TranslationObject = {
     notFound: 'Nicht gefunden',
     noDescription: 'Keine Beschreibung verfügbar',
     requestQuote: 'Angebot anfordern',
+    completed: 'Abgeschlossen',
   },
 
   // ============================================================================
@@ -380,6 +381,13 @@ export const deDE: TranslationObject = {
     lockedMessage: 'Dieses Thema ist gesperrt und akzeptiert keine neuen Antworten.',
     replyPlaceholder: 'Schreiben Sie Ihre Antwort...',
     submitReply: 'Antwort senden',
+    category: 'Kategorie',
+    content: 'Inhalt',
+    contentPlaceholder: 'Schreiben Sie den Themeninhalt...',
+    createTopicDescription: 'Beschreiben Sie Ihr Thema, um der Community zu helfen, es zu finden und zu beantworten',
+    selectCategory: 'Kategorie auswählen',
+    topicTitle: 'Thementitel',
+    topicTitlePlaceholder: 'Schreiben Sie den Thementitel...',
   },
 
 
@@ -409,10 +417,12 @@ export const deDE: TranslationObject = {
     noReplies: 'Noch keine Antworten',
     description: 'Beschreibung',
     status: 'Status',
+    closed: 'Geschlossen',
+    inProgress: 'In Bearbeitung',
+    open: 'Offen',
+    resolved: 'Gelöst',
+    writeReply: 'Antwort schreiben',
   },
-
-  // ============================================================================
-  // User Dashboard
   // ============================================================================
   dashboard: {
     title: 'Benutzer-Dashboard',
@@ -675,6 +685,10 @@ export const deDE: TranslationObject = {
     notificationSent: 'Benachrichtigung erfolgreich gesendet',
     notificationSendFailed: 'Benachrichtigung konnte nicht gesendet werden',
     notificationSearchUsers: 'Benutzer suchen...',
+    newUsers: 'Neue Benutzer',
+    revenue: 'Einnahmen',
+    target: 'Ziel',
+    totalUsers: 'Benutzer gesamt',
   },
 
   // ============================================================================
@@ -740,6 +754,8 @@ export const deDE: TranslationObject = {
     bankPlaceholder: 'z.B. Millennium BIM',
     qrScanText: 'Scannen Sie, um den Affiliate-Link zu besuchen',
     shareText: 'Entdecken Sie Carsai Mozambique — Digitale Lösungen und Kostenlosen Webhosting!',
+    accountDetails: 'Kontodetails',
+    scanQR: 'QR scannen',
   },
 
   // ============================================================================
@@ -805,6 +821,7 @@ export const deDE: TranslationObject = {
     dueNow: 'Jetzt bezahlen',
     dueLater: 'In {{days}} Tagen bezahlen',
     deposit: 'Einzahlung',
+    refunded: 'Erstattet',
   },
 
   // ============================================================================

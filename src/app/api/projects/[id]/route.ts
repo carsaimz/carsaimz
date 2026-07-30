@@ -100,7 +100,7 @@ export async function PUT(
     if (description !== undefined) updateData.description = description
     if (descriptionI18nValue !== undefined) updateData.descriptionI18n = descriptionI18nValue
     if (client !== undefined) updateData.client = client
-    if (technologies !== undefined) updateData.technologies = technologies
+    if (technologies !== undefined) updateData.technologies = Array.isArray(technologies) ? technologies.join(', ') : technologies
     if (demoUrl !== undefined) updateData.demoUrl = demoUrl
     if (images !== undefined) updateData.images = images
     if (isFeatured !== undefined) updateData.isFeatured = isFeatured

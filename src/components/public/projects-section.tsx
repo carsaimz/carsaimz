@@ -38,7 +38,7 @@ interface ProjectData {
   description: string | null;
   descriptionI18n: string | null;
   client: string | null;
-  technologies: string | null;
+  technologies: string | string[] | null;
   demoUrl: string | null;
   images: string | null;
   isFeatured: boolean;
@@ -177,7 +177,9 @@ export function ProjectsSection() {
           {filteredProjects.map((project, index) => {
             const gradient = colorPalettes[index % colorPalettes.length];
             const techs = project.technologies
-              ? project.technologies.split(',').map((t) => t.trim())
+              ? (Array.isArray(project.technologies)
+                  ? project.technologies
+                  : project.technologies.split(',').map((t: string) => t.trim()))
               : [];
             const resolvedTitle = resolveI18nContent(project.titleI18n, project.title, language);
             const resolvedDescription = resolveI18nContent(project.descriptionI18n, project.description || '', language);

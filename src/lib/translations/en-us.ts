@@ -194,6 +194,7 @@ export const enUS: TranslationObject = {
     notFound: 'Not found',
     noDescription: 'No description available',
     requestQuote: 'Request quote',
+    completed: 'Completed',
   },
 
   // ============================================================================
@@ -380,6 +381,13 @@ export const enUS: TranslationObject = {
     lockedMessage: 'This topic is locked and no new replies can be posted.',
     replyPlaceholder: 'Write your reply...',
     submitReply: 'Submit Reply',
+    category: 'Category',
+    content: 'Content',
+    contentPlaceholder: 'Write the topic content...',
+    createTopicDescription: 'Describe your topic to help the community find and respond to it',
+    selectCategory: 'Select category',
+    topicTitle: 'Topic title',
+    topicTitlePlaceholder: 'Write the topic title...',
   },
 
   // ============================================================================
@@ -408,10 +416,12 @@ export const enUS: TranslationObject = {
     noReplies: 'No replies yet',
     description: 'Description',
     status: 'Status',
+    closed: 'Closed',
+    inProgress: 'In Progress',
+    open: 'Open',
+    resolved: 'Resolved',
+    writeReply: 'Write reply',
   },
-
-  // ============================================================================
-  // User Dashboard
   // ============================================================================
   dashboard: {
     title: 'User Dashboard',
@@ -674,6 +684,10 @@ export const enUS: TranslationObject = {
     notificationSent: 'Notification sent successfully',
     notificationSendFailed: 'Failed to send notification',
     notificationSearchUsers: 'Search users...',
+    newUsers: 'New Users',
+    revenue: 'Revenue',
+    target: 'Target',
+    totalUsers: 'Total Users',
   },
 
   // ============================================================================
@@ -739,6 +753,8 @@ export const enUS: TranslationObject = {
     bankPlaceholder: 'e.g. Standard Bank',
     qrScanText: 'Scan to visit the affiliate link',
     shareText: 'Check out Carsai Mozambique — Digital Solutions and Free Web Hosting!',
+    accountDetails: 'Account details',
+    scanQR: 'Scan QR',
   },
 
   // ============================================================================
@@ -804,6 +820,7 @@ export const enUS: TranslationObject = {
     dueNow: 'Pay now',
     dueLater: 'Pay in {{days}} days',
     deposit: 'Deposit',
+    refunded: 'Refunded',
   },
 
   // ============================================================================

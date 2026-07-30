@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, titleI18n, slug, description, descriptionI18n, client, technologies, demoUrl, isFeatured, isPublished } = body
+    const { title, titleI18n, slug, description, descriptionI18n, client, technologies, demoUrl, images, isFeatured, isPublished, categoryId } = body
 
     const existing = await getDocByField('projects', 'slug', slug)
     if (existing) {
@@ -54,10 +54,12 @@ export async function POST(request: NextRequest) {
       description: description || null,
       descriptionI18n: descriptionI18n || null,
       client: client || null,
-      technologies: technologies || null,
+      technologies: Array.isArray(technologies) ? technologies.join(', ') : (technologies || null),
       demoUrl: demoUrl || null,
+      images: images || null,
       isFeatured: isFeatured ?? false,
       isPublished: isPublished ?? false,
+      categoryId: categoryId || null,
     })
 
     const project = await safeGetDoc('projects', projectId)
@@ -83,7 +85,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, title, titleI18n, slug, description, descriptionI18n, client, technologies, demoUrl, isFeatured, isPublished } = body
+    const { id, title, titleI18n, slug, description, descriptionI18n, client, technologies, demoUrl, images, isFeatured, isPublished, categoryId } = body
 
     if (!id) {
       return NextResponse.json(
@@ -109,10 +111,12 @@ export async function PUT(request: NextRequest) {
     if (description !== undefined) updateData.description = description || null
     if (descriptionI18n !== undefined) updateData.descriptionI18n = descriptionI18n || null
     if (client !== undefined) updateData.client = client || null
-    if (technologies !== undefined) updateData.technologies = technologies || null
+    if (technologies !== undefined) updateData.technologies = Array.isArray(technologies) ? technologies.join(', ') : (technologies || null)
     if (demoUrl !== undefined) updateData.demoUrl = demoUrl || null
+    if (images !== undefined) updateData.images = images || null
     if (isFeatured !== undefined) updateData.isFeatured = isFeatured ?? false
     if (isPublished !== undefined) updateData.isPublished = isPublished ?? false
+    if (categoryId !== undefined) updateData.categoryId = categoryId || null
 
     await updateDoc('projects', id, updateData)
     const project = await safeGetDoc('projects', id)

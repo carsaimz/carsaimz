@@ -45,6 +45,21 @@ export async function GET() {
     const transferPayments = payments.filter((p: any) => p.method === 'transfer')
     const depositPayments = payments.filter((p: any) => p.method === 'deposit')
 
+    // Quotes stats — from actual quote records
+    const quotes = await safeGetDocs('quotes')
+    const totalQuotes = quotes.length
+    const pendingQuotes = quotes.filter((q: any) => q.status === 'pending').length
+    const approvedQuotes = quotes.filter((q: any) => q.status === 'approved').length
+    const inProgressQuotes = quotes.filter((q: any) => q.status === 'in_progress').length
+    const completedQuotes = quotes.filter((q: any) => q.status === 'completed').length
+    const rejectedQuotes = quotes.filter((q: any) => q.status === 'rejected').length
+
+    // Proposals stats — from actual proposal records
+    const proposals = await safeGetDocs('proposals')
+    const totalProposals = proposals.length
+    const proposalsRevenue = proposals.reduce((sum: number, p: any) => sum + (p.totalAmount || 0), 0)
+    const acceptedProposals = proposals.filter((p: any) => p.status === 'accepted').length
+
     // User role breakdown
     const adminCount = allUsers.filter((u: any) => {
       const uRole = u.roleId ? roleMap.get(u.roleId) : null
@@ -98,6 +113,7 @@ export async function GET() {
           totalServices,
           totalForumTopics,
           totalTestimonials,
+          totalQuotes,
           totalRevenue,
           confirmedRevenue,
         },
@@ -121,6 +137,19 @@ export async function GET() {
         services: {
           total: totalServices,
           featured: featuredServices,
+        },
+        quotes: {
+          total: totalQuotes,
+          pending: pendingQuotes,
+          approved: approvedQuotes,
+          inProgress: inProgressQuotes,
+          completed: completedQuotes,
+          rejected: rejectedQuotes,
+        },
+        proposals: {
+          total: totalProposals,
+          accepted: acceptedProposals,
+          totalRevenue: proposalsRevenue,
         },
         forum: {
           topics: totalForumTopics,

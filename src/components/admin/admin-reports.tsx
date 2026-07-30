@@ -20,6 +20,7 @@ interface StatsOverview {
   totalServices: number;
   totalForumTopics: number;
   totalTestimonials: number;
+  totalQuotes: number;
   totalRevenue: number;
   confirmedRevenue: number;
 }
@@ -51,7 +52,7 @@ interface StatsData {
 interface RevenueEntry {
   month: string;
   revenue: number;
-  target: number;
+  bookings: number;
 }
 
 interface UsersGrowthEntry {
@@ -60,15 +61,16 @@ interface UsersGrowthEntry {
   totalUsers: number;
 }
 
-interface PostsByCategoryEntry {
+interface ServiceUsageEntry {
   name: string;
-  value: number;
+  count: number;
+  revenue: number;
 }
 
 interface HistoryData {
   revenue: RevenueEntry[];
   usersGrowth: UsersGrowthEntry[];
-  postsByCategory: PostsByCategoryEntry[];
+  serviceUsage: ServiceUsageEntry[];
 }
 
 // Loading skeleton for a card
@@ -188,8 +190,8 @@ export function AdminReports() {
   const hasData =
     (history?.revenue && history.revenue.some((r) => r.revenue > 0)) ||
     (history?.usersGrowth && history.usersGrowth.some((r) => r.newUsers > 0)) ||
-    (history?.postsByCategory && history.postsByCategory.some((r) => r.value > 0)) ||
-    (stats?.overview && (stats.overview.totalRevenue > 0 || stats.overview.totalUsers > 0));
+    (history?.serviceUsage && history.serviceUsage.some((r) => r.count > 0)) ||
+    (stats?.overview && (stats.overview.totalRevenue > 0 || stats.overview.totalUsers > 0 || stats.overview.totalQuotes > 0));
 
   // Error state
   if (error) {
@@ -347,17 +349,13 @@ export function AdminReports() {
                 </TableHeader>
                 <TableBody>
                   {history.revenue.map((row) => {
-                    // Estimate bookings count from revenue proportion
-                    const bookingsEstimate =
-                      totalBookings > 0 && totalRevenue > 0
-                        ? Math.round((row.revenue / totalRevenue) * totalBookings)
-                        : 0;
-                    const avgPerBooking = bookingsEstimate > 0 ? row.revenue / bookingsEstimate : 0;
+                    // Use actual bookings count from the API (not estimated)
+                    const avgPerBooking = row.bookings > 0 ? row.revenue / row.bookings : 0;
                     return (
                       <TableRow key={row.month}>
                         <TableCell className="font-medium">{formatMonth(row.month)}</TableCell>
                         <TableCell className="text-right">{formatCurrency(row.revenue)}</TableCell>
-                        <TableCell className="text-right">{bookingsEstimate}</TableCell>
+                        <TableCell className="text-right">{row.bookings}</TableCell>
                         <TableCell className="text-right">
                           {avgPerBooking > 0 ? formatCurrency(Math.round(avgPerBooking)) : '—'}
                         </TableCell>
@@ -416,8 +414,8 @@ export function AdminReports() {
         </motion.div>
       )}
 
-      {/* Service Usage Report (from postsByCategory) */}
-      {history?.postsByCategory && history.postsByCategory.length > 0 && (
+      {/* Service Usage Report (from actual quote records) */}
+      {history?.serviceUsage && history.serviceUsage.length > 0 && (
         <motion.div variants={itemVariants}>
           <Card>
             <CardHeader className="pb-2">
@@ -437,17 +435,15 @@ export function AdminReports() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {history.postsByCategory.map((row) => {
-                    const totalPosts = history.postsByCategory.reduce((s, r) => s + r.value, 0);
-                    const proportion = totalPosts > 0 ? row.value / totalPosts : 0;
-                    const categoryRevenue = Math.round(totalRevenue * proportion);
-                    const avgRevenue = row.value > 0 ? Math.round(categoryRevenue / row.value) : 0;
+                  {history.serviceUsage.map((row) => {
+                    // Use actual revenue from proposals associated with quotes
+                    const avgRevenue = row.count > 0 ? Math.round(row.revenue / row.count) : 0;
                     return (
                       <TableRow key={row.name}>
                         <TableCell className="font-medium">{row.name}</TableCell>
-                        <TableCell className="text-right">{row.value}</TableCell>
+                        <TableCell className="text-right">{row.count}</TableCell>
                         <TableCell className="text-right">
-                          {categoryRevenue > 0 ? formatCurrency(categoryRevenue) : '—'}
+                          {row.revenue > 0 ? formatCurrency(row.revenue) : '—'}
                         </TableCell>
                         <TableCell className="text-right">
                           {avgRevenue > 0 ? formatCurrency(avgRevenue) : '—'}

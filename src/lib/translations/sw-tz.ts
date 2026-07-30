@@ -201,6 +201,7 @@ export const swTZ: TranslationObject = {
     notFound: 'Hakupatikana',
     noDescription: 'Hakuna maelezo',
     requestQuote: 'Omba nukuu',
+    completed: 'Imekamilika',
   },
 
   // ============================================================================
@@ -387,6 +388,13 @@ export const swTZ: TranslationObject = {
     lockedMessage: 'Mada hii imefungwa na haikubali majibu mapya.',
     replyPlaceholder: 'Andika jibu lako...',
     submitReply: 'Tuma Jibu',
+    category: 'Kategoria',
+    content: 'Maudhui',
+    contentPlaceholder: 'Andika maudhui ya mada...',
+    createTopicDescription: 'Eleza mada yako ili kusaidia jamii kupata na kujibu',
+    selectCategory: 'Chagua kategoria',
+    topicTitle: 'Kichwa cha mada',
+    topicTitlePlaceholder: 'Andika kichwa cha mada...',
 
   },
 
@@ -416,10 +424,12 @@ export const swTZ: TranslationObject = {
     noReplies: 'Hakuna majibu bado',
     description: 'Maelezo',
     status: 'Hali',
+    closed: 'Imefungwa',
+    inProgress: 'Inaendelea',
+    open: 'Wazi',
+    resolved: 'Imetatuliwa',
+    writeReply: 'Andika jibu',
   },
-
-  // ============================================================================
-  // User Dashboard
   // ============================================================================
   dashboard: {
     title: 'Dashibodi ya Mtumiaji',
@@ -682,6 +692,10 @@ export const swTZ: TranslationObject = {
     notificationSent: 'Arifa imetumwa kwa mafanikio',
     notificationSendFailed: 'Imeshindwa kutuma arifa',
     notificationSearchUsers: 'Tafuta watumiaji...',
+    newUsers: 'Watumiaji wapya',
+    revenue: 'Mapato',
+    target: 'Lengo',
+    totalUsers: 'Jumla ya watumiaji',
 
   },
 
@@ -748,6 +762,8 @@ export const swTZ: TranslationObject = {
     bankPlaceholder: 'k.m. Millennium BIM',
     qrScanText: 'Skanili kutembelea kiungo cha ushiriki',
     shareText: 'Tembelea Carsai Mozambique — Suluhisho za Kidijitali na Upangishaji Wavuti Bure!',
+    accountDetails: 'Maelezo ya akaunti',
+    scanQR: 'Skaneni QR',
 
   },
 
@@ -802,7 +818,7 @@ export const swTZ: TranslationObject = {
     currency: 'Sarafu',
     metical: 'Metical (MT)',
     usd: 'Dola ya Marekani ($)',
-    real: 'Real',
+    real: 'Reali',
     exchangeRate: 'Kiwango cha kubadilisha',
     price: 'Bei',
     unitPrice: 'Bei ya kipengee',
@@ -814,6 +830,7 @@ export const swTZ: TranslationObject = {
     dueNow: 'Malipo ya papo hapo',
     dueLater: 'Malipo baada ya siku {{days}}',
     deposit: 'Amana',
+    refunded: 'Imerejeshwa',
   },
 
   // ============================================================================

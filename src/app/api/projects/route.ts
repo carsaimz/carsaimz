@@ -17,9 +17,13 @@ export async function GET() {
       projects = allProjects
         .filter((p: any) => p.isPublished === true)
         .sort((a: any, b: any) => {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
-          return dateB - dateA
+          const toMs = (val: any) => {
+            if (!val) return 0
+            // Firestore Timestamp objects have .seconds and .nanoseconds
+            if (val.seconds !== undefined) return val.seconds * 1000 + (val.nanoseconds || 0) / 1e6
+            return new Date(val).getTime()
+          }
+          return toMs(b.createdAt) - toMs(a.createdAt)
         })
     }
 
@@ -96,7 +100,7 @@ export async function POST(request: Request) {
       description: description ?? null,
       descriptionI18n: descriptionI18nValue ?? null,
       client: client ?? null,
-      technologies: technologies ?? null,
+      technologies: Array.isArray(technologies) ? technologies.join(', ') : (technologies ?? null),
       demoUrl: demoUrl ?? null,
       images: images ?? null,
       isFeatured: isFeatured ?? false,

@@ -201,6 +201,7 @@ export const ptPT: TranslationObject = {
     notFound: 'Não encontrado',
     noDescription: 'Sem descrição disponível',
     requestQuote: 'Solicitar orçamento',
+    completed: 'Concluído',
   },
 
   // ============================================================================
@@ -387,6 +388,13 @@ export const ptPT: TranslationObject = {
     lockedMessage: 'Este tópico está bloqueado e não aceita novas respostas.',
     replyPlaceholder: 'Escreva a sua resposta...',
     submitReply: 'Enviar Resposta',
+    category: 'Categoria',
+    content: 'Conteúdo',
+    contentPlaceholder: 'Escreva o conteúdo do tópico...',
+    createTopicDescription: 'Descreva o seu tópico para ajudar a comunidade a encontrar e responder',
+    selectCategory: 'Seleccionar categoria',
+    topicTitle: 'Título do tópico',
+    topicTitlePlaceholder: 'Escreva o título do tópico...',
   },
 
   // ============================================================================
@@ -415,6 +423,11 @@ export const ptPT: TranslationObject = {
     noReplies: 'Sem respostas ainda',
     description: 'Descrição',
     status: 'Estado',
+    closed: 'Encerrado',
+    inProgress: 'Em Progresso',
+    open: 'Aberto',
+    resolved: 'Resolvido',
+    writeReply: 'Escrever resposta',
   },
 
   // ============================================================================
@@ -681,6 +694,10 @@ export const ptPT: TranslationObject = {
     notificationSent: 'Notificação enviada com sucesso',
     notificationSendFailed: 'Falha ao enviar notificação',
     notificationSearchUsers: 'Pesquisar utilizadores...',
+    newUsers: 'Novos Utilizadores',
+    revenue: 'Receitas',
+    target: 'Objectivo',
+    totalUsers: 'Total de Utilizadores',
   },
 
   // ============================================================================
@@ -746,6 +763,8 @@ export const ptPT: TranslationObject = {
     bankPlaceholder: 'ex. Millennium BIM',
     qrScanText: 'Scan para visitar o link de afiliado',
     shareText: 'Conheça a Carsai Mozambique — Soluções Digitais e Hospedagem Web Gratuita!',
+    accountDetails: 'Detalhes da conta',
+    scanQR: 'Escanear QR',
   },
 
   // ============================================================================
@@ -811,6 +830,7 @@ export const ptPT: TranslationObject = {
     dueNow: 'Pagamento imediato',
     dueLater: 'Pagamento em {{days}} dias',
     deposit: 'Depósito',
+    refunded: 'Reembolsado',
   },
 
   // ============================================================================

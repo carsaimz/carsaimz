@@ -72,8 +72,9 @@ interface ContentItem {
   isPublished?: boolean;
   published?: boolean;
   client?: string | null;
-  technologies?: string | null;
+  technologies?: string | string[] | null;
   demoUrl?: string | null;
+  images?: string | null;
   company?: string | null;
   rating?: number;
   categoryId?: string | null;
@@ -198,7 +199,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
 
   const fetchCategories = useCallback(async () => {
     try {
-      const res = await apiFetch('/api/admin/categories');
+      const res = await apiFetch(`/api/admin/categories?type=${contentType}`);
       const data = await safeJson(res);
       if (!data) return;
       if (data.success) {
@@ -207,7 +208,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
     } catch (err) {
       console.error('Categories fetch error:', err);
     }
-  }, []);
+  }, [contentType]);
 
   useEffect(() => {
     fetchItems();
@@ -268,7 +269,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
     setFormFeatured(item.isFeatured || false);
     setFormPublished(item.isPublished || item.published || false);
     setFormClient(item.client || '');
-    setFormTechnologies(item.technologies || '');
+    setFormTechnologies(Array.isArray(item.technologies) ? item.technologies.join(', ') : (item.technologies || ''));
     setFormDemoUrl(item.demoUrl || '');
     setFormName(item.name || '');
     setFormCompany(item.company || '');

@@ -296,9 +296,10 @@ export default function DbManagerPage() {
   };
 
   // ── Handle edit document ──
-  const handleEditDocument = () => {
-    if (!selectedDoc) return;
-    const { id, ...data } = selectedDoc;
+  const handleEditDocument = (doc?: DocumentData) => {
+    const targetDoc = doc || selectedDoc;
+    if (!targetDoc) return;
+    const { id, ...data } = targetDoc;
     setJsonInput(JSON.stringify(data, null, 2));
     setJsonError(null);
     setEditDialogOpen(true);
@@ -393,7 +394,7 @@ export default function DbManagerPage() {
 
         {/* Action buttons row */}
         <div className="flex items-center justify-end gap-2">
-          <Button variant="outline" size="sm" onClick={handleEditDocument}>
+          <Button variant="outline" size="sm" onClick={() => handleEditDocument()}>
             <Pencil className="size-4 mr-1" />
             {t('admin.editDocument')}
           </Button>
@@ -471,7 +472,7 @@ export default function DbManagerPage() {
 
     return (
       <div className="space-y-4">
-        {/* Breadcrumb row — full width */}
+        {/* Breadcrumb row */}
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={handleBackToCollections}>
             <ArrowLeft className="size-4 mr-1" />
@@ -481,34 +482,36 @@ export default function DbManagerPage() {
           <span className="font-medium">{selectedCollection}</span>
         </div>
 
-        {/* Actions row — full width, right-aligned */}
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        {/* Actions row — separate from breadcrumb */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3">
           <Badge variant="secondary">
             {totalDocs} {t('admin.documents').toLowerCase()}
           </Badge>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCreateDocument}
-          >
-            <Plus className="size-4 mr-1" />
-            {t('admin.addDocument')}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => exportCollection(selectedCollection!)}
-          >
-            <Download className="size-4 mr-1" />
-            {t('admin.exportCollection')}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fetchDocuments(selectedCollection!, page)}
-          >
-            <RefreshCw className="size-4" />
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCreateDocument}
+            >
+              <Plus className="size-4 mr-1" />
+              {t('admin.addDocument')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exportCollection(selectedCollection!)}
+            >
+              <Download className="size-4 mr-1" />
+              {t('admin.exportCollection')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchDocuments(selectedCollection!, page)}
+            >
+              <RefreshCw className="size-4" />
+            </Button>
+          </div>
         </div>
 
         {docLoading ? (
@@ -535,7 +538,7 @@ export default function DbManagerPage() {
                             {truncate(key, 20)}
                           </TableHead>
                         ))}
-                        <TableHead className="w-[100px] text-right">
+                        <TableHead className="w-[120px] text-right">
                           {t('admin.actions')}
                         </TableHead>
                       </TableRow>
@@ -556,17 +559,29 @@ export default function DbManagerPage() {
                             </TableCell>
                           ))}
                           <TableCell className="text-right">
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="size-7 text-destructive"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <Trash2 className="size-3.5" />
-                                </Button>
-                              </AlertDialogTrigger>
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-7"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditDocument(doc);
+                                }}
+                              >
+                                <Pencil className="size-3.5" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-7 text-destructive"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <Trash2 className="size-3.5" />
+                                  </Button>
+                                </AlertDialogTrigger>
                               <AlertDialogContent onClick={(e) => e.stopPropagation()}>
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>
@@ -586,6 +601,7 @@ export default function DbManagerPage() {
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}

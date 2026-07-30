@@ -194,6 +194,7 @@ export const frFR: TranslationObject = {
     notFound: 'Non trouvé',
     noDescription: 'Aucune description disponible',
     requestQuote: 'Demander un devis',
+    completed: 'Terminé',
   },
 
   // ============================================================================
@@ -380,6 +381,13 @@ export const frFR: TranslationObject = {
     lockedMessage: 'Ce sujet est verrouillé et n\'accepte pas de nouvelles réponses.',
     replyPlaceholder: 'Écrivez votre réponse...',
     submitReply: 'Envoyer la réponse',
+    category: 'Catégorie',
+    content: 'Contenu',
+    contentPlaceholder: 'Écrivez le contenu du sujet...',
+    createTopicDescription: 'Décrivez votre sujet pour aider la communauté à le trouver et y répondre',
+    selectCategory: 'Sélectionner une catégorie',
+    topicTitle: 'Titre du sujet',
+    topicTitlePlaceholder: 'Écrivez le titre du sujet...',
   },
 
 
@@ -409,10 +417,12 @@ export const frFR: TranslationObject = {
     noReplies: 'Pas encore de réponses',
     description: 'Description',
     status: 'Statut',
+    closed: 'Fermé',
+    inProgress: 'En cours',
+    open: 'Ouvert',
+    resolved: 'Résolu',
+    writeReply: 'Écrire une réponse',
   },
-
-  // ============================================================================
-  // User Dashboard
   // ============================================================================
   dashboard: {
     title: 'Tableau de bord utilisateur',
@@ -675,6 +685,10 @@ export const frFR: TranslationObject = {
     notificationSent: 'Notification envoyée avec succès',
     notificationSendFailed: 'Échec de l\'envoi de la notification',
     notificationSearchUsers: 'Rechercher des utilisateurs...',
+    newUsers: 'Nouveaux utilisateurs',
+    revenue: 'Revenus',
+    target: 'Objectif',
+    totalUsers: 'Total des utilisateurs',
   },
 
   // ============================================================================
@@ -740,6 +754,8 @@ export const frFR: TranslationObject = {
     bankPlaceholder: 'ex. BIM',
     qrScanText: 'Scannez pour visiter le lien d\'affiliation',
     shareText: 'Découvrez Carsai Mozambique — Solutions Numériques et Hébergement Web Gratuit !',
+    accountDetails: 'Détails du compte',
+    scanQR: 'Scanner le QR',
   },
 
   // ============================================================================
@@ -805,6 +821,7 @@ export const frFR: TranslationObject = {
     dueNow: 'Payer maintenant',
     dueLater: 'Payer dans {{days}} jours',
     deposit: 'Dépôt',
+    refunded: 'Remboursé',
   },
 
   // ============================================================================

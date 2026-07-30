@@ -1,7 +1,8 @@
 /**
  * Carsai Mozambique - Rich Text Editor Component
  *
- * A reusable rich text editor built on react-quill with 3 configurable levels:
+ * A reusable rich text editor built on react-quill-new (React 19 compatible)
+ * with 3 configurable levels:
  * - Full (admin): Complete toolbar with all features
  * - Basic (partner): Limited toolbar — bold, italic, underline, headers, lists, links
  * - Minimal (user): Very basic — bold, italic, links only
@@ -15,8 +16,8 @@
 import dynamic from 'next/dynamic';
 import { useCallback, useMemo } from 'react';
 
-// Dynamically import react-quill to avoid SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), {
+// Dynamically import react-quill-new to avoid SSR issues
+const ReactQuill = dynamic(() => import('react-quill-new'), {
   ssr: false,
   loading: () => (
     <div className="border rounded-md p-4 min-h-[120px] bg-muted/20 flex items-center justify-center text-muted-foreground">
@@ -25,8 +26,8 @@ const ReactQuill = dynamic(() => import('react-quill'), {
   ),
 });
 
-// Import Quill styles
-import 'react-quill/dist/quill.snow.css';
+// Import Quill styles — react-quill-new includes its own CSS
+import 'react-quill-new/dist/quill.snow.css';
 
 export type EditorLevel = 'full' | 'basic' | 'minimal';
 
@@ -53,7 +54,6 @@ const FULL_TOOLBAR = [
   [{ direction: 'rtl' }],
   ['link', 'image', 'video', 'code-block'],
   ['clean'],
-  ['table'],
 ];
 
 const BASIC_TOOLBAR = [
@@ -114,7 +114,7 @@ export function RichTextEditor({
       return [
         'header', 'font', 'size', 'bold', 'italic', 'underline', 'strike',
         'blockquote', 'color', 'background', 'list', 'bullet', 'indent',
-        'align', 'direction', 'link', 'image', 'video', 'code-block', 'table', 'clean',
+        'align', 'direction', 'link', 'image', 'video', 'code-block', 'clean',
       ];
     }
     if (level === 'basic') {

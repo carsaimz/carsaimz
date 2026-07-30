@@ -3,8 +3,11 @@ import { safeQueryDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { getDocByField, createDoc, updateDoc, deleteDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 
-// GET all categories for admin
-export async function GET() {
+const VALID_TYPES = ['posts', 'services', 'projects'] as const
+type CategoryType = (typeof VALID_TYPES)[number]
+
+// GET all categories for admin (with optional type filter)
+export async function GET(request: NextRequest) {
   try {
     const adminError = checkFirebaseAdmin()
     if (adminError) {
@@ -14,7 +17,16 @@ export async function GET() {
       )
     }
 
-    const categories = await safeQueryDocs('categories', [], 'name', 'asc')
+    const { searchParams } = new URL(request.url)
+    const type = searchParams.get('type') as CategoryType | null
+
+    const filters: Array<{ field: string; op: '==' | '!=' | '>' | '<' | '>=' | '<='; value: any }> = []
+
+    if (type && VALID_TYPES.includes(type)) {
+      filters.push({ field: 'type', op: '==', value: type })
+    }
+
+    const categories = await safeQueryDocs('categories', filters, 'name', 'asc')
     return NextResponse.json({ success: true, data: serializeFirestore(categories) })
   } catch (error) {
     console.error('Admin categories fetch error:', error)
@@ -37,11 +49,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, slug } = body
+    const { name, slug, type } = body
 
     if (!name || !slug) {
       return NextResponse.json(
         { success: false, message: 'Name and slug are required' },
+        { status: 400 }
+      )
+    }
+
+    if (type && !VALID_TYPES.includes(type)) {
+      return NextResponse.json(
+        { success: false, message: `Type must be one of: ${VALID_TYPES.join(', ')}` },
         { status: 400 }
       )
     }
@@ -54,11 +73,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const categoryId = await createDoc('categories', {
+    const categoryData: Record<string, any> = {
       name,
       slug,
       createdAt: new Date().toISOString(),
-    })
+    }
+
+    if (type) {
+      categoryData.type = type
+    }
+
+    const categoryId = await createDoc('categories', categoryData)
 
     const category = await safeGetDoc('categories', categoryId)
     return NextResponse.json({ success: true, data: serializeFirestore(category) })
@@ -83,11 +108,18 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, name, slug } = body
+    const { id, name, slug, type } = body
 
     if (!id) {
       return NextResponse.json(
         { success: false, message: 'ID is required' },
+        { status: 400 }
+      )
+    }
+
+    if (type && !VALID_TYPES.includes(type)) {
+      return NextResponse.json(
+        { success: false, message: `Type must be one of: ${VALID_TYPES.join(', ')}` },
         { status: 400 }
       )
     }
@@ -105,6 +137,7 @@ export async function PUT(request: NextRequest) {
     const updateData: Record<string, any> = {}
     if (name !== undefined) updateData.name = name
     if (slug !== undefined) updateData.slug = slug
+    if (type !== undefined) updateData.type = type
 
     await updateDoc('categories', id, updateData)
     const category = await safeGetDoc('categories', id)

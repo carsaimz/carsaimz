@@ -194,6 +194,7 @@ export const zhCN: TranslationObject = {
     notFound: '未找到',
     noDescription: '暂无描述',
     requestQuote: '请求报价',
+    completed: '已完成',
   },
 
   // ============================================================================
@@ -380,6 +381,13 @@ export const zhCN: TranslationObject = {
     lockedMessage: '此主题已锁定，不接受新回复。',
     replyPlaceholder: '写下你的回复...',
     submitReply: '发送回复',
+    category: '分类',
+    content: '内容',
+    contentPlaceholder: '写入主题内容...',
+    createTopicDescription: '描述您的主题以帮助社区查找和回复',
+    selectCategory: '选择分类',
+    topicTitle: '主题标题',
+    topicTitlePlaceholder: '写入主题标题...',
   },
 
 
@@ -409,10 +417,12 @@ export const zhCN: TranslationObject = {
     noReplies: '暂无回复',
     description: '描述',
     status: '状态',
+    closed: '已关闭',
+    inProgress: '进行中',
+    open: '开放',
+    resolved: '已解决',
+    writeReply: '撰写回复',
   },
-
-  // ============================================================================
-  // User Dashboard
   // ============================================================================
   dashboard: {
     title: '用户控制面板',
@@ -675,6 +685,10 @@ export const zhCN: TranslationObject = {
     notificationSent: '通知发送成功',
     notificationSendFailed: '通知发送失败',
     notificationSearchUsers: '搜索用户...',
+    newUsers: '新用户',
+    revenue: '收入',
+    target: '目标',
+    totalUsers: '总用户数',
   },
 
   // ============================================================================
@@ -740,6 +754,8 @@ export const zhCN: TranslationObject = {
     bankPlaceholder: '例如 千年BIM',
     qrScanText: '扫描访问推广链接',
     shareText: '了解 Carsai Mozambique — 数字解决方案和免费网络托管！',
+    accountDetails: '账户详情',
+    scanQR: '扫描二维码',
   },
 
   // ============================================================================
@@ -805,6 +821,7 @@ export const zhCN: TranslationObject = {
     dueNow: '立即支付',
     dueLater: '{{days}}天后支付',
     deposit: '存款',
+    refunded: '已退款',
   },
 
   // ============================================================================
