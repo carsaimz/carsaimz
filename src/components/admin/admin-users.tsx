@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
   DialogHeader, DialogTitle, DialogTrigger,
@@ -31,6 +31,7 @@ import { useLanguage } from '@/contexts/language-context';
 import { useAuthStore } from '@/lib/store';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { useToast } from '@/hooks/use-toast';
+import { getGravatarUrl } from '@/lib/utils';
 
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
 const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
@@ -45,6 +46,7 @@ interface UserData {
   bio?: string;
   company?: string;
   address?: string;
+  avatar?: string | null;
   createdAt: string;
 }
 
@@ -447,6 +449,11 @@ export function AdminUsers() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Avatar className="size-6">
+                            {u.avatar && u.avatar.startsWith('data:') ? (
+                              <AvatarImage src={u.avatar} alt={u.name} />
+                            ) : (
+                              <AvatarImage src={getGravatarUrl(u.email, 48)} alt={u.name} />
+                            )}
                             <AvatarFallback className="text-xs">
                               {u.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                             </AvatarFallback>

@@ -216,6 +216,8 @@ export const ptBR: TranslationObject = {
     noDescription: 'Sem descrição disponível',
     requestQuote: 'Solicitar orçamento',
     completed: 'Concluído',
+    dontShowAgain: 'Não mostrar novamente',
+    dismiss: 'Dispensar',
   },
 
   // ============================================================================
@@ -381,9 +383,9 @@ export const ptBR: TranslationObject = {
     noTopics: 'Nenhum tópico encontrado',
     topicAuthor: 'Autor do tópico',
     lastReply: 'Última resposta',
-    replyCount: '{{{count}}} respostas',
-    viewCount: '{{{count}}} visualizações',
-    memberCount: '{{{count}}} membros',
+    replyCount: '{{count}} respostas',
+    viewCount: '{{count}} visualizações',
+    memberCount: '{{count}} membros',
     categoryGeneral: 'Discussão Geral',
     categorySupport: 'Suporte Técnico',
     categoryFeedback: 'Feedback',
@@ -517,7 +519,7 @@ export const ptBR: TranslationObject = {
     usersEdit: 'Editar usuário',
     usersDelete: 'Excluir usuário',
     usersActive: 'Usuários ativos',
-    activeCount: '{count} ativos',
+    activeCount: '{{count}} ativos',
     usersInactive: 'Usuários inativos',
     usersTotal: 'Total de usuários',
     roles: 'Funções',
@@ -740,7 +742,7 @@ export const ptBR: TranslationObject = {
     withdrawalsPending: 'Saques pendentes',
     referralCode: 'Código de referência',
     referralLink: 'Link de referência',
-    referralCount: 'Referências: {{{count}}}',
+    referralCount: 'Referências: {{count}}',
     tier: 'Nível',
     tierBasic: 'Parceiro Básico',
     tierSilver: 'Parceiro Prata',
@@ -1162,6 +1164,7 @@ export const ptBR: TranslationObject = {
     online: 'Online',
     frequentQuestions: 'Perguntas frequentes:',
     suggestions: 'Sugestões',
+    notConfigured: 'O assistente de IA não está configurado. Entre em contato com o administrador para ativar esta funcionalidade.',
   },
 
   // ============================================================================

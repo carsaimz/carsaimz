@@ -195,6 +195,8 @@ export const deDE: TranslationObject = {
     noDescription: 'Keine Beschreibung verfügbar',
     requestQuote: 'Angebot anfordern',
     completed: 'Abgeschlossen',
+    dontShowAgain: 'Nicht mehr anzeigen',
+    dismiss: 'Ausblenden',
   },
 
   // ============================================================================
@@ -360,9 +362,9 @@ export const deDE: TranslationObject = {
     noTopics: 'Keine Themen gefunden',
     topicAuthor: 'Themen-Autor',
     lastReply: 'Letzte Antwort',
-    replyCount: '{{{count}}} Antworten',
-    viewCount: '{{{count}}} Aufrufe',
-    memberCount: '{{{count}}} Mitglieder',
+    replyCount: '{{count}} Antworten',
+    viewCount: '{{count}} Aufrufe',
+    memberCount: '{{count}} Mitglieder',
     categoryGeneral: 'Allgemeine Diskussion',
     categorySupport: 'Technischer Support',
     categoryFeedback: 'Feedback',
@@ -494,7 +496,7 @@ export const deDE: TranslationObject = {
     usersEdit: 'Benutzer bearbeiten',
     usersDelete: 'Benutzer löschen',
     usersActive: 'Aktive Benutzer',
-    activeCount: '{count} aktiv',
+    activeCount: '{{count}} aktiv',
     usersInactive: 'Inaktive Benutzer',
     usersTotal: 'Benutzer insgesamt',
     roles: 'Rollen',
@@ -717,7 +719,7 @@ export const deDE: TranslationObject = {
     withdrawalsPending: 'Ausstehende Auszahlungen',
     referralCode: 'Empfehlungscode',
     referralLink: 'Empfehlungslink',
-    referralCount: 'Empfehlungen: {{{count}}}',
+    referralCount: 'Empfehlungen: {{count}}',
     tier: 'Stufe',
     tierBasic: 'Basis-Partner',
     tierSilver: 'Silber-Partner',
@@ -1138,6 +1140,7 @@ export const deDE: TranslationObject = {
     frequentQuestions: 'Häufige Fragen:',
     suggestions: 'Vorschläge',
     poweredBy: 'Angetrieben von Carsai AI',
+    notConfigured: 'Der KI-Assistent ist nicht konfiguriert. Kontaktieren Sie den Administrator, um diese Funktion zu aktivieren.',
   },
 
   // ============================================================================

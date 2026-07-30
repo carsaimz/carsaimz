@@ -182,7 +182,7 @@ export function AdminAiProviders() {
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
           Configure provedores de IA para o chatbot. Se um falhar, o próximo na lista assume automaticamente (failover).
-          O Z.ai é sempre o primeiro provedor (built-in, sem configuração necessária).
+          Adicione um provedor abaixo (recomendado: Groq — tem plano gratuito).
         </p>
       </motion.div>
 
@@ -205,6 +205,29 @@ export function AdminAiProviders() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* ── Getting Started Guide (when no providers) ── */}
+      {providers.length === 0 && (
+        <motion.div variants={itemVariants}>
+          <Card className="border-amber-200/60 dark:border-amber-800/60 bg-amber-50/50 dark:bg-amber-950/20">
+            <CardContent className="pt-4">
+              <h3 className="font-semibold mb-2 flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                <Zap className="size-4" />
+                Nenhum provedor configurado
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                O chatbot não funciona sem pelo menos um provedor de IA. Recomendamos o Groq — é gratuito e rápido.
+              </p>
+              <ol className="text-sm text-muted-foreground space-y-1 list-decimal ml-4">
+                <li>Clique em <strong>&quot;Adicionar Provedor&quot;</strong> abaixo</li>
+                <li>Seleccione <strong>&quot;Groq (Llama 3.3 70B)&quot;</strong> no preenchimento rápido</li>
+                <li>Obtenha uma API key gratuita em <a href="https://console.groq.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">console.groq.com</a></li>
+                <li>Cole a API key e guarde — o chatbot fica activo imediatamente!</li>
+              </ol>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* ── External Providers List ── */}
       {providers.map((provider) => (
@@ -341,9 +364,8 @@ export function AdminAiProviders() {
               Quando um utilizador envia uma mensagem, o chatbot tenta os provedores em ordem de prioridade:
             </p>
             <ol className="text-sm text-muted-foreground mt-2 space-y-1 list-decimal ml-4">
-              <li><strong>Z.ai (built-in)</strong> — sempre primeiro, sem API key</li>
               <li>Provedores externos em ordem de prioridade (número menor = tentado primeiro)</li>
-              <li>Se todos falharem, o utilizador recebe uma mensagem de erro honesta (sem respostas genéricas)</li>
+              <li>Se todos falharem, o utilizador recebe uma mensagem de erro</li>
             </ol>
             <p className="text-xs text-muted-foreground mt-3">
               Configure API keys e prioridades para garantir disponibilidade continua. Um provedor com baixa prioridade só será usado se os anteriores falharem.

@@ -8,10 +8,11 @@ import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveI18nContent } from '@/lib/i18n-content';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
+import { getGravatarUrl } from '@/lib/utils';
 
 const FloatingOrbs = dynamic(
   () => import('@/components/common/3d-elements').then((mod) => mod.FloatingOrbs),
@@ -142,6 +143,11 @@ export function TestimonialsSection() {
                 {/* Author */}
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12 border-2 border-emerald-200">
+                    {currentTestimonial.avatar && currentTestimonial.avatar.startsWith('data:') ? (
+                      <AvatarImage src={currentTestimonial.avatar} alt={currentTestimonial.name} />
+                    ) : (
+                      <AvatarImage src={getGravatarUrl(currentTestimonial.name, 96)} alt={currentTestimonial.name} />
+                    )}
                     <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold">
                       {currentTestimonial.name
                         .split(' ')

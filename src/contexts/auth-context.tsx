@@ -104,6 +104,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const result = await getRedirectResult(auth);
 
+        // getRedirectResult can throw for auth/unauthorized-domain etc.
+        // Catch is below — but we also need to handle null result gracefully.
+
         if (cancelled || !result) {
           // No redirect result — this is normal on first load or after a failed redirect
           return;
@@ -240,7 +243,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           store.setIdToken(idToken);
           redirectByRole('user');
         }
-      } catch (err) {
+      } catch (err: any) {
+        // Handle specific Firebase Auth errors from the redirect flow
+        if (err?.code === 'auth/unauthorized-domain') {
+          console.error(
+            '[Auth] Unauthorized domain error. The current domain is not authorized in Firebase Console.\n' +
+            'Fix: Go to Firebase Console → Authentication → Settings → Authorized domains → Add your domain.'
+          );
+          // Don't show this as a generic warning — it's a configuration issue
+          return;
+        }
         console.warn('[Auth] Redirect result handling error:', err);
       }
     }

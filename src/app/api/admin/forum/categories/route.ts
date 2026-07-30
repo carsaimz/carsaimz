@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, slug, description, order } = body
+    const { name, slug, description, order, nameI18n } = body
 
     if (!name || !slug) {
       return NextResponse.json(
@@ -54,13 +54,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const categoryId = await createDoc('forum_categories', {
+    const docData: Record<string, any> = {
       name,
       slug,
       description: description || null,
       order: order || 0,
       createdAt: new Date().toISOString(),
-    })
+    }
+
+    // Store i18n translations if provided
+    // nameI18n is a JSON object like { "en-us": "General", "fr-fr": "Général", ... }
+    if (nameI18n && typeof nameI18n === 'object') {
+      docData.nameI18n = nameI18n
+    }
+
+    const categoryId = await createDoc('forum_categories', docData)
 
     const category = await safeGetDoc('forum_categories', categoryId)
     return NextResponse.json({ success: true, data: serializeFirestore(category) })
@@ -85,7 +93,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, name, slug, description, order } = body
+    const { id, name, slug, description, order, nameI18n } = body
 
     if (!id) {
       return NextResponse.json(
@@ -109,6 +117,7 @@ export async function PUT(request: NextRequest) {
     if (slug !== undefined) updateData.slug = slug
     if (description !== undefined) updateData.description = description || null
     if (order !== undefined) updateData.order = order
+    if (nameI18n !== undefined) updateData.nameI18n = nameI18n || null
 
     await updateDoc('forum_categories', id, updateData)
     const category = await safeGetDoc('forum_categories', id)

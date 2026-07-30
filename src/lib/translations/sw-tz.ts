@@ -202,6 +202,8 @@ export const swTZ: TranslationObject = {
     noDescription: 'Hakuna maelezo',
     requestQuote: 'Omba nukuu',
     completed: 'Imekamilika',
+    dontShowAgain: 'Usionyeshe tena',
+    dismiss: 'Futa',
   },
 
   // ============================================================================
@@ -501,7 +503,7 @@ export const swTZ: TranslationObject = {
     usersEdit: 'Hariri mtumiaji',
     usersDelete: 'Futa mtumiaji',
     usersActive: 'Watumiaji hai',
-    activeCount: '{count} hai',
+    activeCount: '{{count}} hai',
     usersInactive: 'Watumiaji wasio hai',
     usersTotal: 'Jumla ya watumiaji',
     roles: 'Majukumu',
@@ -1148,6 +1150,7 @@ export const swTZ: TranslationObject = {
     online: 'Mtandaoni',
     frequentQuestions: 'Maswali ya kawaida:',
     suggestions: 'Mapendekezo',
+    notConfigured: 'Msaidizi wa AI haujasanidiwa. Wasiliana na msimamizi kuwezesha kipengele hiki.',
   },
 
   // ============================================================================

@@ -98,6 +98,7 @@ interface ForumCategoryData {
   description: string | null;
   order: number;
   createdAt: string;
+  nameI18n?: Record<string, string> | null;
   topics: ForumTopicData[];
   _count: {
     topics: number;
@@ -126,7 +127,7 @@ const itemVariants = {
 // ──────────────────────────────────────────────
 
 export function ForumPage() {
-  const { t, formatRelativeTime } = useLanguage();
+  const { t, language, formatRelativeTime } = useLanguage();
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
 
@@ -147,7 +148,7 @@ export function ForumPage() {
     async function fetchForum() {
       try {
         setLoading(true);
-        const result = await fetchWithFallback('/api/forum', fetchForumClient);
+        const result = await fetchWithFallback(`/api/forum?lang=${language}`, fetchForumClient);
         setCategories(result.data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Network error');
@@ -156,7 +157,7 @@ export function ForumPage() {
       }
     }
     fetchForum();
-  }, []);
+  }, [language]);
 
   // Flatten all topics across categories
   const allTopics = useMemo(() => {
@@ -229,7 +230,7 @@ export function ForumPage() {
         setNewTopicCategory('');
         setNewTopicContent('');
         // Refresh the topics list
-        const result = await fetchWithFallback('/api/forum', fetchForumClient);
+        const result = await fetchWithFallback(`/api/forum?lang=${language}`, fetchForumClient);
         setCategories(result.data);
       } else {
         toast({ title: t('common.error') || 'Error', description: data?.message || 'Failed to create topic', variant: 'destructive' });

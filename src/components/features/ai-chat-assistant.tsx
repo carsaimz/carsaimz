@@ -593,6 +593,20 @@ export function AiChatAssistant() {
         }),
       });
 
+      // Handle 503 — no AI provider configured
+      if (response.status === 503) {
+        const notConfiguredMsg = t('chat.notConfigured') || 'O assistente de IA não está configurado. Contacte o administrador para activar esta funcionalidade.';
+        setHasError(true);
+        const errorMessage: ChatMessage = {
+          id: `error-${Date.now()}`,
+          role: 'assistant',
+          content: notConfiguredMsg,
+          timestamp: Date.now(),
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+        return;
+      }
+
       const data = await safeJson(response);
       if (!data) { setHasError(true); return; }
 
@@ -619,7 +633,7 @@ export function AiChatAssistant() {
         const errorMessage: ChatMessage = {
           id: `error-${Date.now()}`,
           role: 'assistant',
-          content: t('chat.error'),
+          content: data.error || t('chat.error'),
           timestamp: Date.now(),
         };
         setMessages((prev) => [...prev, errorMessage]);

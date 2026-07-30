@@ -195,6 +195,8 @@ export const esES: TranslationObject = {
     noDescription: 'Sin descripción disponible',
     requestQuote: 'Solicitar cotización',
     completed: 'Completado',
+    dontShowAgain: 'No mostrar de nuevo',
+    dismiss: 'Descartar',
   },
 
   // ============================================================================
@@ -360,9 +362,9 @@ export const esES: TranslationObject = {
     noTopics: 'No se encontraron temas',
     topicAuthor: 'Autor del tema',
     lastReply: 'Última respuesta',
-    replyCount: '{{{count}}} respuestas',
-    viewCount: '{{{count}}} vistas',
-    memberCount: '{{{count}}} miembros',
+    replyCount: '{{count}} respuestas',
+    viewCount: '{{count}} vistas',
+    memberCount: '{{count}} miembros',
     categoryGeneral: 'Discusión general',
     categorySupport: 'Soporte técnico',
     categoryFeedback: 'Feedback',
@@ -494,7 +496,7 @@ export const esES: TranslationObject = {
     usersEdit: 'Editar usuario',
     usersDelete: 'Eliminar usuario',
     usersActive: 'Usuarios activos',
-    activeCount: '{count} activos',
+    activeCount: '{{count}} activos',
     usersInactive: 'Usuarios inactivos',
     usersTotal: 'Total de usuarios',
     roles: 'Roles',
@@ -717,7 +719,7 @@ export const esES: TranslationObject = {
     withdrawalsPending: 'Retiradas pendientes',
     referralCode: 'Código de referencia',
     referralLink: 'Link de referencia',
-    referralCount: 'Referencias: {{{count}}}',
+    referralCount: 'Referencias: {{count}}',
     tier: 'Nivel',
     tierBasic: 'Partner básico',
     tierSilver: 'Partner silver',
@@ -1138,6 +1140,7 @@ export const esES: TranslationObject = {
     frequentQuestions: 'Preguntas frecuentes:',
     suggestions: 'Sugerencias',
     poweredBy: 'Desarrollado por Carsai AI',
+    notConfigured: 'El asistente de IA no está configurado. Contacte al administrador para activar esta funcionalidad.',
   },
 
   // ============================================================================

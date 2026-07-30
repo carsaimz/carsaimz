@@ -2,10 +2,24 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDoc, getDocByField, queryDocs, getDocs, countDocs } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 
+import { AVAILABLE_LANGUAGES, type LanguageCode } from '@/lib/i18n'
+
+/**
+ * Get the localized name for a category.
+ * Uses nameI18n if available, falls back to the default name.
+ */
+function getLocalizedName(cat: any, lang: string): string {
+  if (cat.nameI18n && typeof cat.nameI18n === 'object' && cat.nameI18n[lang]) {
+    return cat.nameI18n[lang]
+  }
+  return cat.name
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const topicSlug = searchParams.get('topic')
+    const lang = searchParams.get('lang') || 'pt-pt'
 
     if (topicSlug) {
       // Fetch a single topic by slug
@@ -31,7 +45,7 @@ export async function GET(request: NextRequest) {
       if (topic.categoryId) {
         const catDoc = await getDoc('forum_categories', topic.categoryId)
         if (catDoc) {
-          category = { id: catDoc.id, name: catDoc.name, slug: catDoc.slug, description: catDoc.description }
+          category = { id: catDoc.id, name: getLocalizedName(catDoc, lang), slug: catDoc.slug, description: catDoc.description, nameI18n: catDoc.nameI18n || null }
         }
       }
 
@@ -143,6 +157,8 @@ export async function GET(request: NextRequest) {
 
         return serializeFirestore({
           ...cat,
+          name: getLocalizedName(cat, lang),
+          nameI18n: cat.nameI18n || null,
           topics,
           _count: { topics: topics.length },
         })

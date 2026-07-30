@@ -45,6 +45,25 @@ interface ProjectData {
   isPublished: boolean;
 }
 
+/**
+ * Extract the first image from the images field.
+ * The images field can be a single base64 string, a JSON array, or null.
+ */
+function getCoverImage(images: string | null): string | null {
+  if (!images) return null;
+  // If it's a base64 data URI, return as-is
+  if (images.startsWith('data:')) return images;
+  // If it's a JSON array, parse and return the first element
+  try {
+    const parsed = JSON.parse(images);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+    if (typeof parsed === 'string') return parsed;
+  } catch {
+    // Not JSON, return as-is
+  }
+  return null;
+}
+
 // No fallback data - all data comes from the database via API
 
 const containerVariants = {
@@ -190,17 +209,32 @@ export function ProjectsSection() {
                   className="group hover:shadow-lg transition-all duration-300 h-full overflow-hidden cursor-pointer"
                   onClick={() => router.push(`/projects/${project.slug}`)}
                 >
-                  {/* Image placeholder */}
-                  <div
-                    className={`h-40 bg-gradient-to-br ${gradient} relative flex items-center justify-center`}
-                  >
-                    <FolderOpen className="h-12 w-12 text-white/80" />
-                    {project.isFeatured && (
-                      <Badge className="absolute top-3 right-3 bg-yellow-400 text-yellow-900 border-0 text-xs font-semibold">
-                        ★ Featured
-                      </Badge>
-                    )}
-                  </div>
+                  {/* Image / placeholder */}
+                  {getCoverImage(project.images) ? (
+                    <div className="h-40 relative overflow-hidden">
+                      <img
+                        src={getCoverImage(project.images)!}
+                        alt={resolvedTitle}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      {project.isFeatured && (
+                        <Badge className="absolute top-3 right-3 bg-yellow-400 text-yellow-900 border-0 text-xs font-semibold">
+                          ★ Featured
+                        </Badge>
+                      )}
+                    </div>
+                  ) : (
+                    <div
+                      className={`h-40 bg-gradient-to-br ${gradient} relative flex items-center justify-center`}
+                    >
+                      <FolderOpen className="h-12 w-12 text-white/80" />
+                      {project.isFeatured && (
+                        <Badge className="absolute top-3 right-3 bg-yellow-400 text-yellow-900 border-0 text-xs font-semibold">
+                          ★ Featured
+                        </Badge>
+                      )}
+                    </div>
+                  )}
 
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg leading-snug">

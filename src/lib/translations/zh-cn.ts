@@ -195,6 +195,8 @@ export const zhCN: TranslationObject = {
     noDescription: '暂无描述',
     requestQuote: '请求报价',
     completed: '已完成',
+    dontShowAgain: '不再显示',
+    dismiss: '关闭',
   },
 
   // ============================================================================
@@ -360,9 +362,9 @@ export const zhCN: TranslationObject = {
     noTopics: '未找到话题',
     topicAuthor: '话题作者',
     lastReply: '最后回复',
-    replyCount: '{{{count}}}条回复',
-    viewCount: '{{{count}}}次浏览',
-    memberCount: '{{{count}}}位成员',
+    replyCount: '{{count}}条回复',
+    viewCount: '{{count}}次浏览',
+    memberCount: '{{count}}位成员',
     categoryGeneral: '综合讨论',
     categorySupport: '技术支持',
     categoryFeedback: '反馈',
@@ -494,7 +496,7 @@ export const zhCN: TranslationObject = {
     usersEdit: '编辑用户',
     usersDelete: '删除用户',
     usersActive: '活跃用户',
-    activeCount: '{count} 活跃',
+    activeCount: '{{count}} 活跃',
     usersInactive: '非活跃用户',
     usersTotal: '用户总数',
     roles: '角色',
@@ -717,7 +719,7 @@ export const zhCN: TranslationObject = {
     withdrawalsPending: '待处理提现',
     referralCode: '推荐码',
     referralLink: '推荐链接',
-    referralCount: '推荐数：{{{count}}}',
+    referralCount: '推荐数：{{count}}',
     tier: '等级',
     tierBasic: '基础合作伙伴',
     tierSilver: '银级合作伙伴',
@@ -1138,6 +1140,7 @@ export const zhCN: TranslationObject = {
     frequentQuestions: '常见问题：',
     suggestions: '建议',
     poweredBy: '由 Carsai AI 提供支持',
+    notConfigured: 'AI 助手未配置。请联系管理员启用此功能。',
   },
 
   // ============================================================================

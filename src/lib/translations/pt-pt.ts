@@ -202,6 +202,8 @@ export const ptPT: TranslationObject = {
     noDescription: 'Sem descrição disponível',
     requestQuote: 'Solicitar orçamento',
     completed: 'Concluído',
+    dontShowAgain: 'Não mostrar novamente',
+    dismiss: 'Dispensar',
   },
 
   // ============================================================================
@@ -503,7 +505,7 @@ export const ptPT: TranslationObject = {
     usersEdit: 'Editar utilizador',
     usersDelete: 'Eliminar utilizador',
     usersActive: 'Utilizadores activos',
-    activeCount: '{count} activos',
+    activeCount: '{{count}} activos',
     usersInactive: 'Utilizadores inactivos',
     usersTotal: 'Total de utilizadores',
     roles: 'Funções',
@@ -1148,6 +1150,7 @@ export const ptPT: TranslationObject = {
     online: 'Online',
     frequentQuestions: 'Perguntas frequentes:',
     suggestions: 'Sugestões',
+    notConfigured: 'O assistente de IA não está configurado. Contacte o administrador para activar esta funcionalidade.',
   },
 
   // ============================================================================

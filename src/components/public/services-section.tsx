@@ -47,6 +47,23 @@ interface ServiceData {
   basePrice: number | null;
   isFeatured: boolean;
   order: number;
+  images?: string | null;
+}
+
+/**
+ * Extract the first image from the images field.
+ */
+function getCoverImage(images: string | null | undefined): string | null {
+  if (!images) return null;
+  if (images.startsWith('data:')) return images;
+  try {
+    const parsed = JSON.parse(images);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+    if (typeof parsed === 'string') return parsed;
+  } catch {
+    // Not JSON, return as-is
+  }
+  return null;
 }
 
 // No fallback data - all data comes from the database via API
@@ -151,9 +168,19 @@ export function ServicesSection() {
             return (
               <motion.div key={service.id} variants={cardVariants}>
                 <Card
-                  className="group hover:shadow-lg hover:border-emerald-500/50 transition-all duration-300 h-full cursor-pointer"
+                  className="group hover:shadow-lg hover:border-emerald-500/50 transition-all duration-300 h-full cursor-pointer overflow-hidden"
                   onClick={() => router.push(`/services/${service.slug}`)}
                 >
+                  {/* Cover Image */}
+                  {getCoverImage(service.images) && (
+                    <div className="h-40 relative overflow-hidden">
+                      <img
+                        src={getCoverImage(service.images)!}
+                        alt={resolvedTitle}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2.5 rounded-lg bg-emerald-100 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition-colors">

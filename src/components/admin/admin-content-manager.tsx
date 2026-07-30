@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
+import { ImageUpload } from '@/components/common/image-upload';
 import {
   Plus, Pencil, Trash2, Star, Globe, Eye, EyeOff,
 } from 'lucide-react';
@@ -75,6 +76,7 @@ interface ContentItem {
   technologies?: string | string[] | null;
   demoUrl?: string | null;
   images?: string | null;
+  avatar?: string | null;
   company?: string | null;
   rating?: number;
   categoryId?: string | null;
@@ -165,6 +167,8 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
   const [formCompany, setFormCompany] = useState('');
   const [formRating, setFormRating] = useState(5);
   const [formCategoryId, setFormCategoryId] = useState('');
+  const [formImage, setFormImage] = useState<string | null>(null);
+  const [formAvatar, setFormAvatar] = useState<string | null>(null);
 
   // Form state - i18n values per language
   const [formTitleI18n, setFormTitleI18n] = useState<Record<string, string>>({});
@@ -250,6 +254,8 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
     setFormCompany('');
     setFormRating(5);
     setFormCategoryId('');
+    setFormImage(null);
+    setFormAvatar(null);
     setFormTitleI18n({});
     setFormDescI18n({});
     setFormExcerptI18n({});
@@ -275,6 +281,8 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
     setFormCompany(item.company || '');
     setFormRating(item.rating || 5);
     setFormCategoryId(item.categoryId || '');
+    setFormImage(item.images || null);
+    setFormAvatar(item.avatar || null);
     setFormTitleI18n(parseI18n(item.titleI18n));
     setFormDescI18n(parseI18n(item.descriptionI18n));
     setFormExcerptI18n(parseI18n(item.excerptI18n));
@@ -336,6 +344,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
           isFeatured: formFeatured,
           isPublished: formPublished,
           categoryId: formCategoryId || null,
+          images: formImage,
         };
       case 'projects':
         return {
@@ -351,6 +360,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
           isFeatured: formFeatured,
           isPublished: formPublished,
           categoryId: formCategoryId || null,
+          images: formImage,
         };
       case 'posts':
         return {
@@ -375,6 +385,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
           contentI18n: contentI18nStr,
           rating: formRating,
           isPublished: formPublished,
+          avatar: formAvatar,
         };
       default:
         return base;
@@ -576,6 +587,17 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
         </Select>
       </div>
 
+      {/* Cover Image */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">{t('admin.coverImage') || 'Cover Image'}</Label>
+        <ImageUpload
+          value={formImage}
+          onChange={setFormImage}
+          placeholder="Upload a cover image for this service"
+          maxSize={2}
+        />
+      </div>
+
       {/* Featured & Published toggles */}
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
@@ -705,6 +727,17 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Cover Image */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">{t('admin.coverImage') || 'Cover Image'}</Label>
+        <ImageUpload
+          value={formImage}
+          onChange={setFormImage}
+          placeholder="Upload a cover image for this project"
+          maxSize={2}
+        />
       </div>
 
       {/* Featured & Published toggles */}
@@ -915,6 +948,18 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
             </Button>
           ))}
         </div>
+      </div>
+
+      {/* Avatar */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">{t('admin.avatar') || 'Avatar'}</Label>
+        <ImageUpload
+          value={formAvatar}
+          onChange={setFormAvatar}
+          placeholder="Upload an avatar for this testimonial"
+          maxSize={2}
+          maxDimension={400}
+        />
       </div>
 
       {/* Published toggle */}

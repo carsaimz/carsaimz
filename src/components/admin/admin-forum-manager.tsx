@@ -46,6 +46,7 @@ interface ForumCategory {
   description: string | null;
   order: number;
   createdAt: string;
+  nameI18n?: Record<string, string> | null;
 }
 
 interface ForumTopic {
@@ -86,6 +87,7 @@ export function AdminForumManager() {
   const [catSlug, setCatSlug] = useState('');
   const [catDescription, setCatDescription] = useState('');
   const [catOrder, setCatOrder] = useState('0');
+  const [catNameI18n, setCatNameI18n] = useState<Record<string, string>>({});
   const [catSaving, setCatSaving] = useState(false);
 
   // Topic form
@@ -146,6 +148,7 @@ export function AdminForumManager() {
     setCatSlug('');
     setCatDescription('');
     setCatOrder('0');
+    setCatNameI18n({});
     setCatDialogOpen(true);
   };
 
@@ -156,6 +159,7 @@ export function AdminForumManager() {
     setCatSlug(cat.slug);
     setCatDescription(cat.description || '');
     setCatOrder(String(cat.order || 0));
+    setCatNameI18n(cat.nameI18n || {});
     setCatDialogOpen(true);
   };
 
@@ -165,8 +169,8 @@ export function AdminForumManager() {
       const endpoint = '/api/admin/forum/categories';
       const method = catIsCreate ? 'POST' : 'PUT';
       const body = catIsCreate
-        ? { name: catName, slug: catSlug, description: catDescription, order: parseInt(catOrder) || 0 }
-        : { id: catEditing?.id, name: catName, slug: catSlug, description: catDescription, order: parseInt(catOrder) || 0 };
+        ? { name: catName, slug: catSlug, description: catDescription, order: parseInt(catOrder) || 0, nameI18n: Object.keys(catNameI18n).length > 0 ? catNameI18n : undefined }
+        : { id: catEditing?.id, name: catName, slug: catSlug, description: catDescription, order: parseInt(catOrder) || 0, nameI18n: Object.keys(catNameI18n).length > 0 ? catNameI18n : null };
 
       const res = await apiFetch(endpoint, {
         method,
@@ -463,6 +467,28 @@ export function AdminForumManager() {
                 placeholder="0"
                 className="focus-visible:ring-emerald-500"
               />
+            </div>
+            <Separator />
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">
+                {t('admin.translations') || 'Translations'} (i18n)
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t('admin.i18nDescription') || 'Provide translated names for each language. The default name (above) is used as fallback.'}
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {['en-us', 'pt-br', 'fr-fr', 'es-es', 'zh-cn', 'de-de', 'sw-tz'].map((langCode) => (
+                  <div key={langCode} className="flex items-center gap-2">
+                    <Label className="text-xs text-muted-foreground w-14 shrink-0">{langCode}</Label>
+                    <Input
+                      value={catNameI18n[langCode] || ''}
+                      onChange={(e) => setCatNameI18n((prev) => ({ ...prev, [langCode]: e.target.value }))}
+                      placeholder={catName}
+                      className="h-8 text-sm focus-visible:ring-emerald-500"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           <DialogFooter className="mt-4">

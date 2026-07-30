@@ -38,6 +38,22 @@ interface ProjectData {
   createdAt: string;
 }
 
+/**
+ * Extract the first image from the images field.
+ */
+function getCoverImage(images: string | null): string | null {
+  if (!images) return null;
+  if (images.startsWith('data:')) return images;
+  try {
+    const parsed = JSON.parse(images);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+    if (typeof parsed === 'string') return parsed;
+  } catch {
+    // Not JSON, return as-is
+  }
+  return null;
+}
+
 const fadeInVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -158,17 +174,33 @@ export function ProjectDetail() {
           animate="visible"
           className="mb-8"
         >
-          <div
-            className={`h-48 md:h-72 bg-gradient-to-br ${gradient} rounded-xl relative flex items-center justify-center overflow-hidden`}
-          >
-            <FolderOpen className="h-20 w-20 text-white/60" />
-            {project.isFeatured && (
-              <Badge className="absolute top-4 right-4 bg-yellow-400 text-yellow-900 border-0 text-sm font-semibold">
-                <Star className="h-3.5 w-3.5 mr-1" />
-                Featured
-              </Badge>
-            )}
-          </div>
+          {getCoverImage(project.images) ? (
+            <div className="h-48 md:h-72 rounded-xl relative overflow-hidden">
+              <img
+                src={getCoverImage(project.images)!}
+                alt={resolvedTitle}
+                className="w-full h-full object-cover"
+              />
+              {project.isFeatured && (
+                <Badge className="absolute top-4 right-4 bg-yellow-400 text-yellow-900 border-0 text-sm font-semibold">
+                  <Star className="h-3.5 w-3.5 mr-1" />
+                  Featured
+                </Badge>
+              )}
+            </div>
+          ) : (
+            <div
+              className={`h-48 md:h-72 bg-gradient-to-br ${gradient} rounded-xl relative flex items-center justify-center overflow-hidden`}
+            >
+              <FolderOpen className="h-20 w-20 text-white/60" />
+              {project.isFeatured && (
+                <Badge className="absolute top-4 right-4 bg-yellow-400 text-yellow-900 border-0 text-sm font-semibold">
+                  <Star className="h-3.5 w-3.5 mr-1" />
+                  Featured
+                </Badge>
+              )}
+            </div>
+          )}
         </motion.div>
 
         {/* Title & Meta */}

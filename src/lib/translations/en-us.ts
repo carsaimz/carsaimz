@@ -195,6 +195,8 @@ export const enUS: TranslationObject = {
     noDescription: 'No description available',
     requestQuote: 'Request quote',
     completed: 'Completed',
+    dontShowAgain: "Don't show again",
+    dismiss: 'Dismiss',
   },
 
   // ============================================================================
@@ -360,9 +362,9 @@ export const enUS: TranslationObject = {
     noTopics: 'No topics found',
     topicAuthor: 'Topic author',
     lastReply: 'Last reply',
-    replyCount: '{{{count}}} replies',
-    viewCount: '{{{count}}} views',
-    memberCount: '{{{count}}} members',
+    replyCount: '{{count}} replies',
+    viewCount: '{{count}} views',
+    memberCount: '{{count}} members',
     categoryGeneral: 'General Discussion',
     categorySupport: 'Technical Support',
     categoryFeedback: 'Feedback',
@@ -493,7 +495,7 @@ export const enUS: TranslationObject = {
     usersEdit: 'Edit user',
     usersDelete: 'Delete user',
     usersActive: 'Active users',
-    activeCount: '{count} active',
+    activeCount: '{{count}} active',
     usersInactive: 'Inactive users',
     usersTotal: 'Total users',
     roles: 'Roles',
@@ -716,7 +718,7 @@ export const enUS: TranslationObject = {
     withdrawalsPending: 'Pending withdrawals',
     referralCode: 'Referral code',
     referralLink: 'Referral link',
-    referralCount: 'Referrals: {{{count}}}',
+    referralCount: 'Referrals: {{count}}',
     tier: 'Tier',
     tierBasic: 'Basic Partner',
     tierSilver: 'Silver Partner',
@@ -1138,6 +1140,7 @@ export const enUS: TranslationObject = {
     online: 'Online',
     frequentQuestions: 'Frequent questions:',
     suggestions: 'Suggestions',
+    notConfigured: 'The AI assistant is not configured. Contact the administrator to activate this feature.',
   },
 
   // ============================================================================

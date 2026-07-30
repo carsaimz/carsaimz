@@ -53,6 +53,23 @@ interface ServiceData {
   isPublished: boolean;
   order: number;
   createdAt: string;
+  images?: string | null;
+}
+
+/**
+ * Extract the first image from the images field.
+ */
+function getCoverImage(images: string | null | undefined): string | null {
+  if (!images) return null;
+  if (images.startsWith('data:')) return images;
+  try {
+    const parsed = JSON.parse(images);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+    if (typeof parsed === 'string') return parsed;
+  } catch {
+    // Not JSON, return as-is
+  }
+  return null;
 }
 
 const fadeInVariants = {
@@ -167,6 +184,16 @@ export function ServiceDetail() {
           animate="visible"
           className="mb-8"
         >
+          {/* Cover Image */}
+          {getCoverImage(service.images) && (
+            <div className="mb-6 rounded-xl overflow-hidden">
+              <img
+                src={getCoverImage(service.images)!}
+                alt={resolvedTitle}
+                className="w-full h-48 md:h-64 object-cover"
+              />
+            </div>
+          )}
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 rounded-xl bg-emerald-100 text-emerald-700">
               <IconComponent className="h-8 w-8" />
