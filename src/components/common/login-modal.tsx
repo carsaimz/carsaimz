@@ -181,17 +181,32 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
     try {
       const result = await store.loginWithGoogle();
       if (result.success) {
-        const role = result.user?.role || useAuthStore.getState().user?.role;
-        toast.success(t('auth.loginSuccess'));
-        redirectByRole(role);
-        onOpenChange(false);
+        // If using signInWithRedirect, the page will redirect away.
+        // The auth-context.tsx handles the result after redirect.
+        // Don't call redirectByRole here — it will cause a flash
+        // before the actual redirect happens.
+        // The redirect flow is handled by auth-context.tsx's getRedirectResult().
+        // Only close modal and show toast for native (non-redirect) auth.
+        if (result.user) {
+          // Native auth: result includes user data, redirect immediately
+          const role = result.user?.role || useAuthStore.getState().user?.role;
+          toast.success(t('auth.loginSuccess'));
+          redirectByRole(role);
+          onOpenChange(false);
+        } else {
+          // Web redirect auth: page is about to redirect to Google/GitHub
+          // Just show a brief message and wait for the redirect
+          toast.info('A redirecionar para o Google...');
+          // Don't close modal or redirect — the page will redirect itself
+        }
       } else {
         toast.error(result.error || t('auth.loginFailed'));
+        setGoogleLoading(false);
       }
     } catch {
       toast.error(t('auth.loginFailed'));
+      setGoogleLoading(false);
     }
-    setGoogleLoading(false);
   };
 
   const handleGithubLogin = async () => {
@@ -199,17 +214,24 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
     try {
       const result = await store.loginWithGithub();
       if (result.success) {
-        const role = result.user?.role || useAuthStore.getState().user?.role;
-        toast.success(t('auth.loginSuccess'));
-        redirectByRole(role);
-        onOpenChange(false);
+        if (result.user) {
+          // Native auth: result includes user data, redirect immediately
+          const role = result.user?.role || useAuthStore.getState().user?.role;
+          toast.success(t('auth.loginSuccess'));
+          redirectByRole(role);
+          onOpenChange(false);
+        } else {
+          // Web redirect auth: page is about to redirect to GitHub
+          toast.info('A redirecionar para o GitHub...');
+        }
       } else {
         toast.error(result.error || t('auth.loginFailed'));
+        setGithubLoading(false);
       }
     } catch {
       toast.error(t('auth.loginFailed'));
+      setGithubLoading(false);
     }
-    setGithubLoading(false);
   };
 
   const handleAnonymousLogin = async () => {

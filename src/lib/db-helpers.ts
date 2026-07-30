@@ -7,7 +7,7 @@
  */
 
 import { getDb, getDocs, getDoc, queryDocs, countDocs } from '@/lib/db'
-import { getAdminInitError } from '@/lib/firebase-admin'
+import { getAdminInitError, getAdminFirestore } from '@/lib/firebase-admin'
 import { WhereFilterOp } from 'firebase-admin/firestore'
 
 /**
@@ -83,17 +83,16 @@ export async function safeQueryDocs<T = Record<string, any>>(
  * which caused HTTP 500 errors when the JSON file was present but no env vars were set.
  */
 export function checkFirebaseAdmin(): string | null {
-  // Force Firebase Admin initialization by calling getAdminFirestore()
-  // which internally calls getAdminApp() → tries all strategies:
+  // Force Firebase Admin initialization to verify it's working.
+  // Uses getAdminFirestore() which internally tries all strategies:
   // 0. Embedded credentials (no env vars needed)
   // 1. Obfuscated JSON file (no env vars needed)
   // 2. Encrypted private key env vars
   // 3. Plain private key env var
   // 4. Application Default Credentials
   try {
-    // Use dynamic import instead of require() for ESM compatibility
-    const adminModule = require('@/lib/firebase-admin')
-    const db = adminModule.getAdminFirestore()
+    // Direct import — works in both CJS and ESM with Next.js
+    const db = getAdminFirestore()
     if (db) return null
   } catch {}
 

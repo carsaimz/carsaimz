@@ -128,6 +128,7 @@ export function PartnerDashboard() {
 
   const [affiliateLink] = useState(`${APP_PUBLIC_URL}/ref/${user?.id || 'demo-partner-001'}`);
   const [copied, setCopied] = useState(false);
+  const [showQR, setShowQR] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawMethod, setWithdrawMethod] = useState('');
 
@@ -172,6 +173,30 @@ export function PartnerDashboard() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
+  };
+
+  const handleShareLink = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Carsai Mozambique',
+          text: 'Conheça a Carsai Mozambique — Soluções Digitais e Hospedagem Web Gratuita!',
+          url: affiliateLink,
+        });
+      } catch (err: any) {
+        // User cancelled share — not an error
+        if (err.name !== 'AbortError') {
+          handleCopyLink();
+        }
+      }
+    } else {
+      // Fallback: copy to clipboard
+      handleCopyLink();
+    }
+  };
+
+  const handleShowQR = () => {
+    setShowQR(!showQR);
   };
 
   const totalClicks = data?.stats.totalClicks ?? 0;
@@ -356,15 +381,26 @@ export function PartnerDashboard() {
                 </Button>
               </div>
               <div className="flex gap-3 mt-3">
-                <Button variant="ghost" size="sm" className="text-emerald-200 hover:text-white hover:bg-white/10">
+                <Button variant="ghost" size="sm" className="text-emerald-200 hover:text-white hover:bg-white/10" onClick={handleShareLink}>
                   <Share2 className="h-4 w-4 mr-1" />
                   {t('common.share')}
                 </Button>
-                <Button variant="ghost" size="sm" className="text-emerald-200 hover:text-white hover:bg-white/10">
+                <Button variant="ghost" size="sm" className="text-emerald-200 hover:text-white hover:bg-white/10" onClick={handleShowQR}>
                   <ExternalLink className="h-4 w-4 mr-1" />
                   {t('common.qrCode')}
                 </Button>
               </div>
+              {/* QR Code Display */}
+              {showQR && (
+                <div className="mt-3 bg-white rounded-xl p-4 flex flex-col items-center">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(affiliateLink)}&color=065f46&bgcolor=ffffff`}
+                    alt="QR Code"
+                    className="h-40 w-40"
+                  />
+                  <p className="text-emerald-800 text-xs mt-2 text-center">Scan para visitar o link de afiliado</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

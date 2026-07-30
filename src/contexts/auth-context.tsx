@@ -104,7 +104,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const result = await getRedirectResult(auth);
 
-        if (cancelled || !result) return;
+        if (cancelled || !result) {
+          // No redirect result — this is normal on first load or after a failed redirect
+          return;
+        }
+
+        console.log('[Auth] Redirect result received, provider:', result.user.providerData[0]?.providerId);
 
         // User returned from a redirect-based sign-in (Google/GitHub)
         const idToken = await result.user.getIdToken();
