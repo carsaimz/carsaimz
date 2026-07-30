@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDoc, queryDocs, createDoc } from '@/lib/db'
+import { safeGetDoc, safeQueryDocs, safeCountDocs, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET(request: NextRequest) {
@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Verify the user exists
-    const user = await getDoc('users', userId)
+    // Verify the user exists (use safe helper)
+    const user = await safeGetDoc('users', userId)
 
     if (!user) {
       return NextResponse.json(
@@ -24,42 +24,47 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const tickets = await queryDocs('support_tickets', [
+    // Use safe helpers — returns empty array if collection doesn't exist
+    const tickets = await safeQueryDocs('support_tickets', [
       { field: 'userId', op: '==', value: userId },
     ], 'createdAt', 'desc')
 
     // Enrich each ticket with replies and user data
     const enrichedTickets = await Promise.all(
       tickets.map(async (ticket: any) => {
-        // Get replies with authors
-        const repliesRaw = await queryDocs('ticket_replies', [
-          { field: 'ticketId', op: '==', value: ticket.id },
-        ], 'createdAt', 'asc')
+        try {
+          // Get replies with authors
+          const repliesRaw = await safeQueryDocs('ticket_replies', [
+            { field: 'ticketId', op: '==', value: ticket.id },
+          ], 'createdAt', 'asc')
 
-        const replies = await Promise.all(
-          repliesRaw.map(async (reply: any) => {
-            let replyAuthor: any = null
-            if (reply.authorId) {
-              const a = await getDoc('users', reply.authorId)
-              if (a) replyAuthor = { id: a.id, name: a.name, email: a.email, avatar: a.avatar }
-            }
-            return serializeFirestore({ ...reply, author: replyAuthor })
+          const replies = await Promise.all(
+            repliesRaw.map(async (reply: any) => {
+              let replyAuthor: any = null
+              if (reply.authorId) {
+                const a = await safeGetDoc('users', reply.authorId)
+                if (a) replyAuthor = { id: (a as any).id, name: (a as any).name, email: (a as any).email, avatar: (a as any).avatar }
+              }
+              return serializeFirestore({ ...reply, author: replyAuthor })
+            })
+          )
+
+          // Get ticket user data
+          const ticketUser = ticket.userId ? await safeGetDoc('users', ticket.userId) : null
+
+          return serializeFirestore({
+            ...ticket,
+            replies,
+            user: ticketUser ? {
+              id: (ticketUser as any).id,
+              name: (ticketUser as any).name,
+              email: (ticketUser as any).email,
+              avatar: (ticketUser as any).avatar,
+            } : null,
           })
-        )
-
-        // Get ticket user data
-        const ticketUser = ticket.userId ? await getDoc('users', ticket.userId) : null
-
-        return serializeFirestore({
-          ...ticket,
-          replies,
-          user: ticketUser ? {
-            id: ticketUser.id,
-            name: ticketUser.name,
-            email: ticketUser.email,
-            avatar: ticketUser.avatar,
-          } : null,
-        })
+        } catch {
+          return serializeFirestore(ticket)
+        }
       })
     )
 
@@ -84,7 +89,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, subject, priority } = body
+    const { userId, subject, priority, description } = body
 
     if (!userId || !subject) {
       return NextResponse.json(
@@ -94,7 +99,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the user exists
-    const user = await getDoc('users', userId)
+    const user = await safeGetDoc('users', userId)
 
     if (!user) {
       return NextResponse.json(
@@ -103,9 +108,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const { createDoc, getDoc } = await import('@/lib/db')
     const ticketId = await createDoc('support_tickets', {
       userId,
       subject,
+      description: description || null,
       priority: priority || 'medium',
       status: 'open',
     })
@@ -116,10 +123,10 @@ export async function POST(request: NextRequest) {
     const enrichedTicket = serializeFirestore({
       ...ticket,
       user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
+        id: (user as any).id,
+        name: (user as any).name,
+        email: (user as any).email,
+        avatar: (user as any).avatar,
       },
     })
 

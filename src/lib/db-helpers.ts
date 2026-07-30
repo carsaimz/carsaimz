@@ -85,13 +85,15 @@ export async function safeQueryDocs<T = Record<string, any>>(
 export function checkFirebaseAdmin(): string | null {
   // Force Firebase Admin initialization by calling getAdminFirestore()
   // which internally calls getAdminApp() → tries all strategies:
-  // 0. Obfuscated JSON file (no env vars needed)
-  // 1. Encrypted private key env vars
-  // 2. Plain private key env var
-  // 3. Application Default Credentials
+  // 0. Embedded credentials (no env vars needed)
+  // 1. Obfuscated JSON file (no env vars needed)
+  // 2. Encrypted private key env vars
+  // 3. Plain private key env var
+  // 4. Application Default Credentials
   try {
-    const { getAdminFirestore } = require('@/lib/firebase-admin')
-    const db = getAdminFirestore()
+    // Use dynamic import instead of require() for ESM compatibility
+    const adminModule = require('@/lib/firebase-admin')
+    const db = adminModule.getAdminFirestore()
     if (db) return null
   } catch {}
 
@@ -102,7 +104,7 @@ export function checkFirebaseAdmin(): string | null {
     return initErr
   } catch {}
 
-  return 'Firebase Admin SDK not configured. The obfuscated JSON file (firebase-admin.json) or environment variables are required. No env vars needed if the JSON file is present.'
+  return 'Firebase Admin SDK not configured. The embedded credentials (firebase-admin-embedded.ts) or environment variables are required.'
 }
 
 /**

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDoc, queryDocs } from '@/lib/db'
+import { safeGetDoc, safeQueryDocs } from '@/lib/db-helpers'
 import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET(request: NextRequest) {
@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Verify the user exists
-    const user = await getDoc('users', userId)
+    // Verify the user exists (use safe helper)
+    const user = await safeGetDoc('users', userId)
 
     if (!user) {
       return NextResponse.json(
@@ -24,43 +24,48 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const paymentsRaw = await queryDocs('payments', [
+    // Use safe helpers — returns empty array if collection doesn't exist
+    const paymentsRaw = await safeQueryDocs('payments', [
       { field: 'userId', op: '==', value: userId },
     ], 'createdAt', 'desc')
 
     // Enrich each payment with proposal and user data
     const payments = await Promise.all(
       paymentsRaw.map(async (p: any) => {
-        const proposal = p.proposalId ? await getDoc('proposals', p.proposalId) : null
-        let proposalWithQuote: any = null
-        if (proposal) {
-          const quote = proposal.quoteId ? await getDoc('quotes', proposal.quoteId) : null
-          proposalWithQuote = {
-            id: proposal.id,
-            title: proposal.title,
-            description: proposal.description,
-            totalAmount: proposal.totalAmount,
-            status: proposal.status,
-            validUntil: serializeFirestore(proposal.validUntil),
-            createdAt: serializeFirestore(proposal.createdAt),
-            quote: quote ? {
-              id: quote.id,
-              title: quote.title,
-              status: quote.status,
-            } : null,
+        try {
+          const proposal = p.proposalId ? await safeGetDoc('proposals', p.proposalId) : null
+          let proposalWithQuote: any = null
+          if (proposal) {
+            const quote = (proposal as any).quoteId ? await safeGetDoc('quotes', (proposal as any).quoteId) : null
+            proposalWithQuote = {
+              id: (proposal as any).id,
+              title: (proposal as any).title,
+              description: (proposal as any).description,
+              totalAmount: (proposal as any).totalAmount,
+              status: (proposal as any).status,
+              validUntil: serializeFirestore((proposal as any).validUntil),
+              createdAt: serializeFirestore((proposal as any).createdAt),
+              quote: quote ? {
+                id: (quote as any).id,
+                title: (quote as any).title,
+                status: (quote as any).status,
+              } : null,
+            }
           }
-        }
 
-        return serializeFirestore({
-          ...p,
-          proposal: proposalWithQuote,
-          user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            avatar: user.avatar,
-          },
-        })
+          return serializeFirestore({
+            ...p,
+            proposal: proposalWithQuote,
+            user: {
+              id: (user as any).id,
+              name: (user as any).name,
+              email: (user as any).email,
+              avatar: (user as any).avatar,
+            },
+          })
+        } catch {
+          return serializeFirestore(p)
+        }
       })
     )
 

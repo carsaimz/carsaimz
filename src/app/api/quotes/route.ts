@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDoc, queryDocs, getDocByField, createDoc } from '@/lib/db'
+import { safeGetDoc, safeQueryDocs, safeCountDocs } from '@/lib/db-helpers'
 import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET(request: NextRequest) {
@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Verify the user exists
-    const user = await getDoc('users', userId)
+    // Verify the user exists (use safe helper)
+    const user = await safeGetDoc('users', userId)
 
     if (!user) {
       return NextResponse.json(
@@ -24,37 +24,42 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const quotes = await queryDocs('quotes', [
+    // Use safe helpers — returns empty array if collection doesn't exist
+    const quotes = await safeQueryDocs('quotes', [
       { field: 'userId', op: '==', value: userId },
     ], 'createdAt', 'desc')
 
     // Enrich each quote with user and proposals data
     const enrichedQuotes = await Promise.all(
       quotes.map(async (q: any) => {
-        const quoteUser = q.userId ? await getDoc('users', q.userId) : null
-        const proposals = await queryDocs('proposals', [
-          { field: 'quoteId', op: '==', value: q.id },
-        ])
+        try {
+          const quoteUser = q.userId ? await safeGetDoc('users', q.userId) : null
+          const proposals = await safeQueryDocs('proposals', [
+            { field: 'quoteId', op: '==', value: q.id },
+          ])
 
-        return serializeFirestore({
-          ...q,
-          user: quoteUser ? {
-            id: quoteUser.id,
-            name: quoteUser.name,
-            email: quoteUser.email,
-            avatar: quoteUser.avatar,
-            phone: quoteUser.phone,
-          } : null,
-          proposals: proposals.map((p: any) => ({
-            id: p.id,
-            title: p.title,
-            description: p.description,
-            totalAmount: p.totalAmount,
-            status: p.status,
-            validUntil: serializeFirestore(p.validUntil),
-            createdAt: serializeFirestore(p.createdAt),
-          })),
-        })
+          return serializeFirestore({
+            ...q,
+            user: quoteUser ? {
+              id: (quoteUser as any).id,
+              name: (quoteUser as any).name,
+              email: (quoteUser as any).email,
+              avatar: (quoteUser as any).avatar,
+              phone: (quoteUser as any).phone,
+            } : null,
+            proposals: proposals.map((p: any) => ({
+              id: p.id,
+              title: p.title,
+              description: p.description,
+              totalAmount: p.totalAmount,
+              status: p.status,
+              validUntil: serializeFirestore(p.validUntil),
+              createdAt: serializeFirestore(p.createdAt),
+            })),
+          })
+        } catch {
+          return serializeFirestore(q)
+        }
       })
     )
 
@@ -89,7 +94,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the user exists
-    const user = await getDoc('users', userId)
+    const user = await safeGetDoc('users', userId)
 
     if (!user) {
       return NextResponse.json(
@@ -98,6 +103,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const { createDoc, getDoc } = await import('@/lib/db')
     const quoteId = await createDoc('quotes', {
       userId,
       title,
@@ -109,14 +115,14 @@ export async function POST(request: NextRequest) {
     const quote = await getDoc('quotes', quoteId)
 
     // Enrich with user data
-    const quoteUser = await getDoc('users', userId)
+    const quoteUser = await safeGetDoc('users', userId)
     const enrichedQuote = serializeFirestore({
       ...quote,
       user: quoteUser ? {
-        id: quoteUser.id,
-        name: quoteUser.name,
-        email: quoteUser.email,
-        avatar: quoteUser.avatar,
+        id: (quoteUser as any).id,
+        name: (quoteUser as any).name,
+        email: (quoteUser as any).email,
+        avatar: (quoteUser as any).avatar,
       } : null,
     })
 

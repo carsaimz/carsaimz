@@ -76,6 +76,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
 
+    /**
+     * Redirect user to their dashboard based on role after social login.
+     * This is called after the redirect result is successfully processed.
+     */
+    function redirectByRole(role: UserRole) {
+      // Only redirect if we're on the auth page (or a public page)
+      const path = window.location.pathname;
+      if (path.startsWith('/admin') || path.startsWith('/user') || path.startsWith('/partner')) {
+        return; // Already on a dashboard page, don't redirect
+      }
+
+      if (role === 'admin' || role === 'super_admin') {
+        window.location.href = '/admin';
+      } else if (role === 'partner') {
+        window.location.href = '/partner';
+      } else {
+        window.location.href = '/user';
+      }
+    }
+
     async function handleRedirectResult() {
       try {
         const { auth, getRedirectResult, isFirebaseConfigured } = await import('@/lib/firebase-client');
@@ -115,6 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               };
               store.setUser(user);
               store.setIdToken(idToken);
+              redirectByRole(userRole);
               return;
             }
           }
@@ -156,6 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               };
               store.setUser(user);
               store.setIdToken(idToken);
+              redirectByRole(resolvedRole);
             } else {
               // Create new profile
               let roleId: string | null = null;
@@ -192,6 +214,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               };
               store.setUser(user);
               store.setIdToken(idToken);
+              redirectByRole('user');
             }
           }
         } catch (fsErr) {
@@ -210,6 +233,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           };
           store.setUser(user);
           store.setIdToken(idToken);
+          redirectByRole('user');
         }
       } catch (err) {
         console.warn('[Auth] Redirect result handling error:', err);

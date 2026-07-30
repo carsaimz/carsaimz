@@ -24,6 +24,7 @@ import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
   SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
   SidebarProvider, SidebarInset, SidebarTrigger, SidebarRail, SidebarSeparator,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -83,13 +84,14 @@ const LEGAL_LINKS: SidebarLink[] = [
   { path: '/cookies', labelKey: 'footer.cookies', icon: Cookie },
 ];
 
-export function AdminShell({ children }: { children: React.ReactNode }) {
+function AdminShellContent({ children }: { children: React.ReactNode }) {
   const { t, language, setLanguage, languages } = useLanguage();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout, isAdmin, isSuperAdmin } = useAuthStore();
   const { unreadCount, notifications, markAllAsRead } = useNotificationStore();
+  const { setOpenMobile } = useSidebar();
 
   // Check both store flags AND user.role — role may not be resolved yet
   // if the server API returned 500 and client-side fallback is still running
@@ -101,7 +103,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <SidebarProvider>
         <Sidebar collapsible="icon">
           <SidebarHeader>
             <div className="flex items-center gap-2 px-2 py-1">
@@ -120,7 +121,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 <SidebarMenu>
                   {ADMIN_MENU_ITEMS.map((item) => (
                     <SidebarMenuItem key={item.path}>
-                      <SidebarMenuButton isActive={pathname === item.path} onClick={() => router.push(item.path)} tooltip={t(item.labelKey)}>
+                      <SidebarMenuButton isActive={pathname === item.path} onClick={() => { router.push(item.path); setOpenMobile(false); }} tooltip={t(item.labelKey)}>
                         <item.icon className="size-4" />
                         <span>{t(item.labelKey)}</span>
                       </SidebarMenuButton>
@@ -138,7 +139,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   <SidebarMenu>
                     {USER_MENU_ITEMS.map((item) => (
                       <SidebarMenuItem key={item.path}>
-                        <SidebarMenuButton isActive={pathname === item.path} onClick={() => router.push(item.path)} tooltip={t(item.labelKey)}>
+                        <SidebarMenuButton isActive={pathname === item.path} onClick={() => { router.push(item.path); setOpenMobile(false); }} tooltip={t(item.labelKey)}>
                           <item.icon className="size-4" />
                           <span>{t(item.labelKey)}</span>
                         </SidebarMenuButton>
@@ -157,7 +158,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   <SidebarMenu>
                     {PARTNER_MENU_ITEMS.map((item) => (
                       <SidebarMenuItem key={item.path}>
-                        <SidebarMenuButton isActive={pathname === item.path} onClick={() => router.push(item.path)} tooltip={t(item.labelKey)}>
+                        <SidebarMenuButton isActive={pathname === item.path} onClick={() => { router.push(item.path); setOpenMobile(false); }} tooltip={t(item.labelKey)}>
                           <item.icon className="size-4" />
                           <span>{t(item.labelKey)}</span>
                         </SidebarMenuButton>
@@ -174,7 +175,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 <SidebarMenu>
                   {LEGAL_LINKS.map((item) => (
                     <SidebarMenuItem key={item.path}>
-                      <SidebarMenuButton onClick={() => router.push(item.path)} tooltip={t(item.labelKey)}>
+                      <SidebarMenuButton onClick={() => { router.push(item.path); setOpenMobile(false); }} tooltip={t(item.labelKey)}>
                         <item.icon className="size-4" />
                         <span>{t(item.labelKey)}</span>
                       </SidebarMenuButton>
@@ -248,6 +249,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             © 2026 Carsai Mozambique · <Link href="/privacy" className="hover:text-foreground">Privacy</Link> · <Link href="/terms" className="hover:text-foreground">Terms</Link> · <Link href="/cookies" className="hover:text-foreground">Cookies</Link>
           </footer>
         </SidebarInset>
+      </>
+  );
+}
+
+export function AdminShell({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <SidebarProvider>
+        <AdminShellContent>{children}</AdminShellContent>
       </SidebarProvider>
       <AiChatAssistant />
       <RealTimeNotifications />
