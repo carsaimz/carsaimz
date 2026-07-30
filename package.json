@@ -6,6 +6,7 @@
   "author": "Carsai Mozambique",
   "main": "electron/main.js",
   "scripts": {
+    "postinstall": "node -e \"const fs=require('fs'),p='node_modules/jwks-rsa/node_modules/jose';if(fs.existsSync(p)){fs.rmSync(p,{recursive:true,force:true});console.log('[postinstall] Removed nested jose v6 (ESM-only) — using top-level jose v4 (CJS)')}\"",
     "dev": "next dev -p 3000 2>&1 | tee dev.log",
     "build": "node scripts/build.js",
     "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",
@@ -163,7 +164,8 @@
     "zustand": "^5.0.6"
   },
   "overrides": {
-    "@codesandbox/sandpack-client": "2.19.8"
+    "@codesandbox/sandpack-client": "2.19.8",
+    "jose": "4.15.9"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -151,6 +151,17 @@ function countFilesRecursive(dir, ext) {
   return count;
 }
 
+// ── Fix jose ESM issue ──────────────────────────────────────────────────────
+// jwks-rsa v4 bundles jose v6 (ESM-only) as a nested dependency.
+// This causes "require() of ES Module" errors on Vercel serverless.
+// The fix: remove the nested jose v6 so jwks-rsa falls back to the
+// top-level jose v4 (CJS-compatible), which has the same APIs.
+const nestedJose = path.join(projectRoot, "node_modules", "jwks-rsa", "node_modules", "jose");
+if (fs.existsSync(nestedJose)) {
+  fs.rmSync(nestedJose, { recursive: true, force: true });
+  console.log("[build] Removed nested jose v6 (ESM-only) — using top-level jose v4 (CJS)");
+}
+
 // ── Main Build ──────────────────────────────────────────────────────────────
 
 const buildTarget = getBuildTarget();
