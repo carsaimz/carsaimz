@@ -33,23 +33,35 @@ interface QuoteData {
 }
 
 export function UserQuotes() {
-  const { t, formatDate, formatCurrency } = useLanguage();
+  const { t, formatDate } = useLanguage();
   const user = useAuthStore((s) => s.user);
   const [quotes, setQuotes] = useState<QuoteData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    apiFetch(`/api/quotes?userId=${user?.id || 'demo-user-001'}`)
-      .then((res) => safeJson(res))
-      .then((data) => {
-        if (!data) { setError(t('common.serverNonJson')); return; }
-        if (data.success) setQuotes(data.data);
-        else setError(data.message || t('dashboard.quotesLoadFailed'));
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [user?.id]);
+  const fetchQuotes = async () => {
+    if (!user?.id) {
+      setError('Inicie sessão para ver as suas cotações.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await apiFetch(`/api/quotes?userId=${user.id}`);
+      const data = await safeJson(res);
+      if (!data) { setError(t('common.serverNonJson')); return; }
+      if (data.success) setQuotes(data.data || []);
+      else setError(data.message || t('dashboard.quotesLoadFailed'));
+    } catch (err: any) {
+      setError(err.message || t('common.networkError'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchQuotes(); }, [user?.id]);
 
   const statusBadge = (status: string) => {
     switch (status) {
@@ -74,7 +86,7 @@ export function UserQuotes() {
       <Card className="border-l-4 border-l-red-500">
         <CardContent className="p-6">
           <div className="flex items-center gap-3"><AlertCircle className="h-6 w-6 text-red-500" /><p className="text-sm text-muted-foreground">{error}</p></div>
-          <Button className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => window.location.reload()}><RefreshCw className="mr-2 h-4 w-4" />{t('common.retry')}</Button>
+          <Button className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={fetchQuotes}><RefreshCw className="mr-2 h-4 w-4" />{t('common.retry')}</Button>
         </CardContent>
       </Card>
     );

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "next-themes";
 import { LanguageProvider } from "@/contexts/language-context";
 import { AppProvider } from "@/contexts/app-context";
@@ -67,6 +68,7 @@ export default function RootLayout({
           </LanguageProvider>
         </ThemeProvider>
         <Toaster />
+        <SonnerToaster richColors position="top-right" />
       </body>
     </html>
   );

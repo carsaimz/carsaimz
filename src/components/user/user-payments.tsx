@@ -24,17 +24,33 @@ export function UserPayments() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    apiFetch(`/api/payments?userId=${user?.id || 'demo-user-001'}`)
-      .then((res) => safeJson(res))
-      .then((data) => { if (!data) { setError(t('common.serverNonJson')); return; } if (data.success) setPayments(data.data); else setError(data.message); })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [user?.id]);
+  const fetchPayments = async () => {
+    if (!user?.id) {
+      setError('Inicie sessão para ver os seus pagamentos.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await apiFetch(`/api/payments?userId=${user.id}`);
+      const data = await safeJson(res);
+      if (!data) { setError(t('common.serverNonJson')); return; }
+      if (data.success) setPayments(data.data || []);
+      else setError(data.message || 'Falha ao carregar pagamentos.');
+    } catch (err: any) {
+      setError(err.message || t('common.networkError'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchPayments(); }, [user?.id]);
 
   const statusBadge = (status: string) => {
     switch (status) {
-      case 'completed': return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>;
+      case 'completed': case 'confirmed': return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>;
       case 'pending': return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{t('common.pending')}</Badge>;
       case 'failed': return <Badge className="bg-red-100 text-red-700 border-red-200">{t('common.rejected')}</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
@@ -42,7 +58,7 @@ export function UserPayments() {
   };
 
   if (loading) return <motion.div variants={containerVariants} initial="hidden" animate="visible"><Skeleton className="h-64 w-full rounded-xl" /></motion.div>;
-  if (error) return <Card className="border-l-4 border-l-red-500"><CardContent className="p-6"><div className="flex items-center gap-3"><AlertCircle className="h-6 w-6 text-red-500" /><p>{error}</p></div><Button className="mt-4" onClick={() => window.location.reload()}><RefreshCw className="mr-2 h-4 w-4" />{t('common.retry')}</Button></CardContent></Card>;
+  if (error) return <Card className="border-l-4 border-l-red-500"><CardContent className="p-6"><div className="flex items-center gap-3"><AlertCircle className="h-6 w-6 text-red-500" /><p>{error}</p></div><Button className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={fetchPayments}><RefreshCw className="mr-2 h-4 w-4" />{t('common.retry')}</Button></CardContent></Card>;
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
