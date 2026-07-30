@@ -41,6 +41,8 @@ export interface Notification {
   type: NotificationType
   title: string
   message: string
+  link?: string | null
+  channels?: { web?: boolean; email?: boolean; push?: boolean }
   read: boolean
   createdAt: Date
 }

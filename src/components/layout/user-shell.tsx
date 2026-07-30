@@ -4,6 +4,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useAuthStore, useNotificationStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { AiChatAssistant } from '@/components/features/ai-chat-assistant';
 import { RealTimeNotifications } from '@/components/features/real-time-notifications';
 import { LoginModal } from '@/components/common/login-modal';
@@ -72,6 +73,8 @@ import {
   Link2,
   Percent,
   Banknote,
+  // Notification icon
+  BellRing,
 } from 'lucide-react';
 
 // ──────────────────────────────────────────────
@@ -100,6 +103,7 @@ interface SidebarLink {
 
 const USER_MENU_ITEMS: SidebarLink[] = [
   { path: '/user', labelKey: 'dashboard.profile', icon: UserCircle },
+  { path: '/user/notifications', labelKey: 'notif.title', icon: BellRing },
   { path: '/user/quotes', labelKey: 'dashboard.quotes', icon: ClipboardList },
   { path: '/user/payments', labelKey: 'dashboard.payments', icon: CreditCard },
   { path: '/user/invoices', labelKey: 'dashboard.invoices', icon: FileText },
@@ -145,7 +149,7 @@ function UserShellContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout, isAdmin, isSuperAdmin, isPartner } = useAuthStore();
-  const { unreadCount, notifications, markAllAsRead } = useNotificationStore();
+  const { unreadCount, notifications, markAsRead, markAllAsRead } = useNotificationStore();
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const { setOpenMobile } = useSidebar();
 
@@ -328,12 +332,70 @@ function UserShellContent({ children }: { children: React.ReactNode }) {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="size-7 relative">
                     <Bell className="size-3.5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-red-500 text-white text-[8px] flex items-center justify-center font-bold">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-72">
-                  <DropdownMenuLabel>{t('notif.title')}</DropdownMenuLabel>
+                <DropdownMenuContent align="end" className="w-80">
+                  <DropdownMenuLabel className="flex items-center justify-between">
+                    <span>{t('notif.title')}</span>
+                    {unreadCount > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-xs text-emerald-600"
+                        onClick={async () => {
+                          await apiFetch('/api/notifications', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'markAllRead', userId: user?.id }),
+                          });
+                          markAllAsRead();
+                        }}
+                      >
+                        Marcar todas como lidas
+                      </Button>
+                    )}
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem disabled>{t('notif.noNotifications')}</DropdownMenuItem>
+                  {notifications.length === 0 ? (
+                    <div className="p-4 text-center text-sm text-muted-foreground">
+                      {t('notif.noNotifications')}
+                    </div>
+                  ) : (
+                    <>
+                      {notifications.slice(0, 5).map((notif) => (
+                        <DropdownMenuItem
+                          key={notif.id}
+                          className="flex items-start gap-2 p-3 cursor-pointer"
+                          onClick={() => {
+                            if (!notif.read) markAsRead(notif.id);
+                            if (notif.link) router.push(notif.link);
+                          }}
+                        >
+                          <div className={`mt-0.5 h-2 w-2 rounded-full shrink-0 ${notif.read ? 'bg-transparent' : 'bg-emerald-500'}`} />
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm truncate ${notif.read ? 'text-muted-foreground' : 'font-medium'}`}>
+                              {notif.title}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate mt-0.5">
+                              {notif.message}
+                            </p>
+                          </div>
+                        </DropdownMenuItem>
+                      ))}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-center text-emerald-600 font-medium cursor-pointer"
+                        onClick={() => router.push('/user/notifications')}
+                      >
+                        Ver todas as notificações
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
 

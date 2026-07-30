@@ -1,24 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
-import ZAI from 'z-ai-web-dev-sdk'
 import { getAdminFirestore } from '@/lib/firebase-admin'
 import { checkFirebaseAdmin } from '@/lib/db-helpers'
 
 /**
  * Carsai Mozambique - AI Chat API Endpoint
  *
- * Uses z-ai-web-dev-sdk as the AI provider.
+ * Uses direct OpenAI-compatible API calls (fetch) instead of z-ai-web-dev-sdk.
+ * This is more reliable and supports any OpenAI-compatible provider.
  *
  * Configuration priority (first available wins):
- * 1. Database (Firestore `ai_providers` collection — active, highest priority)
- * 2. .z-ai-config file (auto-detected by SDK — local dev)
- * 3. Environment variables (ZAI_BASE_URL, ZAI_API_KEY, ZAI_TOKEN — Vercel)
+ * 1. Database (Firestore `ai_providers` collection — active providers sorted by priority)
+ * 2. Environment variables (AI_BASE_URL, AI_API_KEY, AI_MODEL — Vercel/fallback)
  *
- * The ZAI SDK has a private constructor — instances are created via ZAI.create().
- * When a database provider is found, we set environment variables so ZAI.create()
- * picks up the config automatically.
- *
- * IMPORTANT: z-ai-web-dev-sdk MUST be used in backend code only.
- * System prompts use role: 'assistant' (not 'system') per SDK convention.
+ * Supported providers (all OpenAI-compatible):
+ * - Groq (fast, free tier)
+ * - DeepSeek (affordable, good quality)
+ * - Google Gemini (via OpenAI-compatible endpoint)
+ * - OpenRouter (aggregator, many models)
+ * - OpenAI (original)
+ * - Any OpenAI-compatible API
  */
 
 // ── Hardcoded Site Context (no database dependency) ──
@@ -56,126 +56,165 @@ const CARSAI_CONTEXT = `You are the Carsai Mozambique assistant — a knowledgea
 10. The FREE hosting is provided by ifastnet/byet (Apache shared hosting), not by Carsai directly.
 `
 
-// ── ZAI Instance Cache ──
-// Cache key = config source, so we reinitialize when config changes.
+// ── Provider cache ──
 
-let zaiInstance: any = null
-let zaiInitPromise: Promise<any> | null = null
-let cachedConfigKey: string | null = null
+interface ProviderConfig {
+  id: string
+  name: string
+  baseUrl: string
+  apiKey: string
+  model: string
+  priority: number
+}
+
+let cachedProviders: ProviderConfig[] | null = null
+let providersCacheTime = 0
+const PROVIDERS_CACHE_TTL = 60_000 // 1 minute cache
 
 /**
- * Try to load AI provider config from Firestore (ai_providers collection).
- * Returns the first active provider sorted by priority, or null if not available.
+ * Load active AI providers from Firestore, sorted by priority.
+ * Excludes z.ai — we use direct API calls instead.
  */
-async function loadProviderFromDatabase(): Promise<{
-  config: { baseUrl: string; apiKey: string; chatId: string; userId: string; token: string; model?: string }
-  key: string
-} | null> {
+async function loadProviders(): Promise<ProviderConfig[]> {
+  const now = Date.now()
+  if (cachedProviders && (now - providersCacheTime) < PROVIDERS_CACHE_TTL) {
+    return cachedProviders
+  }
+
   try {
     const adminError = checkFirebaseAdmin()
-    if (adminError) return null
+    if (adminError) return []
 
     const db = getAdminFirestore()
-    if (!db) return null
+    if (!db) return []
 
     const snapshot = await db
       .collection('ai_providers')
       .where('isActive', '==', true)
       .orderBy('priority', 'asc')
-      .limit(1)
       .get()
 
-    if (snapshot.empty) return null
+    if (snapshot.empty) return []
 
-    const doc = snapshot.docs[0]
-    const data = doc.data()
+    const providers: ProviderConfig[] = []
+    for (const doc of snapshot.docs) {
+      const data = doc.data()
+      // Skip z.ai — we use direct API calls instead
+      if (data.name === 'z-ai' || data.name === 'zai') continue
+      if (!data.baseUrl || !data.apiKey) continue
 
-    if (!data.baseUrl || !data.apiKey) return null
-
-    // Parse extra config if available
-    let extraConfig: Record<string, string> = {}
-    if (data.config) {
-      try {
-        extraConfig = typeof data.config === 'string' ? JSON.parse(data.config) : data.config
-      } catch {
-        extraConfig = {}
-      }
-    }
-
-    return {
-      config: {
-        baseUrl: data.baseUrl,
+      providers.push({
+        id: doc.id,
+        name: data.name || data.displayName || 'unknown',
+        baseUrl: data.baseUrl.replace(/\/+$/, ''), // Remove trailing slash
         apiKey: data.apiKey,
-        chatId: extraConfig.chatId || '',
-        userId: extraConfig.userId || '',
-        token: extraConfig.token || '',
-        model: data.model || undefined,
-      },
-      key: `db:${doc.id}:${data.priority}`,
+        model: data.model || 'gpt-3.5-turbo',
+        priority: data.priority || 99,
+      })
     }
+
+    cachedProviders = providers
+    providersCacheTime = now
+    return providers
   } catch (error) {
-    // Database not available — fall through to other methods
-    console.warn('[Chat] Could not load provider from database:', error instanceof Error ? error.message : error)
-    return null
+    console.warn('[Chat] Could not load providers from database:', error instanceof Error ? error.message : error)
+    return []
   }
 }
 
-async function getZaiInstance() {
-  // ── Try 1: Database provider (highest priority, admin-configurable) ──
-  const dbProvider = await loadProviderFromDatabase()
+/**
+ * Get fallback config from environment variables.
+ */
+function getEnvFallback(): ProviderConfig | null {
+  const baseUrl = process.env.AI_BASE_URL
+  const apiKey = process.env.AI_API_KEY
+  const model = process.env.AI_MODEL || 'gpt-3.5-turbo'
 
-  if (dbProvider) {
-    // If the config hasn't changed, reuse the cached instance
-    if (zaiInstance && cachedConfigKey === dbProvider.key) {
-      return zaiInstance
-    }
+  if (!baseUrl || !apiKey) return null
 
-    // Set env vars so ZAI.create() picks up the database config
-    // The SDK reads from process.env at creation time
-    try {
-      process.env.ZAI_BASE_URL = dbProvider.config.baseUrl
-      process.env.ZAI_API_KEY = dbProvider.config.apiKey
-      if (dbProvider.config.chatId) process.env.ZAI_CHAT_ID = dbProvider.config.chatId
-      if (dbProvider.config.userId) process.env.ZAI_USER_ID = dbProvider.config.userId
-      if (dbProvider.config.token) process.env.ZAI_TOKEN = dbProvider.config.token
-
-      const zai = await ZAI.create()
-      zaiInstance = zai
-      cachedConfigKey = dbProvider.key
-      return zai
-    } catch (err) {
-      console.warn('[Chat] DB provider config failed, falling back:', err instanceof Error ? err.message : err)
-    }
+  return {
+    id: 'env-fallback',
+    name: 'Environment Config',
+    baseUrl: baseUrl.replace(/\/+$/, ''),
+    apiKey,
+    model,
+    priority: 999,
   }
+}
 
-  // ── Reuse cached instance if available and DB had no provider ──
-  if (zaiInstance && cachedConfigKey?.startsWith('fallback:')) {
-    return zaiInstance
-  }
+/**
+ * Call an OpenAI-compatible chat completions API.
+ * Supports: Groq, DeepSeek, Gemini, OpenRouter, OpenAI, and any compatible provider.
+ */
+async function callProvider(
+  provider: ProviderConfig,
+  messages: Array<{ role: string; content: string }>
+): Promise<string | null> {
+  const url = `${provider.baseUrl}/chat/completions`
 
-  // ── Prevent concurrent initialization ──
-  if (zaiInitPromise) return zaiInitPromise
-
-  zaiInitPromise = (async () => {
-    try {
-      // ── Try 2: Use SDK's auto-detection (.z-ai-config file or env vars) ──
-      const zai = await ZAI.create()
-      zaiInstance = zai
-      cachedConfigKey = 'fallback:auto'
-      return zai
-    } catch {
-      // No config available — throw descriptive error
-      throw new Error(
-        'ZAI SDK not configured. Configure an AI provider in the admin dashboard, create .z-ai-config file, or set ZAI_BASE_URL and ZAI_API_KEY environment variables.'
-      )
-    }
-  })()
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 30_000) // 30s timeout
 
   try {
-    return await zaiInitPromise
-  } catch (err) {
-    zaiInitPromise = null
-    throw err
+    // Build headers — OpenRouter needs HTTP-Referer and X-Title
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${provider.apiKey}`,
+    }
+
+    if (provider.name === 'openrouter') {
+      headers['HTTP-Referer'] = 'https://carsaimz.vercel.app'
+      headers['X-Title'] = 'Carsai Mozambique'
+    }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: provider.model,
+        messages,
+        max_tokens: 1024,
+        temperature: 0.7,
+        // Some providers don't support stream
+        stream: false,
+      }),
+    })
+
+    clearTimeout(timeout)
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error')
+      console.warn(`[Chat] Provider ${provider.name} returned ${response.status}: ${errorText.slice(0, 200)}`)
+      return null
+    }
+
+    const data = await response.json()
+
+    // Standard OpenAI response format
+    const content = data?.choices?.[0]?.message?.content
+    if (content && typeof content === 'string' && content.trim().length > 0) {
+      return content.trim()
+    }
+
+    // Some providers use different response formats
+    // DeepSeek sometimes wraps in extra object
+    const altContent = data?.output?.text || data?.result?.content || data?.response
+    if (altContent && typeof altContent === 'string' && altContent.trim().length > 0) {
+      return altContent.trim()
+    }
+
+    console.warn(`[Chat] Provider ${provider.name} returned empty/unexpected format:`, JSON.stringify(data).slice(0, 200))
+    return null
+  } catch (error: any) {
+    clearTimeout(timeout)
+
+    if (error.name === 'AbortError') {
+      console.warn(`[Chat] Provider ${provider.name} timed out (30s)`)
+    } else {
+      console.warn(`[Chat] Provider ${provider.name} error:`, error.message)
+    }
+    return null
   }
 }
 
@@ -193,10 +232,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // ── Build messages array with session context ──
-    // Note: SDK uses role: 'assistant' for system prompts, not 'system'
-    const aiMessages: Array<{ role: 'assistant' | 'user'; content: string }> = [
-      { role: 'assistant', content: CARSAI_CONTEXT },
+    // ── Build messages array ──
+    const aiMessages: Array<{ role: string; content: string }> = [
+      { role: 'system', content: CARSAI_CONTEXT },
     ]
 
     // Add session context (previous messages)
@@ -204,10 +242,7 @@ export async function POST(request: NextRequest) {
       for (const ctxMsg of context.slice(-10)) {
         const role = ctxMsg.role as string
         if (role === 'user' || role === 'assistant') {
-          aiMessages.push({
-            role: role as 'assistant' | 'user',
-            content: ctxMsg.content as string,
-          })
+          aiMessages.push({ role, content: ctxMsg.content as string })
         }
       }
     }
@@ -215,25 +250,43 @@ export async function POST(request: NextRequest) {
     // Add the current user message
     aiMessages.push({ role: 'user', content: message })
 
-    // ── Call Z.ai SDK ──
-    const zai = await getZaiInstance()
-    const completion = await zai.chat.completions.create({
-      messages: aiMessages,
-      thinking: { type: 'disabled' },
-    })
+    // ── Try providers in priority order ──
+    const dbProviders = await loadProviders()
+    const envFallback = getEnvFallback()
 
-    const response = completion.choices?.[0]?.message?.content
-
-    if (response && response.trim().length > 0) {
-      return NextResponse.json({
-        success: true,
-        response,
-        sessionId: sessionId || `session-${Date.now()}`,
-      })
+    // Combine: DB providers first (sorted by priority), then env fallback
+    const allProviders = [...dbProviders]
+    if (envFallback) {
+      allProviders.push(envFallback)
     }
 
-    // ── Empty response from Z.ai ──
-    console.error('[Chat] Z.ai returned empty response')
+    if (allProviders.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'O assistente de IA não está configurado. Por favor, contacte o administrador.',
+          debug: 'Configure an AI provider in the admin dashboard, or set AI_BASE_URL/AI_API_KEY env vars.',
+        },
+        { status: 503 }
+      )
+    }
+
+    // Try each provider in order until one succeeds
+    for (const provider of allProviders) {
+      const response = await callProvider(provider, aiMessages)
+
+      if (response) {
+        return NextResponse.json({
+          success: true,
+          response,
+          sessionId: sessionId || `session-${Date.now()}`,
+          provider: provider.name, // Let the client know which provider responded
+        })
+      }
+    }
+
+    // ── All providers failed ──
+    console.error('[Chat] All AI providers failed')
     return NextResponse.json({
       success: false,
       error: 'Não foi possível gerar uma resposta. Por favor, tente novamente ou contacte-nos via carsaimozambique@gmail.com',
@@ -243,37 +296,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[Chat] Error:', error)
 
-    // Reset ZAI instance on error (might be stale)
-    zaiInstance = null
-    zaiInitPromise = null
-    cachedConfigKey = null
-
     const errorMessage = error instanceof Error
       ? error.message
       : 'Unknown error'
-
-    // Config not found — helpful message for developers
-    if (errorMessage.includes('not configured') || errorMessage.includes('Configuration file not found')) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'O assistente de IA não está configurado. Por favor, contacte o administrador.',
-          debug: 'Configure an AI provider in the admin dashboard, or set ZAI_BASE_URL/ZAI_API_KEY env vars.',
-        },
-        { status: 503 }
-      )
-    }
-
-    // Auth error (expired token, etc.)
-    if (errorMessage.includes('401') || errorMessage.includes('Unauthorized') || errorMessage.includes('missing X-Token')) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'A autenticação do assistente de IA expirou. Por favor, contacte o administrador.',
-        },
-        { status: 503 }
-      )
-    }
 
     // Check if it's a connection/config error
     if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('timeout') || errorMessage.includes('network')) {
