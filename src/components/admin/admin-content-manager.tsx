@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { RichTextEditor } from '@/components/common/rich-text-editor';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -770,12 +771,11 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
         defaultLanguageFields={
           <div className="space-y-2">
             <Label className="text-sm font-medium">{t('admin.content')}</Label>
-            <Textarea
+            <RichTextEditor
               value={formContent}
-              onChange={(e) => setFormContent(e.target.value)}
+              onChange={setFormContent}
+              level="full"
               placeholder="Conteúdo do artigo..."
-              rows={8}
-              className="focus-visible:ring-emerald-500"
             />
           </div>
         }
@@ -784,12 +784,11 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
             lang,
             <div className="space-y-2" key={lang}>
               <Label className="text-sm font-medium">{t('admin.content')} ({lang})</Label>
-              <Textarea
+              <RichTextEditor
                 value={formContentI18n[lang] || ''}
-                onChange={(e) => setI18nValue(setFormContentI18n, lang, e.target.value)}
+                onChange={(val) => setI18nValue(setFormContentI18n, lang, val)}
+                level="full"
                 placeholder={`Content in ${lang}`}
-                rows={8}
-                className="focus-visible:ring-emerald-500"
               />
             </div>,
           ])
@@ -848,12 +847,11 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
         defaultLanguageFields={
           <div className="space-y-2">
             <Label className="text-sm font-medium">{t('admin.content')}</Label>
-            <Textarea
+            <RichTextEditor
               value={formContent}
-              onChange={(e) => setFormContent(e.target.value)}
+              onChange={setFormContent}
+              level="minimal"
               placeholder="Testemunho do cliente"
-              rows={3}
-              className="focus-visible:ring-emerald-500"
             />
           </div>
         }
@@ -862,12 +860,11 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
             lang,
             <div className="space-y-2" key={lang}>
               <Label className="text-sm font-medium">{t('admin.content')} ({lang})</Label>
-              <Textarea
+              <RichTextEditor
                 value={formContentI18n[lang] || ''}
-                onChange={(e) => setI18nValue(setFormContentI18n, lang, e.target.value)}
+                onChange={(val) => setI18nValue(setFormContentI18n, lang, val)}
+                level="minimal"
                 placeholder={`Testimonial in ${lang}`}
-                rows={3}
-                className="focus-visible:ring-emerald-500"
               />
             </div>,
           ])
