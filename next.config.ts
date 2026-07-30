@@ -1,6 +1,16 @@
 import type { NextConfig } from 'next'
 
+// Determine output mode from BUILD_TARGET env var (set by CI or build script):
+//   - BUILD_TARGET=capacitor  → output: "export"   (static export for Capacitor/mobile)
+//   - BUILD_TARGET=standalone → output: "standalone" (standalone server for Docker/Electron)
+//   - (default)               → output: undefined   (standard server mode for Vercel)
+const buildTarget = process.env.BUILD_TARGET || ''
+const output = buildTarget === 'capacitor' ? 'export' as const
+  : buildTarget === 'standalone' ? 'standalone' as const
+  : undefined
+
 const nextConfig: NextConfig = {
+  output,
   reactStrictMode: false,
   serverExternalPackages: [
     'firebase-admin',
