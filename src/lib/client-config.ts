@@ -30,8 +30,8 @@ export const APP_BUILD = '1'
 
 // ─── API base URL ───
 // On web (Next.js server mode) and Electron, relative paths like /api/... work natively.
-// For Capacitor mobile app (static export), the site URL is used as fallback.
-// No external deployment URL needed — the app works with its own server.
+// For Capacitor mobile app (static export), the deployment URL is used as fallback.
+// No NEXT_PUBLIC_API_URL env var needed — the hardcoded value works out of the box.
 
 export const API_BASE_URL = ''  // Empty = relative paths (same server)
 
@@ -41,10 +41,13 @@ export const API_BASE_URL = ''  // Empty = relative paths (same server)
 export const GOOGLE_WEB_CLIENT_ID = '117955101988984767727.apps.googleusercontent.com'
 
 // ─── Site URLs ───
-// Used for affiliate links, sharing, etc. — always the public-facing URL.
+// Used for affiliate links, sharing, API calls from Capacitor, etc.
+// SITE_URL: the actual working deployment URL (Capacitor API calls go here)
+// APP_PUBLIC_URL: used for affiliate links and sharing
+// TODO: When carsai.mz domain is purchased, update both to 'https://carsai.mz'
 
-export const SITE_URL = 'https://carsai.mz'
-export const APP_PUBLIC_URL = 'https://carsai.mz'  // Used for affiliate links
+export const SITE_URL = 'https://carsaimz.vercel.app'
+export const APP_PUBLIC_URL = 'https://carsaimz.vercel.app'  // Used for affiliate links
 export const GITHUB_URL = 'https://github.com/carsaimz'
 
 // ─── Firebase Config (client-side — hardcoded, no env vars needed) ───

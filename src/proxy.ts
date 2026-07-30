@@ -10,12 +10,13 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 
-// Allowed origins — Capacitor app origins + production domain
+// Allowed origins — Capacitor app origins + deployment URLs
 const ALLOWED_ORIGINS = [
   'https://localhost',            // Capacitor Android (androidScheme: 'https')
   'http://localhost',             // Capacitor Android (legacy http scheme)
   'capacitor://localhost',        // Capacitor iOS default scheme
-  'https://carsai.mz',            // Production domain
+  'https://carsaimz.vercel.app',  // Vercel deployment (current)
+  'https://carsai.mz',            // Production domain (future)
   'com.carsaimz://',              // Capacitor custom URL scheme
   'com.carsaimz://localhost',     // Capacitor custom scheme variant
 ]
