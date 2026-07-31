@@ -73,6 +73,10 @@ export function AdminSettings() {
       const data = await safeJson(res);
       if (!data) { toast({ title: t('admin.error'), description: t('common.serverNonJson'), variant: 'destructive' }); return; }
       if (data.success) {
+        // Set maintenance mode cookie for middleware to read
+        const maintenanceValue = String(formData.maintenanceMode);
+        document.cookie = `carsai-maintenance=${maintenanceValue};path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
+
         toast({ title: t('admin.settingsSaved'), description: t('admin.settingsSavedDesc') });
       } else {
         toast({ title: t('admin.error'), description: data.message || t('admin.settingsSaveFailed'), variant: 'destructive' });

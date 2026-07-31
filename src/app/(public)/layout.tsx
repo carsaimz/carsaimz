@@ -4,6 +4,7 @@ import { PublicHeader } from '@/components/layout/public-header';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { AiChatAssistant } from '@/components/features/ai-chat-assistant';
 import { RealTimeNotifications } from '@/components/features/real-time-notifications';
+import { AdPlacement } from '@/components/common/ad-renderer';
 
 export default function PublicLayout({
   children,
@@ -19,6 +20,7 @@ export default function PublicLayout({
       <PublicFooter className="mt-auto" />
       <AiChatAssistant />
       <RealTimeNotifications />
+      <AdPlacement placement="global_interstitial" />
     </div>
   );
 }

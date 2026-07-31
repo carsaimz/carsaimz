@@ -75,6 +75,8 @@ import {
   Banknote,
   // Notification icon
   BellRing,
+  // Loyalty icon
+  Star,
 } from 'lucide-react';
 
 // ──────────────────────────────────────────────
@@ -103,6 +105,7 @@ interface SidebarLink {
 
 const USER_MENU_ITEMS: SidebarLink[] = [
   { path: '/user', labelKey: 'dashboard.profile', icon: UserCircle },
+  { path: '/user/loyalty', labelKey: 'loyalty.title', icon: Star },
   { path: '/user/notifications', labelKey: 'notif.title', icon: BellRing },
   { path: '/user/quotes', labelKey: 'dashboard.quotes', icon: ClipboardList },
   { path: '/user/payments', labelKey: 'dashboard.payments', icon: CreditCard },

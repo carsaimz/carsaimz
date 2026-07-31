@@ -11,6 +11,7 @@ import { ContactSection } from './contact-section';
 import { FaqSection } from './faq-section';
 import { SocialSection } from './social-section';
 import { GradientWaveSVG } from '@/components/common/decorative-svg';
+import { AdPlacement } from '@/components/common/ad-renderer';
 
 // Dynamic imports for decorative/animation elements (client-side only)
 const AfricanPatternSVG = dynamic(
@@ -31,6 +32,9 @@ export function HomePage() {
     <>
       <HomeHero />
 
+      {/* Home Top Banner Ad */}
+      <AdPlacement placement="home_top" />
+
       {/* Services Section */}
       <div className="relative overflow-hidden">
         <Suspense fallback={null}>
@@ -44,6 +48,11 @@ export function HomePage() {
       {/* Projects Section */}
       <div className="relative overflow-hidden">
         <ProjectsSection />
+      </div>
+
+      {/* Home Sidebar Ad (on desktop) */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <AdPlacement placement="home_sidebar" />
       </div>
 
       <GradientWaveSVG height={50} flip />
@@ -78,6 +87,9 @@ export function HomePage() {
       {/* Social Media Section */}
       <SocialSection />
 
+      {/* Global Banner Ad */}
+      <AdPlacement placement="global_banner" />
+
       {/* FAQ Section */}
       <div className="relative overflow-hidden">
         <Suspense fallback={null}>
@@ -85,6 +97,9 @@ export function HomePage() {
         </Suspense>
         <FaqSection />
       </div>
+
+      {/* Footer Banner Ad */}
+      <AdPlacement placement="footer" />
     </>
   );
 }

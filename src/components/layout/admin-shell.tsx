@@ -13,7 +13,7 @@ import {
   LayoutDashboard, Users, FileText, BarChart3, Settings, ScrollText,
   Shield, Scale, Cookie, HelpCircle,
   Globe, FolderOpen, MessageSquare, MessagesSquare,
-  Database, Tag, Bot,
+  Database, Tag, Bot, Megaphone, Star,
   // User menu icons
   UserCircle, ClipboardList, CreditCard, Headphones,
   // Partner menu icons
@@ -60,6 +60,7 @@ const ADMIN_MENU_ITEMS: SidebarLink[] = [
   { path: '/admin/quotes', labelKey: 'admin.quotes', icon: ClipboardList },
   { path: '/admin/payments', labelKey: 'admin.payments', icon: CreditCard },
   { path: '/admin/partner', labelKey: 'admin.partner', icon: Briefcase },
+  { path: '/admin/ads', labelKey: 'ads.title', icon: Megaphone },
   { path: '/admin/notifications', labelKey: 'admin.sendNotification', icon: Bell },
   { path: '/admin/reports', labelKey: 'admin.reports', icon: BarChart3 },
   { path: '/admin/analytics', labelKey: 'admin.systemLogs', icon: ScrollText },
@@ -70,6 +71,7 @@ const ADMIN_MENU_ITEMS: SidebarLink[] = [
 
 const USER_MENU_ITEMS: SidebarLink[] = [
   { path: '/user', labelKey: 'dashboard.profile', icon: UserCircle },
+  { path: '/user/loyalty', labelKey: 'loyalty.title', icon: Star },
   { path: '/user/quotes', labelKey: 'dashboard.quotes', icon: ClipboardList },
   { path: '/user/payments', labelKey: 'dashboard.payments', icon: CreditCard },
   { path: '/user/invoices', labelKey: 'dashboard.invoices', icon: FileText },
@@ -79,6 +81,7 @@ const USER_MENU_ITEMS: SidebarLink[] = [
 
 const PARTNER_MENU_ITEMS: SidebarLink[] = [
   { path: '/partner', labelKey: 'partner.portfolio', icon: FolderOpen },
+  { path: '/partner/ads', labelKey: 'ads.title', icon: Megaphone },
   { path: '/partner/affiliate', labelKey: 'partner.affiliate', icon: Link2 },
   { path: '/partner/commissions', labelKey: 'partner.commissions', icon: Percent },
   { path: '/partner/withdrawals', labelKey: 'partner.withdrawals', icon: Banknote },
