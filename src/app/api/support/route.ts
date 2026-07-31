@@ -1,7 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { safeGetDoc, safeQueryDocs, safeCountDocs, checkFirebaseAdmin } from '@/lib/db-helpers'
+import { safeGetDoc, safeGetDocs, safeCountDocs, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { serializeFirestore } from '@/lib/serialize'
 import { sendEmail, ticketNotificationTemplate, isEmailConfigured } from '@/lib/email'
+
+/**
+ * Sort helper — newest first (desc) by createdAt.
+ * Handles Firestore Timestamp objects and ISO strings.
+ */
+function sortByDateDesc(items: any[]): any[] {
+  return items.sort((a, b) => {
+    const aTime = a.createdAt?.toMillis?.() ?? new Date(a.createdAt).getTime() ?? 0
+    const bTime = b.createdAt?.toMillis?.() ?? new Date(b.createdAt).getTime() ?? 0
+    return bTime - aTime
+  })
+}
+
+/**
+ * Sort helper — oldest first (asc) by createdAt.
+ */
+function sortByDateAsc(items: any[]): any[] {
+  return items.sort((a, b) => {
+    const aTime = a.createdAt?.toMillis?.() ?? new Date(a.createdAt).getTime() ?? 0
+    const bTime = b.createdAt?.toMillis?.() ?? new Date(b.createdAt).getTime() ?? 0
+    return aTime - bTime
+  })
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,19 +48,23 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Use safe helpers — returns empty array if collection doesn't exist
-    const tickets = await safeQueryDocs('support_tickets', [
-      { field: 'userId', op: '==', value: userId },
-    ], 'createdAt', 'desc')
+    // Fetch ALL tickets and filter client-side — avoids composite index requirement.
+    // safeQueryDocs with userId + orderBy requires a composite Firestore index that
+    // may not exist. safeGetDocs + client-side filter works without any index.
+    const allTickets = await safeGetDocs('support_tickets')
+    const tickets = sortByDateDesc(
+      allTickets.filter((t: any) => t.userId === userId)
+    )
 
     // Enrich each ticket with replies and user data
     const enrichedTickets = await Promise.all(
       tickets.map(async (ticket: any) => {
         try {
-          // Get replies with authors
-          const repliesRaw = await safeQueryDocs('ticket_replies', [
-            { field: 'ticketId', op: '==', value: ticket.id },
-          ], 'createdAt', 'asc')
+          // Fetch ALL replies and filter client-side — same reason (avoids composite index)
+          const allReplies = await safeGetDocs('ticket_replies')
+          const repliesRaw = sortByDateAsc(
+            allReplies.filter((r: any) => r.ticketId === ticket.id)
+          )
 
           const replies = await Promise.all(
             repliesRaw.map(async (reply: any) => {

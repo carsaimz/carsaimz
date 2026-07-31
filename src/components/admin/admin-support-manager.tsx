@@ -308,6 +308,9 @@ export function AdminSupportManager() {
               {selectedTicket.description && (
                 <div className="p-3 rounded-lg bg-muted/50 text-sm">{selectedTicket.description}</div>
               )}
+              {!selectedTicket.description && (selectedTicket as any).message && (
+                <div className="p-3 rounded-lg bg-muted/50 text-sm">{(selectedTicket as any).message}</div>
+              )}
 
               {/* Replies */}
               {selectedTicket.replies && selectedTicket.replies.length > 0 && (

@@ -1,7 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { safeGetDocs, safeGetDoc, safeQueryDocs, checkFirebaseAdmin } from '@/lib/db-helpers'
+import { safeGetDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { getDoc, updateDoc, deleteDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
+
+/**
+ * Sort helper — newest first (desc) by createdAt.
+ * Handles Firestore Timestamp objects and ISO strings.
+ */
+function sortByDateDesc(items: any[]): any[] {
+  return items.sort((a, b) => {
+    const aTime = a.createdAt?.toMillis?.() ?? new Date(a.createdAt).getTime() ?? 0
+    const bTime = b.createdAt?.toMillis?.() ?? new Date(b.createdAt).getTime() ?? 0
+    return bTime - aTime
+  })
+}
+
+/**
+ * Sort helper — oldest first (asc) by createdAt.
+ */
+function sortByDateAsc(items: any[]): any[] {
+  return items.sort((a, b) => {
+    const aTime = a.createdAt?.toMillis?.() ?? new Date(a.createdAt).getTime() ?? 0
+    const bTime = b.createdAt?.toMillis?.() ?? new Date(b.createdAt).getTime() ?? 0
+    return aTime - bTime
+  })
+}
 
 // GET all support tickets (admin view)
 export async function GET(request: NextRequest) {
@@ -14,20 +37,16 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
 
-    let tickets: any[]
+    // Fetch ALL tickets and filter client-side — avoids composite index requirement.
+    // safeQueryDocs with status + orderBy requires a composite Firestore index that
+    // may not exist. safeGetDocs + client-side filter works without any index.
+    const allTickets = await safeGetDocs('support_tickets')
 
+    let tickets: any[]
     if (status) {
-      tickets = await safeQueryDocs('support_tickets', [
-        { field: 'status', op: '==', value: status },
-      ], 'createdAt', 'desc')
+      tickets = sortByDateDesc(allTickets.filter((t: any) => t.status === status))
     } else {
-      tickets = await safeGetDocs('support_tickets')
-      // Sort by createdAt descending
-      tickets.sort((a: any, b: any) => {
-        const aTime = a.createdAt ? new Date(typeof a.createdAt === 'string' ? a.createdAt : a.createdAt?.toDate?.()?.toISOString?.() || 0).getTime() : 0
-        const bTime = b.createdAt ? new Date(typeof b.createdAt === 'string' ? b.createdAt : b.createdAt?.toDate?.()?.toISOString?.() || 0).getTime() : 0
-        return bTime - aTime
-      })
+      tickets = sortByDateDesc(allTickets)
     }
 
     // Enrich each ticket with user data and replies
@@ -35,9 +54,12 @@ export async function GET(request: NextRequest) {
       tickets.map(async (ticket: any) => {
         try {
           const ticketUser = ticket.userId ? await safeGetDoc('users', ticket.userId) : null
-          const repliesRaw = await safeQueryDocs('ticket_replies', [
-            { field: 'ticketId', op: '==', value: ticket.id },
-          ], 'createdAt', 'asc')
+
+          // Fetch ALL replies and filter client-side — same reason (avoids composite index)
+          const allReplies = await safeGetDocs('ticket_replies')
+          const repliesRaw = sortByDateAsc(
+            allReplies.filter((r: any) => r.ticketId === ticket.id)
+          )
 
           const replies = await Promise.all(
             repliesRaw.map(async (reply: any) => {

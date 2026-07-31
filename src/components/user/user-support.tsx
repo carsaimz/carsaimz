@@ -217,9 +217,9 @@ export function UserSupport() {
                 {formatDate(selectedTicket.createdAt)}
               </div>
               {/* Show the initial ticket message/description prominently */}
-              {selectedTicket.description && (
+              {(selectedTicket.description || (selectedTicket as any).message) && (
                 <div className="bg-muted/50 dark:bg-emerald-950/20 rounded-lg p-4">
-                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{selectedTicket.description}</p>
+                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{selectedTicket.description || (selectedTicket as any).message}</p>
                 </div>
               )}
             </CardContent>

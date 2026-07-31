@@ -27,6 +27,7 @@ import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/language-context';
 import { useToast } from '@/hooks/use-toast';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
+import { convertFromMZN, getBestCurrencyForProvider, formatConvertedAmount, CURRENCIES } from '@/lib/currency';
 
 // ─── Types ───
 
@@ -109,8 +110,17 @@ export function PaymentCheckout({
       const res = await apiFetch('/api/admin/payments/providers');
       const data = await safeJson(res);
       if (data && data.success) {
+        // Show active providers that either support MZN directly or
+        // support a currency we can convert to from MZN
         const activeProviders = (data.data || []).filter(
-          (p: PaymentProviderInfo) => p.isActive && p.supportedCurrencies?.includes(currency)
+          (p: PaymentProviderInfo) => {
+            if (!p.isActive) return false;
+            // Provider supports MZN directly — no conversion needed
+            if (p.supportedCurrencies?.includes('MZN')) return true;
+            // Provider supports a currency we can convert MZN to
+            const bestCurrency = getBestCurrencyForProvider(p.supportedCurrencies || []);
+            return bestCurrency !== 'MZN' && CURRENCIES[bestCurrency] !== undefined;
+          }
         );
         setProviders(activeProviders);
       }
@@ -134,11 +144,24 @@ export function PaymentCheckout({
     };
   }, [verificationInterval]);
 
-  // Calculate fee for a provider
+  // Calculate fee for a provider (in the provider's currency)
   const calculateFee = (provider: PaymentProviderInfo): number => {
-    const percentageFee = (amount * provider.processingFee) / 100;
+    const providerCurrency = getBestCurrencyForProvider(provider.supportedCurrencies || []);
+    const convertedAmount = convertFromMZN(amount, providerCurrency);
+    const percentageFee = (convertedAmount * provider.processingFee) / 100;
     const fixedFee = provider.processingFeeFixed || 0;
     return Math.round((percentageFee + fixedFee) * 100) / 100;
+  };
+
+  // Get the provider's currency for display
+  const getProviderCurrency = (provider: PaymentProviderInfo): string => {
+    return getBestCurrencyForProvider(provider.supportedCurrencies || []);
+  };
+
+  // Format amount in the provider's currency
+  const formatProviderAmount = (amountMZN: number, provider: PaymentProviderInfo): string => {
+    const providerCurrency = getProviderCurrency(provider);
+    return formatConvertedAmount(amountMZN, providerCurrency);
   };
 
   // Create payment
@@ -160,12 +183,18 @@ export function PaymentCheckout({
         ...(phoneNumber ? { phoneNumber } : {}),
       };
 
+      // Determine the currency to use for this provider
+      const providerCurrency = getProviderCurrency(selectedProvider);
+      const convertedAmount = convertFromMZN(amount, providerCurrency);
+
       const res = await apiFetch('/api/payments/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount,
-          currency,
+          amount: providerCurrency === 'MZN' ? amount : convertedAmount,
+          currency: providerCurrency,
+          originalAmount: amount,
+          originalCurrency: 'MZN',
           providerId: selectedProvider.id,
           description: description || '',
           userId: userId || 'guest',
@@ -319,6 +348,11 @@ export function PaymentCheckout({
             <div>
               <p className="text-sm text-muted-foreground">{t('payment.paymentAmount') || 'Payment Amount'}</p>
               <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(amount)}</p>
+              {selectedProvider && getProviderCurrency(selectedProvider) !== 'MZN' && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  ≈ {formatConvertedAmount(amount, getProviderCurrency(selectedProvider))}
+                </p>
+              )}
               {description && (
                 <p className="text-sm text-muted-foreground mt-1">{description}</p>
               )}
@@ -353,9 +387,12 @@ export function PaymentCheckout({
               </Card>
             ) : (
               providers.map((provider) => {
+                const providerCurrency = getProviderCurrency(provider);
+                const convertedAmount = convertFromMZN(amount, providerCurrency);
                 const fee = calculateFee(provider);
-                const total = amount + fee;
+                const totalConverted = convertedAmount + fee;
                 const isSelected = selectedProvider?.id === provider.id;
+                const needsConversion = providerCurrency !== 'MZN';
 
                 return (
                   <Card
@@ -378,17 +415,27 @@ export function PaymentCheckout({
                                 {t('payment.testMode') || 'Test'}
                               </Badge>
                             )}
+                            {needsConversion && (
+                              <Badge className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs">
+                                {providerCurrency}
+                              </Badge>
+                            )}
                           </div>
                           <p className="text-xs text-muted-foreground">{provider.description}</p>
+                          {needsConversion && (
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {formatCurrency(amount)} ≈ {formatConvertedAmount(amount, providerCurrency)}
+                            </p>
+                          )}
                         </div>
                         <div className="text-right shrink-0">
                           {fee > 0 ? (
                             <>
                               <p className="text-xs text-muted-foreground">
-                                {t('payment.fee') || 'Fee'}: {formatCurrency(fee)}
+                                {t('payment.fee') || 'Fee'}: {formatProviderAmount(fee, provider)}
                               </p>
                               <p className="text-sm font-semibold">
-                                {t('payment.total') || 'Total'}: {formatCurrency(total)}
+                                {t('payment.total') || 'Total'}: {formatProviderAmount(amount, provider)} + {formatProviderAmount(fee, provider)}
                               </p>
                             </>
                           ) : (
@@ -446,7 +493,15 @@ export function PaymentCheckout({
                   )}
                   {t('payment.payWith') || 'Pay with'} {selectedProvider.displayName}
                   {' — '}
-                  {formatCurrency(amount + calculateFee(selectedProvider))}
+                  {formatProviderAmount(amount, selectedProvider)}
+                  {(() => {
+                    const providerCurrency = getProviderCurrency(selectedProvider);
+                    const fee = calculateFee(selectedProvider);
+                    if (fee > 0) {
+                      return ` + ${formatProviderAmount(fee, selectedProvider)} ${t('payment.fee') || 'fee'}`;
+                    }
+                    return '';
+                  })()}
                 </Button>
               </motion.div>
             )}
