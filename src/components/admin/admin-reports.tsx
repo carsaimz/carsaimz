@@ -76,7 +76,7 @@ interface HistoryData {
 // Loading skeleton for a card
 function CardSkeleton() {
   return (
-    <Card className="border-l-4 border-l-emerald-500">
+    <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
@@ -199,7 +199,7 @@ export function AdminReports() {
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
         <motion.div variants={itemVariants}>
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-emerald-600" />
+            <BarChart3 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             {t('admin.reports') || 'Reports'}
           </h2>
         </motion.div>
@@ -222,7 +222,7 @@ export function AdminReports() {
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
         <motion.div variants={itemVariants}>
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-emerald-600" />
+            <BarChart3 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             {t('admin.reports') || 'Reports'}
           </h2>
           <p className="text-muted-foreground mt-1">{t('admin.analyticsOverview') || 'Loading reports...'}</p>
@@ -248,7 +248,7 @@ export function AdminReports() {
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
         <motion.div variants={itemVariants}>
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-emerald-600" />
+            <BarChart3 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             {t('admin.reports') || 'Reports'}
           </h2>
         </motion.div>
@@ -266,7 +266,7 @@ export function AdminReports() {
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants}>
         <h2 className="text-2xl font-bold flex items-center gap-2">
-          <BarChart3 className="h-6 w-6 text-emerald-600" />
+          <BarChart3 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
           {t('admin.reports') || 'Reports'}
         </h2>
         <p className="text-muted-foreground mt-1">{t('admin.analyticsOverview')}</p>
@@ -274,51 +274,51 @@ export function AdminReports() {
 
       {/* Summary Cards */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-l-4 border-l-emerald-500">
+        <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{t('admin.reportsTotalRevenue')}</p>
-                <p className="text-2xl font-bold text-emerald-700">{formatCurrency(totalRevenue)}</p>
+                <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(totalRevenue)}</p>
               </div>
               <DollarSign className="h-8 w-8 text-emerald-500" />
             </div>
             {stats?.payments?.confirmedRevenue !== undefined && stats.payments.totalRevenue > 0 && (
-              <Badge className="mt-2 bg-emerald-100 text-emerald-700 border-emerald-200">
+              <Badge className="mt-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">
                 <TrendingUp className="w-3 h-3 mr-1" />
                 {formatCurrency(stats.payments.confirmedRevenue)} {t('admin.confirmedRevenue', { amount: '' }).replace(/—?\s*$/, '')}
               </Badge>
             )}
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-emerald-500">
+        <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{t('admin.reportsTotalBookings')}</p>
-                <p className="text-2xl font-bold text-emerald-700">{totalBookings.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{totalBookings.toLocaleString()}</p>
               </div>
               <Calendar className="h-8 w-8 text-emerald-500" />
             </div>
             {stats?.payments && stats.payments.mpesa + stats.payments.transfer + stats.payments.deposit > 0 && (
-              <Badge className="mt-2 bg-emerald-100 text-emerald-700 border-emerald-200">
+              <Badge className="mt-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">
                 <TrendingUp className="w-3 h-3 mr-1" />
                 {stats.payments.mpesa + stats.payments.transfer + stats.payments.deposit} {t('admin.payments').toLowerCase()}
               </Badge>
             )}
           </CardContent>
         </Card>
-        <Card className="border-l-4 border-l-emerald-500">
+        <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{t('admin.reportsNewUsers')}</p>
-                <p className="text-2xl font-bold text-emerald-700">{totalNewUsers.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{totalNewUsers.toLocaleString()}</p>
               </div>
               <Users className="h-8 w-8 text-emerald-500" />
             </div>
             {stats?.users?.active !== undefined && (
-              <Badge className="mt-2 bg-emerald-100 text-emerald-700 border-emerald-200">
+              <Badge className="mt-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">
                 <TrendingUp className="w-3 h-3 mr-1" />
                 {stats.users.active} {t('admin.usersActive').toLowerCase()}
               </Badge>
@@ -333,7 +333,7 @@ export function AdminReports() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-emerald-600" />
+                <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 {t('admin.reportsRevenueMonthly')}
               </CardTitle>
             </CardHeader>
@@ -375,7 +375,7 @@ export function AdminReports() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Users className="w-5 h-5 text-emerald-600" />
+                <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 {t('admin.reportsUserGrowth')}
               </CardTitle>
             </CardHeader>
@@ -420,7 +420,7 @@ export function AdminReports() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-emerald-600" />
+                <BarChart3 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 {t('admin.reportsServiceUsage')}
               </CardTitle>
             </CardHeader>

@@ -34,8 +34,8 @@ export function PartnerCommissions() {
 
   const statusBadge = (status: string) => {
     switch (status) {
-      case 'paid': case 'completed': return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>;
-      case 'approved': return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>;
+      case 'paid': case 'completed': return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">{t('common.approved')}</Badge>;
+      case 'approved': return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">{t('common.approved')}</Badge>;
       case 'pending': return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{t('common.pending')}</Badge>;
       case 'rejected': return <Badge className="bg-red-100 text-red-700 border-red-200">{t('common.rejected')}</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
@@ -48,14 +48,14 @@ export function PartnerCommissions() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants}>
-        <h2 className="text-2xl font-bold flex items-center gap-2"><Percent className="h-6 w-6 text-emerald-600" />{t('partner.commissions')}</h2>
+        <h2 className="text-2xl font-bold flex items-center gap-2"><Percent className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />{t('partner.commissions')}</h2>
       </motion.div>
       <motion.div variants={itemVariants}>
         <Card>
-          <CardHeader><div className="flex items-center justify-between"><CardTitle className="flex items-center gap-2"><DollarSign className="h-5 w-5 text-emerald-600" />{t('partner.commissionHistory')}</CardTitle><Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{commissions.length} {t('common.total')}</Badge></div></CardHeader>
+          <CardHeader><div className="flex items-center justify-between"><CardTitle className="flex items-center gap-2"><DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />{t('partner.commissionHistory')}</CardTitle><Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">{commissions.length} {t('common.total')}</Badge></div></CardHeader>
           <CardContent className="p-0">
             {commissions.length === 0 ? <div className="text-center py-12"><DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-3" /><p className="text-muted-foreground">{t('partner.noCommissions')}</p></div> :
-            <Table><TableHeader><TableRow className="bg-emerald-50/50"><TableHead>{t('common.id')}</TableHead><TableHead>{t('financial.amount')}</TableHead><TableHead>{t('common.status')}</TableHead><TableHead>{t('common.createdAt')}</TableHead></TableRow></TableHeader>
+            <Table><TableHeader><TableRow className="bg-emerald-50/50 dark:bg-emerald-950/30"><TableHead>{t('common.id')}</TableHead><TableHead>{t('financial.amount')}</TableHead><TableHead>{t('common.status')}</TableHead><TableHead>{t('common.createdAt')}</TableHead></TableRow></TableHeader>
             <TableBody>{commissions.map((c) => <TableRow key={c.id}><TableCell className="font-medium">{c.id.slice(0,8)}</TableCell><TableCell className="font-semibold">{formatCurrency(c.amount)}</TableCell><TableCell>{statusBadge(c.status)}</TableCell><TableCell className="text-muted-foreground">{formatDate(c.createdAt)}</TableCell></TableRow>)}</TableBody></Table>}
           </CardContent>
         </Card>

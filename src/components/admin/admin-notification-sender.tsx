@@ -258,7 +258,7 @@ export function AdminNotificationSender() {
       <motion.div variants={itemVariants}>
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Bell className="h-6 w-6 text-emerald-600" />
+            <Bell className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             {t('admin.sendNotification')}
           </h2>
         </div>
@@ -269,7 +269,7 @@ export function AdminNotificationSender() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Send className="h-5 w-5 text-emerald-600" />
+              <Send className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               {t('admin.sendNotification')}
             </CardTitle>
           </CardHeader>

@@ -183,7 +183,7 @@ export function FaqSection() {
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
               activeCategory === 'all'
                 ? 'bg-emerald-600 text-white'
-                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'
             }`}
           >
             {t('faq.categoryAll')}
@@ -195,7 +195,7 @@ export function FaqSection() {
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 activeCategory === cat
                   ? 'bg-emerald-600 text-white'
-                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                  : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'
               }`}
             >
               {t(categoryLabels[cat])}
@@ -216,11 +216,11 @@ export function FaqSection() {
                 <AccordionItem
                   key={item.id}
                   value={item.id}
-                  className="border-emerald-100"
+                  className="border-emerald-100 dark:border-emerald-900/30"
                 >
-                  <AccordionTrigger className="hover:text-emerald-700 hover:no-underline">
+                  <AccordionTrigger className="hover:text-emerald-700 dark:hover:text-emerald-300 hover:no-underline">
                     <div className="flex items-center gap-3 text-left">
-                      <span className="text-sm font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded shrink-0">
+                      <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded shrink-0">
                         {t(categoryLabels[item.category])}
                       </span>
                       <span className="text-sm">{t(item.questionKey)}</span>

@@ -115,7 +115,7 @@ const PROVIDER_COLORS: Record<string, string> = {
   stripe: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600',
   paypal: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600',
   mpesa: 'bg-red-100 dark:bg-red-900/30 text-red-600',
-  emola: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600',
+  emola: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
   bank_transfer: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600',
 };
 
@@ -636,7 +636,7 @@ export function AdminPaymentProviders() {
                     <span className="font-semibold text-lg">{provider.displayName}</span>
                     <Badge variant="outline" className="text-xs">{provider.name}</Badge>
                     {provider.isActive ? (
-                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs">
+                      <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50 text-xs">
                         <CheckCircle2 className="size-3 mr-1" />
                         {t('common.active') || 'Active'}
                       </Badge>

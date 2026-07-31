@@ -217,9 +217,9 @@ export function AdminPartnerManager() {
       case 'pending':
         return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200"><Clock className="h-3 w-3 mr-1" />{t('common.pending') || 'Pending'}</Badge>;
       case 'approved':
-        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200"><CheckCircle2 className="h-3 w-3 mr-1" />{t('common.approved') || 'Approved'}</Badge>;
+        return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50"><CheckCircle2 className="h-3 w-3 mr-1" />{t('common.approved') || 'Approved'}</Badge>;
       case 'paid':
-        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200"><CheckCircle2 className="h-3 w-3 mr-1" />{t('common.completed') || 'Paid'}</Badge>;
+        return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50"><CheckCircle2 className="h-3 w-3 mr-1" />{t('common.completed') || 'Paid'}</Badge>;
       case 'rejected':
         return <Badge className="bg-red-100 text-red-700 border-red-200"><XCircle className="h-3 w-3 mr-1" />{t('common.rejected') || 'Rejected'}</Badge>;
       default:
@@ -233,10 +233,10 @@ export function AdminPartnerManager() {
       <motion.div variants={itemVariants}>
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Briefcase className="h-6 w-6 text-emerald-600" />
+            <Briefcase className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             {t('admin.partner') || 'Partner Management'}
           </h2>
-          <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+          <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">
             {partners.length} {t('common.total') || 'total'}
           </Badge>
         </div>
@@ -306,7 +306,7 @@ export function AdminPartnerManager() {
         <DialogContent className="sm:max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Briefcase className="h-5 w-5 text-emerald-600" />
+              <Briefcase className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               {selectedPartner?.name || t('admin.partner') || 'Partner Details'}
             </DialogTitle>
             <DialogDescription>{t('admin.contentManager') || 'Partner details'}</DialogDescription>
@@ -316,20 +316,20 @@ export function AdminPartnerManager() {
             <div className="space-y-6">
               {/* Stats */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="text-center p-3 rounded-xl bg-emerald-50">
-                  <p className="text-lg font-bold text-emerald-700">{selectedPartner.stats?.totalClicks || 0}</p>
+                <div className="text-center p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
+                  <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">{selectedPartner.stats?.totalClicks || 0}</p>
                   <p className="text-xs text-muted-foreground">{t('partner.totalClicks') || 'Clicks'}</p>
                 </div>
-                <div className="text-center p-3 rounded-xl bg-emerald-50">
-                  <p className="text-lg font-bold text-emerald-700">{selectedPartner.stats?.totalCommissions || 0}</p>
+                <div className="text-center p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
+                  <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">{selectedPartner.stats?.totalCommissions || 0}</p>
                   <p className="text-xs text-muted-foreground">{t('partner.conversions') || 'Conversions'}</p>
                 </div>
-                <div className="text-center p-3 rounded-xl bg-emerald-50">
-                  <p className="text-lg font-bold text-emerald-700">{formatCurrency(selectedPartner.stats?.totalCommissionAmount || 0)}</p>
+                <div className="text-center p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
+                  <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(selectedPartner.stats?.totalCommissionAmount || 0)}</p>
                   <p className="text-xs text-muted-foreground">{t('partner.commissionsEarned') || 'Earned'}</p>
                 </div>
-                <div className="text-center p-3 rounded-xl bg-emerald-50">
-                  <p className="text-lg font-bold text-emerald-700">{selectedPartner.commissionRate || 10}%</p>
+                <div className="text-center p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
+                  <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">{selectedPartner.commissionRate || 10}%</p>
                   <p className="text-xs text-muted-foreground">{t('partner.commissionRate') || 'Rate'}</p>
                 </div>
               </div>
@@ -338,7 +338,7 @@ export function AdminPartnerManager() {
               {selectedPartner.withdrawals && selectedPartner.withdrawals.filter((w: any) => w.status === 'pending').length > 0 && (
                 <div>
                   <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
-                    <Banknote className="h-4 w-4 text-emerald-600" />
+                    <Banknote className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                     {t('partner.withdrawals') || 'Pending Withdrawals'}
                   </h4>
                   <div className="space-y-2">
@@ -453,7 +453,7 @@ export function AdminPartnerManager() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Tag className="h-5 w-5 text-emerald-600" />
+              <Tag className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               {t('admin.createNew') || 'Create Coupon'}
             </DialogTitle>
             <DialogDescription>{t('admin.contentManager') || 'Create a coupon code for this partner'}</DialogDescription>

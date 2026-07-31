@@ -148,7 +148,7 @@ export function TestimonialsSection() {
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/80 via-white to-emerald-50/40" />
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/80 dark:from-emerald-950/30 via-white dark:via-gray-900 to-emerald-50/40 dark:to-emerald-950/20" />
 
       {/* Decorative background */}
       <Suspense fallback={null}>
@@ -198,7 +198,7 @@ export function TestimonialsSection() {
                 return (
                   <Card
                     key={testimonial.id}
-                    className="border-emerald-200/50 shadow-lg bg-gradient-to-br from-white to-emerald-50/30 hover:shadow-xl transition-shadow"
+                    className="border-emerald-200/50 dark:border-emerald-800/30 shadow-lg bg-gradient-to-br from-white dark:from-gray-900 to-emerald-50/30 dark:to-emerald-950/20 hover:shadow-xl transition-shadow"
                   >
                     <CardContent className="p-6">
                       {/* Star Rating */}
@@ -221,8 +221,8 @@ export function TestimonialsSection() {
                       </p>
 
                       {/* Author */}
-                      <div className="flex items-center gap-3 pt-3 border-t border-emerald-100">
-                        <Avatar className="h-11 w-11 border-2 border-emerald-200">
+                      <div className="flex items-center gap-3 pt-3 border-t border-emerald-100 dark:border-emerald-900/30">
+                        <Avatar className="h-11 w-11 border-2 border-emerald-200 dark:border-emerald-800/50">
                           {testimonial.avatar && testimonial.avatar.startsWith('data:') ? (
                             <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
                           ) : (
@@ -231,7 +231,7 @@ export function TestimonialsSection() {
                               alt={testimonial.name}
                             />
                           )}
-                          <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold text-sm">
+                          <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-semibold text-sm">
                             {testimonial.name
                               .split(' ')
                               .map((n) => n[0])
@@ -261,7 +261,7 @@ export function TestimonialsSection() {
             <Button
               variant="outline"
               size="icon"
-              className="rounded-full border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
+              className="rounded-full border-emerald-200 dark:border-emerald-800/50 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-700 dark:hover:text-emerald-300"
               onClick={prevSlide}
               aria-label="Previous testimonial"
             >
@@ -277,7 +277,7 @@ export function TestimonialsSection() {
                   className={`h-2.5 rounded-full transition-all ${
                     i === currentIndex
                       ? 'w-8 bg-emerald-600'
-                      : 'w-2.5 bg-emerald-200 hover:bg-emerald-400'
+                      : 'w-2.5 bg-emerald-200 dark:bg-emerald-800 hover:bg-emerald-400 dark:hover:bg-emerald-600'
                   }`}
                   aria-label={`Go to testimonial ${i + 1}`}
                 />
@@ -287,7 +287,7 @@ export function TestimonialsSection() {
             <Button
               variant="outline"
               size="icon"
-              className="rounded-full border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
+              className="rounded-full border-emerald-200 dark:border-emerald-800/50 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-700 dark:hover:text-emerald-300"
               onClick={nextSlide}
               aria-label="Next testimonial"
             >
@@ -305,7 +305,7 @@ export function TestimonialsSection() {
           className="text-center mt-10"
         >
           <Link href="/testimonials">
-            <Button variant="outline" className="gap-2 border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300">
+            <Button variant="outline" className="gap-2 border-emerald-200 dark:border-emerald-800/50 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-700 dark:hover:text-emerald-300 hover:border-emerald-300 dark:hover:border-emerald-600">
               {t('testimonials.viewAll') || 'View All Testimonials'}
               <ArrowRight className="h-4 w-4" />
             </Button>

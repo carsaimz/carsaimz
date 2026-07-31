@@ -232,7 +232,7 @@ export function ProjectDetail() {
                 href={project.demoUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 transition-colors"
+                className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
               >
                 <ExternalLink className="h-4 w-4" />
                 {t('projects.viewDemo') || 'View Demo'}
@@ -250,7 +250,7 @@ export function ProjectDetail() {
             className="mb-8"
           >
             <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-              <Globe className="h-4 w-4 text-emerald-600" />
+              <Globe className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               {t('admin.technologies') || 'Technologies'}
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -258,7 +258,7 @@ export function ProjectDetail() {
                 <Badge
                   key={tech}
                   variant="secondary"
-                  className="bg-emerald-50 text-emerald-700 border-emerald-200"
+                  className="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50"
                 >
                   {tech}
                 </Badge>

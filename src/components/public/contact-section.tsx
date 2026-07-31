@@ -108,8 +108,8 @@ export function ContactSection() {
               <CardContent>
                 {submitted ? (
                   <div className="text-center py-8">
-                    <div className="inline-flex p-4 rounded-full bg-emerald-100 mb-4">
-                      <Send className="h-8 w-8 text-emerald-600" />
+                    <div className="inline-flex p-4 rounded-full bg-emerald-100 dark:bg-emerald-900/30 mb-4">
+                      <Send className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <h3 className="text-xl font-semibold mb-2">
                       {t('contact.sentSuccess')}
@@ -205,26 +205,26 @@ export function ContactSection() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-emerald-600" />
+                  <MapPin className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   {t('contact.office')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <MapPin className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium">{t('contact.address')}</p>
                     <p className="text-muted-foreground text-sm">
                       {t('contact.addressValue')}
                     </p>
-                    <p className="text-emerald-600 text-xs font-medium mt-1">
+                    <p className="text-emerald-600 dark:text-emerald-400 text-xs font-medium mt-1">
                       {t('contact.onlineNote')}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <Phone className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <Phone className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium">{t('contact.phone')}</p>
                     <p className="text-muted-foreground text-sm">
@@ -234,20 +234,20 @@ export function ContactSection() {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <Mail className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <Mail className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium">{t('contact.email')}</p>
                     <p className="text-muted-foreground text-sm">
-                      <a href="mailto:carsaimozambique@gmail.com" className="hover:text-emerald-600 transition-colors">carsaimozambique@gmail.com</a>
+                      <a href="mailto:carsaimozambique@gmail.com" className="hover:text-emerald-600 dark:text-emerald-400 transition-colors">carsaimozambique@gmail.com</a>
                     </p>
                     <p className="text-muted-foreground text-sm">
-                      <a href="mailto:suporte.carsaimz@gmail.com" className="hover:text-emerald-600 transition-colors">suporte.carsaimz@gmail.com</a>
+                      <a href="mailto:suporte.carsaimz@gmail.com" className="hover:text-emerald-600 dark:text-emerald-400 transition-colors">suporte.carsaimz@gmail.com</a>
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <Clock className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium">{t('contact.officeHours')}</p>
                     <p className="text-muted-foreground text-sm">
@@ -268,7 +268,7 @@ export function ContactSection() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-emerald-600" />
+                  <Globe className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   {t('contact.socialMedia')}
                 </CardTitle>
               </CardHeader>
@@ -280,9 +280,9 @@ export function ContactSection() {
                       href={social.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 p-2 rounded-lg border border-emerald-100 hover:border-emerald-300 transition-colors text-sm"
+                      className="flex items-center gap-2 p-2 rounded-lg border border-emerald-100 dark:border-emerald-900/30 hover:border-emerald-300 transition-colors text-sm"
                     >
-                      <social.icon className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <social.icon className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       <span className="text-muted-foreground">{social.label}</span>
                     </a>
                   ))}

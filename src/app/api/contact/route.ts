@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sendEmail, contactFormTemplate, isEmailConfigured } from '@/lib/email'
+import { createDoc } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,16 +32,34 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Simulate successful contact form submission
-    // Note: A ContactMessage model does not exist in the current schema.
-    // In production, you would store this in a database table or send via email service.
-    console.log('Contact form submission received:', {
-      name,
-      email,
-      subject,
-      message: message.trim(),
-      timestamp: new Date().toISOString(),
-    })
+    // Store in Firestore
+    try {
+      await createDoc('contact_messages', {
+        name,
+        email,
+        subject,
+        message: message.trim(),
+        read: false,
+        createdAt: new Date().toISOString(),
+      })
+    } catch {
+      console.warn('[Contact] Failed to store in Firestore, continuing with email')
+    }
+
+    // Send email notification if SMTP is configured
+    if (isEmailConfigured()) {
+      const emailResult = await sendEmail(contactFormTemplate({
+        name,
+        email,
+        subject,
+        message: message.trim(),
+      }))
+
+      if (!emailResult.success) {
+        console.warn('[Contact] Email failed:', emailResult.error)
+        // Still return success since the message was stored
+      }
+    }
 
     return NextResponse.json({
       success: true,

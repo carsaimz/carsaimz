@@ -193,7 +193,7 @@ export function AdminSupportManager() {
       case 'in_progress':
         return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200"><Clock className="h-3 w-3 mr-1" />{t('support.inProgress') || 'In Progress'}</Badge>;
       case 'resolved':
-        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200"><CheckCircle2 className="h-3 w-3 mr-1" />{t('support.resolved') || 'Resolved'}</Badge>;
+        return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50"><CheckCircle2 className="h-3 w-3 mr-1" />{t('support.resolved') || 'Resolved'}</Badge>;
       case 'closed':
         return <Badge className="bg-gray-100 text-gray-700 border-gray-200"><XCircle className="h-3 w-3 mr-1" />{t('support.closed') || 'Closed'}</Badge>;
       default:
@@ -208,7 +208,7 @@ export function AdminSupportManager() {
       case 'medium':
         return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{t('support.medium') || 'Medium'}</Badge>;
       case 'low':
-        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('support.low') || 'Low'}</Badge>;
+        return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">{t('support.low') || 'Low'}</Badge>;
       default:
         return <Badge variant="outline">{priority}</Badge>;
     }
@@ -220,10 +220,10 @@ export function AdminSupportManager() {
       <motion.div variants={itemVariants}>
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Headphones className="h-6 w-6 text-emerald-600" />
+            <Headphones className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             {t('admin.support') || 'Support Management'}
           </h2>
-          <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+          <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">
             {tickets.length} {t('common.total') || 'total'}
           </Badge>
         </div>
@@ -287,7 +287,7 @@ export function AdminSupportManager() {
         <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-emerald-600" />
+              <MessageSquare className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               {selectedTicket?.subject}
             </DialogTitle>
             <DialogDescription>{t('admin.contentManager') || 'Ticket details'}</DialogDescription>

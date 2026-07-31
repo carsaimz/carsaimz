@@ -291,9 +291,9 @@ export function PartnerDashboard() {
     switch (status) {
       case 'paid':
       case 'completed':
-        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>;
+        return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">{t('common.approved')}</Badge>;
       case 'approved':
-        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>;
+        return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">{t('common.approved')}</Badge>;
       case 'pending':
       case 'in_progress':
       case 'inProgress':
@@ -327,7 +327,7 @@ export function PartnerDashboard() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="border-l-4 border-l-emerald-500">
+            <Card key={i} className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
               <CardContent className="p-4 sm:p-6">
                 <Skeleton className="h-4 w-20 mb-2" />
                 <Skeleton className="h-8 w-24 mb-1" />
@@ -455,15 +455,15 @@ export function PartnerDashboard() {
       <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statsCards.map((stat) => (
           <motion.div key={stat.label} variants={itemVariants}>
-            <Card className="hover:shadow-md transition-shadow border-l-4 border-l-emerald-500">
+            <Card className="hover:shadow-md transition-shadow border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">{stat.label}</p>
                     <p className="text-2xl font-bold">{stat.value}</p>
-                    <p className="text-xs text-emerald-600">{stat.description}</p>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400">{stat.description}</p>
                   </div>
-                  <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
                     <stat.icon className="h-5 w-5" />
                   </div>
                 </div>
@@ -479,10 +479,10 @@ export function PartnerDashboard() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-emerald-600" />
+                <DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 {t('partner.commissions')}
               </CardTitle>
-              <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+              <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">
                 {totalCommissions} {t('common.total')}
               </Badge>
             </div>
@@ -525,7 +525,7 @@ export function PartnerDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Briefcase className="h-5 w-5 text-emerald-600" />
+              <Briefcase className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               {t('partner.portfolio')}
             </CardTitle>
           </CardHeader>
@@ -538,14 +538,14 @@ export function PartnerDashboard() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {projects.map((project) => (
-                  <div key={project.id} className="p-4 rounded-xl bg-muted/50 hover:bg-muted/80 transition-colors border border-transparent hover:border-emerald-200">
+                  <div key={project.id} className="p-4 rounded-xl bg-muted/50 hover:bg-muted/80 transition-colors border border-transparent hover:border-emerald-200 dark:hover:border-emerald-700">
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <h4 className="font-semibold">{project.title}</h4>
                         <p className="text-sm text-muted-foreground">{project.client || '—'}</p>
                       </div>
                       <Badge className={project.isFeatured
-                        ? "bg-emerald-100 text-emerald-700 border-emerald-200"
+                        ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50"
                         : "bg-yellow-100 text-yellow-700 border-yellow-200"
                       }>
                         {project.isFeatured ? t('common.featured') : t('common.published')}
@@ -555,8 +555,8 @@ export function PartnerDashboard() {
                       <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{project.description}</p>
                     )}
                     <div className="flex items-center justify-between mt-3">
-                      <p className="text-xs text-emerald-600">{formatDate(project.createdAt)}</p>
-                      <Button variant="ghost" size="sm" className="text-emerald-600">
+                      <p className="text-xs text-emerald-600 dark:text-emerald-400">{formatDate(project.createdAt)}</p>
+                      <Button variant="ghost" size="sm" className="text-emerald-600 dark:text-emerald-400">
                         <Eye className="h-4 w-4" />
                       </Button>
                     </div>
@@ -570,10 +570,10 @@ export function PartnerDashboard() {
 
       {/* ── Withdrawal Request Form ── */}
       <motion.div variants={itemVariants}>
-        <Card className="border-l-4 border-l-emerald-500">
+        <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Wallet className="h-5 w-5 text-emerald-600" />
+              <Wallet className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               {t('partner.withdrawalsRequest')}
             </CardTitle>
             <CardDescription>
@@ -602,19 +602,19 @@ export function PartnerDashboard() {
                     <SelectContent>
                       <SelectItem value="mpesa">
                         <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-emerald-600" />
+                          <Phone className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                           {t('financial.mpesa')}
                         </div>
                       </SelectItem>
                       <SelectItem value="transfer">
                         <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-emerald-600" />
+                          <Building2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                           {t('financial.transfer')}
                         </div>
                       </SelectItem>
                       <SelectItem value="deposit">
                         <div className="flex items-center gap-2">
-                          <BanknoteIcon className="h-4 w-4 text-emerald-600" />
+                          <BanknoteIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                           {t('financial.deposit')}
                         </div>
                       </SelectItem>
@@ -677,11 +677,11 @@ export function PartnerDashboard() {
                       .map((commission) => (
                         <div key={commission.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                           <div className="flex items-center gap-2">
-                            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                            <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                             <span className="text-sm">{formatCurrency(commission.amount)} — {t('partner.commission')}</span>
                           </div>
                           <div className="text-right">
-                            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>
+                            <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">{t('common.approved')}</Badge>
                             <p className="text-xs text-muted-foreground mt-1">{formatDate(commission.createdAt)}</p>
                           </div>
                         </div>

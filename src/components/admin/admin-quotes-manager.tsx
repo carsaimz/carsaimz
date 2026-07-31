@@ -125,9 +125,9 @@ export function AdminQuotesManager() {
       case 'approved':
         return <Badge className="bg-blue-100 text-blue-700 border-blue-200"><CheckCircle2 className="h-3 w-3 mr-1" />{t('common.approved') || 'Approved'}</Badge>;
       case 'in_progress':
-        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200"><AlertCircle className="h-3 w-3 mr-1" />{t('common.inProgress') || 'In Progress'}</Badge>;
+        return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50"><AlertCircle className="h-3 w-3 mr-1" />{t('common.inProgress') || 'In Progress'}</Badge>;
       case 'completed':
-        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200"><CheckCircle2 className="h-3 w-3 mr-1" />{t('common.completed') || 'Completed'}</Badge>;
+        return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50"><CheckCircle2 className="h-3 w-3 mr-1" />{t('common.completed') || 'Completed'}</Badge>;
       case 'rejected':
         return <Badge className="bg-red-100 text-red-700 border-red-200"><XCircle className="h-3 w-3 mr-1" />{t('common.rejected') || 'Rejected'}</Badge>;
       default:
@@ -141,10 +141,10 @@ export function AdminQuotesManager() {
       <motion.div variants={itemVariants}>
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <ClipboardList className="h-6 w-6 text-emerald-600" />
+            <ClipboardList className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             {t('admin.quotes') || 'Quotes Management'}
           </h2>
-          <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+          <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">
             {quotes.length} {t('common.total') || 'total'}
           </Badge>
         </div>
@@ -205,7 +205,7 @@ export function AdminQuotesManager() {
         <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <ClipboardList className="h-5 w-5 text-emerald-600" />
+              <ClipboardList className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               {selectedQuote?.title || selectedQuote?.subject || t('admin.quotes') || 'Quote Details'}
             </DialogTitle>
             <DialogDescription>{t('admin.contentManager') || 'Quote details'}</DialogDescription>
@@ -224,7 +224,7 @@ export function AdminQuotesManager() {
               )}
               {selectedQuote.budget && (
                 <div className="text-sm flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-emerald-600" />
+                  <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                   {t('financial.amount') || 'Budget'}: {formatCurrency(selectedQuote.budget)}
                 </div>
               )}

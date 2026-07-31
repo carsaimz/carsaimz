@@ -79,6 +79,8 @@ export function PwaInstallPrompt() {
   }, [deferredPrompt]);
 
   const handleDismiss = useCallback(() => {
+    // Persist dismissal so the banner doesn't reappear on navigation
+    localStorage.setItem(PWA_DISMISSED_KEY, 'true');
     setShowBanner(false);
     setDeferredPrompt(null);
   }, []);

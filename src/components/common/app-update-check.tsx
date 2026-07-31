@@ -455,7 +455,7 @@ export function AppUpdateCheck() {
               </div>
             )}
             {downloadState === 'complete' && (
-              <div className="flex items-center gap-2 text-sm text-emerald-600">
+              <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 className="size-4" />
                 {t('update.downloadComplete')}
               </div>

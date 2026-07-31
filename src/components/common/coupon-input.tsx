@@ -186,7 +186,7 @@ export function CouponInput({ referenceId, referenceType, onApplied }: CouponInp
             transition={{ duration: 0.2 }}
           >
             {validationResult.valid && !applied ? (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/20 dark:border-emerald-500/30">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
@@ -200,7 +200,7 @@ export function CouponInput({ referenceId, referenceType, onApplied }: CouponInp
                 </div>
               </div>
             ) : validationResult.valid && applied ? (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/20 dark:border-emerald-500/30">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">

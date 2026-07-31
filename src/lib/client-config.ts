@@ -87,13 +87,13 @@ export const FEATURES = {
 
   // Firebase Auth — Spark plan (free) providers
   emailSignIn: true,          // ✅ Free — Email/Password authentication
-  googleSignIn: true,         // ✅ Free — Google Sign-In
+  googleSignIn: false,        // ⏸️ Temporarily disabled — popup/redirect issues
   phoneSignIn: true,          // ✅ Free — Phone/SMS OTP authentication
   anonymousSignIn: true,      // ✅ Free — Guest/anonymous access
 
   // Firebase Auth — Additional providers (free on Spark but require external setup)
   facebookSignIn: false,      // Requires Facebook Developer App
-  githubSignIn: true,         // Requires GitHub OAuth App (free to set up)
+  githubSignIn: false,        // ⏸️ Temporarily disabled — popup/redirect issues
   microsoftSignIn: false,     // Requires Microsoft Entra ID App
   appleSignIn: false,         // Requires Apple Developer Account ($99/year)
 

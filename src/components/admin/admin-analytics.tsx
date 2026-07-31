@@ -43,7 +43,7 @@ const recentErrors = [
 
 function getStatusColor(status: 'healthy' | 'warning' | 'critical') {
   switch (status) {
-    case 'healthy': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+    case 'healthy': return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50';
     case 'warning': return 'bg-amber-100 text-amber-700 border-amber-200';
     case 'critical': return 'bg-red-100 text-red-700 border-red-200';
   }
@@ -63,7 +63,7 @@ export function AdminAnalytics() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants}>
-        <h2 className="text-2xl font-bold flex items-center gap-2"><ScrollText className="h-6 w-6 text-emerald-600" />{t('admin.systemLogs') || 'Analytics & Logs'}</h2>
+        <h2 className="text-2xl font-bold flex items-center gap-2"><ScrollText className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />{t('admin.systemLogs') || 'Analytics & Logs'}</h2>
         <p className="text-muted-foreground mt-1">System analytics, logs and performance metrics</p>
       </motion.div>
 
@@ -72,7 +72,7 @@ export function AdminAnalytics() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Activity className="w-5 h-5 text-emerald-600" />
+              <Activity className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               System Health
             </CardTitle>
           </CardHeader>
@@ -99,7 +99,7 @@ export function AdminAnalytics() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Clock className="w-5 h-5 text-emerald-600" />
+              <Clock className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               API Response Times
             </CardTitle>
           </CardHeader>
@@ -149,7 +149,7 @@ export function AdminAnalytics() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-emerald-600" />
+              <AlertTriangle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               Error Rates
             </CardTitle>
           </CardHeader>
@@ -161,7 +161,7 @@ export function AdminAnalytics() {
                     <p className="text-sm font-medium text-foreground">{row.period}</p>
                     <p className="text-xs text-muted-foreground">{row.errors} errors / {row.total.toLocaleString()} requests</p>
                   </div>
-                  <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{row.rate}</Badge>
+                  <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">{row.rate}</Badge>
                 </div>
               ))}
             </div>
@@ -171,7 +171,7 @@ export function AdminAnalytics() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Server className="w-5 h-5 text-emerald-600" />
+              <Server className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               Recent Errors
             </CardTitle>
           </CardHeader>
@@ -199,7 +199,7 @@ export function AdminAnalytics() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Cpu className="w-5 h-5 text-emerald-600" />
+              <Cpu className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               Resource Summary
             </CardTitle>
           </CardHeader>

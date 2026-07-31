@@ -35,7 +35,7 @@ export function RealTimeNotifications() {
   };
 
   const typeColors: Record<NotificationType, string> = {
-    info: 'text-emerald-600',
+    info: 'text-emerald-600 dark:text-emerald-400',
     success: 'text-green-600',
     warning: 'text-yellow-600',
     error: 'text-red-600',

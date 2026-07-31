@@ -176,3 +176,22 @@ export function getAvatarUrl(avatar: string | null | undefined, email: string, s
   }
   return getGravatarUrl(email, size);
 }
+
+/**
+ * Strip HTML tags from a string for plain-text display.
+ * Also decodes common HTML entities like &nbsp; &amp; &lt; &gt; etc.
+ */
+export function stripHtml(html: string | null | undefined): string {
+  if (!html) return '';
+  return html
+    .replace(/<[^>]*>/g, '')                       // Remove HTML tags
+    .replace(/&nbsp;/g, ' ')                        // Decode &nbsp;
+    .replace(/&amp;/g, '&')                         // Decode &amp;
+    .replace(/&lt;/g, '<')                          // Decode &lt;
+    .replace(/&gt;/g, '>')                          // Decode &gt;
+    .replace(/&quot;/g, '"')                        // Decode &quot;
+    .replace(/&#39;/g, "'")                         // Decode &#39;
+    .replace(/&apos;/g, "'")                        // Decode &apos;
+    .replace(/\s+/g, ' ')                           // Collapse whitespace
+    .trim();
+}

@@ -43,7 +43,7 @@ const values = [
     icon: ShieldCheck,
     titleKey: 'about.valueIntegrity',
     descKey: 'about.valueIntegrityDesc',
-    color: 'bg-emerald-100 text-emerald-600',
+    color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
   },
   {
     icon: Trophy,
@@ -117,7 +117,7 @@ export function AboutSection() {
           className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12"
         >
           <motion.div variants={itemVariants}>
-            <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border-emerald-200 h-full">
+            <Card className="bg-gradient-to-br from-emerald-50 dark:from-emerald-950/30 to-emerald-100/50 dark:to-emerald-900/30 border-emerald-200 dark:border-emerald-800/50 h-full">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-emerald-600 text-white">
@@ -211,8 +211,8 @@ export function AboutSection() {
             return (
               <motion.div key={stat.labelKey || stat.value} variants={itemVariants}>
                 <div className="text-center p-4 rounded-xl bg-white border shadow-sm">
-                  <IconComponent className="h-5 w-5 text-emerald-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-emerald-700">
+                  <IconComponent className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
                     {displayValue}
                   </div>
                   <div className="text-sm text-muted-foreground">
@@ -249,14 +249,14 @@ export function AboutSection() {
           {teamMembers.map((member) => (
             <motion.div key={member.nameKey} variants={itemVariants}>
               <div className="text-center p-6 rounded-xl bg-white border shadow-sm hover:shadow-md transition-shadow">
-                <Avatar className="h-20 w-20 mx-auto mb-3 border-2 border-emerald-200">
-                  <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold text-xl">
+                <Avatar className="h-20 w-20 mx-auto mb-3 border-2 border-emerald-200 dark:border-emerald-800/50">
+                  <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-semibold text-xl">
                     {member.initials}
                   </AvatarFallback>
                 </Avatar>
                 <p className="font-medium text-sm">{t(member.nameKey)}</p>
                 <p className="text-xs text-muted-foreground">{t(member.roleKey)}</p>
-                <p className="text-xs text-emerald-600 mt-1">{t('about.teamMemberCeoNote')}</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">{t('about.teamMemberCeoNote')}</p>
               </div>
             </motion.div>
           ))}

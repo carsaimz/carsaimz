@@ -65,7 +65,7 @@ export function UserQuotes() {
 
   const statusBadge = (status: string) => {
     switch (status) {
-      case 'approved': case 'completed': return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>;
+      case 'approved': case 'completed': return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">{t('common.approved')}</Badge>;
       case 'pending': case 'in_progress': return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{t('common.pending')}</Badge>;
       case 'rejected': return <Badge className="bg-red-100 text-red-700 border-red-200">{t('common.rejected')}</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
@@ -96,7 +96,7 @@ export function UserQuotes() {
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants}>
         <h2 className="text-2xl font-bold flex items-center gap-2">
-          <ClipboardList className="h-6 w-6 text-emerald-600" />
+          <ClipboardList className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
           {t('dashboard.quotes')}
         </h2>
         <p className="text-muted-foreground mt-1">{t('dashboard.quotesSubtitle')}</p>
@@ -109,7 +109,7 @@ export function UserQuotes() {
               <div className="text-center py-12"><ClipboardList className="h-12 w-12 text-muted-foreground mx-auto mb-3" /><p className="text-muted-foreground">{t('common.noData')}</p></div>
             ) : (
               <Table>
-                <TableHeader><TableRow className="bg-emerald-50/50"><TableHead>{t('common.title')}</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow className="bg-emerald-50/50 dark:bg-emerald-950/30"><TableHead>{t('common.title')}</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {quotes.map((q) => (
                     <TableRow key={q.id}><TableCell className="font-medium">{q.title}</TableCell><TableCell>{statusBadge(q.status)}</TableCell><TableCell className="text-muted-foreground">{formatDate(q.createdAt)}</TableCell></TableRow>

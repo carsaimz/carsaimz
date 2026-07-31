@@ -353,7 +353,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-4">
             <div className="flex items-center gap-2">
               <Avatar className="w-8 h-8">
-                <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs">
+                <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs">
                   {post.author.name
                     .split(' ')
                     .map((n) => n[0])
@@ -380,7 +380,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
                 <Badge
                   key={tag.id}
                   variant="outline"
-                  className="border-emerald-200 text-emerald-700"
+                  className="border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-300"
                 >
                   <Tag className="w-2.5 h-2.5 mr-0.5" />
                   {tag.name}
@@ -417,7 +417,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
             className={`${
               liked
                 ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
+                : 'border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30'
             }`}
             onClick={() => setLiked(!liked)}
           >
@@ -429,7 +429,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
             <Button
               variant="outline"
               size="sm"
-              className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+              className="border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
               onClick={() => setShareOpen(!shareOpen)}
             >
               <Share2 className="w-4 h-4 mr-1" />
@@ -472,7 +472,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleShare('copy')}
-                    className="text-muted-foreground hover:text-emerald-600"
+                    className="text-muted-foreground hover:text-emerald-600 dark:text-emerald-400"
                   >
                     <LinkIcon className="w-4 h-4" />
                   </Button>
@@ -490,7 +490,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
           transition={{ delay: 0.35 }}
           className="mb-8"
         >
-          <Card className="border-emerald-200/50 bg-emerald-50/30">
+          <Card className="border-emerald-200/50 dark:border-emerald-800/30 bg-emerald-50/30 dark:bg-emerald-950/20">
             <CardContent className="p-4 flex items-center gap-4">
               <Avatar className="w-14 h-14">
                 <AvatarFallback className="bg-emerald-200 text-emerald-800 font-bold">
@@ -506,7 +506,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
                 <p className="text-sm text-muted-foreground">{post.author.email}</p>
                 <Badge
                   variant="outline"
-                  className="mt-1 border-emerald-200 text-emerald-700 text-xs"
+                  className="mt-1 border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-300 text-xs"
                 >
                   {t('blog.author')}
                 </Badge>
@@ -524,7 +524,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
           className="mb-8"
         >
           <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-            <MessageCircle className="w-5 h-5 text-emerald-600" />
+            <MessageCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             {t('blog.comments')} ({post.comments?.length ?? 0})
           </h2>
 
@@ -543,7 +543,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
                 className="flex gap-3"
               >
                 <Avatar className="w-8 h-8 shrink-0">
-                  <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs">
+                  <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs">
                     {comment.author.name
                       .split(' ')
                       .map((n) => n[0])
@@ -568,7 +568,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
 
           {/* Add comment form */}
           {isAuthenticated ? (
-            <Card className="border-emerald-200/50">
+            <Card className="border-emerald-200/50 dark:border-emerald-800/30">
               <CardContent className="p-4">
                 <Textarea
                   placeholder={t('blog.commentPlaceholder')}
@@ -614,7 +614,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
           >
             <Separator className="mb-6" />
             <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-emerald-600" />
+              <BookOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               {t('blog.relatedPosts')}
             </h2>
 
@@ -629,7 +629,7 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
                     <BookOpen className="w-8 h-8 text-emerald-400" />
                   </div>
                   <CardHeader className="pb-2 pt-3 px-3">
-                    <h3 className="font-medium text-sm text-foreground line-clamp-2 group-hover:text-emerald-700 transition-colors">
+                    <h3 className="font-medium text-sm text-foreground line-clamp-2 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 dark:hover:text-emerald-300 transition-colors">
                       {rp.title}
                     </h3>
                   </CardHeader>

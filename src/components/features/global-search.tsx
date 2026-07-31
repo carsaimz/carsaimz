@@ -237,7 +237,7 @@ export function GlobalSearch() {
   };
 
   const typeColor = {
-    service: 'text-emerald-600',
+    service: 'text-emerald-600 dark:text-emerald-400',
     project: 'text-teal-600',
     blog: 'text-green-600',
     forum: 'text-lime-600',

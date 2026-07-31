@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveI18nContent } from '@/lib/i18n-content';
+import { stripHtml } from '@/lib/utils';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { useRouter } from 'next/navigation';
 import { useDocumentTitle } from '@/hooks/use-document-title';
@@ -251,7 +252,7 @@ export function ProjectsSection() {
 
                   <CardContent className="pb-3">
                     <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mb-3">
-                      {resolvedDescription}
+                      {stripHtml(resolvedDescription)}
                     </p>
                     {techs.length > 0 && (
                       <div className="flex flex-wrap gap-1.5">
@@ -259,7 +260,7 @@ export function ProjectsSection() {
                           <Badge
                             key={tech}
                             variant="secondary"
-                            className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200"
+                            className="text-xs bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50"
                           >
                             {tech}
                           </Badge>
@@ -281,7 +282,7 @@ export function ProjectsSection() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50"
+                        className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
                         onClick={(e) => {
                           e.stopPropagation();
                           window.open(project.demoUrl!, '_blank');

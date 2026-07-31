@@ -192,7 +192,7 @@ export function ContactFormApi() {
                       </p>
                       <Button
                         variant="outline"
-                        className="mt-4 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                        className="mt-4 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
                         onClick={() => setState('idle')}
                       >
                         {t('common.send')} {t('common.more')}
@@ -342,13 +342,13 @@ export function ContactFormApi() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-emerald-600" />
+                  <Building2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   {t('contact.office')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <MapPin className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium">{t('contact.address')}</p>
                     <p className="text-muted-foreground text-sm">
@@ -361,7 +361,7 @@ export function ContactFormApi() {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <Phone className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <Phone className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium">{t('contact.phone')}</p>
                     <p className="text-muted-foreground text-sm">
@@ -371,7 +371,7 @@ export function ContactFormApi() {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <Mail className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <Mail className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium">{t('contact.email')}</p>
                     <p className="text-muted-foreground text-sm">
@@ -381,7 +381,7 @@ export function ContactFormApi() {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <Clock className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium">{t('contact.officeHours')}</p>
                     <p className="text-muted-foreground text-sm">
@@ -402,7 +402,7 @@ export function ContactFormApi() {
             <Card className="h-48 overflow-hidden">
               <CardContent className="p-0 h-full relative">
                 <div
-                  className="h-full bg-gradient-to-br from-emerald-200 via-emerald-100 to-teal-200 flex items-center justify-center relative"
+                  className="h-full bg-gradient-to-br from-emerald-200 dark:from-emerald-800 via-emerald-100 dark:via-emerald-900 to-teal-200 dark:to-teal-800 flex items-center justify-center relative"
                 >
                   <div className="absolute inset-0 opacity-20">
                     <svg className="w-full h-full" viewBox="0 0 400 200">
@@ -418,11 +418,11 @@ export function ContactFormApi() {
                     </svg>
                   </div>
                   <div className="text-center z-10">
-                    <MapPin className="h-8 w-8 text-emerald-600 mb-2" />
+                    <MapPin className="h-8 w-8 text-emerald-600 dark:text-emerald-400 mb-2" />
                     <p className="font-semibold text-emerald-800">
                       Montepuez, Cabo Delgado, Mozambique
                     </p>
-                    <p className="text-sm text-emerald-600">
+                    <p className="text-sm text-emerald-600 dark:text-emerald-400">
                       Operação Online
                     </p>
                   </div>

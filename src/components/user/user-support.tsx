@@ -168,7 +168,7 @@ export function UserSupport() {
 
   const statusBadge = (status: string) => {
     switch (status) {
-      case 'resolved': case 'closed': return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.resolved')}</Badge>;
+      case 'resolved': case 'closed': return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">{t('common.resolved')}</Badge>;
       case 'open': return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{t('common.open')}</Badge>;
       case 'in_progress': return <Badge className="bg-blue-100 text-blue-700 border-blue-200">{t('common.inProgress')}</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
@@ -205,20 +205,23 @@ export function UserSupport() {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <Card className="border-l-4 border-l-emerald-500">
+          <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
             <CardContent className="p-6">
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 {statusBadge(selectedTicket.status)}
                 {priorityBadge(selectedTicket.priority)}
               </div>
               <h2 className="text-xl font-bold text-foreground mb-2">{selectedTicket.subject}</h2>
-              {selectedTicket.description && (
-                <p className="text-muted-foreground text-sm mb-3">{selectedTicket.description}</p>
-              )}
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
                 <Clock className="w-3.5 h-3.5" />
                 {formatDate(selectedTicket.createdAt)}
               </div>
+              {/* Show the initial ticket message/description prominently */}
+              {selectedTicket.description && (
+                <div className="bg-muted/50 dark:bg-emerald-950/20 rounded-lg p-4">
+                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{selectedTicket.description}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -226,7 +229,7 @@ export function UserSupport() {
         {/* Replies */}
         <motion.div variants={itemVariants}>
           <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
-            <MessageSquare className="w-5 h-5 text-emerald-600" />
+            <MessageSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             {t('support.replies')} ({selectedTicket.replies?.length ?? 0})
           </h3>
 
@@ -236,11 +239,11 @@ export function UserSupport() {
 
           <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
             {(selectedTicket.replies || []).map((reply) => (
-              <Card key={reply.id} className="border-border/50 hover:border-emerald-200/50 transition-colors">
+              <Card key={reply.id} className="border-border/50 hover:border-emerald-200/50 dark:border-emerald-800/30 transition-colors">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     <Avatar className="w-8 h-8 shrink-0">
-                      <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs">
+                      <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs">
                         {reply.author?.name
                           ?.split(' ')
                           .map((n) => n[0])
@@ -271,11 +274,11 @@ export function UserSupport() {
 
         {/* Reply form */}
         <motion.div variants={itemVariants}>
-          <Card className="border-emerald-200/50">
+          <Card className="border-emerald-200/50 dark:border-emerald-800/30">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Avatar className="w-8 h-8 shrink-0">
-                  <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs">
+                  <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs">
                     {user?.name
                       ?.split(' ')
                       .map((n) => n[0])
@@ -319,7 +322,7 @@ export function UserSupport() {
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants}>
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold flex items-center gap-2"><Headphones className="h-6 w-6 text-emerald-600" />{t('dashboard.support')}</h2>
+          <h2 className="text-2xl font-bold flex items-center gap-2"><Headphones className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />{t('dashboard.support')}</h2>
           <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => setShowCreateForm(!showCreateForm)}>
             <Plus className="h-4 w-4 mr-2" />
             {showCreateForm ? t('common.cancel') : t('dashboard.supportCreate')}
@@ -330,7 +333,7 @@ export function UserSupport() {
       {/* Create Ticket Form */}
       {showCreateForm && (
         <motion.div variants={itemVariants}>
-          <Card className="border-l-4 border-l-emerald-500">
+          <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
             <CardContent className="p-6 space-y-4">
               <h3 className="font-semibold text-lg">{t('support.newTicket')}</h3>
               <div className="space-y-2">
@@ -384,8 +387,8 @@ export function UserSupport() {
       <motion.div variants={itemVariants}>
         <Card><CardContent className="p-0">
           {tickets.length === 0 ? <div className="text-center py-12"><MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-3" /><p className="text-muted-foreground">{t('dashboard.noTickets')}</p><p className="text-sm text-muted-foreground mt-1">{t('dashboard.createTicketHelp')}</p></div> :
-          <Table><TableHeader><TableRow className="bg-emerald-50/50"><TableHead>{t('support.subject')}</TableHead><TableHead>{t('support.status')}</TableHead><TableHead>{t('support.priority')}</TableHead><TableHead>{t('common.date')}</TableHead></TableRow></TableHeader>
-          <TableBody>{tickets.map((ticket) => <TableRow key={ticket.id} className="cursor-pointer hover:bg-emerald-50/30 transition-colors" onClick={() => handleViewTicket(ticket)}><TableCell className="font-medium">{ticket.subject}</TableCell><TableCell>{statusBadge(ticket.status)}</TableCell><TableCell>{priorityBadge(ticket.priority)}</TableCell><TableCell className="text-muted-foreground">{formatDate(ticket.createdAt)}</TableCell></TableRow>)}</TableBody></Table>}
+          <Table><TableHeader><TableRow className="bg-emerald-50/50 dark:bg-emerald-950/30"><TableHead>{t('support.subject')}</TableHead><TableHead>{t('support.status')}</TableHead><TableHead>{t('support.priority')}</TableHead><TableHead>{t('common.date')}</TableHead></TableRow></TableHeader>
+          <TableBody>{tickets.map((ticket) => <TableRow key={ticket.id} className="cursor-pointer hover:bg-emerald-50/30 dark:bg-emerald-950/20 transition-colors" onClick={() => handleViewTicket(ticket)}><TableCell className="font-medium">{ticket.subject}</TableCell><TableCell>{statusBadge(ticket.status)}</TableCell><TableCell>{priorityBadge(ticket.priority)}</TableCell><TableCell className="text-muted-foreground">{formatDate(ticket.createdAt)}</TableCell></TableRow>)}</TableBody></Table>}
         </CardContent></Card>
       </motion.div>
     </motion.div>

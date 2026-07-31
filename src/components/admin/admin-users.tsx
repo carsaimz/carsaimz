@@ -250,7 +250,7 @@ export function AdminUsers() {
   const roleBadge = (role: string) => {
     switch (role) {
       case 'super_admin': return <Badge className="bg-purple-100 text-purple-700 border-purple-200">{t('admin.roleSuperAdmin')}</Badge>;
-      case 'admin': return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('admin.roleAdmin')}</Badge>;
+      case 'admin': return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">{t('admin.roleAdmin')}</Badge>;
       case 'partner': return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{t('admin.rolePartner')}</Badge>;
       case 'user': return <Badge className="bg-blue-100 text-blue-700 border-blue-200">{t('admin.roleUser')}</Badge>;
       default: return <Badge variant="outline">{role}</Badge>;
@@ -262,7 +262,7 @@ export function AdminUsers() {
     if (isActive === false) {
       return <Badge className="bg-red-100 text-red-700 border-red-200">{t('admin.userInactive')}</Badge>;
     }
-    return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('admin.userActive')}</Badge>;
+    return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">{t('admin.userActive')}</Badge>;
   };
 
   // ── Open edit dialog ──
@@ -309,7 +309,7 @@ export function AdminUsers() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold flex items-center gap-2">
-              <Users className="h-6 w-6 text-emerald-600" />
+              <Users className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
               {t('admin.users')}
             </h2>
             <p className="text-muted-foreground mt-1">
@@ -436,7 +436,7 @@ export function AdminUsers() {
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-emerald-50/50">
+                  <TableRow className="bg-emerald-50/50 dark:bg-emerald-950/30">
                     <TableHead>{t('admin.userName')}</TableHead>
                     <TableHead>{t('admin.userEmail')}</TableHead>
                     <TableHead>{t('admin.userPhone')}</TableHead>
@@ -478,7 +478,7 @@ export function AdminUsers() {
                             className="h-8 w-8"
                             onClick={() => openEdit(u)}
                           >
-                            <Pencil className="h-4 w-4 text-emerald-600" />
+                            <Pencil className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                           </Button>
 
                           {/* Deactivate / Activate button */}
@@ -493,7 +493,7 @@ export function AdminUsers() {
                               {deactivatingId === u.id ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
-                                <RefreshCw className="h-4 w-4 text-emerald-600" />
+                                <RefreshCw className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                               )}
                             </Button>
                           ) : (

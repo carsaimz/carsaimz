@@ -34,7 +34,7 @@ export function UserInvoices() {
 
   const statusBadge = (status: string) => {
     switch (status) {
-      case 'paid': case 'completed': return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('financial.invoicePaid')}</Badge>;
+      case 'paid': case 'completed': return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">{t('financial.invoicePaid')}</Badge>;
       case 'pending': return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{t('common.pending')}</Badge>;
       case 'overdue': return <Badge className="bg-red-100 text-red-700 border-red-200">{t('financial.invoiceOverdue')}</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
@@ -47,12 +47,12 @@ export function UserInvoices() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants}>
-        <h2 className="text-2xl font-bold flex items-center gap-2"><FileText className="h-6 w-6 text-emerald-600" />{t('dashboard.invoices')}</h2>
+        <h2 className="text-2xl font-bold flex items-center gap-2"><FileText className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />{t('dashboard.invoices')}</h2>
       </motion.div>
       <motion.div variants={itemVariants}>
         <Card><CardContent className="p-0">
           {invoices.length === 0 ? <div className="text-center py-12"><FileText className="h-12 w-12 text-muted-foreground mx-auto mb-3" /><p className="text-muted-foreground">{t('common.noData')}</p></div> :
-          <Table><TableHeader><TableRow className="bg-emerald-50/50"><TableHead>{t('common.id')}</TableHead><TableHead>{t('financial.amount')}</TableHead><TableHead>{t('common.status')}</TableHead><TableHead>{t('common.date')}</TableHead><TableHead>{t('financial.invoiceDueDate')}</TableHead></TableRow></TableHeader>
+          <Table><TableHeader><TableRow className="bg-emerald-50/50 dark:bg-emerald-950/30"><TableHead>{t('common.id')}</TableHead><TableHead>{t('financial.amount')}</TableHead><TableHead>{t('common.status')}</TableHead><TableHead>{t('common.date')}</TableHead><TableHead>{t('financial.invoiceDueDate')}</TableHead></TableRow></TableHeader>
           <TableBody>{invoices.map((inv) => <TableRow key={inv.id}><TableCell className="font-medium">{inv.id.slice(0,8)}</TableCell><TableCell className="font-semibold">{formatCurrency(inv.amount)}</TableCell><TableCell>{statusBadge(inv.status)}</TableCell><TableCell>{formatDate(inv.createdAt)}</TableCell><TableCell>{inv.dueDate ? formatDate(inv.dueDate) : '—'}</TableCell></TableRow>)}</TableBody></Table>}
         </CardContent></Card>
       </motion.div>

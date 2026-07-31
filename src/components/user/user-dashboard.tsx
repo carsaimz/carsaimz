@@ -172,7 +172,7 @@ export function UserDashboard() {
       case 'confirmed':
       case 'resolved':
       case 'closed':
-        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>;
+        return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">{t('common.approved')}</Badge>;
       case 'pending':
       case 'open':
       case 'in_progress':
@@ -193,7 +193,7 @@ export function UserDashboard() {
       case 'medium':
         return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">{priority}</Badge>;
       case 'low':
-        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{priority}</Badge>;
+        return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">{priority}</Badge>;
       default:
         return <Badge variant="outline">{priority}</Badge>;
     }
@@ -265,7 +265,7 @@ export function UserDashboard() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="border-l-4 border-l-emerald-500">
+            <Card key={i} className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
               <CardContent className="p-4 sm:p-6">
                 <Skeleton className="h-4 w-20 mb-2" />
                 <Skeleton className="h-8 w-24 mb-1" />
@@ -383,15 +383,15 @@ export function UserDashboard() {
       <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {statsCards.map((stat) => (
           <motion.div key={stat.label} variants={itemVariants}>
-            <Card className="hover:shadow-md transition-shadow border-l-4 border-l-emerald-500">
+            <Card className="hover:shadow-md transition-shadow border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">{stat.label}</p>
                     <p className="text-2xl font-bold mt-1">{stat.value}</p>
-                    <p className="text-xs text-emerald-600 mt-1">{stat.description}</p>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">{stat.description}</p>
                   </div>
-                  <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
                     <stat.icon className="h-6 w-6" />
                   </div>
                 </div>
@@ -427,7 +427,7 @@ export function UserDashboard() {
       {/* ── Main Content Tabs ── */}
       <motion.div variants={itemVariants}>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full sm:w-auto bg-emerald-50">
+          <TabsList className="w-full sm:w-auto bg-emerald-50 dark:bg-emerald-950/30">
             <TabsTrigger value="overview" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
               {t('dashboard.overview')}
             </TabsTrigger>
@@ -448,7 +448,7 @@ export function UserDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-emerald-600" />
+                  <FileText className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   {t('dashboard.quotesHistory')}
                 </CardTitle>
               </CardHeader>
@@ -463,7 +463,7 @@ export function UserDashboard() {
                     {quotes.slice(0, 3).map((quote) => (
                       <div key={quote.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+                          <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
                             <FileText className="h-4 w-4" />
                           </div>
                           <div>
@@ -488,7 +488,7 @@ export function UserDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-emerald-600" />
+                  <CreditCard className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   {t('dashboard.paymentHistory')}
                 </CardTitle>
               </CardHeader>
@@ -503,7 +503,7 @@ export function UserDashboard() {
                     {payments.slice(0, 3).map((payment) => (
                       <div key={payment.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+                          <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
                             <CreditCard className="h-4 w-4" />
                           </div>
                           <div>
@@ -525,17 +525,17 @@ export function UserDashboard() {
             </Card>
 
             {/* Profile Summary */}
-            <Card className="border-l-4 border-l-emerald-500">
+            <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <User className="h-5 w-5 text-emerald-600" />
+                  <User className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   {t('dashboard.profile')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-start gap-4">
                   <Avatar className="h-16 w-16 border-2 border-emerald-500">
-                    <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xl font-bold">
+                    <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xl font-bold">
                       {data?.user?.name?.charAt(0) || user?.name?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
@@ -558,7 +558,7 @@ export function UserDashboard() {
                     <div className="flex items-center gap-2 text-sm">
                       <Bell className="h-4 w-4 text-emerald-500" />
                       <span className="text-muted-foreground">{t('dashboard.notifications')}:</span>
-                      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                      <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">
                         {unreadNotifications} {t('common.unread')}
                       </Badge>
                     </div>
@@ -574,7 +574,7 @@ export function UserDashboard() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-emerald-600" />
+                    <FileText className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                     {t('dashboard.quotesHistory')}
                   </CardTitle>
                   <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
@@ -611,7 +611,7 @@ export function UserDashboard() {
                           <TableCell>{statusBadge(quote.status)}</TableCell>
                           <TableCell>{formatDate(quote.createdAt)}</TableCell>
                           <TableCell>
-                            <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+                            <Button variant="ghost" size="sm" className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300">
                               <Eye className="h-4 w-4" />
                             </Button>
                           </TableCell>
@@ -629,7 +629,7 @@ export function UserDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-emerald-600" />
+                  <CreditCard className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   {t('dashboard.paymentHistory')}
                 </CardTitle>
               </CardHeader>
@@ -657,7 +657,7 @@ export function UserDashboard() {
                           <TableCell className="font-medium">{payment.id.slice(0, 8)}</TableCell>
                           <TableCell>{payment.proposal?.title || t('dashboard.paymentFallback', { id: payment.id.slice(0, 8) })}</TableCell>
                           <TableCell>
-                            <Badge variant="outline" className="text-emerald-600 border-emerald-200">
+                            <Badge variant="outline" className="text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50">
                               {methodLabel(payment.method)}
                             </Badge>
                           </TableCell>
@@ -679,7 +679,7 @@ export function UserDashboard() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <HeadphonesIcon className="h-5 w-5 text-emerald-600" />
+                    <HeadphonesIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                     {t('dashboard.supportHistory')}
                   </CardTitle>
                   <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
@@ -716,7 +716,7 @@ export function UserDashboard() {
                           <TableCell>{priorityBadge(ticket.priority)}</TableCell>
                           <TableCell>{formatDate(ticket.createdAt)}</TableCell>
                           <TableCell>
-                            <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+                            <Button variant="ghost" size="sm" className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300">
                               <Eye className="h-4 w-4" />
                             </Button>
                           </TableCell>

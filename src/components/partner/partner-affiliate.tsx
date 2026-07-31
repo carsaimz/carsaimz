@@ -125,7 +125,7 @@ export function PartnerAffiliate() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants}>
-        <h2 className="text-2xl font-bold flex items-center gap-2"><Link2 className="h-6 w-6 text-emerald-600" />{t('partner.affiliate')}</h2>
+        <h2 className="text-2xl font-bold flex items-center gap-2"><Link2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />{t('partner.affiliate')}</h2>
       </motion.div>
 
       {/* Affiliate Link Card */}
@@ -175,7 +175,7 @@ export function PartnerAffiliate() {
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="text-center p-4 rounded-xl bg-emerald-50">
+                  <div key={i} className="text-center p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
                     <Skeleton className="h-8 w-16 mx-auto mb-2" />
                     <Skeleton className="h-4 w-24 mx-auto" />
                   </div>
@@ -191,24 +191,24 @@ export function PartnerAffiliate() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="text-center p-4 rounded-xl bg-emerald-50">
+                <div className="text-center p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    <Users className="h-4 w-4 text-emerald-600" />
-                    <p className="text-2xl font-bold text-emerald-700">{stats?.totalReferredUsers || 0}</p>
+                    <Users className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{stats?.totalReferredUsers || 0}</p>
                   </div>
                   <p className="text-sm text-muted-foreground">{t('partner.totalReferred') || 'Total Referred'}</p>
                 </div>
-                <div className="text-center p-4 rounded-xl bg-emerald-50">
+                <div className="text-center p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    <Tag className="h-4 w-4 text-emerald-600" />
-                    <p className="text-2xl font-bold text-emerald-700">{stats?.totalCouponRedemptions || 0}</p>
+                    <Tag className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{stats?.totalCouponRedemptions || 0}</p>
                   </div>
                   <p className="text-sm text-muted-foreground">{t('partner.couponUsage') || 'Coupon Usage'}</p>
                 </div>
-                <div className="text-center p-4 rounded-xl bg-emerald-50">
+                <div className="text-center p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    <TrendingUp className="h-4 w-4 text-emerald-600" />
-                    <p className="text-2xl font-bold text-emerald-700">{stats?.totalClicks || 0}</p>
+                    <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{stats?.totalClicks || 0}</p>
                   </div>
                   <p className="text-sm text-muted-foreground">{t('partner.totalClicks') || 'Total Clicks'}</p>
                 </div>
@@ -221,12 +221,12 @@ export function PartnerAffiliate() {
       {/* Commission Rate & Details */}
       <motion.div variants={itemVariants}>
         <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><DollarSign className="h-5 w-5 text-emerald-600" />{t('partner.commissionOverview') || 'Commission Overview'}</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />{t('partner.commissionOverview') || 'Commission Overview'}</CardTitle></CardHeader>
           <CardContent>
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="text-center p-4 rounded-xl bg-emerald-50">
+                  <div key={i} className="text-center p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
                     <Skeleton className="h-8 w-16 mx-auto mb-2" />
                     <Skeleton className="h-4 w-24 mx-auto" />
                   </div>
@@ -234,19 +234,19 @@ export function PartnerAffiliate() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="text-center p-4 rounded-xl bg-emerald-50">
-                  <p className="text-2xl font-bold text-emerald-700">{stats?.commissionRate || 0.5}%</p>
+                <div className="text-center p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
+                  <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{stats?.commissionRate || 0.5}%</p>
                   <p className="text-sm text-muted-foreground">{t('partner.commissionRate') || 'Commission Rate'}</p>
                   <Badge className="mt-1 bg-yellow-100 text-yellow-700 border-yellow-200 text-xs">
                     {tierLabel(stats?.partnerTier || 'bronze')}
                   </Badge>
                 </div>
-                <div className="text-center p-4 rounded-xl bg-emerald-50">
-                  <p className="text-2xl font-bold text-emerald-700">{formatCurrency(stats?.totalCommission || 0)}</p>
+                <div className="text-center p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
+                  <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(stats?.totalCommission || 0)}</p>
                   <p className="text-sm text-muted-foreground">{t('partner.totalCommission') || 'Total Commission'}</p>
                 </div>
-                <div className="text-center p-4 rounded-xl bg-emerald-50">
-                  <p className="text-2xl font-bold text-emerald-700">{t('partner.cookieDurationValue')}</p>
+                <div className="text-center p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30">
+                  <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{t('partner.cookieDurationValue')}</p>
                   <p className="text-sm text-muted-foreground">{t('partner.cookieDuration')}</p>
                 </div>
               </div>
@@ -257,22 +257,22 @@ export function PartnerAffiliate() {
               <>
                 <Separator className="my-4" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50/50">
-                    <div className="p-2 rounded-full bg-emerald-100">
-                      <DollarSign className="h-4 w-4 text-emerald-600" />
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/30">
+                    <div className="p-2 rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                      <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">{t('partner.fromServices') || 'From Services'}</p>
-                      <p className="font-semibold text-emerald-700">{formatCurrency(stats.commissionFromServices)}</p>
+                      <p className="font-semibold text-emerald-700 dark:text-emerald-300">{formatCurrency(stats.commissionFromServices)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50/50">
-                    <div className="p-2 rounded-full bg-emerald-100">
-                      <Tag className="h-4 w-4 text-emerald-600" />
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/30">
+                    <div className="p-2 rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                      <Tag className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">{t('partner.fromCoupons') || 'From Coupons'}</p>
-                      <p className="font-semibold text-emerald-700">{formatCurrency(stats.commissionFromCoupons)}</p>
+                      <p className="font-semibold text-emerald-700 dark:text-emerald-300">{formatCurrency(stats.commissionFromCoupons)}</p>
                     </div>
                   </div>
                 </div>
@@ -287,7 +287,7 @@ export function PartnerAffiliate() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-emerald-600" />
+              <Users className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               {t('partner.recentReferrals') || 'Recent Referrals'}
             </CardTitle>
           </CardHeader>
@@ -307,8 +307,8 @@ export function PartnerAffiliate() {
             ) : stats?.recentReferredUsers && stats.recentReferredUsers.length > 0 ? (
               <div className="space-y-3">
                 {stats.recentReferredUsers.map((referral) => (
-                  <div key={referral.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-emerald-50/50 transition-colors">
-                    <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-semibold text-sm">
+                  <div key={referral.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-emerald-50/50 dark:bg-emerald-950/30 transition-colors">
+                    <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-700 dark:text-emerald-300 font-semibold text-sm">
                       {referral.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">

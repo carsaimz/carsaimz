@@ -195,7 +195,7 @@ export function ServiceDetail() {
             </div>
           )}
           <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 rounded-xl bg-emerald-100 text-emerald-700">
+            <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
               <IconComponent className="h-8 w-8" />
             </div>
             <div className="flex-1">
@@ -210,7 +210,7 @@ export function ServiceDetail() {
                   </Badge>
                 )}
                 {service.basePrice && (
-                  <span className="text-emerald-700 font-semibold text-lg">
+                  <span className="text-emerald-700 dark:text-emerald-300 font-semibold text-lg">
                     {formatPrice(service.basePrice)}
                   </span>
                 )}
@@ -253,10 +253,10 @@ export function ServiceDetail() {
           animate="visible"
           className="mb-12"
         >
-          <Card className="border-emerald-200 bg-emerald-50/50">
+          <Card className="border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-950/30">
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 <h3 className="font-semibold text-foreground">
                   {t('services.interested') || 'Interested in this service?'}
                 </h3>

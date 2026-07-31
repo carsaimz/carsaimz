@@ -335,3 +335,47 @@
   max-width: 100%;
   border-radius: var(--radius-md);
 }
+
+/* ─── Smooth Page Transitions ─── */
+
+/* Smooth transition for theme changes */
+* {
+  transition-property: color, background-color, border-color, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
+}
+
+/* Override for elements that need instant feedback (buttons, inputs) */
+button, a, input, select, textarea, [role="button"] {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+
+/* Disable transition for theme toggle to avoid dark mode flash */
+[data-disable-transitionOnChange] * {
+  transition: none !important;
+}
+
+/* ─── Smooth Scroll ─── */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ─── Page Transition Animation ─── */
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+main {
+  animation: page-enter 200ms ease-out;
+}

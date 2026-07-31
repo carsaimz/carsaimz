@@ -3,7 +3,7 @@ import { TopicDetail } from '@/components/forum/topic-detail';
 // Required for static export (output: "export"):
 // Must return at least one param so Next.js generates a static HTML fallback.
 // The Capacitor app handles navigation client-side — the actual slug
-// is resolved by the TopicDetail component via URL/store state.
+// is resolved by the TopicDetail component via URL params.
 export async function generateStaticParams() {
   return [{ slug: '__dynamic__' }];
 }
@@ -34,6 +34,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 // Server component that renders the client component
+// TopicDetail uses useParams() internally to get the actual slug from the URL
 export default function ForumTopicPageRoute() {
-  return <TopicDetail slug="__dynamic__" />;
+  return <TopicDetail />;
 }

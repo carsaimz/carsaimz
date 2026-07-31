@@ -432,7 +432,7 @@ export function AdminDashboard() {
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="border-l-4 border-l-emerald-500">
+            <Card key={i} className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
               <CardContent className="p-4 sm:p-6">
                 <Skeleton className="h-4 w-20 mb-2" />
                 <Skeleton className="h-8 w-24 mb-2" />
@@ -508,7 +508,7 @@ export function AdminDashboard() {
       <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {overviewCards.map((card) => (
           <motion.div key={card.label} variants={itemVariants}>
-            <Card className="hover:shadow-md transition-all border-l-4 border-l-emerald-500">
+            <Card className="hover:shadow-md transition-all border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
@@ -516,16 +516,16 @@ export function AdminDashboard() {
                     <p className="text-2xl font-bold">{card.value}</p>
                     <div className="flex items-center gap-1">
                       {card.up ? (
-                        <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600" />
+                        <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                       ) : (
                         <ArrowDownRight className="h-3.5 w-3.5 text-red-500" />
                       )}
-                      <span className={`text-xs font-medium ${card.up ? 'text-emerald-600' : 'text-red-500'}`}>
+                      <span className={`text-xs font-medium ${card.up ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
                         {card.change}
                       </span>
                     </div>
                   </div>
-                  <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
                     <card.icon className="h-5 w-5" />
                   </div>
                 </div>
@@ -537,7 +537,7 @@ export function AdminDashboard() {
 
       {/* ── Charts Section ── */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-emerald-50">
+        <TabsList className="bg-emerald-50 dark:bg-emerald-950/30">
           <TabsTrigger value="overview" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
             {t('common.overview')}
           </TabsTrigger>
@@ -556,7 +556,7 @@ export function AdminDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-emerald-600" />
+                  <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   {t('admin.analyticsRevenue')}
                 </CardTitle>
                 <CardDescription>{t('admin.monthlyRevenue')}</CardDescription>
@@ -608,7 +608,7 @@ export function AdminDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-emerald-600" />
+                  <BarChart3 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   {t('admin.analyticsUsers')}
                 </CardTitle>
               </CardHeader>
@@ -640,7 +640,7 @@ export function AdminDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <PieChartIcon className="h-5 w-5 text-emerald-600" />
+                  <PieChartIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   {t('admin.postsByCategory')}
                 </CardTitle>
               </CardHeader>
@@ -683,7 +683,7 @@ export function AdminDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-emerald-600" />
+                  <Activity className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   {t('dashboard.activityRecent')}
                 </CardTitle>
               </CardHeader>
@@ -697,14 +697,14 @@ export function AdminDashboard() {
                   <div className="space-y-3 max-h-80 overflow-y-auto">
                     {recentActivityItems.slice(0, 10).map((item) => (
                       <div key={item.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted/80 transition-colors">
-                        <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+                        <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
                           <item.icon className="h-4 w-4" />
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-medium">{item.message}</p>
                           <p className="text-xs text-muted-foreground">{item.time}</p>
                         </div>
-                        <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+                        <Button variant="ghost" size="sm" className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300">
                           <Eye className="h-4 w-4" />
                         </Button>
                       </div>
@@ -796,14 +796,14 @@ export function AdminDashboard() {
               <Card key={section.title} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+                    <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
                       <section.icon className="h-6 w-6" />
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg">{section.title}</h3>
                       <p className="text-sm text-muted-foreground mt-1">{section.description}</p>
                       <div className="flex items-center gap-2 mt-3">
-                        <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                        <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">
                           {section.count} {t('common.total')}
                         </Badge>
                       </div>
@@ -812,7 +812,7 @@ export function AdminDashboard() {
                           <Eye className="h-4 w-4 mr-1" />
                           {t('common.details')}
                         </Button>
-                        <Button size="sm" variant="outline" className="border-emerald-200 text-emerald-600">
+                        <Button size="sm" variant="outline" className="border-emerald-200 dark:border-emerald-800/50 text-emerald-600 dark:text-emerald-400">
                           <Settings className="h-4 w-4 mr-1" />
                           {t('common.settings')}
                         </Button>
@@ -825,32 +825,32 @@ export function AdminDashboard() {
           </motion.div>
 
           {/* System Health */}
-          <Card className="border-l-4 border-l-emerald-500">
+          <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Server className="h-5 w-5 text-emerald-600" />
+                <Server className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 {t('admin.systemHealth')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 rounded-lg bg-emerald-50/80">
+                <div className="p-4 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/30">
                   <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                    <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                     <span className="font-medium">{t('admin.serverStatus')}</span>
                   </div>
-                  <p className="text-sm text-emerald-700">{t('admin.allSystemsOperational')}</p>
+                  <p className="text-sm text-emerald-700 dark:text-emerald-300">{t('admin.allSystemsOperational')}</p>
                 </div>
-                <div className="p-4 rounded-lg bg-emerald-50/80">
+                <div className="p-4 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/30">
                   <div className="flex items-center gap-2 mb-2">
-                    <Clock className="h-5 w-5 text-emerald-600" />
+                    <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                     <span className="font-medium">{t('admin.uptime')}</span>
                   </div>
-                  <p className="text-sm text-emerald-700">
+                  <p className="text-sm text-emerald-700 dark:text-emerald-300">
                     {stats?.overview ? t('admin.activeCount', { count: stats.overview.totalUsers }) : t('common.na')}
                   </p>
                 </div>
-                <div className="p-4 rounded-lg bg-emerald-50/80">
+                <div className="p-4 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/30">
                   <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle className="h-5 w-5 text-yellow-600" />
                     <span className="font-medium">{t('dashboard.support')}</span>

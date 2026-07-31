@@ -197,7 +197,7 @@ export function BlogPage() {
       >
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
               <BookOpen className="w-5 h-5" />
             </div>
             <div>
@@ -236,7 +236,7 @@ export function BlogPage() {
             className={`cursor-pointer transition-colors ${
               selectedCategory === null
                 ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                : 'hover:bg-emerald-50 text-foreground'
+                : 'hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-foreground'
             }`}
             onClick={() => setSelectedCategory(null)}
           >
@@ -249,7 +249,7 @@ export function BlogPage() {
               className={`cursor-pointer transition-colors ${
                 selectedCategory === cat.id
                   ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                  : 'hover:bg-emerald-50 text-foreground'
+                  : 'hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-foreground'
               }`}
               onClick={() => setSelectedCategory(cat.id)}
             >
@@ -298,8 +298,8 @@ export function BlogPage() {
             animate={{ opacity: 1 }}
             className="text-center py-12"
           >
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 flex items-center justify-center">
-              <BookOpen className="w-8 h-8 text-emerald-600" />
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+              <BookOpen className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
             </div>
             <p className="text-muted-foreground">{t('blog.noPosts')}</p>
           </motion.div>
@@ -319,7 +319,7 @@ export function BlogPage() {
                 const resolved = resolvePostContent(featuredPost);
                 return (
                   <Card
-                    className="overflow-hidden cursor-pointer group hover:shadow-lg transition-shadow border-emerald-200/50"
+                    className="overflow-hidden cursor-pointer group hover:shadow-lg transition-shadow border-emerald-200/50 dark:border-emerald-800/30"
                     onClick={() => handleViewPost(featuredPost.slug)}
                   >
                     <div className="relative h-48 md:h-64 bg-gradient-to-br from-emerald-600 to-emerald-800 overflow-hidden">
@@ -393,7 +393,7 @@ export function BlogPage() {
                     </div>
 
                     <CardHeader className="pb-2 pt-4 px-4">
-                      <h3 className="font-semibold text-foreground line-clamp-2 group-hover:text-emerald-700 transition-colors">
+                      <h3 className="font-semibold text-foreground line-clamp-2 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 dark:hover:text-emerald-300 transition-colors">
                         {resolved.title}
                       </h3>
                     </CardHeader>
@@ -408,7 +408,7 @@ export function BlogPage() {
                             <Badge
                               key={tag.id}
                               variant="outline"
-                              className="text-xs border-emerald-200 text-emerald-700"
+                              className="text-xs border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-300"
                             >
                               <Tag className="w-2.5 h-2.5 mr-0.5" />
                               {tag.name}
@@ -449,7 +449,7 @@ export function BlogPage() {
               {/* Popular tags */}
               <div>
                 <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                  <Tag className="w-4 h-4 text-emerald-600" />
+                  <Tag className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   {t('blog.tags')}
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -457,7 +457,7 @@ export function BlogPage() {
                     <Badge
                       key={tag.id}
                       variant="outline"
-                      className="cursor-pointer hover:bg-emerald-50 border-emerald-200 text-emerald-700 transition-colors"
+                      className="cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-300 transition-colors"
                       onClick={() => setSearchQuery(tag.name)}
                     >
                       {tag.name}
@@ -469,7 +469,7 @@ export function BlogPage() {
               {/* Recent posts quick links */}
               <div>
                 <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-emerald-600" />
+                  <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   {t('blog.recentPosts')}
                 </h3>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -482,7 +482,7 @@ export function BlogPage() {
                         onClick={() => handleViewPost(post.slug)}
                       >
                         <ChevronDown className="w-3 h-3 text-emerald-500 rotate-[-90deg]" />
-                        <span className="text-sm text-muted-foreground group-hover:text-emerald-700 transition-colors line-clamp-1">
+                        <span className="text-sm text-muted-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-300 dark:hover:text-emerald-300 transition-colors line-clamp-1">
                           {resolved.title}
                         </span>
                       </div>
@@ -494,15 +494,15 @@ export function BlogPage() {
               {/* Categories */}
               <div>
                 <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-emerald-600" />
+                  <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   {t('blog.categories')}
                 </h3>
                 <div className="space-y-2">
                   <div
-                    className="flex items-center justify-between cursor-pointer group p-2 rounded-lg hover:bg-emerald-50 transition-colors"
+                    className="flex items-center justify-between cursor-pointer group p-2 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors"
                     onClick={() => setSelectedCategory(null)}
                   >
-                    <span className="text-sm text-foreground group-hover:text-emerald-700">
+                    <span className="text-sm text-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-300 dark:hover:text-emerald-300">
                       {t('blog.categoryAll')}
                     </span>
                     <Badge variant="secondary" className="text-xs">
@@ -516,10 +516,10 @@ export function BlogPage() {
                     return (
                       <div
                         key={cat.id}
-                        className="flex items-center justify-between cursor-pointer group p-2 rounded-lg hover:bg-emerald-50 transition-colors"
+                        className="flex items-center justify-between cursor-pointer group p-2 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors"
                         onClick={() => setSelectedCategory(cat.id)}
                       >
-                        <span className="text-sm text-foreground group-hover:text-emerald-700">
+                        <span className="text-sm text-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-300 dark:hover:text-emerald-300">
                           {cat.name}
                         </span>
                         <Badge variant="secondary" className="text-xs">

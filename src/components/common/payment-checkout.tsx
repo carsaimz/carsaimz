@@ -318,7 +318,7 @@ export function PaymentCheckout({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">{t('payment.paymentAmount') || 'Payment Amount'}</p>
-              <p className="text-3xl font-bold text-emerald-600">{formatCurrency(amount)}</p>
+              <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(amount)}</p>
               {description && (
                 <p className="text-sm text-muted-foreground mt-1">{description}</p>
               )}
@@ -392,7 +392,7 @@ export function PaymentCheckout({
                               </p>
                             </>
                           ) : (
-                            <Badge className="bg-emerald-100 text-emerald-700 text-xs">
+                            <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs">
                               {t('payment.noFee') || 'No fee'}
                             </Badge>
                           )}
@@ -470,7 +470,7 @@ export function PaymentCheckout({
           >
             <Card>
               <CardContent className="pt-6 text-center space-y-4">
-                <Loader2 className="size-12 mx-auto animate-spin text-emerald-600" />
+                <Loader2 className="size-12 mx-auto animate-spin text-emerald-600 dark:text-emerald-400" />
                 <div>
                   <h3 className="font-semibold text-lg">{t('payment.processing') || 'Processing Payment'}</h3>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -567,7 +567,7 @@ export function PaymentCheckout({
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">{t('payment.reference') || 'Reference'}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold font-mono text-emerald-600">{paymentData.paymentId}</span>
+                      <span className="text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400">{paymentData.paymentId}</span>
                       <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => copyToClipboard(paymentData.paymentId)}>
                         <Copy className="size-3" />
                       </Button>
@@ -575,7 +575,7 @@ export function PaymentCheckout({
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">{t('payment.amount') || 'Amount'}</span>
-                    <span className="text-sm font-bold text-emerald-600">{formatCurrency(amount)}</span>
+                    <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(amount)}</span>
                   </div>
                 </div>
 
@@ -612,7 +612,7 @@ export function PaymentCheckout({
               <CardContent className="pt-6 text-center space-y-4">
                 <CheckCircle2 className="size-16 mx-auto text-emerald-500" />
                 <div>
-                  <h3 className="font-semibold text-xl text-emerald-600">
+                  <h3 className="font-semibold text-xl text-emerald-600 dark:text-emerald-400">
                     {t('payment.paymentSuccess') || 'Payment Successful!'}
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1">

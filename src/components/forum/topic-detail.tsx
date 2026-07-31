@@ -22,9 +22,8 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/language-context';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
-import { fetchWithFallback, fetchForumClient } from '@/lib/client-firestore';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 
 // ──────────────────────────────────────────────
@@ -107,7 +106,11 @@ const replyVariants = {
 export function TopicDetail({ slug: propSlug }: { slug?: string }) {
   const { t, formatDate, formatRelativeTime } = useLanguage();
   const router = useRouter();
+  const params = useParams();
   const { isAuthenticated, user } = useAuth();
+
+  // Use prop slug if provided, otherwise get from URL params
+  const slug = propSlug || (params?.slug as string);
 
   const [topic, setTopic] = useState<ForumTopicData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -117,27 +120,18 @@ export function TopicDetail({ slug: propSlug }: { slug?: string }) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
 
-  // Fetch forum data and find the selected topic
+  // Fetch topic data using the direct topic API endpoint
   useEffect(() => {
-    async function fetchForum() {
+    async function fetchTopic() {
       try {
         setLoading(true);
-        const result = await fetchWithFallback('/api/forum', fetchForumClient);
-        const allCategories: ForumCategoryData[] = result.data;
-        // Find the topic across all categories
-        let found: ForumTopicData | null = null;
-        for (const cat of allCategories) {
-          const topicMatch = cat.topics.find((t) => t.slug === propSlug);
-          if (topicMatch) {
-            found = topicMatch;
-            break;
-          }
-        }
-        if (found) {
-          setTopic(found);
-          setLikeCount(found._count.likes);
+        const res = await apiFetch(`/api/forum?topic=${encodeURIComponent(slug)}`);
+        const result = await safeJson(res);
+        if (result && result.success && result.data) {
+          setTopic(result.data);
+          setLikeCount(result.data._count?.likes || 0);
         } else {
-          setError('Topic not found');
+          setError(result?.message || 'Topic not found');
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Network error');
@@ -145,10 +139,10 @@ export function TopicDetail({ slug: propSlug }: { slug?: string }) {
         setLoading(false);
       }
     }
-    if (propSlug) {
-      fetchForum();
+    if (slug && slug !== '__dynamic__') {
+      fetchTopic();
     }
-  }, [propSlug]);
+  }, [slug]);
 
   // Navigate back to forum
   const handleBack = () => {
@@ -299,7 +293,7 @@ export function TopicDetail({ slug: propSlug }: { slug?: string }) {
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6">
             <div className="flex items-center gap-2">
               <Avatar className="w-8 h-8">
-                <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs">
+                <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs">
                   {topic.author.name
                     .split(' ')
                     .map((n) => n[0])
@@ -330,7 +324,7 @@ export function TopicDetail({ slug: propSlug }: { slug?: string }) {
           transition={{ delay: 0.1 }}
           className="mb-6"
         >
-          <Card className="border-emerald-200/50 bg-emerald-50/20">
+          <Card className="border-emerald-200/50 dark:border-emerald-800/30 bg-emerald-50/20 dark:bg-emerald-950/20">
             <CardContent className="p-4 md:p-6">
               {topic.content ? (
                 topic.content.split('\n').map((line, i) => (
@@ -364,7 +358,7 @@ export function TopicDetail({ slug: propSlug }: { slug?: string }) {
               className={`${
                 liked
                   ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                  : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
+                  : 'border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30'
               }`}
               onClick={handleLike}
             >
@@ -376,7 +370,7 @@ export function TopicDetail({ slug: propSlug }: { slug?: string }) {
               <Button
                 variant="outline"
                 size="sm"
-                className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                className="border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
               >
                 <CheckCircle2 className="w-4 h-4 mr-1" />
                 {t('forum.markResolved')}
@@ -395,7 +389,7 @@ export function TopicDetail({ slug: propSlug }: { slug?: string }) {
           transition={{ delay: 0.2 }}
         >
           <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-            <MessagesSquare className="w-5 h-5 text-emerald-600" />
+            <MessagesSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             {t('forum.replies')} ({topic.replies?.length ?? topic._count?.replies ?? 0})
           </h2>
 
@@ -414,11 +408,11 @@ export function TopicDetail({ slug: propSlug }: { slug?: string }) {
                   animate="visible"
                   transition={{ delay: i * 0.05 }}
                 >
-                  <Card className="border-border/50 hover:border-emerald-200/50 transition-colors">
+                  <Card className="border-border/50 hover:border-emerald-200/50 dark:border-emerald-800/30 transition-colors">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         <Avatar className="w-10 h-10 shrink-0">
-                          <AvatarFallback className="bg-emerald-100 text-emerald-700 text-sm">
+                          <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-sm">
                             {reply.author.name
                               .split(' ')
                               .map((n) => n[0])
@@ -474,11 +468,11 @@ export function TopicDetail({ slug: propSlug }: { slug?: string }) {
               </CardContent>
             </Card>
           ) : isAuthenticated ? (
-            <Card className="border-emerald-200/50">
+            <Card className="border-emerald-200/50 dark:border-emerald-800/30">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Avatar className="w-8 h-8 shrink-0">
-                    <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs">
+                    <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs">
                       {user?.name
                         ?.split(' ')
                         .map((n) => n[0])

@@ -269,7 +269,7 @@ export function AdminForumManager() {
       <motion.div variants={itemVariants}>
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <MessageSquare className="h-6 w-6 text-emerald-600" />
+            <MessageSquare className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             {t('admin.forum') || 'Forum Management'}
           </h2>
         </div>
@@ -382,7 +382,7 @@ export function AdminForumManager() {
                       <TableRow key={topic.id}>
                         <TableCell className="font-medium max-w-[200px] truncate">
                           <div className="flex items-center gap-1.5">
-                            {topic.isPinned && <Pin className="h-3 w-3 text-emerald-600" />}
+                            {topic.isPinned && <Pin className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />}
                             {topic.isLocked && <Lock className="h-3 w-3 text-orange-500" />}
                             {topic.isResolved && <CheckCircle2 className="h-3 w-3 text-blue-500" />}
                             {topic.title}
@@ -393,7 +393,7 @@ export function AdminForumManager() {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
-                            {topic.isPinned && <Badge variant="secondary" className="text-xs bg-emerald-50 text-emerald-700">{t('admin.pinned')}</Badge>}
+                            {topic.isPinned && <Badge variant="secondary" className="text-xs bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300">{t('admin.pinned')}</Badge>}
                             {topic.isLocked && <Badge variant="secondary" className="text-xs bg-orange-50 text-orange-700">{t('admin.locked')}</Badge>}
                             {topic.isResolved && <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700">{t('admin.resolved')}</Badge>}
                           </div>

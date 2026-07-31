@@ -145,7 +145,7 @@ export function UserSettings() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+        <Loader2 className="h-6 w-6 animate-spin text-emerald-600 dark:text-emerald-400" />
       </div>
     );
   }
@@ -153,13 +153,13 @@ export function UserSettings() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants}>
-        <h2 className="text-2xl font-bold flex items-center gap-2"><Settings className="h-6 w-6 text-emerald-600" />{t('dashboard.settings')}</h2>
+        <h2 className="text-2xl font-bold flex items-center gap-2"><Settings className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />{t('dashboard.settings')}</h2>
         <p className="text-muted-foreground mt-1">{t('dashboard.settingsDesc')}</p>
       </motion.div>
 
       <motion.div variants={itemVariants}>
         <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><User className="h-5 w-5 text-emerald-600" />{t('dashboard.profileInfo')}</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><User className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />{t('dashboard.profileInfo')}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">

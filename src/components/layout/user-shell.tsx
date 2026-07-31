@@ -349,7 +349,7 @@ function UserShellContent({ children }: { children: React.ReactNode }) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 text-xs text-emerald-600"
+                        className="h-6 text-xs text-emerald-600 dark:text-emerald-400"
                         onClick={async () => {
                           await apiFetch('/api/notifications', {
                             method: 'PUT',
@@ -392,7 +392,7 @@ function UserShellContent({ children }: { children: React.ReactNode }) {
                       ))}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        className="text-center text-emerald-600 font-medium cursor-pointer"
+                        className="text-center text-emerald-600 dark:text-emerald-400 font-medium cursor-pointer"
                         onClick={() => router.push('/user/notifications')}
                       >
                         Ver todas as notificações

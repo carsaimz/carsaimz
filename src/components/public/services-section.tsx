@@ -185,7 +185,7 @@ export function ServicesSection() {
                   )}
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2.5 rounded-lg bg-emerald-100 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                      <div className="p-2.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                         <IconComponent className="h-5 w-5" />
                       </div>
                       <CardTitle className="text-lg">
@@ -208,14 +208,14 @@ export function ServicesSection() {
                   </CardContent>
                   <CardFooter className="flex items-center justify-between pt-0">
                     {service.basePrice && (
-                      <span className="text-emerald-700 font-semibold">
+                      <span className="text-emerald-700 dark:text-emerald-300 font-semibold">
                         {formatPrice(service.basePrice)}
                       </span>
                     )}
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 group-hover:bg-emerald-100"
+                      className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30"
                       onClick={(e) => {
                         e.stopPropagation();
                         router.push(`/services/${service.slug}`);

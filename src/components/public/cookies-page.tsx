@@ -39,7 +39,7 @@ export function CookiesPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <div className="inline-flex p-3 rounded-xl bg-emerald-100 text-emerald-700 mb-4">
+          <div className="inline-flex p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 mb-4">
             <Cookie className="h-8 w-8" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold mb-4">{t('legal.cookies.pageTitle')}</h1>
@@ -62,7 +62,7 @@ export function CookiesPage() {
                 <Card className="hover:shadow-md transition-shadow">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700">
+                      <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
                         <IconComponent className="h-5 w-5" />
                       </div>
                       <CardTitle className="text-xl">{t(`legal.cookies.sections.${section.key}.title`)}</CardTitle>
@@ -82,9 +82,9 @@ export function CookiesPage() {
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
             {t('legal.cookies.seeAlso')}{' '}
-            <Link href="/privacy" className="text-emerald-600 hover:underline">{t('legal.cookies.seeAlsoPrivacy')}</Link>
+            <Link href="/privacy" className="text-emerald-600 dark:text-emerald-400 hover:underline">{t('legal.cookies.seeAlsoPrivacy')}</Link>
             {' · '}
-            <Link href="/terms" className="text-emerald-600 hover:underline">{t('legal.cookies.seeAlsoTerms')}</Link>
+            <Link href="/terms" className="text-emerald-600 dark:text-emerald-400 hover:underline">{t('legal.cookies.seeAlsoTerms')}</Link>
           </p>
         </div>
       </div>

@@ -101,7 +101,7 @@ export function PartnerWithdrawals() {
     switch (status) {
       case 'paid':
       case 'approved':
-        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200"><CheckCircle2 className="h-3 w-3 mr-1" />{t('common.approved')}</Badge>;
+        return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50"><CheckCircle2 className="h-3 w-3 mr-1" />{t('common.approved')}</Badge>;
       case 'pending':
         return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200"><Clock className="h-3 w-3 mr-1" />{t('common.pending')}</Badge>;
       case 'rejected':
@@ -117,12 +117,12 @@ export function PartnerWithdrawals() {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants}>
-        <h2 className="text-2xl font-bold flex items-center gap-2"><Banknote className="h-6 w-6 text-emerald-600" />{t('partner.withdrawals')}</h2>
+        <h2 className="text-2xl font-bold flex items-center gap-2"><Banknote className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />{t('partner.withdrawals')}</h2>
       </motion.div>
 
       <motion.div variants={itemVariants}>
-        <Card className="border-l-4 border-l-emerald-500">
-          <CardHeader><CardTitle className="flex items-center gap-2"><Wallet className="h-5 w-5 text-emerald-600" />{t('partner.withdrawalsRequest')}</CardTitle></CardHeader>
+        <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
+          <CardHeader><CardTitle className="flex items-center gap-2"><Wallet className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />{t('partner.withdrawalsRequest')}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2"><Label htmlFor="withdraw-amount">{t('financial.amount')} (MT)</Label><Input id="withdraw-amount" type="number" placeholder={t('partner.amountPlaceholder')} value={withdrawAmount} onChange={(e) => setWithdrawAmount(e.target.value)} /></div>
@@ -150,7 +150,7 @@ export function PartnerWithdrawals() {
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {withdrawals.map((w) => (
                 <div key={w.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" /><span className="text-sm">{formatCurrency(w.amount)} — {w.method || t('partner.commission')}</span></div>
+                  <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /><span className="text-sm">{formatCurrency(w.amount)} — {w.method || t('partner.commission')}</span></div>
                   <div className="text-right">{statusBadge(w.status)}<p className="text-xs text-muted-foreground mt-1">{formatDate(w.createdAt)}</p></div>
                 </div>
               ))}

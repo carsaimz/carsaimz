@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { safeGetDoc, safeQueryDocs, safeCountDocs, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { serializeFirestore } from '@/lib/serialize'
+import { sendEmail, ticketNotificationTemplate, isEmailConfigured } from '@/lib/email'
 
 export async function GET(request: NextRequest) {
   try {
@@ -129,6 +130,35 @@ export async function POST(request: NextRequest) {
         avatar: (user as any).avatar,
       },
     })
+
+    // Send email notifications if SMTP is configured
+    if (isEmailConfigured()) {
+      const ticketMessage = description || message || ''
+      const userName = (user as any).name || 'Utilizador'
+      const userEmail = (user as any).email || ''
+
+      // Send copy to user
+      if (userEmail) {
+        sendEmail(ticketNotificationTemplate({
+          userName,
+          userEmail,
+          ticketSubject: subject,
+          ticketId: ticketId,
+          message: ticketMessage,
+          isAdminCopy: false,
+        })).catch((err) => console.warn('[Support] User email failed:', err.message))
+      }
+
+      // Send copy to admin
+      sendEmail(ticketNotificationTemplate({
+        userName,
+        userEmail,
+        ticketSubject: subject,
+        ticketId: ticketId,
+        message: ticketMessage,
+        isAdminCopy: true,
+      })).catch((err) => console.warn('[Support] Admin email failed:', err.message))
+    }
 
     return NextResponse.json({
       success: true,

@@ -342,11 +342,11 @@ export function UserLoyalty() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-muted-foreground font-medium">{t('loyalty.totalEarned')}</span>
-                <div className="p-2 rounded-lg bg-emerald-500/10">
+                <div className="p-2 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20">
                   <TrendingUp className="h-4 w-4 text-emerald-500" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-emerald-600">{account.totalEarned.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{account.totalEarned.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground mt-1">{t('loyalty.lifetimePoints')}</p>
             </CardContent>
           </Card>
@@ -412,7 +412,7 @@ export function UserLoyalty() {
                 ) : (
                   <div className="text-center py-2">
                     <Sparkles className="h-6 w-6 mx-auto text-yellow-400 mb-2" />
-                    <p className="text-sm font-medium text-emerald-600">{t('loyalty.maxTierReached')}</p>
+                    <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">{t('loyalty.maxTierReached')}</p>
                   </div>
                 )}
               </div>
@@ -709,7 +709,7 @@ export function UserLoyalty() {
                               </div>
                             </TableCell>
                             <TableCell className="max-w-[200px] truncate text-sm">{tx.description}</TableCell>
-                            <TableCell className={`text-right font-medium ${tx.points > 0 ? 'text-emerald-600' : 'text-orange-600'}`}>
+                            <TableCell className={`text-right font-medium ${tx.points > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-orange-600'}`}>
                               {tx.points > 0 ? '+' : ''}{tx.points}
                             </TableCell>
                             <TableCell className="text-sm text-muted-foreground">
@@ -739,7 +739,7 @@ export function UserLoyalty() {
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="p-2 rounded-lg bg-emerald-500/10">
+                <div className="p-2 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20">
                   <TrendingUp className="h-5 w-5 text-emerald-500" />
                 </div>
                 <div>
@@ -748,7 +748,7 @@ export function UserLoyalty() {
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="p-2 rounded-lg bg-emerald-500/10">
+                <div className="p-2 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20">
                   <Users className="h-5 w-5 text-emerald-500" />
                 </div>
                 <div>
@@ -757,7 +757,7 @@ export function UserLoyalty() {
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="p-2 rounded-lg bg-emerald-500/10">
+                <div className="p-2 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20">
                   <Star className="h-5 w-5 text-emerald-500" />
                 </div>
                 <div>
@@ -766,7 +766,7 @@ export function UserLoyalty() {
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="p-2 rounded-lg bg-emerald-500/10">
+                <div className="p-2 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20">
                   <Award className="h-5 w-5 text-emerald-500" />
                 </div>
                 <div>

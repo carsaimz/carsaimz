@@ -121,7 +121,7 @@ export function AdminPaymentsManager() {
       case 'pending':
         return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200"><Clock className="h-3 w-3 mr-1" />{t('common.pending') || 'Pending'}</Badge>;
       case 'completed':
-        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200"><CheckCircle2 className="h-3 w-3 mr-1" />{t('common.completed') || 'Completed'}</Badge>;
+        return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50"><CheckCircle2 className="h-3 w-3 mr-1" />{t('common.completed') || 'Completed'}</Badge>;
       case 'failed':
         return <Badge className="bg-red-100 text-red-700 border-red-200"><XCircle className="h-3 w-3 mr-1" />{t('common.rejected') || 'Failed'}</Badge>;
       case 'refunded':
@@ -137,10 +137,10 @@ export function AdminPaymentsManager() {
       <motion.div variants={itemVariants}>
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <CreditCard className="h-6 w-6 text-emerald-600" />
+            <CreditCard className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             {t('admin.payments') || 'Payments Management'}
           </h2>
-          <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+          <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">
             {payments.length} {t('common.total') || 'total'}
           </Badge>
         </div>
@@ -201,7 +201,7 @@ export function AdminPaymentsManager() {
         <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-emerald-600" />
+              <CreditCard className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               {t('admin.payments') || 'Payment Details'}
             </DialogTitle>
             <DialogDescription>{t('admin.contentManager') || 'Payment details'}</DialogDescription>
@@ -213,7 +213,7 @@ export function AdminPaymentsManager() {
                 {statusBadge(selectedPayment.status)}
                 <span className="text-xs text-muted-foreground">{formatDate(selectedPayment.createdAt)}</span>
               </div>
-              <div className="text-2xl font-bold text-emerald-600">{formatCurrency(selectedPayment.amount)}</div>
+              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(selectedPayment.amount)}</div>
               {selectedPayment.user && (
                 <div className="text-sm text-muted-foreground">
                   {t('admin.name') || 'User'}: {selectedPayment.user.name} ({selectedPayment.user.email})

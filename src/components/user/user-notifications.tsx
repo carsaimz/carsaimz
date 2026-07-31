@@ -76,7 +76,7 @@ interface NotificationPreferences {
 // ── Notification type icon & color ──
 function getNotifIcon(type: string) {
   switch (type) {
-    case 'success': return <CheckCircle2 className="h-5 w-5 text-emerald-600" />;
+    case 'success': return <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />;
     case 'warning': return <AlertTriangle className="h-5 w-5 text-yellow-600" />;
     case 'error': return <XCircle className="h-5 w-5 text-red-600" />;
     default: return <Info className="h-5 w-5 text-blue-600" />;
@@ -308,7 +308,7 @@ export function UserNotifications() {
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Bell className="h-6 w-6 text-emerald-600" />
+            <Bell className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             {t('notifications.title')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -350,7 +350,7 @@ export function UserNotifications() {
             <Bell className="h-4 w-4" />
             {t('notifications.title')}
             {unreadCount > 0 && (
-              <Badge className="ml-1 bg-emerald-100 text-emerald-700 text-xs px-1.5 py-0">
+              <Badge className="ml-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs px-1.5 py-0">
                 {unreadCount}
               </Badge>
             )}
@@ -455,7 +455,7 @@ export function UserNotifications() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-emerald-600 h-7 text-xs"
+                            className="text-emerald-600 dark:text-emerald-400 h-7 text-xs"
                             onClick={() => {
                               if (!notif.isRead) markAsRead(notif.id);
                               window.location.href = notif.link!;
@@ -535,7 +535,7 @@ export function UserNotifications() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Settings2 className="h-5 w-5 text-emerald-600" />
+                  <Settings2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   {t('notifications.preferencesTitle')}
                 </CardTitle>
                 <CardDescription>
@@ -568,7 +568,7 @@ export function UserNotifications() {
                 {/* ── Email notifications ── */}
                 <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-emerald-100 text-emerald-600">
+                    <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
                       <Mail className="h-5 w-5" />
                     </div>
                     <div>

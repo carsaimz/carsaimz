@@ -223,7 +223,7 @@ export function FinancialSection() {
       case 'paid':
       case 'resolved':
       case 'closed':
-        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{t('common.approved')}</Badge>;
+        return <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">{t('common.approved')}</Badge>;
       case 'pending':
       case 'sent':
       case 'open':
@@ -245,21 +245,21 @@ export function FinancialSection() {
     switch (method) {
       case 'mpesa':
         return (
-          <Badge variant="outline" className="text-emerald-600 border-emerald-200">
+          <Badge variant="outline" className="text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50">
             <Phone className="h-3 w-3 mr-1" />
             {t('financial.mpesa')}
           </Badge>
         );
       case 'transfer':
         return (
-          <Badge variant="outline" className="text-emerald-600 border-emerald-200">
+          <Badge variant="outline" className="text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50">
             <Building2 className="h-3 w-3 mr-1" />
             {t('financial.transfer')}
           </Badge>
         );
       case 'deposit':
         return (
-          <Badge variant="outline" className="text-emerald-600 border-emerald-200">
+          <Badge variant="outline" className="text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50">
             <BanknoteIcon className="h-3 w-3 mr-1" />
             Deposit
           </Badge>
@@ -324,7 +324,7 @@ export function FinancialSection() {
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="border-l-4 border-l-emerald-500">
+            <Card key={i} className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
               <CardContent className="p-4 sm:p-5">
                 <Skeleton className="h-4 w-20 mb-2" />
                 <Skeleton className="h-8 w-24 mb-1" />
@@ -403,54 +403,54 @@ export function FinancialSection() {
     >
       {/* ── Summary Stats ── */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow">
+        <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700 hover:shadow-md transition-shadow">
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{t('dashboard.quotes')}</p>
                 <p className="text-2xl font-bold">{quotes.length}</p>
-                <p className="text-xs text-emerald-600 mt-1">
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
                   {totalQuotesValue > 0 ? `Value: ${formatCurrency(totalQuotesValue)}` : 'No proposals yet'}
                 </p>
               </div>
-              <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+              <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
                 <FileText className="h-5 w-5" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow">
+        <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700 hover:shadow-md transition-shadow">
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{t('financial.proposal')}</p>
                 <p className="text-2xl font-bold">{proposals.length}</p>
-                <p className="text-xs text-emerald-600 mt-1">{acceptedProposals} accepted</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">{acceptedProposals} accepted</p>
               </div>
-              <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+              <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
                 <Send className="h-5 w-5" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow">
+        <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700 hover:shadow-md transition-shadow">
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{t('financial.payment')}</p>
                 <p className="text-2xl font-bold">{formatCurrency(totalPaymentsValue)}</p>
-                <p className="text-xs text-emerald-600 mt-1">{confirmedPayments} confirmed</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">{confirmedPayments} confirmed</p>
               </div>
-              <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+              <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
                 <CreditCard className="h-5 w-5" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow">
+        <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700 hover:shadow-md transition-shadow">
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-start justify-between">
               <div>
@@ -458,7 +458,7 @@ export function FinancialSection() {
                 <p className="text-2xl font-bold">{invoices.length}</p>
                 <p className="text-xs text-red-600 mt-1">{overdueInvoices} overdue</p>
               </div>
-              <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+              <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
                 <Receipt className="h-5 w-5" />
               </div>
             </div>
@@ -469,7 +469,7 @@ export function FinancialSection() {
       {/* ── Main Tabs ── */}
       <motion.div variants={itemVariants}>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-emerald-50 w-full sm:w-auto">
+          <TabsList className="bg-emerald-50 dark:bg-emerald-950/30 w-full sm:w-auto">
             <TabsTrigger value="quotes" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white flex-1 sm:flex-none">
               {t('dashboard.quotes')}
             </TabsTrigger>
@@ -491,7 +491,7 @@ export function FinancialSection() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Plus className="h-5 w-5 text-emerald-600" />
+                    <Plus className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                     {t('financial.quoteRequestTitle')}
                   </CardTitle>
                 </div>
@@ -569,7 +569,7 @@ export function FinancialSection() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-emerald-600" />
+                  <FileText className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   {t('dashboard.quotesHistory')}
                 </CardTitle>
               </CardHeader>
@@ -601,7 +601,7 @@ export function FinancialSection() {
                           <TableCell>{statusBadge(quote.status)}</TableCell>
                           <TableCell>{formatDate(quote.createdAt)}</TableCell>
                           <TableCell>
-                            <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+                            <Button variant="ghost" size="sm" className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300">
                               <Eye className="h-4 w-4" />
                             </Button>
                           </TableCell>
@@ -619,7 +619,7 @@ export function FinancialSection() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Send className="h-5 w-5 text-emerald-600" />
+                  <Send className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   {t('financial.proposal')}
                 </CardTitle>
               </CardHeader>
@@ -654,12 +654,12 @@ export function FinancialSection() {
                           <TableCell>{formatDate(proposal.createdAt)}</TableCell>
                           <TableCell>
                             <div className="flex gap-1">
-                              <Button variant="ghost" size="sm" className="text-emerald-600">
+                              <Button variant="ghost" size="sm" className="text-emerald-600 dark:text-emerald-400">
                                 <Eye className="h-4 w-4" />
                               </Button>
                               {proposal.status === 'sent' && (
                                 <>
-                                  <Button variant="ghost" size="sm" className="text-emerald-600">
+                                  <Button variant="ghost" size="sm" className="text-emerald-600 dark:text-emerald-400">
                                     <CheckCircle2 className="h-4 w-4" />
                                   </Button>
                                   <Button variant="ghost" size="sm" className="text-red-500">
@@ -681,35 +681,35 @@ export function FinancialSection() {
           {/* ── Payments Tab ── */}
           <TabsContent value="payments" className="space-y-4 mt-4">
             {/* Payment Methods Info */}
-            <Card className="border-l-4 border-l-emerald-500">
+            <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-700">
               <CardHeader>
                 <CardTitle className="text-lg">{t('financial.paymentMethod')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-100 hover:border-emerald-300 transition-colors">
+                  <div className="p-4 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/30 hover:border-emerald-300 transition-colors">
                     <div className="flex items-center gap-2 mb-2">
-                      <Phone className="h-5 w-5 text-emerald-600" />
+                      <Phone className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       <h4 className="font-semibold">{t('financial.mpesa')}</h4>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">{t('financial.mpesaPay')}</p>
-                    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Instant</Badge>
+                    <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">Instant</Badge>
                   </div>
-                  <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-100 hover:border-emerald-300 transition-colors">
+                  <div className="p-4 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/30 hover:border-emerald-300 transition-colors">
                     <div className="flex items-center gap-2 mb-2">
-                      <Building2 className="h-5 w-5 text-emerald-600" />
+                      <Building2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       <h4 className="font-semibold">{t('financial.transfer')}</h4>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">Direct bank transfer</p>
-                    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">1-2 days</Badge>
+                    <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">1-2 days</Badge>
                   </div>
-                  <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-100 hover:border-emerald-300 transition-colors">
+                  <div className="p-4 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/30 hover:border-emerald-300 transition-colors">
                     <div className="flex items-center gap-2 mb-2">
-                      <BanknoteIcon className="h-5 w-5 text-emerald-600" />
+                      <BanknoteIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       <h4 className="font-semibold">Deposit</h4>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">Cash deposit at bank</p>
-                    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Same day</Badge>
+                    <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50">Same day</Badge>
                   </div>
                 </div>
               </CardContent>
@@ -719,7 +719,7 @@ export function FinancialSection() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-emerald-600" />
+                  <CreditCard className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   {t('dashboard.paymentHistory')}
                 </CardTitle>
               </CardHeader>
@@ -765,7 +765,7 @@ export function FinancialSection() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Receipt className="h-5 w-5 text-emerald-600" />
+                  <Receipt className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   {t('financial.invoice')}
                 </CardTitle>
               </CardHeader>
@@ -800,10 +800,10 @@ export function FinancialSection() {
                           <TableCell>{invoice.dueDate ? formatDate(invoice.dueDate) : '—'}</TableCell>
                           <TableCell>
                             <div className="flex gap-1">
-                              <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+                              <Button variant="ghost" size="sm" className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300">
                                 <Eye className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700">
+                              <Button variant="ghost" size="sm" className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300">
                                 <Download className="h-4 w-4" />
                               </Button>
                             </div>

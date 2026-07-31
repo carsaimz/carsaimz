@@ -1010,7 +1010,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
       <motion.div variants={itemVariants}>
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Globe className="h-6 w-6 text-emerald-600" />
+            <Globe className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             {getContentLabel()}
           </h2>
           <Button
@@ -1076,7 +1076,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
                             title={t('admin.togglePublish')}
                           >
                             {getItemStatus(item) ? (
-                              <Eye className="size-4 text-emerald-600" />
+                              <Eye className="size-4 text-emerald-600 dark:text-emerald-400" />
                             ) : (
                               <EyeOff className="size-4 text-muted-foreground" />
                             )}

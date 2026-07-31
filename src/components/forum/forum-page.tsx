@@ -246,7 +246,7 @@ export function ForumPage() {
   const getCategoryColor = (slug: string) => {
     switch (slug) {
       case 'discussao-general':
-        return { bg: 'bg-emerald-100', text: 'text-emerald-700', icon: '💬' };
+        return { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-300', icon: '💬' };
       case 'ajuda-suporte':
         return { bg: 'bg-amber-100', text: 'text-amber-700', icon: '🔧' };
       case 'projectos-portfolio':
@@ -254,7 +254,7 @@ export function ForumPage() {
       case 'emprego-freelance':
         return { bg: 'bg-sky-100', text: 'text-sky-700', icon: '💼' };
       default:
-        return { bg: 'bg-emerald-100', text: 'text-emerald-700', icon: '💬' };
+        return { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-300', icon: '💬' };
     }
   };
 
@@ -336,7 +336,7 @@ export function ForumPage() {
       >
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
               <MessagesSquare className="w-5 h-5" />
             </div>
             <div>
@@ -431,7 +431,7 @@ export function ForumPage() {
             className={`cursor-pointer transition-colors ${
               selectedCategory === null
                 ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                : 'hover:bg-emerald-50 text-foreground'
+                : 'hover:bg-emerald-50 dark:bg-emerald-950/30 text-foreground'
             }`}
             onClick={() => setSelectedCategory(null)}
           >
@@ -444,7 +444,7 @@ export function ForumPage() {
               className={`cursor-pointer transition-colors ${
                 selectedCategory === cat.id
                   ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                  : 'hover:bg-emerald-50 text-foreground'
+                  : 'hover:bg-emerald-50 dark:bg-emerald-950/30 text-foreground'
               }`}
               onClick={() =>
                 setSelectedCategory(
@@ -494,8 +494,8 @@ export function ForumPage() {
             animate={{ opacity: 1 }}
             className="text-center py-12"
           >
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 flex items-center justify-center">
-              <MessagesSquare className="w-8 h-8 text-emerald-600" />
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+              <MessagesSquare className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
             </div>
             <p className="text-muted-foreground">{t('forum.noTopics')}</p>
           </motion.div>
@@ -569,7 +569,7 @@ export function ForumPage() {
             <Card className="hidden md:block overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-emerald-50/50">
+                  <TableRow className="bg-emerald-50/50 dark:bg-emerald-950/30">
                     <TableHead className="w-[50%]">{t('forum.topics')}</TableHead>
                     <TableHead>{t('forum.topicAuthor')}</TableHead>
                     <TableHead className="text-center">{t('forum.replies')}</TableHead>
@@ -581,7 +581,7 @@ export function ForumPage() {
                   {filteredTopics.map((topic) => (
                     <TableRow
                       key={topic.id}
-                      className="cursor-pointer hover:bg-emerald-50/30 transition-colors"
+                      className="cursor-pointer hover:bg-emerald-50/30 dark:bg-emerald-950/20 transition-colors"
                       onClick={() => handleViewTopic(topic.slug)}
                     >
                       <TableCell>
@@ -654,41 +654,41 @@ export function ForumPage() {
             <Separator className="mb-6" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Forum statistics */}
-              <Card className="border-emerald-200/50">
+              <Card className="border-emerald-200/50 dark:border-emerald-800/30">
                 <CardHeader className="pb-2 pt-4 px-4">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <MessagesSquare className="w-4 h-4 text-emerald-600" />
+                    <MessagesSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     {t('common.overview')}
                   </h3>
                 </CardHeader>
                 <CardContent className="px-4 pb-4">
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="text-center p-2 rounded-lg bg-emerald-50">
-                      <p className="text-2xl font-bold text-emerald-700">
+                    <div className="text-center p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30">
+                      <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
                         {allTopics.length}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {t('forum.topics')}
                       </p>
                     </div>
-                    <div className="text-center p-2 rounded-lg bg-emerald-50">
-                      <p className="text-2xl font-bold text-emerald-700">
+                    <div className="text-center p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30">
+                      <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
                         {allTopics.reduce((sum, t) => sum + t._count.replies, 0)}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {t('forum.replies')}
                       </p>
                     </div>
-                    <div className="text-center p-2 rounded-lg bg-emerald-50">
-                      <p className="text-2xl font-bold text-emerald-700">
+                    <div className="text-center p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30">
+                      <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
                         {categories.length}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {t('forum.categories')}
                       </p>
                     </div>
-                    <div className="text-center p-2 rounded-lg bg-emerald-50">
-                      <p className="text-2xl font-bold text-emerald-700">
+                    <div className="text-center p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30">
+                      <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
                         {allTopics.filter((t) => t.isResolved).length}
                       </p>
                       <p className="text-xs text-muted-foreground">
@@ -700,10 +700,10 @@ export function ForumPage() {
               </Card>
 
               {/* Forum rules / info */}
-              <Card className="border-emerald-200/50">
+              <Card className="border-emerald-200/50 dark:border-emerald-800/30">
                 <CardHeader className="pb-2 pt-4 px-4">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     {t('forum.rules')}
                   </h3>
                 </CardHeader>

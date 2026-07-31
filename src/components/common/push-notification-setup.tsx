@@ -194,7 +194,7 @@ export function PushNotificationSetup({ compact = false, onPermissionChange }: P
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {permission === 'granted' ? (
-            <BellRing className="size-5 text-emerald-600" />
+            <BellRing className="size-5 text-emerald-600 dark:text-emerald-400" />
           ) : permission === 'denied' ? (
             <BellOff className="size-5 text-destructive" />
           ) : (
