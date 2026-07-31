@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { safeCountDocs, safeGetDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { deleteDoc, createDoc, updateDoc, getDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
+import { invalidateKnowledgeCache } from '@/lib/chat-knowledge'
 
 // Known Firestore collections (from the db.ts schema)
 const KNOWN_COLLECTIONS = [
@@ -142,6 +143,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteDoc(collectionName, docId)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true, message: 'Document deleted' })
   } catch (error) {
     console.error('DB Manager DELETE error:', error)
@@ -179,6 +181,7 @@ export async function POST(request: NextRequest) {
 
     const docId = await createDoc(collectionName, data)
     const doc = await getDoc(collectionName, docId)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
 
     return NextResponse.json(
       { success: true, data: serializeFirestore(doc) },
@@ -229,6 +232,7 @@ export async function PUT(request: NextRequest) {
 
     await updateDoc(collectionName, docId, data)
     const doc = await getDoc(collectionName, docId)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
 
     return NextResponse.json({ success: true, data: serializeFirestore(doc) })
   } catch (error) {

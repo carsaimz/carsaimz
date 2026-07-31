@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFirestore } from '@/lib/firebase-admin'
 import { checkFirebaseAdmin } from '@/lib/db-helpers'
+import { buildKnowledgeBase, invalidateKnowledgeCache } from '@/lib/chat-knowledge'
 
 /**
  * Carsai Mozambique - AI Chat API Endpoint
  *
  * Uses direct OpenAI-compatible API calls (fetch).
  * All providers come from the Firestore `ai_providers` collection.
- * No built-in providers — configure providers in the admin dashboard.
+ * Knowledge base is dynamically built from Firestore data.
  *
  * Supported providers (all OpenAI-compatible):
  * - Groq (fast, free tier)
@@ -17,41 +18,6 @@ import { checkFirebaseAdmin } from '@/lib/db-helpers'
  * - OpenAI (original)
  * - Any OpenAI-compatible API
  */
-
-// ── Hardcoded Site Context (no database dependency) ──
-
-const CARSAI_CONTEXT = `You are the Carsai Mozambique assistant — a knowledgeable, friendly, and concise AI chatbot. Carsai Mozambique offers Soluções Digitais e Hospedagem Web Gratuita — including FREE shared hosting (Apache) provided by ifastnet/byet.
-
-=== COMPANY INFORMATION ===
-- Company: Carsai Mozambique
-- Email: carsaimozambique@gmail.com, suporte.carsaimz@gmail.com
-- Phone/M-Pesa: 847545020, 874512581, 84246463, 835020143
-- WhatsApp: wa.me/258847545020
-- Address: Montepuez, Cabo Delgado, Mozambique
-- Website: https://carsai.mz
-- GitHub: https://github.com/carsaimz
-
-=== SERVICES ===
-- Web Development: Custom websites, web apps, e-commerce — starting from MT 5,000
-- FREE Web Hosting: Apache shared hosting provided by ifastnet/byet (no cost!)
-- Domain Registration: .mz, .com, .net, .org domains
-- SSL Certificates: Free Let's Encrypt and premium options
-- SEO Optimization: Search engine optimization for better visibility
-- Mobile App Development: Android and iOS apps
-- Graphic Design: Logos, branding, marketing materials
-
-=== IMPORTANT RULES ===
-1. Always respond in the same language the user writes in (Portuguese, English, French, etc.).
-2. Be helpful, friendly, and concise.
-3. Never invent or guess information — if you don't know, say so and suggest contacting us directly.
-4. When asked about pricing, mention base prices from the services list and that FREE hosting is available.
-5. Mention our FREE hosting offering (Apache shared hosting by ifastnet/byet) when relevant.
-6. Payment methods: M-Pesa (mobile money), bank transfers, international credit cards.
-7. Currency: Mozambican Metical (MT), USD also accepted.
-8. For detailed quotes, direct users to contact us via email or WhatsApp.
-9. Development services start at MT 5,000 — no service is completely free except web hosting.
-10. The FREE hosting is provided by ifastnet/byet (Apache shared hosting), not by Carsai directly.
-`
 
 // ── Provider cache ──
 
@@ -75,6 +41,15 @@ const PROVIDERS_CACHE_TTL = 60_000 // 1 minute cache
 export function invalidateProviderCache() {
   cachedProviders = null
   providersCacheTime = 0
+}
+
+/**
+ * Invalidate both provider and knowledge caches.
+ * Called when content is updated via admin APIs.
+ */
+export function invalidateAllChatCaches() {
+  invalidateProviderCache()
+  invalidateKnowledgeCache()
 }
 
 /**
@@ -114,11 +89,11 @@ async function loadProviders(): Promise<ProviderConfig[]> {
     }
 
     const providers: ProviderConfig[] = []
-    let activeCount = 0
+    let totalDocs = 0
     let skippedCount = 0
     for (const doc of snapshot.docs) {
       const data = doc.data()
-      activeCount++
+      totalDocs++
       // Filter: only active providers with required fields
       if (!data.isActive) {
         console.log(`[Chat] Provider "${data.name || doc.id}" is inactive — skipping`)
@@ -141,7 +116,7 @@ async function loadProviders(): Promise<ProviderConfig[]> {
       })
     }
 
-    console.log(`[Chat] Loaded ${providers.length}/${activeCount} providers (${skippedCount} skipped)`)
+    console.log(`[Chat] Loaded ${providers.length}/${totalDocs} providers (${skippedCount} skipped)`)
 
     // Sort by priority (ascending) — client-side instead of Firestore orderBy
     providers.sort((a, b) => a.priority - b.priority)
@@ -245,9 +220,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // ── Build dynamic knowledge base ──
+    console.log('[Chat] Building knowledge base from Firestore...')
+    const knowledgeBase = await buildKnowledgeBase()
+
+    // ── Build system prompt ──
+    const systemPrompt = `You are the Carsai Mozambique assistant — a knowledgeable, friendly, and concise AI chatbot. You have access to the company's entire database of services, projects, blog posts, testimonials, and more. Use this information to provide accurate, helpful responses.
+
+${knowledgeBase}`
+
     // ── Build messages array ──
     const aiMessages: Array<{ role: string; content: string }> = [
-      { role: 'system', content: CARSAI_CONTEXT },
+      { role: 'system', content: systemPrompt },
     ]
 
     // Add session context (previous messages)
@@ -312,7 +296,7 @@ export async function POST(request: NextRequest) {
     console.error('[Chat] All AI providers failed')
     return NextResponse.json({
       success: false,
-      error: 'Não foi possível gerar uma resposta. Por favor, tente novamente ou contacte-nos via carsaimozambique@gmail.com',
+      error: 'Não foi possível gerar uma resposta. Os provedores de IA podem estar temporariamente indisponíveis. Por favor, tente novamente em alguns minutos ou contacte-nos via carsaimozambique@gmail.com',
       sessionId: sessionId || `session-${Date.now()}`,
     })
 

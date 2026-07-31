@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { safeQueryDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
+import { invalidateKnowledgeCache } from '@/lib/chat-knowledge'
 import { updateDoc, deleteDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 
@@ -64,6 +65,7 @@ export async function PUT(request: NextRequest) {
 
     await updateDoc('forum_topics', id, updateData)
     const topic = await safeGetDoc('forum_topics', id)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true, data: serializeFirestore(topic) })
   } catch (error) {
     console.error('Admin forum topic update error:', error)
@@ -106,6 +108,7 @@ export async function DELETE(request: NextRequest) {
     } catch {}
 
     await deleteDoc('forum_topics', id)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Admin forum topic delete error:', error)

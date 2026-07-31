@@ -299,33 +299,48 @@ export default function DbManagerPage() {
   };
 
   // ── Handle edit document ──
-  const handleEditDocument = (doc?: DocumentData) => {
-    const targetDoc = doc || selectedDoc;
-    if (!targetDoc) return;
-    // Store the document ID for saving later
-    setEditingDocId(targetDoc.id);
-    // Strip id, createdAt, updatedAt — these are managed by the server
-    const { id, createdAt, updatedAt, ...data } = targetDoc;
-    // Sanitize: convert stringified-JSON fields back to objects for display
-    const sanitized = { ...data };
-    for (const key of Object.keys(sanitized)) {
-      const val = sanitized[key];
-      // If a value is a string that looks like JSON, try to parse it for display
-      if (typeof val === 'string' && val.length > 1) {
-        try {
-          const parsed = JSON.parse(val);
-          // Only replace if it's an object or array (not a plain string/number)
-          if (typeof parsed === 'object' && parsed !== null) {
-            sanitized[key] = parsed;
+  const handleEditDocument = (doc?: DocumentData | null) => {
+    try {
+      const targetDoc = doc || selectedDoc;
+      if (!targetDoc || typeof targetDoc !== 'object') return;
+      // Store the document ID for saving later
+      setEditingDocId(targetDoc.id || 'unknown');
+      // Strip id, createdAt, updatedAt — these are managed by the server
+      const { id, createdAt, updatedAt, ...data } = targetDoc;
+      // Sanitize: convert stringified-JSON fields back to objects for display
+      // Also handle null values gracefully
+      const sanitized: Record<string, any> = {};
+      for (const [key, val] of Object.entries(data)) {
+        // Keep null values as null — they're valid in Firestore
+        if (val === null || val === undefined) {
+          sanitized[key] = null;
+          continue;
+        }
+        // If a value is a string that looks like JSON, try to parse it for display
+        if (typeof val === 'string' && val.length > 1) {
+          try {
+            const parsed = JSON.parse(val);
+            // Only replace if it's an object or array (not a plain string/number/boolean)
+            if (typeof parsed === 'object' && parsed !== null) {
+              sanitized[key] = parsed;
+            } else {
+              sanitized[key] = val;
+            }
+          } catch {
+            // Not JSON, keep as-is
+            sanitized[key] = val;
           }
-        } catch {
-          // Not JSON, keep as-is
+        } else {
+          sanitized[key] = val;
         }
       }
+      setJsonInput(JSON.stringify(sanitized, null, 2));
+      setJsonError(null);
+      setEditDialogOpen(true);
+    } catch (e: any) {
+      setJsonError(`Erro ao preparar documento: ${e.message || 'Verifique os dados'}`);
+      setEditDialogOpen(true);
     }
-    setJsonInput(JSON.stringify(sanitized, null, 2));
-    setJsonError(null);
-    setEditDialogOpen(true);
   };
 
   // ── Validate and save JSON ──
@@ -333,7 +348,7 @@ export default function DbManagerPage() {
     try {
       const parsed = JSON.parse(jsonInput);
       if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-        setJsonError('JSON must be an object (e.g., { "key": "value" })');
+        setJsonError('JSON deve ser um objecto (ex: { "chave": "valor" })');
         return;
       }
       setJsonError(null);
@@ -342,7 +357,7 @@ export default function DbManagerPage() {
         setCreateDialogOpen(false);
         setJsonInput('');
       } else {
-        setJsonError('Failed to create document. Check the data and try again.');
+        setJsonError('Falha ao criar o documento. Verifique os dados e tente novamente.');
       }
     } catch (e: any) {
       setJsonError(`JSON inválido: ${e.message || 'Verifique a formatação'}`);
@@ -353,11 +368,11 @@ export default function DbManagerPage() {
     try {
       const parsed = JSON.parse(jsonInput);
       if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-        setJsonError('JSON must be an object (e.g., { "key": "value" })');
+        setJsonError('JSON deve ser um objecto (ex: { "chave": "valor" })');
         return;
       }
       // Strip server-managed fields — these should not be overwritten by the user
-      const { createdAt, updatedAt, ...cleanData } = parsed;
+      const { id, createdAt, updatedAt, ...cleanData } = parsed;
       setJsonError(null);
       // Use editingDocId (stored when dialog opened) instead of selectedDoc which may be null
       const docId = editingDocId || selectedDoc?.id;
@@ -371,7 +386,7 @@ export default function DbManagerPage() {
         setJsonInput('');
         setEditingDocId(null);
       } else {
-        setJsonError('Failed to update document. Check the data and try again.');
+        setJsonError('Falha ao actualizar o documento. Verifique os dados e tente novamente.');
       }
     } catch (e: any) {
       setJsonError(`JSON inválido: ${e.message || 'Verifique a formatação'}`);

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { safeQueryDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { getDocByField, createDoc, updateDoc, deleteDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
+import { invalidateKnowledgeCache } from '@/lib/chat-knowledge'
 
 // GET all projects (including unpublished) for admin
 export async function GET() {
@@ -63,6 +64,7 @@ export async function POST(request: NextRequest) {
     })
 
     const project = await safeGetDoc('projects', projectId)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true, data: serializeFirestore(project) })
   } catch (error) {
     console.error('Admin project create error:', error)
@@ -120,6 +122,7 @@ export async function PUT(request: NextRequest) {
 
     await updateDoc('projects', id, updateData)
     const project = await safeGetDoc('projects', id)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true, data: serializeFirestore(project) })
   } catch (error) {
     console.error('Admin project update error:', error)
@@ -152,6 +155,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteDoc('projects', id)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Admin project delete error:', error)

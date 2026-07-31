@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { safeQueryDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
+import { invalidateKnowledgeCache } from '@/lib/chat-knowledge'
 import { getDocByField, createDoc, updateDoc, deleteDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 
@@ -71,6 +72,7 @@ export async function POST(request: NextRequest) {
     const categoryId = await createDoc('forum_categories', docData)
 
     const category = await safeGetDoc('forum_categories', categoryId)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true, data: serializeFirestore(category) })
   } catch (error) {
     console.error('Admin forum category create error:', error)
@@ -121,6 +123,7 @@ export async function PUT(request: NextRequest) {
 
     await updateDoc('forum_categories', id, updateData)
     const category = await safeGetDoc('forum_categories', id)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true, data: serializeFirestore(category) })
   } catch (error) {
     console.error('Admin forum category update error:', error)
@@ -153,6 +156,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteDoc('forum_categories', id)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Admin forum category delete error:', error)

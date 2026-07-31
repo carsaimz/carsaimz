@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { safeQueryDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { getDocByField, createDoc, updateDoc, deleteDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
+import { invalidateKnowledgeCache } from '@/lib/chat-knowledge'
 
 // GET all services (including unpublished) for admin
 export async function GET() {
@@ -62,6 +63,7 @@ export async function POST(request: NextRequest) {
     })
 
     const service = await safeGetDoc('services', serviceId)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true, data: serializeFirestore(service) })
   } catch (error) {
     console.error('Admin service create error:', error)
@@ -118,6 +120,7 @@ export async function PUT(request: NextRequest) {
 
     await updateDoc('services', id, updateData)
     const service = await safeGetDoc('services', id)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true, data: serializeFirestore(service) })
   } catch (error) {
     console.error('Admin service update error:', error)
@@ -150,6 +153,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteDoc('services', id)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Admin service delete error:', error)

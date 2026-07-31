@@ -3,6 +3,7 @@ import { safeGetDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { getDocByField, createDoc, updateDoc, deleteDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 import { invalidateProviderCache } from '@/app/api/chat/route'
+import { invalidateKnowledgeCache } from '@/lib/chat-knowledge'
 
 /**
  * Carsai Mozambique - AI Providers Admin API
@@ -118,6 +119,7 @@ export async function POST(request: NextRequest) {
 
     // Invalidate the chat provider cache so changes take effect immediately
     try { invalidateProviderCache() } catch { /* ignore */ }
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
 
     return NextResponse.json({ success: true, provider: serializeFirestore(provider) })
   } catch (error) {
@@ -161,6 +163,7 @@ export async function PUT(request: NextRequest) {
 
     // Invalidate the chat provider cache so changes take effect immediately
     try { invalidateProviderCache() } catch { /* ignore */ }
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
 
     return NextResponse.json({ success: true, provider: serializeFirestore(provider) })
   } catch (error) {
@@ -194,6 +197,7 @@ export async function DELETE(request: NextRequest) {
 
     // Invalidate the chat provider cache so changes take effect immediately
     try { invalidateProviderCache() } catch { /* ignore */ }
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
 
     return NextResponse.json({ success: true })
   } catch (error) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { safeQueryDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { getDocByField, createDoc, updateDoc, deleteDoc, deleteMany } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
+import { invalidateKnowledgeCache } from '@/lib/chat-knowledge'
 
 // GET all posts (including unpublished) for admin
 export async function GET() {
@@ -86,6 +87,7 @@ export async function POST(request: NextRequest) {
     })
 
     const post = await safeGetDoc('posts', postId)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true, data: serializeFirestore(post) })
   } catch (error) {
     console.error('Admin post create error:', error)
@@ -140,6 +142,7 @@ export async function PUT(request: NextRequest) {
 
     await updateDoc('posts', id, updateData)
     const post = await safeGetDoc('posts', id)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true, data: serializeFirestore(post) })
   } catch (error) {
     console.error('Admin post update error:', error)
@@ -175,6 +178,7 @@ export async function DELETE(request: NextRequest) {
     await deleteMany('comments', [{ field: 'postId', op: '==', value: id }])
     await deleteMany('post_tags', [{ field: 'postId', op: '==', value: id }])
     await deleteDoc('posts', id)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Admin post delete error:', error)

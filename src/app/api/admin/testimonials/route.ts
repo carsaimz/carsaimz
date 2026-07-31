@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { safeQueryDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { createDoc, updateDoc, deleteDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
+import { invalidateKnowledgeCache } from '@/lib/chat-knowledge'
 
 // GET all testimonials (including unpublished) for admin
 export async function GET() {
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
     })
 
     const testimonial = await safeGetDoc('testimonials', testimonialId)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true, data: serializeFirestore(testimonial) })
   } catch (error) {
     console.error('Admin testimonial create error:', error)
@@ -97,6 +99,7 @@ export async function PUT(request: NextRequest) {
 
     await updateDoc('testimonials', id, updateData)
     const testimonial = await safeGetDoc('testimonials', id)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true, data: serializeFirestore(testimonial) })
   } catch (error) {
     console.error('Admin testimonial update error:', error)
@@ -129,6 +132,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteDoc('testimonials', id)
+    try { invalidateKnowledgeCache() } catch { /* ignore */ }
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Admin testimonial delete error:', error)

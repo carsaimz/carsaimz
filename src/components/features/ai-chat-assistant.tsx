@@ -430,12 +430,22 @@ export function AiChatAssistant() {
     windowState === 'normal' && isDesktop.current
   );
 
-  // ── Quick questions ──
+  // ── Quick questions (skill-oriented) ──
   const quickQuestions = [
     t('chat.quickQuestion1'),
     t('chat.quickQuestion2'),
     t('chat.quickQuestion3'),
     t('chat.quickQuestion4'),
+    t('chat.quickQuestion5'),
+    t('chat.quickQuestion6'),
+  ];
+
+  // ── Skill action buttons ──
+  const skillActions = [
+    { key: 'quote', label: t('chat.skillQuote'), icon: MessageCircle, question: t('chat.quickQuestion2') },
+    { key: 'hosting', label: t('chat.skillHosting'), icon: Bot, question: t('chat.quickQuestion4') },
+    { key: 'projects', label: t('chat.skillProjects'), icon: User, question: t('chat.quickQuestion5') },
+    { key: 'support', label: t('chat.skillSupport'), icon: Send, question: t('chat.quickQuestion6') },
   ];
 
   // ── Initialize session and load memory ──
@@ -981,7 +991,7 @@ export function AiChatAssistant() {
           </div>
         </ScrollArea>
 
-        {/* ── Quick Questions ── */}
+        {/* ── Quick Questions & Skill Actions ── */}
         {showQuickQuestions && !isLoading && (
           <div className="shrink-0 px-4 pb-2 pt-1">
             <Separator
@@ -1000,6 +1010,21 @@ export function AiChatAssistant() {
                 <X className="size-3" />
               </button>
             </div>
+            {/* Skill action buttons — prominent quick actions */}
+            <div className="grid grid-cols-2 gap-1.5 mb-2">
+              {skillActions.map((skill) => (
+                <button
+                  key={skill.key}
+                  type="button"
+                  className="inline-flex items-center justify-center gap-1.5 text-xs h-auto py-2 px-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg shadow-sm transition-all hover:shadow-md font-medium"
+                  onClick={() => handleQuickQuestion(skill.question)}
+                >
+                  <skill.icon className="size-3" />
+                  {skill.label}
+                </button>
+              ))}
+            </div>
+            {/* Quick questions — text-based suggestions */}
             <div className="flex flex-wrap gap-1.5">
               {quickQuestions.map((question, idx) => (
                 <button
