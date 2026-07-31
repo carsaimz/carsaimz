@@ -154,8 +154,18 @@ interface ApiInvoice {
   }[];
 }
 
+interface ApiService {
+  id: string;
+  slug: string;
+  title: string;
+  name?: string;           // Legacy field
+  titleI18n?: string | null;
+  basePrice?: number | null;
+  price?: number | string | null;  // Legacy field
+}
+
 export function FinancialSection() {
-  const { t, formatCurrency, formatDate } = useLanguage();
+  const { t, formatCurrency, formatDate, language } = useLanguage();
   const user = useAuthStore((s) => s.user);
 
   const [activeTab, setActiveTab] = useState('quotes');
@@ -167,6 +177,7 @@ export function FinancialSection() {
   const [quotes, setQuotes] = useState<ApiQuote[]>([]);
   const [payments, setPayments] = useState<ApiPayment[]>([]);
   const [invoices, setInvoices] = useState<ApiInvoice[]>([]);
+  const [services, setServices] = useState<ApiService[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submittingQuote, setSubmittingQuote] = useState(false);
@@ -206,6 +217,36 @@ export function FinancialSection() {
         setLoading(false);
       });
   }, [user?.id]);
+
+  // Fetch services from API for the quote form dropdown
+  useEffect(() => {
+    apiFetch('/api/services')
+      .then((res) => safeJson(res))
+      .then((data) => {
+        if (data && data.success && data.data?.length > 0) {
+          setServices(data.data);
+        }
+      })
+      .catch(() => {
+        // Services list will be empty — fallback to hardcoded values handled below
+      });
+  }, []);
+
+  // Resolve i18n service title
+  const resolveServiceTitle = (svc: ApiService): string => {
+    if (svc.titleI18n) {
+      try {
+        const i18n = typeof svc.titleI18n === 'string' ? JSON.parse(svc.titleI18n) : svc.titleI18n;
+        const langKey = language || 'pt-pt';
+        if (i18n[langKey]) return i18n[langKey];
+        // Fallback through common language keys
+        for (const key of ['pt-pt', 'en-us', 'pt-br']) {
+          if (i18n[key]) return i18n[key];
+        }
+      } catch { /* ignore */ }
+    }
+    return svc.title || svc.name || svc.slug;
+  };
 
   // Derive proposals from quotes
   const proposals: ApiProposal[] = quotes.flatMap((q) =>
@@ -518,14 +559,24 @@ export function FinancialSection() {
                             <SelectValue placeholder="Select a service" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="web-dev">{t('services.webDev')}</SelectItem>
-                            <SelectItem value="mobile-dev">{t('services.mobileDev')}</SelectItem>
-                            <SelectItem value="cloud">{t('services.cloud')}</SelectItem>
-                            <SelectItem value="ai">{t('services.ai')}</SelectItem>
-                            <SelectItem value="consulting">{t('services.consulting')}</SelectItem>
-                            <SelectItem value="design">{t('services.design')}</SelectItem>
-                            <SelectItem value="seo">{t('services.seo')}</SelectItem>
-                            <SelectItem value="maintenance">{t('services.maintenance')}</SelectItem>
+                            {services.length > 0 ? (
+                              services.map((svc) => (
+                                <SelectItem key={svc.id} value={svc.slug}>
+                                  {resolveServiceTitle(svc)}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <>
+                                <SelectItem value="web-dev">{t('services.webDev')}</SelectItem>
+                                <SelectItem value="mobile-dev">{t('services.mobileDev')}</SelectItem>
+                                <SelectItem value="cloud">{t('services.cloud')}</SelectItem>
+                                <SelectItem value="ai">{t('services.ai')}</SelectItem>
+                                <SelectItem value="consulting">{t('services.consulting')}</SelectItem>
+                                <SelectItem value="design">{t('services.design')}</SelectItem>
+                                <SelectItem value="seo">{t('services.seo')}</SelectItem>
+                                <SelectItem value="maintenance">{t('services.maintenance')}</SelectItem>
+                              </>
+                            )}
                           </SelectContent>
                         </Select>
                       </div>

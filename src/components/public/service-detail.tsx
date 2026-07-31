@@ -44,15 +44,18 @@ interface ServiceData {
   id: string;
   slug: string;
   title: string;
-  titleI18n: string | null;
-  description: string | null;
-  descriptionI18n: string | null;
+  titleI18n?: string | null;
+  description?: string | null;
+  descriptionI18n?: string | null;
   icon: string | null;
-  basePrice: number | null;
-  isFeatured: boolean;
-  isPublished: boolean;
+  basePrice?: number | null;
+  price?: number | string | null;      // Legacy field from old client-seed
+  isFeatured?: boolean;
+  featured?: boolean;                  // Legacy field from old client-seed
+  name?: string;                       // Legacy field from old client-seed
+  isPublished?: boolean;
   order: number;
-  createdAt: string;
+  createdAt?: string;
   images?: string | null;
 }
 
@@ -158,8 +161,12 @@ export function ServiceDetail() {
   }
 
   const IconComponent = iconMap[service.icon || 'Globe'] || Globe;
-  const resolvedTitle = resolveI18nContent(service.titleI18n, service.title, language);
-  const resolvedDescription = resolveI18nContent(service.descriptionI18n, service.description || '', language);
+  // Support legacy field names: name → title, featured → isFeatured
+  const displayTitle = service.title || service.name || 'Serviço';
+  const displayPrice = service.basePrice || (typeof service.price === 'number' ? service.price : null);
+  const isFeaturedService = service.isFeatured || service.featured;
+  const resolvedTitle = resolveI18nContent(service.titleI18n || null, displayTitle, language);
+  const resolvedDescription = resolveI18nContent(service.descriptionI18n || null, service.description || '', language);
 
   return (
     <div className="min-h-screen bg-background">
@@ -203,15 +210,15 @@ export function ServiceDetail() {
                 {resolvedTitle}
               </h1>
               <div className="flex items-center gap-3 mt-2">
-                {service.isFeatured && (
+                {isFeaturedService && (
                   <Badge className="bg-yellow-100 text-yellow-700 border-yellow-300">
                     <Star className="h-3 w-3 mr-1" />
                     Featured
                   </Badge>
                 )}
-                {service.basePrice && (
+                {displayPrice && (
                   <span className="text-emerald-700 dark:text-emerald-300 font-semibold text-lg">
-                    {formatPrice(service.basePrice)}
+                    {formatPrice(displayPrice)}
                   </span>
                 )}
               </div>

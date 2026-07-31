@@ -37,13 +37,19 @@ export function invalidateKnowledgeCache() {
 
 interface ServiceData {
   id: string
-  name?: string
+  name?: string          // Legacy field from old client-seed
   title?: string
   slug?: string
   description?: string
-  price?: string | number
+  basePrice?: number | null
+  price?: string | number | null  // Legacy field from old client-seed
   features?: string[]
-  isActive?: boolean
+  isPublished?: boolean
+  isActive?: boolean     // Legacy field — should not be used for filtering
+  isFeatured?: boolean
+  featured?: boolean     // Legacy field from old client-seed
+  titleI18n?: string
+  descriptionI18n?: string
   [key: string]: any
 }
 
@@ -209,19 +215,30 @@ async function buildServicesKnowledge(): Promise<string> {
   const services = await safeFetchCollection<ServiceData>('services', 50)
   if (services.length === 0) return ''
 
-  const activeServices = services.filter(s => s.isActive !== false)
-  if (activeServices.length === 0) return ''
+  // Filter: only include published services.
+  // A document is considered "published" if isPublished is explicitly true,
+  // or if the field is missing/undefined (legacy data — treat as published).
+  const publishedServices = services.filter(s => {
+    if (s.isPublished !== undefined && s.isPublished !== null) {
+      return s.isPublished === true
+    }
+    // Legacy documents without isPublished — treat as published
+    return !!(s.title || s.name)
+  })
+  if (publishedServices.length === 0) return ''
 
   const lines = ['=== SERVICES (from database) ===']
-  for (const svc of activeServices) {
-    const name = extractText(svc.name || svc.title, 'Unnamed Service')
+  for (const svc of publishedServices) {
+    const name = extractText(svc.title || svc.name, 'Unnamed Service')
     const desc = truncate(extractText(svc.description, ''), 150)
-    const price = svc.price ? ` — Price: ${svc.price}` : ''
+    const priceVal = svc.basePrice || (typeof svc.price === 'number' ? svc.price : null)
+    const price = priceVal ? ` — Price: MT ${Number(priceVal).toLocaleString()}` : ''
     const slug = svc.slug ? ` (slug: ${svc.slug})` : ''
     const features = svc.features && Array.isArray(svc.features) && svc.features.length > 0
       ? ` — Features: ${svc.features.join(', ')}`
       : ''
-    lines.push(`- ${name}${slug}: ${desc}${price}${features}`)
+    const featured = (svc.isFeatured || svc.featured) ? ' [FEATURED]' : ''
+    lines.push(`- ${name}${slug}${featured}: ${desc}${price}${features}`)
   }
   return lines.join('\n')
 }

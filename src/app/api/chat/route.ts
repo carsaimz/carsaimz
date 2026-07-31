@@ -131,6 +131,47 @@ async function loadProviders(): Promise<ProviderConfig[]> {
 }
 
 /**
+ * Load inactive AI providers from Firestore, sorted by priority.
+ * Used as fallback when no active providers are available.
+ * Auto-activates the first provider that responds successfully.
+ */
+async function loadInactiveProviders(): Promise<ProviderConfig[]> {
+  try {
+    const adminError = checkFirebaseAdmin()
+    if (adminError) return []
+
+    const db = getAdminFirestore()
+    if (!db) return []
+
+    const snapshot = await db.collection('ai_providers').get()
+    if (snapshot.empty) return []
+
+    const providers: ProviderConfig[] = []
+    for (const doc of snapshot.docs) {
+      const data = doc.data()
+      // Only include inactive providers with valid API keys
+      if (data.isActive) continue
+      if (!data.baseUrl || !data.apiKey) continue
+
+      providers.push({
+        id: doc.id,
+        name: data.name || data.displayName || 'unknown',
+        baseUrl: data.baseUrl.replace(/\/+$/, ''),
+        apiKey: data.apiKey,
+        model: data.model || 'gpt-3.5-turbo',
+        priority: data.priority || 99,
+      })
+    }
+
+    providers.sort((a, b) => a.priority - b.priority)
+    return providers
+  } catch (error) {
+    console.warn('[Chat] Could not load inactive providers:', error instanceof Error ? error.message : error)
+    return []
+  }
+}
+
+/**
  * Call an OpenAI-compatible chat completions API.
  * Supports: Groq, DeepSeek, Gemini, OpenRouter, OpenAI, and any compatible provider.
  */
@@ -251,7 +292,36 @@ ${knowledgeBase}`
     const dbProviders = await loadProviders()
 
     if (dbProviders.length === 0) {
-      // Check if there are inactive providers in the database
+      // ── Fallback: try inactive providers as last resort ──
+      // If no active providers exist, try to use inactive ones with valid API keys
+      console.warn('[Chat] No active providers — attempting to use inactive providers as fallback')
+      const fallbackProviders = await loadInactiveProviders()
+
+      if (fallbackProviders.length > 0) {
+        for (const provider of fallbackProviders) {
+          console.log(`[Chat] Trying inactive provider: ${provider.name}`)
+          const response = await callProvider(provider, aiMessages)
+          if (response) {
+            // Auto-activate the provider that worked
+            try {
+              const { updateDoc } = await import('@/lib/db')
+              await updateDoc('ai_providers', provider.id, { isActive: true })
+              invalidateProviderCache()
+              console.log(`[Chat] Auto-activated provider: ${provider.name}`)
+            } catch (e) {
+              console.warn('[Chat] Could not auto-activate provider:', e)
+            }
+            return NextResponse.json({
+              success: true,
+              response,
+              sessionId: sessionId || `session-${Date.now()}`,
+              provider: provider.name,
+            })
+          }
+        }
+      }
+
+      // Check if there are any providers in the database at all
       let hasInactiveProviders = false
       try {
         const adminError = checkFirebaseAdmin()

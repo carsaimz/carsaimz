@@ -5,14 +5,27 @@ import { serializeFirestore } from '@/lib/serialize'
 
 export async function GET() {
   try {
-    const services = await queryDocs('services', [
-      { field: 'isPublished', op: '==', value: true },
-    ], 'order', 'asc')
+    // Fetch ALL services and filter client-side to avoid Firestore composite index
+    // requirement and to handle documents that may lack the `isPublished` field
+    // (e.g., seeded from client-seed.ts before the schema was fixed).
+    // A document is considered "published" if isPublished is explicitly true,
+    // or if the field is missing/undefined (legacy data — treat as published).
+    const allServices = await queryDocs('services', [], 'order', 'asc')
+
+    const published = allServices.filter((s: any) => {
+      // If isPublished is explicitly set, use it
+      if (s.isPublished !== undefined && s.isPublished !== null) {
+        return s.isPublished === true
+      }
+      // Legacy documents without isPublished — treat as published
+      // but only if they have a title (not a malformed doc)
+      return !!(s.title || s.name)
+    })
 
     return NextResponse.json({
       success: true,
-      data: serializeFirestore(services),
-      count: services.length,
+      data: serializeFirestore(published),
+      count: published.length,
     })
   } catch (error) {
     console.error('Services fetch error:', error)

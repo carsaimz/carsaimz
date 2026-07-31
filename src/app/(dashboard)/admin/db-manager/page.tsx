@@ -302,9 +302,13 @@ export default function DbManagerPage() {
   const handleEditDocument = (doc?: DocumentData | null) => {
     try {
       const targetDoc = doc || selectedDoc;
-      if (!targetDoc || typeof targetDoc !== 'object') return;
-      // Store the document ID for saving later
-      setEditingDocId(targetDoc.id || 'unknown');
+      if (!targetDoc || typeof targetDoc !== 'object') {
+        setJsonError('Nenhum documento seleccionado. Seleccione um documento primeiro.');
+        return;
+      }
+      // Ensure the document has an id — use a fallback if missing
+      const docId = targetDoc.id ?? 'unknown';
+      setEditingDocId(docId);
       // Strip id, createdAt, updatedAt — these are managed by the server
       const { id, createdAt, updatedAt, ...data } = targetDoc;
       // Sanitize: convert stringified-JSON fields back to objects for display
@@ -602,18 +606,18 @@ export default function DbManagerPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {documents.map((doc) => (
+                      {documents.map((doc, idx) => (
                         <TableRow
-                          key={doc.id}
+                          key={doc?.id || `doc-${idx}`}
                           className="cursor-pointer hover:bg-muted/50"
-                          onClick={() => fetchDocument(selectedCollection!, doc.id)}
+                          onClick={() => doc?.id && fetchDocument(selectedCollection!, doc.id)}
                         >
                           <TableCell className="font-mono text-xs">
-                            {truncate(doc.id, 20)}
+                            {truncate(doc?.id || '—', 20)}
                           </TableCell>
                           {fieldKeys.map((key) => (
                             <TableCell key={key} className="text-sm hidden sm:table-cell">
-                              {truncate(renderValue(doc[key]), 40)}
+                              {truncate(renderValue(doc?.[key]), 40)}
                             </TableCell>
                           ))}
                           <TableCell className="text-right">
@@ -652,7 +656,7 @@ export default function DbManagerPage() {
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                                   <AlertDialogAction
-                                    onClick={() => deleteDocument(selectedCollection!, doc.id)}
+                                    onClick={() => doc?.id && deleteDocument(selectedCollection!, doc.id)}
                                   >
                                     Delete
                                   </AlertDialogAction>
