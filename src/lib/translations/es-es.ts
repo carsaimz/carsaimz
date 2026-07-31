@@ -671,6 +671,7 @@ export const esES: TranslationObject = {
     support: 'Soporte',
     quotes: 'Presupuestos',
     payments: 'Pagos',
+    paymentProviders: 'Métodos de Pago',
     partner: 'Socios',
     saving: 'Guardando...',
     pinned: 'Fijado',

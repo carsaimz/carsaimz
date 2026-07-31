@@ -680,6 +680,7 @@ export const ptPT: TranslationObject = {
     support: 'Suporte',
     quotes: 'Orçamentos',
     payments: 'Pagamentos',
+    paymentProviders: 'Métodos de Pagamento',
     partner: 'Parceiros',
     saving: 'A guardar...',
     pinned: 'Fixado',

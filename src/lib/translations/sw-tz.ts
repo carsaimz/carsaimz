@@ -678,6 +678,7 @@ export const swTZ: TranslationObject = {
     support: 'Msaada',
     quotes: 'Nukuu',
     payments: 'Malipo',
+    paymentProviders: 'Njia za Malipo',
     partner: 'Washirika',
     saving: 'Inahifadhi...',
     pinned: 'Imebandikwa',

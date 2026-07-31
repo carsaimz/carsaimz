@@ -59,6 +59,7 @@ const ADMIN_MENU_ITEMS: SidebarLink[] = [
   { path: '/admin/support', labelKey: 'admin.support', icon: Headphones },
   { path: '/admin/quotes', labelKey: 'admin.quotes', icon: ClipboardList },
   { path: '/admin/payments', labelKey: 'admin.payments', icon: CreditCard },
+  { path: '/admin/payment-providers', labelKey: 'admin.paymentProviders', icon: Wallet },
   { path: '/admin/partner', labelKey: 'admin.partner', icon: Briefcase },
   { path: '/admin/ads', labelKey: 'ads.title', icon: Megaphone },
   { path: '/admin/notifications', labelKey: 'admin.sendNotification', icon: Bell },

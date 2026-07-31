@@ -670,6 +670,7 @@ export const enUS: TranslationObject = {
     support: 'Support',
     quotes: 'Quotes',
     payments: 'Payments',
+    paymentProviders: 'Payment Methods',
     partner: 'Partners',
     saving: 'Saving...',
     pinned: 'Pinned',

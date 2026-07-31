@@ -671,6 +671,7 @@ export const frFR: TranslationObject = {
     support: 'Support',
     quotes: 'Devis',
     payments: 'Paiements',
+    paymentProviders: 'Moyens de Paiement',
     partner: 'Partenaires',
     saving: 'Enregistrement...',
     pinned: 'Épinglé',

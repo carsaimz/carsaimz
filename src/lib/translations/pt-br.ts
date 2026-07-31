@@ -706,6 +706,7 @@ export const ptBR: TranslationObject = {
     support: 'Suporte',
     quotes: 'Orçamentos',
     payments: 'Pagamentos',
+    paymentProviders: 'Métodos de Pagamento',
     partner: 'Parceiros',
     saving: 'Salvando...',
     pinned: 'Fixado',

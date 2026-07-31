@@ -671,6 +671,7 @@ export const zhCN: TranslationObject = {
     support: '支持',
     quotes: '报价',
     payments: '付款',
+    paymentProviders: '支付方式',
     partner: '合作伙伴',
     saving: '保存中...',
     pinned: '已置顶',

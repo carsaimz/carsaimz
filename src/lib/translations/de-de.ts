@@ -671,6 +671,7 @@ export const deDE: TranslationObject = {
     support: 'Support',
     quotes: 'Angebote',
     payments: 'Zahlungen',
+    paymentProviders: 'Zahlungsmethoden',
     partner: 'Partner',
     saving: 'Speichern...',
     pinned: 'Angeheftet',

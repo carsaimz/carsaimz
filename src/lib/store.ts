@@ -579,31 +579,20 @@ export const useAuthStore = create<AuthState>()(
             idToken = nativeResult.idToken
             nativeAuthResult = nativeResult
           } else {
-            // ── Web path: Firebase Web SDK signInWithPopup (primary) ──
-            // Using popup as primary because:
+            // ── Web path: Firebase Web SDK signInWithPopup ONLY ──
+            // Using popup exclusively because:
             // 1. Returns result immediately — no page reload needed
             // 2. Works reliably on Vercel / deployed domains
-            // 3. No need for getRedirectResult() handler
-            // Fallback to signInWithRedirect ONLY if popup is blocked by the browser
-            // (NOT for auth/popup-closed-by-user, auth/unauthorized-domain, etc.)
+            // 3. signInWithRedirect causes "missing initial state" errors in
+            //    storage-partitioned browsers (Chrome 114+, Safari 17+)
+            // 4. No need for getRedirectResult() handler or /__/auth/handler URL
+            //
+            // If popup is blocked, we show a user-friendly error instead of
+            // falling back to redirect (which breaks in modern browsers).
             const fb = await getFirebaseAuth()
-            const { auth, googleProvider, signInWithPopup, signInWithRedirect } = fb
+            const { auth, googleProvider, signInWithPopup } = fb
 
-            let userCredential: any
-            try {
-              userCredential = await signInWithPopup(auth, googleProvider)
-            } catch (popupErr: any) {
-              // Only fall back to redirect if the popup was genuinely blocked by the browser
-              // Do NOT fall back for: popup-closed-by-user (user action), unauthorized-domain (config issue), etc.
-              if (popupErr.code === 'auth/popup-blocked') {
-                console.log('[Auth] Popup blocked by browser, falling back to redirect')
-                await signInWithRedirect(auth, googleProvider)
-                // After redirect, the page will reload and getRedirectResult() will
-                // return the credential. The auth-context.tsx handles this on mount.
-                return { success: true }
-              }
-              throw popupErr // Re-throw other errors (including popup-closed-by-user, unauthorized-domain)
-            }
+            const userCredential = await signInWithPopup(auth, googleProvider)
 
             // Popup succeeded — get the ID token and verify with server immediately
             idToken = await userCredential.user.getIdToken()
@@ -635,8 +624,6 @@ export const useAuthStore = create<AuthState>()(
             errorMsg = 'Login com Google não está activado. Active no Firebase Console → Authentication → Sign-in method.'
           } else if (err.code === 'auth/account-exists-with-different-credential') {
             errorMsg = 'Já existe uma conta com este email. Tente outro método de login.'
-          } else if (err.code === 'auth/redirect-operation-pending') {
-            errorMsg = 'Operação de redirecionamento em curso. Aguarde.'
           } else if (err.code === 'auth/network-request-failed') {
             errorMsg = 'Erro de rede. Verifique a sua ligação e tente novamente.'
           }
@@ -647,7 +634,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       // ── GitHub Sign-In ──
-      // Web: Uses signInWithPopup (primary) with redirect fallback ONLY for popup-blocked
+      // Web: Uses signInWithPopup ONLY (no redirect fallback — it causes "missing initial state" errors)
       // Native: Uses @capacitor-firebase/authentication
       loginWithGithub: async (): Promise<AuthResult> => {
         set({ isLoading: true, lastLoginError: null })
@@ -662,27 +649,14 @@ export const useAuthStore = create<AuthState>()(
             idToken = nativeResult.idToken
             nativeAuthResult = nativeResult
           } else {
-            // ── Web path: Firebase Web SDK signInWithPopup (primary) ──
-            // Fallback to signInWithRedirect ONLY if popup is blocked by the browser
-            // (NOT for auth/popup-closed-by-user, auth/unauthorized-domain, etc.)
+            // ── Web path: Firebase Web SDK signInWithPopup ONLY ──
+            // Using popup exclusively — same reason as Google login:
+            // signInWithRedirect causes "missing initial state" errors in
+            // storage-partitioned browsers and navigates to /__/auth/handler URL.
             const fb = await getFirebaseAuth()
-            const { auth, githubProvider, signInWithPopup, signInWithRedirect } = fb
+            const { auth, githubProvider, signInWithPopup } = fb
 
-            let userCredential: any
-            try {
-              userCredential = await signInWithPopup(auth, githubProvider)
-            } catch (popupErr: any) {
-              // Only fall back to redirect if the popup was genuinely blocked by the browser
-              // Do NOT fall back for: popup-closed-by-user (user action), unauthorized-domain (config issue), etc.
-              if (popupErr.code === 'auth/popup-blocked') {
-                console.log('[Auth] Popup blocked by browser, falling back to redirect')
-                await signInWithRedirect(auth, githubProvider)
-                // After redirect, the page will reload and getRedirectResult() will
-                // return the credential. The auth-context.tsx handles this on mount.
-                return { success: true }
-              }
-              throw popupErr // Re-throw other errors (including popup-closed-by-user, unauthorized-domain)
-            }
+            const userCredential = await signInWithPopup(auth, githubProvider)
 
             // Popup succeeded — get the ID token and verify with server immediately
             idToken = await userCredential.user.getIdToken()
@@ -709,7 +683,7 @@ export const useAuthStore = create<AuthState>()(
           } else if (err.code === 'auth/popup-closed-by-user') {
             errorMsg = 'Popup fechado. Tente novamente.'
           } else if (err.code === 'auth/popup-blocked') {
-            errorMsg = 'Popup bloqueado pelo navegador. Permita popups e tente novamente.'
+            errorMsg = 'Popup bloqueado pelo navegador. Permita popups para este site e tente novamente.'
           } else if (err.code === 'auth/network-request-failed') {
             errorMsg = 'Erro de rede. Verifique a sua ligação e tente novamente.'
           }
