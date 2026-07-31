@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Save, Loader2, Bot } from 'lucide-react';
+import { Settings, Save, Loader2, Bot, CreditCard } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { useLanguage } from '@/contexts/language-context';
 import { useToast } from '@/hooks/use-toast';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { AdminAiProviders } from '@/components/admin/admin-ai-providers';
+import { AdminPaymentProviders } from '@/components/admin/admin-payment-providers';
 
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
 const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
@@ -120,6 +121,10 @@ export function AdminSettings() {
             <Bot className="size-4" />
             {t('admin.aiProviders')}
           </TabsTrigger>
+          <TabsTrigger value="payment-providers" className="gap-1">
+            <CreditCard className="size-4" />
+            {t('payment.providers') || 'Payment Providers'}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
@@ -171,6 +176,10 @@ export function AdminSettings() {
 
         <TabsContent value="ai-providers">
           <AdminAiProviders />
+        </TabsContent>
+
+        <TabsContent value="payment-providers">
+          <AdminPaymentProviders />
         </TabsContent>
       </Tabs>
     </motion.div>

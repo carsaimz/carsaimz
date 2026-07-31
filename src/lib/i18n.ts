@@ -341,17 +341,27 @@ export function createTranslateFunction(
 // ============================================================================
 
 /**
- * Format a number as currency based on language configuration
+ * Format a number as currency.
+ * 
+ * IMPORTANT: All prices in the platform are in MZN (Metical moçambicano).
+ * The currency symbol is ALWAYS MT (MZN), regardless of the user's language.
+ * Only the number formatting (thousands separator, decimal separator) follows
+ * the locale convention.
+ * 
+ * This avoids the nonsensical situation where changing language changes
+ * the currency symbol but not the value (e.g., 50 MT → 50 $).
  */
 export function formatCurrency(
   amount: number,
   language: LanguageCode
 ): string {
   const config = LANGUAGE_CONFIGS[language];
-  return `${config.currencySymbol} ${amount.toLocaleString(config.locale, {
+  // Always use MZN (Metical) — the business operates in Mozambique
+  const formatted = amount.toLocaleString(config.locale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })}`;
+  });
+  return `MT ${formatted}`;
 }
 
 /**
