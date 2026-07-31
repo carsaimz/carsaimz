@@ -8,6 +8,31 @@ export async function generateStaticParams() {
   return [{ slug: '__dynamic__' }];
 }
 
+// Generate metadata for the forum topic page
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  try {
+    const { slug } = await params;
+    if (!slug || slug === '__dynamic__') {
+      return { title: 'CarsaiMz - Fórum' };
+    }
+
+    // Try to fetch the topic title from Firestore
+    const { firestoreClient, isFirebaseConfigured } = await import('@/lib/firebase-client');
+    if (isFirebaseConfigured() && firestoreClient) {
+      const { doc, getDoc } = await import('firebase/firestore');
+      const topicRef = doc(firestoreClient, 'forum_topics', slug);
+      const topicSnap = await getDoc(topicRef);
+      if (topicSnap.exists()) {
+        const data = topicSnap.data();
+        return { title: `CarsaiMz - ${data.title || slug}` };
+      }
+    }
+  } catch {
+    // Fallback if Firestore is not available
+  }
+  return { title: 'CarsaiMz - Fórum' };
+}
+
 // Server component that renders the client component
 export default function ForumTopicPageRoute() {
   return <TopicDetail slug="__dynamic__" />;

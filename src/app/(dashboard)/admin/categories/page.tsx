@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import {
   Plus, Pencil, Trash2, Tag, FileText, Globe, FolderOpen,
@@ -73,6 +74,7 @@ function slugify(text: string): string {
 
 export default function AdminCategoriesPage() {
   const { t } = useLanguage();
+  useDocumentTitle('admin.categories', 'Categorias');
   const { toast } = useToast();
 
   // Active tab

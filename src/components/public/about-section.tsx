@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/language-context';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 const AfricanPatternSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.AfricanPatternSVG),
@@ -81,6 +82,7 @@ const itemVariants = {
 
 export function AboutSection() {
   const { t } = useLanguage();
+  useDocumentTitle('nav.about', 'Sobre Nós');
 
   return (
     <section id="about" className="relative py-16 sm:py-24 bg-muted/30 overflow-hidden">

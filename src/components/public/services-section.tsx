@@ -21,6 +21,7 @@ import { useLanguage } from '@/contexts/language-context';
 import { resolveI18nContent } from '@/lib/i18n-content';
 import { useRouter } from 'next/navigation';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 const TechPatternSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
@@ -83,6 +84,7 @@ const cardVariants = {
 
 export function ServicesSection() {
   const { t, language } = useLanguage();
+  useDocumentTitle('nav.services', 'Serviços');
   const router = useRouter();
   const [services, setServices] = useState<ServiceData[]>([]);
   const [loading, setLoading] = useState(true);

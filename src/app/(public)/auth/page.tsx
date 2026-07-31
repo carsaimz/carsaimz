@@ -27,6 +27,7 @@ import { Label } from '@/components/ui/label';
 
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import { FEATURES } from '@/lib/client-config';
 import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
@@ -39,6 +40,7 @@ type LoginMode = 'email' | 'phone';
 
 export default function AuthPage() {
   const { t } = useLanguage();
+  useDocumentTitle('auth.login', 'Entrar');
   const store = useAuthStore();
   const { isAuthenticated, user, hasHydrated } = store;
   const router = useRouter();

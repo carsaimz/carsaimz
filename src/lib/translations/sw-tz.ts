@@ -208,6 +208,14 @@ export const swTZ: TranslationObject = {
     remove: 'Ondoa',
     dragDropImage: 'Buruta picha au bofya kuchagua',
     useInitials: 'Tumia herufi za kwanza za barua pepe',
+    name: 'Jina',
+    email: 'Barua pepe',
+    company: 'Kampuni',
+    enterName: 'Ingiza jina lako',
+    enterEmail: 'Ingiza barua pepe yako',
+    enterCompany: 'Ingiza jina la kampuni yako',
+    submitting: 'Inatuma...',
+    submit: 'Tuma',
   },
 
   // ============================================================================
@@ -1685,5 +1693,21 @@ export const swTZ: TranslationObject = {
     couponUsed: 'Kuponi imetumika tayari',
     minPurchase: 'Ununuzi wa chini',
     maxDiscount: 'Punguzo la juu',
+  },
+
+  // ============================================================================
+  // Testimonials Page
+  // ============================================================================
+  testimonials: {
+    pageTitle: 'Wateja Wetu Wanasema Nini',
+    pageSubtitle: 'Hadithi halali kutoka kwa wateja wanaomtumaini Carsai Msumbiji',
+    submitTestimonial: 'Wasilisha Ushuhuda',
+    rating: 'Ukadiriaji',
+    content: 'Maudhui',
+    contentPlaceholder: 'Shiriki uzoefu wako...',
+    noTestimonials: 'Hakuna ushuhuda bado',
+    beFirst: 'Kuwa wa kwanza kushiriki uzoefu wako!',
+    nameContentRequired: 'Jina na maudhui ni lazima',
+    submittedForReview: 'Ushuhuda umewasilishwa kwa uhakiki',
   },
 };

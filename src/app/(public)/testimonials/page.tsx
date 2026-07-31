@@ -17,6 +17,7 @@ import { resolveI18nContent } from '@/lib/i18n-content';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { getGravatarUrl } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 const FloatingOrbs = dynamic(
   () => import('@/components/common/3d-elements').then((mod) => mod.FloatingOrbs),
@@ -53,6 +54,7 @@ const cardVariants = {
 
 export default function TestimonialsPage() {
   const { t, language, formatDate } = useLanguage();
+  useDocumentTitle('home.testimonialTitle', 'Testemunhos');
   const { toast } = useToast();
   const [testimonials, setTestimonials] = useState<TestimonialData[]>([]);
   const [loading, setLoading] = useState(true);

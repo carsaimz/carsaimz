@@ -12,9 +12,11 @@ import { useRouter } from 'next/navigation';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { useAuthStore } from '@/lib/store';
 import { toast } from 'sonner';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export default function MaintenancePage() {
   const { t } = useLanguage();
+  useDocumentTitle('maintenance.title', 'Em Manutenção');
   const router = useRouter();
   const store = useAuthStore();
 

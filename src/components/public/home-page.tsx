@@ -12,6 +12,7 @@ import { FaqSection } from './faq-section';
 import { SocialSection } from './social-section';
 import { GradientWaveSVG } from '@/components/common/decorative-svg';
 import { AdPlacement } from '@/components/common/ad-renderer';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 // Dynamic imports for decorative/animation elements (client-side only)
 const AfricanPatternSVG = dynamic(
@@ -28,6 +29,7 @@ const FloatingOrbs = dynamic(
 );
 
 export function HomePage() {
+  useDocumentTitle('nav.home', 'Início', true);
   return (
     <>
       <HomeHero />

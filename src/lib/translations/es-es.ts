@@ -201,6 +201,14 @@ export const esES: TranslationObject = {
     remove: 'Eliminar',
     dragDropImage: 'Arrastra una imagen o haz clic para seleccionar',
     useInitials: 'Usar iniciales del email',
+    name: 'Nombre',
+    email: 'Correo electrónico',
+    company: 'Empresa',
+    enterName: 'Introduce tu nombre',
+    enterEmail: 'Introduce tu correo electrónico',
+    enterCompany: 'Introduce el nombre de tu empresa',
+    submitting: 'Enviando...',
+    submit: 'Enviar',
   },
 
   // ============================================================================
@@ -1675,5 +1683,21 @@ export const esES: TranslationObject = {
     couponUsed: 'Cupón ya utilizado',
     minPurchase: 'Compra mínima',
     maxDiscount: 'Descuento máximo',
+  },
+
+  // ============================================================================
+  // Testimonials Page
+  // ============================================================================
+  testimonials: {
+    pageTitle: 'Lo Que Dicen Nuestros Clientes',
+    pageSubtitle: 'Historias reales de clientes que confían en Carsai Mozambique',
+    submitTestimonial: 'Enviar Testimonio',
+    rating: 'Valoración',
+    content: 'Contenido',
+    contentPlaceholder: 'Comparte tu experiencia...',
+    noTestimonials: 'Aún no hay testimonios',
+    beFirst: '¡Sé el primero en compartir tu experiencia!',
+    nameContentRequired: 'El nombre y el contenido son obligatorios',
+    submittedForReview: 'Testimonio enviado para revisión',
   },
 };

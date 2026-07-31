@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/contexts/language-context';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -70,6 +71,7 @@ interface PaginatedDocs {
 
 export default function DbManagerPage() {
   const { t } = useLanguage();
+  useDocumentTitle('admin.dbManager', 'Base de Dados');
 
   // ── State ──
   const [collections, setCollections] = useState<CollectionInfo[]>([]);

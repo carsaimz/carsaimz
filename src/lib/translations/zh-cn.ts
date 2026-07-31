@@ -201,6 +201,14 @@ export const zhCN: TranslationObject = {
     remove: '删除',
     dragDropImage: '拖拽图片或点击选择',
     useInitials: '使用邮箱首字母',
+    name: '姓名',
+    email: '电子邮件',
+    company: '公司',
+    enterName: '请输入您的姓名',
+    enterEmail: '请输入您的电子邮件',
+    enterCompany: '请输入您的公司名称',
+    submitting: '提交中...',
+    submit: '提交',
   },
 
   // ============================================================================
@@ -1675,5 +1683,21 @@ export const zhCN: TranslationObject = {
     couponUsed: '优惠券已使用',
     minPurchase: '最低消费',
     maxDiscount: '最大折扣',
+  },
+
+  // ============================================================================
+  // Testimonials Page
+  // ============================================================================
+  testimonials: {
+    pageTitle: '客户评价',
+    pageSubtitle: '来自信任 Carsai Mozambique 的真实客户故事',
+    submitTestimonial: '提交评价',
+    rating: '评分',
+    content: '内容',
+    contentPlaceholder: '分享您的体验...',
+    noTestimonials: '暂无评价',
+    beFirst: '成为第一个分享体验的人！',
+    nameContentRequired: '姓名和内容为必填项',
+    submittedForReview: '评价已提交审核',
   },
 };

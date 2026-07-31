@@ -161,8 +161,9 @@ function md5(string: string): string {
  * Generate a Gravatar URL from an email address.
  * Falls back to an "identicon" (auto-generated geometric pattern) when no Gravatar is set.
  */
-export function getGravatarUrl(email: string, size: number = 200): string {
-  const hash = md5(email.trim().toLowerCase());
+export function getGravatarUrl(email: string | null | undefined, size: number = 200): string {
+  const safeEmail = email || '';
+  const hash = md5(safeEmail.trim().toLowerCase());
   return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=identicon`;
 }
 

@@ -20,6 +20,7 @@ import { useLanguage } from '@/contexts/language-context';
 import { useAuthStore } from '@/lib/store';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { useToast } from '@/hooks/use-toast';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import { AD_PLACEMENTS, type AdPlacementId } from '@/lib/ad-placements';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -133,6 +134,7 @@ function getStatusColor(status: string): string {
 
 export function AdminAdsManager() {
   const { t, formatDate, formatCurrency } = useLanguage();
+  useDocumentTitle('ads.title', 'Anúncios');
   const { toast } = useToast();
   const { user, idToken } = useAuthStore();
 

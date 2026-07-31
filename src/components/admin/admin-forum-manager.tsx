@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
@@ -67,6 +68,7 @@ type TabView = 'categories' | 'topics';
 
 export function AdminForumManager() {
   const { t } = useLanguage();
+  useDocumentTitle('admin.forum', 'Fórum');
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState<TabView>('categories');

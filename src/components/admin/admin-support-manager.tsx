@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
@@ -61,6 +62,7 @@ interface SupportTicket {
 
 export function AdminSupportManager() {
   const { t, formatDate } = useLanguage();
+  useDocumentTitle('admin.support', 'Suporte');
   const { toast } = useToast();
   const user = useAuthStore((s) => s.user);
 

@@ -25,6 +25,7 @@ import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/language-context';
 import { seedInitialData as clientSeedInitialData, isDatabaseSeeded } from '@/lib/client-seed';
 import { useAuthStore } from '@/lib/store';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 // ──────────────────────────────────────────────
 // Types
@@ -49,6 +50,7 @@ interface FirestoreStatus {
 
 export default function SetupPage() {
   const { t } = useLanguage();
+  useDocumentTitle('setup.title', 'Configuração');
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
 

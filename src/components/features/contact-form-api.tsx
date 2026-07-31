@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label';
 
 import { useLanguage } from '@/contexts/language-context';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 const TechPatternSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
@@ -44,6 +45,7 @@ type FormState = 'idle' | 'loading' | 'success' | 'error';
 
 export function ContactFormApi() {
   const { t } = useLanguage();
+  useDocumentTitle('nav.contact', 'Contacto');
 
   const [formData, setFormData] = useState({
     name: '',

@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/language-context';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -36,6 +37,7 @@ const sectionKeys = [
 
 export function DmcaPage() {
   const { t } = useLanguage();
+  useDocumentTitle('footer.dmca', 'DMCA');
 
   return (
     <section className="py-16 sm:py-24 bg-background">

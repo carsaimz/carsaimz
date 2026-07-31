@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
@@ -45,6 +46,7 @@ interface PaymentData {
 
 export function AdminPaymentsManager() {
   const { t, formatDate, formatCurrency } = useLanguage();
+  useDocumentTitle('admin.payments', 'Pagamentos');
   const { toast } = useToast();
 
   const [payments, setPayments] = useState<PaymentData[]>([]);

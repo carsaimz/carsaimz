@@ -208,6 +208,14 @@ export const ptPT: TranslationObject = {
     remove: 'Remover',
     dragDropImage: 'Arraste uma imagem ou clique para seleccionar',
     useInitials: 'Usar iniciais do email',
+    name: 'Nome',
+    email: 'E-mail',
+    company: 'Empresa',
+    enterName: 'Introduza o seu nome',
+    enterEmail: 'Introduza o seu e-mail',
+    enterCompany: 'Introduza o nome da empresa',
+    submitting: 'A enviar...',
+    submit: 'Enviar',
   },
 
   // ============================================================================
@@ -1685,5 +1693,21 @@ export const ptPT: TranslationObject = {
     couponUsed: 'Cupão já utilizado',
     minPurchase: 'Compra mínima',
     maxDiscount: 'Desconto máximo',
+  },
+
+  // ============================================================================
+  // Testimonials Page
+  // ============================================================================
+  testimonials: {
+    pageTitle: 'O Que Dizem os Nossos Clientes',
+    pageSubtitle: 'Histórias reais de clientes que confiam na Carsai Moçambique',
+    submitTestimonial: 'Enviar Testemunho',
+    rating: 'Avaliação',
+    content: 'Conteúdo',
+    contentPlaceholder: 'Partilhe a sua experiência...',
+    noTestimonials: 'Ainda não há testemunhos',
+    beFirst: 'Seja o primeiro a partilhar a sua experiência!',
+    nameContentRequired: 'Nome e conteúdo são obrigatórios',
+    submittedForReview: 'Testemunho enviado para revisão',
   },
 };

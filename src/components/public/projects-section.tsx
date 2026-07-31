@@ -24,6 +24,7 @@ import { useLanguage } from '@/contexts/language-context';
 import { resolveI18nContent } from '@/lib/i18n-content';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { useRouter } from 'next/navigation';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 const ParticleNetwork = dynamic(
   () => import('@/components/common/3d-elements').then((mod) => mod.ParticleNetwork),
@@ -87,6 +88,7 @@ const colorPalettes = [
 
 export function ProjectsSection() {
   const { t, language } = useLanguage();
+  useDocumentTitle('nav.projects', 'Projectos');
   const router = useRouter();
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(true);

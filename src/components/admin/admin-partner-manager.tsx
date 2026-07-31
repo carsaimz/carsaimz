@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
@@ -55,6 +56,7 @@ interface PartnerData {
 
 export function AdminPartnerManager() {
   const { t, formatDate, formatCurrency } = useLanguage();
+  useDocumentTitle('admin.partner', 'Parceiros');
   const { toast } = useToast();
 
   const [partners, setPartners] = useState<PartnerData[]>([]);

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
@@ -47,6 +48,7 @@ interface QuoteData {
 
 export function AdminQuotesManager() {
   const { t, formatDate, formatCurrency } = useLanguage();
+  useDocumentTitle('admin.quotes', 'Cotações');
   const { toast } = useToast();
 
   const [quotes, setQuotes] = useState<QuoteData[]>([]);

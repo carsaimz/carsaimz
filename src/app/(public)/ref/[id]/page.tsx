@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 /**
  * Referral redirect page.
@@ -13,6 +14,7 @@ import { useParams } from 'next/navigation';
 export default function RefRedirectPage() {
   const params = useParams();
   const refId = params.id as string;
+  useDocumentTitle('nav.home', 'Redirecionando...');
 
   useEffect(() => {
     if (!refId || refId === '__dynamic__') {

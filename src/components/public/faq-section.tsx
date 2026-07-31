@@ -13,6 +13,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useLanguage } from '@/contexts/language-context';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 const TechPatternSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
@@ -97,6 +98,7 @@ const categoryOrder = ['services', 'payment', 'support', 'partner', 'general'];
 
 export function FaqSection() {
   const { t } = useLanguage();
+  useDocumentTitle('nav.faq', 'FAQ');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
 
