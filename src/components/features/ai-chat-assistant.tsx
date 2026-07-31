@@ -593,14 +593,18 @@ export function AiChatAssistant() {
         }),
       });
 
-      // Handle 503 — no AI provider configured
+      // Handle 503 — no AI provider configured or all inactive
       if (response.status === 503) {
-        const notConfiguredMsg = t('chat.notConfigured') || 'O assistente de IA não está configurado. Contacte o administrador para activar esta funcionalidade.';
+        let errorMsg = t('chat.notConfigured') || 'O assistente de IA não está configurado. Contacte o administrador para activar esta funcionalidade.';
+        try {
+          const errData = await response.json();
+          if (errData?.error) errorMsg = errData.error;
+        } catch { /* use default */ }
         setHasError(true);
         const errorMessage: ChatMessage = {
           id: `error-${Date.now()}`,
           role: 'assistant',
-          content: notConfiguredMsg,
+          content: errorMsg,
           timestamp: Date.now(),
         };
         setMessages((prev) => [...prev, errorMessage]);

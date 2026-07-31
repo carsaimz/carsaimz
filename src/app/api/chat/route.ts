@@ -69,6 +69,15 @@ let providersCacheTime = 0
 const PROVIDERS_CACHE_TTL = 60_000 // 1 minute cache
 
 /**
+ * Invalidate the provider cache.
+ * Called when providers are updated via the admin API.
+ */
+export function invalidateProviderCache() {
+  cachedProviders = null
+  providersCacheTime = 0
+}
+
+/**
  * Load active AI providers from Firestore, sorted by priority.
  * All providers come from the database — no built-in providers.
  *

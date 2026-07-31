@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { safeGetDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { getDocByField, createDoc, updateDoc, deleteDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
+import { invalidateProviderCache } from '@/app/api/chat/route'
 
 /**
  * Carsai Mozambique - AI Providers Admin API
@@ -115,6 +116,9 @@ export async function POST(request: NextRequest) {
 
     const provider = await safeGetDoc('ai_providers', providerId)
 
+    // Invalidate the chat provider cache so changes take effect immediately
+    try { invalidateProviderCache() } catch { /* ignore */ }
+
     return NextResponse.json({ success: true, provider: serializeFirestore(provider) })
   } catch (error) {
     console.error('AI providers POST error:', error)
@@ -155,6 +159,9 @@ export async function PUT(request: NextRequest) {
     await updateDoc('ai_providers', id, updateData)
     const provider = await safeGetDoc('ai_providers', id)
 
+    // Invalidate the chat provider cache so changes take effect immediately
+    try { invalidateProviderCache() } catch { /* ignore */ }
+
     return NextResponse.json({ success: true, provider: serializeFirestore(provider) })
   } catch (error) {
     console.error('AI providers PUT error:', error)
@@ -184,6 +191,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteDoc('ai_providers', id)
+
+    // Invalidate the chat provider cache so changes take effect immediately
+    try { invalidateProviderCache() } catch { /* ignore */ }
+
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('AI providers DELETE error:', error)

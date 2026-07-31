@@ -88,6 +88,7 @@ export default function DbManagerPage() {
   // ── Dialog state ──
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingDocId, setEditingDocId] = useState<string | null>(null);
   const [jsonInput, setJsonInput] = useState('');
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -301,6 +302,8 @@ export default function DbManagerPage() {
   const handleEditDocument = (doc?: DocumentData) => {
     const targetDoc = doc || selectedDoc;
     if (!targetDoc) return;
+    // Store the document ID for saving later
+    setEditingDocId(targetDoc.id);
     // Strip id, createdAt, updatedAt — these are managed by the server
     const { id, createdAt, updatedAt, ...data } = targetDoc;
     // Sanitize: convert stringified-JSON fields back to objects for display
@@ -356,10 +359,17 @@ export default function DbManagerPage() {
       // Strip server-managed fields — these should not be overwritten by the user
       const { createdAt, updatedAt, ...cleanData } = parsed;
       setJsonError(null);
-      const success = await updateDocument(selectedCollection!, selectedDoc!.id, cleanData);
+      // Use editingDocId (stored when dialog opened) instead of selectedDoc which may be null
+      const docId = editingDocId || selectedDoc?.id;
+      if (!docId || !selectedCollection) {
+        setJsonError('Erro: não foi possível identificar o documento. Feche e tente novamente.');
+        return;
+      }
+      const success = await updateDocument(selectedCollection, docId, cleanData);
       if (success) {
         setEditDialogOpen(false);
         setJsonInput('');
+        setEditingDocId(null);
       } else {
         setJsonError('Failed to update document. Check the data and try again.');
       }
