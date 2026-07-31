@@ -150,7 +150,7 @@ export async function PUT(request: NextRequest) {
     if (model !== undefined) updateData.model = model
     if (priority !== undefined) updateData.priority = priority
     if (isActive !== undefined) updateData.isActive = isActive
-    if (config !== undefined) updateData.config = JSON.stringify(config)
+    if (config !== undefined) updateData.config = config === null ? null : JSON.stringify(config)
 
     await updateDoc('ai_providers', id, updateData)
     const provider = await safeGetDoc('ai_providers', id)

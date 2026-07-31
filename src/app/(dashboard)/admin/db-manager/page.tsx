@@ -303,7 +303,24 @@ export default function DbManagerPage() {
     if (!targetDoc) return;
     // Strip id, createdAt, updatedAt — these are managed by the server
     const { id, createdAt, updatedAt, ...data } = targetDoc;
-    setJsonInput(JSON.stringify(data, null, 2));
+    // Sanitize: convert stringified-JSON fields back to objects for display
+    const sanitized = { ...data };
+    for (const key of Object.keys(sanitized)) {
+      const val = sanitized[key];
+      // If a value is a string that looks like JSON, try to parse it for display
+      if (typeof val === 'string' && val.length > 1) {
+        try {
+          const parsed = JSON.parse(val);
+          // Only replace if it's an object or array (not a plain string/number)
+          if (typeof parsed === 'object' && parsed !== null) {
+            sanitized[key] = parsed;
+          }
+        } catch {
+          // Not JSON, keep as-is
+        }
+      }
+    }
+    setJsonInput(JSON.stringify(sanitized, null, 2));
     setJsonError(null);
     setEditDialogOpen(true);
   };

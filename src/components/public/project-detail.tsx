@@ -282,11 +282,13 @@ export function ProjectDetail() {
                 {t('admin.description') || 'Description'}
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-hidden">
               {resolvedDescription && resolvedDescription.includes('<') ? (
-                <RichTextRenderer content={resolvedDescription} />
+                <div className="prose prose-sm dark:prose-invert max-w-none break-words" style={{ overflowWrap: 'anywhere' }}>
+                  <RichTextRenderer content={resolvedDescription} />
+                </div>
               ) : (
-                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere' }}>
                   {resolvedDescription || t('common.noDescription') || 'No description available.'}
                 </p>
               )}

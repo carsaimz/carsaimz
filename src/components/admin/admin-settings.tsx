@@ -1,14 +1,20 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Save, Loader2, Bot, CreditCard } from 'lucide-react';
+import { Settings, Save, Loader2, Bot, CreditCard, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useLanguage } from '@/contexts/language-context';
 import { useToast } from '@/hooks/use-toast';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
@@ -18,11 +24,20 @@ import { AdminPaymentProviders } from '@/components/admin/admin-payment-provider
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
 const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
 
+type SettingsSection = 'general' | 'ai-providers' | 'payment-providers';
+
+const SECTIONS: { value: SettingsSection; icon: React.ElementType; labelKey: string; fallbackLabel: string }[] = [
+  { value: 'general', icon: Settings, labelKey: 'admin.general', fallbackLabel: 'Geral' },
+  { value: 'ai-providers', icon: Bot, labelKey: 'admin.aiProviders', fallbackLabel: 'Provedores de IA' },
+  { value: 'payment-providers', icon: CreditCard, labelKey: 'payment.providers', fallbackLabel: 'Provedores de Pagamento' },
+];
+
 export function AdminSettings() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState<SettingsSection>('general');
   const [formData, setFormData] = useState({
     siteName: 'Carsai Mozambique',
     siteEmail: 'carsaimozambique@gmail.com',
@@ -111,77 +126,87 @@ export function AdminSettings() {
         </h2>
       </motion.div>
 
-      <Tabs defaultValue="general" className="w-full">
-        <TabsList>
-          <TabsTrigger value="general" className="gap-1">
-            <Settings className="size-4" />
-            {t('admin.general')}
-          </TabsTrigger>
-          <TabsTrigger value="ai-providers" className="gap-1">
-            <Bot className="size-4" />
-            {t('admin.aiProviders')}
-          </TabsTrigger>
-          <TabsTrigger value="payment-providers" className="gap-1">
-            <CreditCard className="size-4" />
-            {t('payment.providers') || 'Payment Providers'}
-          </TabsTrigger>
-        </TabsList>
+      {/* Section selector dropdown */}
+      <motion.div variants={itemVariants}>
+        <Select value={activeSection} onValueChange={(v) => setActiveSection(v as SettingsSection)}>
+          <SelectTrigger className="w-full max-w-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SECTIONS.map((section) => {
+              const Icon = section.icon;
+              return (
+                <SelectItem key={section.value} value={section.value}>
+                  <span className="flex items-center gap-2">
+                    <Icon className="size-4" />
+                    {t(section.labelKey) || section.fallbackLabel}
+                  </span>
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
+      </motion.div>
 
-        <TabsContent value="general">
-          <motion.div variants={itemVariants}>
-            <Card>
-              <CardHeader><CardTitle>{t('admin.generalSettings')}</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="siteName">{t('admin.siteName')}</Label>
-                    <Input id="siteName" value={formData.siteName} onChange={handleChange} className="focus-visible:ring-red-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="siteEmail">{t('admin.siteEmail')}</Label>
-                    <Input id="siteEmail" type="email" value={formData.siteEmail} onChange={handleChange} className="focus-visible:ring-red-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="sitePhone">{t('admin.sitePhone')}</Label>
-                    <Input id="sitePhone" value={formData.sitePhone} onChange={handleChange} className="focus-visible:ring-red-500" />
-                  </div>
+      {/* Section content */}
+      {activeSection === 'general' && (
+        <motion.div variants={itemVariants} key="general">
+          <Card>
+            <CardHeader><CardTitle>{t('admin.generalSettings')}</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="siteName">{t('admin.siteName')}</Label>
+                  <Input id="siteName" value={formData.siteName} onChange={handleChange} className="focus-visible:ring-red-500" />
                 </div>
-
-                <Separator />
-
-                <div className="flex items-center gap-3">
-                  <Switch
-                    checked={formData.maintenanceMode}
-                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, maintenanceMode: checked }))}
-                  />
-                  <Label className="text-sm">{t('admin.maintenanceMode')}</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="siteEmail">{t('admin.siteEmail')}</Label>
+                  <Input id="siteEmail" type="email" value={formData.siteEmail} onChange={handleChange} className="focus-visible:ring-red-500" />
                 </div>
-
-                <Separator />
-
-                <div className="flex items-center gap-3">
-                  <Button
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                    onClick={handleSave}
-                    disabled={saving}
-                  >
-                    {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                    {t('admin.save')}
-                  </Button>
+                <div className="space-y-2">
+                  <Label htmlFor="sitePhone">{t('admin.sitePhone')}</Label>
+                  <Input id="sitePhone" value={formData.sitePhone} onChange={handleChange} className="focus-visible:ring-red-500" />
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </TabsContent>
+              </div>
 
-        <TabsContent value="ai-providers">
+              <Separator />
+
+              <div className="flex items-center gap-3">
+                <Switch
+                  checked={formData.maintenanceMode}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, maintenanceMode: checked }))}
+                />
+                <Label className="text-sm">{t('admin.maintenanceMode')}</Label>
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center gap-3">
+                <Button
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  onClick={handleSave}
+                  disabled={saving}
+                >
+                  {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                  {t('admin.save')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {activeSection === 'ai-providers' && (
+        <motion.div variants={itemVariants} key="ai-providers">
           <AdminAiProviders />
-        </TabsContent>
+        </motion.div>
+      )}
 
-        <TabsContent value="payment-providers">
+      {activeSection === 'payment-providers' && (
+        <motion.div variants={itemVariants} key="payment-providers">
           <AdminPaymentProviders />
-        </TabsContent>
-      </Tabs>
+        </motion.div>
+      )}
     </motion.div>
   );
 }

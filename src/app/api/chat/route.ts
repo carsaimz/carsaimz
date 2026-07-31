@@ -85,21 +85,42 @@ async function loadProviders(): Promise<ProviderConfig[]> {
 
   try {
     const adminError = checkFirebaseAdmin()
-    if (adminError) return []
+    if (adminError) {
+      console.warn('[Chat] Firebase Admin not configured:', adminError)
+      return []
+    }
 
     const db = getAdminFirestore()
-    if (!db) return []
+    if (!db) {
+      console.warn('[Chat] Could not get Firestore instance')
+      return []
+    }
 
     // Fetch ALL documents and filter client-side — avoids composite index requirement
     const snapshot = await db.collection('ai_providers').get()
 
-    if (snapshot.empty) return []
+    if (snapshot.empty) {
+      console.warn('[Chat] No AI providers found in database')
+      return []
+    }
 
     const providers: ProviderConfig[] = []
+    let activeCount = 0
+    let skippedCount = 0
     for (const doc of snapshot.docs) {
       const data = doc.data()
+      activeCount++
       // Filter: only active providers with required fields
-      if (!data.isActive || !data.baseUrl || !data.apiKey) continue
+      if (!data.isActive) {
+        console.log(`[Chat] Provider "${data.name || doc.id}" is inactive — skipping`)
+        skippedCount++
+        continue
+      }
+      if (!data.baseUrl || !data.apiKey) {
+        console.warn(`[Chat] Provider "${data.name || doc.id}" missing baseUrl or apiKey — skipping`)
+        skippedCount++
+        continue
+      }
 
       providers.push({
         id: doc.id,
@@ -110,6 +131,8 @@ async function loadProviders(): Promise<ProviderConfig[]> {
         priority: data.priority || 99,
       })
     }
+
+    console.log(`[Chat] Loaded ${providers.length}/${activeCount} providers (${skippedCount} skipped)`)
 
     // Sort by priority (ascending) — client-side instead of Firestore orderBy
     providers.sort((a, b) => a.priority - b.priority)
@@ -235,11 +258,28 @@ export async function POST(request: NextRequest) {
     const dbProviders = await loadProviders()
 
     if (dbProviders.length === 0) {
+      // Check if there are inactive providers in the database
+      let hasInactiveProviders = false
+      try {
+        const adminError = checkFirebaseAdmin()
+        if (!adminError) {
+          const db = getAdminFirestore()
+          if (db) {
+            const snapshot = await db.collection('ai_providers').limit(1).get()
+            hasInactiveProviders = !snapshot.empty
+          }
+        }
+      } catch { /* ignore */ }
+
+      const errorMsg = hasInactiveProviders
+        ? 'Existem provedores de IA configurados, mas estão desactivados. Active pelo menos um provedor no painel de administração (Definições → Provedores de IA).'
+        : 'O assistente de IA não está configurado. Adicione um provedor de IA no painel de administração.'
+
       return NextResponse.json(
         {
           success: false,
-          error: 'O assistente de IA não está configurado. Adicione um provedor de IA no painel de administração.',
-          debug: 'Configure an AI provider in the admin dashboard (Settings → AI Providers).',
+          error: errorMsg,
+          debug: 'Configure and activate an AI provider in the admin dashboard (Settings → AI Providers).',
         },
         { status: 503 }
       )
