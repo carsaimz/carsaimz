@@ -4,7 +4,7 @@ import { readFileSync } from 'fs';
 // Read version from package.json (config file runs in Node context)
 const pkg = JSON.parse(readFileSync('./package.json', 'utf8'));
 
-// versionCode: 1000028integer for Android (Google Play requires incrementing versionCode)
+// versionCode: 1000029integer for Android (Google Play requires incrementing versionCode)
 // Computed as MAJOR * 1000000 + MINOR * 1000 + PATCH
 const [major, minor, patch] = pkg.version.split('.').map(Number);
 const versionCode = (major || 0) * 1000000 + (minor || 0) * 1000 + (patch || 0);
