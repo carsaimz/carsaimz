@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { safeQueryDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
+import { safeGetDocs, safeGetDoc, checkFirebaseAdmin } from '@/lib/db-helpers'
 import { getDocByField, createDoc, updateDoc, deleteDoc } from '@/lib/db'
 import { serializeFirestore } from '@/lib/serialize'
 
@@ -21,7 +21,15 @@ export async function GET() {
       )
     }
 
-    const providers = await safeQueryDocs('ai_providers', [], 'priority', 'asc')
+    // Fetch ALL providers and sort client-side — avoids composite index requirement
+    const allProviders = await safeGetDocs('ai_providers')
+
+    // Sort by priority ascending
+    const providers = allProviders.sort((a: any, b: any) => {
+      const aPriority = a.priority ?? 99
+      const bPriority = b.priority ?? 99
+      return aPriority - bPriority
+    })
 
     // Mask API keys for security (only show last 4 chars)
     const masked = providers.map(p => ({

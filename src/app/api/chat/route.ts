@@ -71,6 +71,11 @@ const PROVIDERS_CACHE_TTL = 60_000 // 1 minute cache
 /**
  * Load active AI providers from Firestore, sorted by priority.
  * All providers come from the database — no built-in providers.
+ *
+ * Uses safeGetDocs + client-side filtering to avoid composite index requirement.
+ * The .where('isActive', '==', true).orderBy('priority', 'asc') query requires
+ * a composite Firestore index that may not exist. Fetching all docs and filtering
+ * client-side works without any index.
  */
 async function loadProviders(): Promise<ProviderConfig[]> {
   const now = Date.now()
@@ -85,18 +90,16 @@ async function loadProviders(): Promise<ProviderConfig[]> {
     const db = getAdminFirestore()
     if (!db) return []
 
-    const snapshot = await db
-      .collection('ai_providers')
-      .where('isActive', '==', true)
-      .orderBy('priority', 'asc')
-      .get()
+    // Fetch ALL documents and filter client-side — avoids composite index requirement
+    const snapshot = await db.collection('ai_providers').get()
 
     if (snapshot.empty) return []
 
     const providers: ProviderConfig[] = []
     for (const doc of snapshot.docs) {
       const data = doc.data()
-      if (!data.baseUrl || !data.apiKey) continue
+      // Filter: only active providers with required fields
+      if (!data.isActive || !data.baseUrl || !data.apiKey) continue
 
       providers.push({
         id: doc.id,
@@ -107,6 +110,9 @@ async function loadProviders(): Promise<ProviderConfig[]> {
         priority: data.priority || 99,
       })
     }
+
+    // Sort by priority (ascending) — client-side instead of Firestore orderBy
+    providers.sort((a, b) => a.priority - b.priority)
 
     cachedProviders = providers
     providersCacheTime = now

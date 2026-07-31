@@ -301,7 +301,8 @@ export default function DbManagerPage() {
   const handleEditDocument = (doc?: DocumentData) => {
     const targetDoc = doc || selectedDoc;
     if (!targetDoc) return;
-    const { id, ...data } = targetDoc;
+    // Strip id, createdAt, updatedAt — these are managed by the server
+    const { id, createdAt, updatedAt, ...data } = targetDoc;
     setJsonInput(JSON.stringify(data, null, 2));
     setJsonError(null);
     setEditDialogOpen(true);
@@ -312,7 +313,7 @@ export default function DbManagerPage() {
     try {
       const parsed = JSON.parse(jsonInput);
       if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-        setJsonError(t('admin.invalidJson'));
+        setJsonError('JSON must be an object (e.g., { "key": "value" })');
         return;
       }
       setJsonError(null);
@@ -321,10 +322,10 @@ export default function DbManagerPage() {
         setCreateDialogOpen(false);
         setJsonInput('');
       } else {
-        setJsonError(t('admin.invalidJson'));
+        setJsonError('Failed to create document. Check the data and try again.');
       }
-    } catch {
-      setJsonError(t('admin.invalidJson'));
+    } catch (e: any) {
+      setJsonError(`JSON inválido: ${e.message || 'Verifique a formatação'}`);
     }
   };
 
@@ -332,19 +333,32 @@ export default function DbManagerPage() {
     try {
       const parsed = JSON.parse(jsonInput);
       if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-        setJsonError(t('admin.invalidJson'));
+        setJsonError('JSON must be an object (e.g., { "key": "value" })');
         return;
       }
+      // Strip server-managed fields — these should not be overwritten by the user
+      const { createdAt, updatedAt, ...cleanData } = parsed;
       setJsonError(null);
-      const success = await updateDocument(selectedCollection!, selectedDoc!.id, parsed);
+      const success = await updateDocument(selectedCollection!, selectedDoc!.id, cleanData);
       if (success) {
         setEditDialogOpen(false);
         setJsonInput('');
       } else {
-        setJsonError(t('admin.invalidJson'));
+        setJsonError('Failed to update document. Check the data and try again.');
       }
-    } catch {
-      setJsonError(t('admin.invalidJson'));
+    } catch (e: any) {
+      setJsonError(`JSON inválido: ${e.message || 'Verifique a formatação'}`);
+    }
+  };
+
+  // ── Format/reformat JSON input ──
+  const formatJsonInput = () => {
+    try {
+      const parsed = JSON.parse(jsonInput);
+      setJsonInput(JSON.stringify(parsed, null, 2));
+      setJsonError(null);
+    } catch (e: any) {
+      setJsonError(`JSON inválido: ${e.message || 'Verifique a formatação'}`);
     }
   };
 
@@ -744,6 +758,14 @@ export default function DbManagerPage() {
           <DialogFooter>
             <Button
               variant="outline"
+              size="sm"
+              onClick={formatJsonInput}
+              className="mr-auto"
+            >
+              Format JSON
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => setCreateDialogOpen(false)}
               disabled={saving}
             >
@@ -781,6 +803,14 @@ export default function DbManagerPage() {
             )}
           </div>
           <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={formatJsonInput}
+              className="mr-auto"
+            >
+              Format JSON
+            </Button>
             <Button
               variant="outline"
               onClick={() => setEditDialogOpen(false)}
