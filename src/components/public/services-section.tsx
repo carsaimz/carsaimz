@@ -84,7 +84,7 @@ function renderDescription(content: string) {
   const plainText = stripHtml(content);
   if (!plainText) return null;
   return (
-    <p className="text-muted-foreground text-sm leading-relaxed [overflow-wrap:break-word] [word-break:break-word]">
+    <p className="text-muted-foreground text-sm leading-relaxed [overflow-wrap:break-word]">
       {plainText}
     </p>
   );

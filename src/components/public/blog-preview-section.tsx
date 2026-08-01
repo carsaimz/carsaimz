@@ -182,7 +182,7 @@ export function BlogPreviewSection({ maxItems = 8 }: BlogPreviewSectionProps) {
                   </CardHeader>
 
                   <CardContent className="pb-3">
-                    <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 [overflow-wrap:break-word] [word-break:break-word]">
+                    <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 [overflow-wrap:break-word]">
                       {plainExcerpt}
                     </p>
                     {postTags.length > 0 && (

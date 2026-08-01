@@ -420,7 +420,7 @@ export function AdminForumManager() {
 
       {/* Category Create/Edit Dialog */}
       <Dialog open={catDialogOpen} onOpenChange={setCatDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {catIsCreate ? `${t('admin.createNew') || 'New'} — ${t('admin.categories') || 'Category'}` : `${t('admin.editItem') || 'Edit'} — ${t('admin.categories') || 'Category'}`}
@@ -504,7 +504,7 @@ export function AdminForumManager() {
 
       {/* Topic Edit Dialog */}
       <Dialog open={topicDialogOpen} onOpenChange={setTopicDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {t('admin.editItem') || 'Edit'} — {t('admin.topics') || 'Topic'}

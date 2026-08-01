@@ -7,6 +7,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/language-context';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 
+// Foundation year — years of experience auto-calculated
+const FOUNDATION_YEAR = 2023;
+const yearsOfExperience = new Date().getFullYear() - FOUNDATION_YEAR;
+
 // ──────────────────────────────────────────────
 // Animated Stats Counter Component
 // ──────────────────────────────────────────────
@@ -109,7 +113,7 @@ export function StatsCounterSection() {
       return [
         { icon: Briefcase, value: stats.overview.totalProjects, suffix: '+', labelKey: 'stats.projects' },
         { icon: Users, value: stats.overview.totalUsers, suffix: '+', labelKey: 'stats.clients' },
-        { icon: Clock, value: 5, suffix: '+', labelKey: 'stats.years' },
+        { icon: Clock, value: yearsOfExperience, suffix: '+', labelKey: 'stats.years' },
         { icon: Award, value: 24, suffix: '/7', labelKey: 'stats.support' },
       ];
     }
@@ -117,7 +121,7 @@ export function StatsCounterSection() {
     return [
       { icon: Briefcase, value: 0, suffix: '+', labelKey: 'stats.projects' },
       { icon: Users, value: 0, suffix: '+', labelKey: 'stats.clients' },
-      { icon: Clock, value: 5, suffix: '+', labelKey: 'stats.years' },
+      { icon: Clock, value: yearsOfExperience, suffix: '+', labelKey: 'stats.years' },
       { icon: Award, value: 24, suffix: '/7', labelKey: 'stats.support' },
     ];
   };

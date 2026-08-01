@@ -312,7 +312,7 @@ export function AboutSection() {
 
                     {/* Description */}
                     {resolvedDescription && (
-                      <p className="text-xs text-muted-foreground leading-relaxed mb-3 [overflow-wrap:break-word] [word-break:break-word]">
+                      <p className="text-xs text-muted-foreground leading-relaxed mb-3 [overflow-wrap:break-word]">
                         {resolvedDescription}
                       </p>
                     )}

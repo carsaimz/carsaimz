@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Send email notification if SMTP is configured
-    if (isEmailConfigured()) {
+    if (await isEmailConfigured()) {
       const emailResult = await sendEmail(contactFormTemplate({
         name,
         email,

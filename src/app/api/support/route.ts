@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Send email notifications if SMTP is configured
-    if (isEmailConfigured()) {
+    if (await isEmailConfigured()) {
       const ticketMessage = description || message || ''
       const userName = (user as any).name || 'Utilizador'
       const userEmail = (user as any).email || ''

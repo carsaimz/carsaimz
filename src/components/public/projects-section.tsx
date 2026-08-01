@@ -257,7 +257,7 @@ export function ProjectsSection({ maxItems, showViewAll }: ProjectsSectionProps 
                   </CardHeader>
 
                   <CardContent className="pb-3">
-                    <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mb-3 [overflow-wrap:break-word] [word-break:break-word]">
+                    <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mb-3 [overflow-wrap:break-word]">
                       {stripHtml(resolvedDescription)}
                     </p>
                     {techs.length > 0 && (

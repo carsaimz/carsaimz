@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Save, Loader2, Bot, CreditCard, ChevronDown } from 'lucide-react';
+import { Settings, Save, Loader2, Bot, CreditCard, ChevronDown, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,14 +20,16 @@ import { useToast } from '@/hooks/use-toast';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { AdminAiProviders } from '@/components/admin/admin-ai-providers';
 import { AdminPaymentProviders } from '@/components/admin/admin-payment-providers';
+import { AdminSmtpSettings } from '@/components/admin/admin-smtp-settings';
 
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
 const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
 
-type SettingsSection = 'general' | 'ai-providers' | 'payment-providers';
+type SettingsSection = 'general' | 'smtp' | 'ai-providers' | 'payment-providers';
 
 const SECTIONS: { value: SettingsSection; icon: React.ElementType; labelKey: string; fallbackLabel: string }[] = [
   { value: 'general', icon: Settings, labelKey: 'admin.general', fallbackLabel: 'Geral' },
+  { value: 'smtp', icon: Mail, labelKey: 'admin.smtpSettings', fallbackLabel: 'SMTP / E-mail' },
   { value: 'ai-providers', icon: Bot, labelKey: 'admin.aiProviders', fallbackLabel: 'Provedores de IA' },
   { value: 'payment-providers', icon: CreditCard, labelKey: 'payment.providers', fallbackLabel: 'Provedores de Pagamento' },
 ];
@@ -193,6 +195,12 @@ export function AdminSettings() {
               </div>
             </CardContent>
           </Card>
+        </motion.div>
+      )}
+
+      {activeSection === 'smtp' && (
+        <motion.div variants={itemVariants} key="smtp">
+          <AdminSmtpSettings />
         </motion.div>
       )}
 

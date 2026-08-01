@@ -33,7 +33,7 @@ const organizationJsonLd = {
   logo: `${SITE_URL}/logo.png`,
   description:
     "Plataforma tecnológica para transformação digital em Mozambique. Soluções inovadoras que impulsionam o crescimento empresarial.",
-  foundingDate: "2024",
+  foundingDate: "2023",
   foundingLocation: {
     "@type": "Place",
     name: "Maputo, Mozambique",
@@ -198,7 +198,6 @@ export default function RootLayout({
                   {children}
                 </ClientLayoutWrapper>
                 <PwaInstallPrompt />
-                <PushNotificationSetup compact />
               </NotificationProvider>
             </AppProvider>
           </LanguageProvider>

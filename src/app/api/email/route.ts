@@ -14,7 +14,7 @@ import { sendEmail, isEmailConfigured, verifySmtpConnection, contactFormTemplate
 export async function POST(request: NextRequest) {
   try {
     // Check if SMTP is configured
-    if (!isEmailConfigured()) {
+    if (!(await isEmailConfigured())) {
       return NextResponse.json(
         {
           success: false,
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
  * GET /api/email — Check email service status
  */
 export async function GET() {
-  const configured = isEmailConfigured()
+  const configured = await isEmailConfigured()
 
   if (!configured) {
     return NextResponse.json({

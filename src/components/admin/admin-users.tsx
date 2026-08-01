@@ -325,7 +325,7 @@ export function AdminUsers() {
                 {t('admin.createUser')}
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[425px] max-h-[85vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{t('admin.createUser')}</DialogTitle>
                 <DialogDescription>{t('admin.createUserDesc')}</DialogDescription>
@@ -562,7 +562,7 @@ export function AdminUsers() {
 
       {/* ── Edit user dialog ── */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('admin.editUser')}</DialogTitle>
             <DialogDescription>{t('admin.editUserDesc')}</DialogDescription>

@@ -14,6 +14,7 @@
  */
 
 import nodemailer from 'nodemailer';
+import { getDoc } from '@/lib/db';
 
 // ─── SMTP Configuration ───
 
@@ -27,9 +28,43 @@ interface SmtpConfig {
   fromEmail: string;
 }
 
+/**
+ * Get SMTP config — checks Firestore settings first, then env vars as fallback.
+ * Firestore settings keys: smtp_host, smtp_port, smtp_secure, smtp_user, smtp_pass, smtp_from_name, smtp_from_email
+ */
+async function getSmtpConfigFromDb(): Promise<Partial<SmtpConfig>> {
+  try {
+    const settingKeys = ['smtp_host', 'smtp_port', 'smtp_secure', 'smtp_user', 'smtp_pass', 'smtp_from_name', 'smtp_from_email'];
+    const results = await Promise.all(
+      settingKeys.map(async (key) => {
+        try {
+          const doc = await getDoc('settings', key);
+          return [key, doc?.value ?? null] as [string, string | null];
+        } catch {
+          return [key, null] as [string, string | null];
+        }
+      })
+    );
+    const map = Object.fromEntries(results);
+
+    const config: Partial<SmtpConfig> = {};
+    if (map.smtp_host) config.host = map.smtp_host;
+    if (map.smtp_port) config.port = parseInt(map.smtp_port);
+    if (map.smtp_secure) config.secure = map.smtp_secure === 'true';
+    if (map.smtp_user) config.user = map.smtp_user;
+    if (map.smtp_pass) config.pass = map.smtp_pass;
+    if (map.smtp_from_name) config.fromName = map.smtp_from_name;
+    if (map.smtp_from_email) config.fromEmail = map.smtp_from_email;
+
+    return config;
+  } catch {
+    return {};
+  }
+}
+
 // Default SMTP config — can be overridden via environment variables
 // or via the admin settings API (stored in Firestore)
-function getSmtpConfig(): SmtpConfig {
+function getSmtpConfigDefaults(): SmtpConfig {
   return {
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.SMTP_PORT || '587'),
@@ -41,27 +76,37 @@ function getSmtpConfig(): SmtpConfig {
   };
 }
 
+/**
+ * Merge Firestore DB settings with env var defaults (DB takes priority)
+ */
+async function getSmtpConfig(): Promise<SmtpConfig> {
+  const defaults = getSmtpConfigDefaults();
+  const dbConfig = await getSmtpConfigFromDb();
+  return { ...defaults, ...dbConfig };
+}
+
 // ─── Transporter ───
 
 let cachedTransporter: nodemailer.Transporter | null = null;
+let cachedConfigKey: string = '';
 
-function getTransporter(config?: SmtpConfig): nodemailer.Transporter | null {
-  const cfg = config || getSmtpConfig();
-
-  if (!cfg.user || !cfg.pass) {
-    console.warn('[Email] SMTP credentials not configured. Set SMTP_USER and SMTP_PASS env vars.');
+function getTransporter(config: SmtpConfig): nodemailer.Transporter | null {
+  if (!config.user || !config.pass) {
+    console.warn('[Email] SMTP credentials not configured. Set SMTP_USER and SMTP_PASS env vars or configure in admin settings.');
     return null;
   }
 
-  if (cachedTransporter) {
+  // Invalidate cache if config changed
+  const configKey = `${config.user}:${config.host}:${config.port}`;
+  if (cachedTransporter && cachedConfigKey === configKey) {
     return cachedTransporter;
   }
 
   cachedTransporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: cfg.user,
-      pass: cfg.pass,
+      user: config.user,
+      pass: config.pass,
     },
     // Gmail-specific pooling for better performance
     pool: true,
@@ -69,6 +114,7 @@ function getTransporter(config?: SmtpConfig): nodemailer.Transporter | null {
     rateLimit: true,
     maxMessages: 100,
   } as any);
+  cachedConfigKey = configKey;
 
   return cachedTransporter;
 }
@@ -94,7 +140,7 @@ export interface EmailResult {
 // ─── Core Send Function ───
 
 export async function sendEmail(options: EmailOptions, smtpConfig?: SmtpConfig): Promise<EmailResult> {
-  const cfg = smtpConfig || getSmtpConfig();
+  const cfg = smtpConfig || await getSmtpConfig();
   const transporter = getTransporter(cfg);
 
   if (!transporter) {
@@ -298,10 +344,6 @@ export function ticketReplyTemplate(data: {
 
 // ─── Helpers ───
 
-function cfg() {
-  return getSmtpConfig();
-}
-
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, '&amp;')
@@ -312,10 +354,10 @@ function escapeHtml(str: string): string {
 }
 
 /**
- * Check if SMTP is configured
+ * Check if SMTP is configured (checks both env vars and Firestore settings)
  */
-export function isEmailConfigured(): boolean {
-  const config = getSmtpConfig();
+export async function isEmailConfigured(): Promise<boolean> {
+  const config = await getSmtpConfig();
   return !!(config.user && config.pass);
 }
 
@@ -323,7 +365,8 @@ export function isEmailConfigured(): boolean {
  * Verify SMTP connection
  */
 export async function verifySmtpConnection(): Promise<{ success: boolean; error?: string }> {
-  const transporter = getTransporter();
+  const config = await getSmtpConfig();
+  const transporter = getTransporter(config);
   if (!transporter) {
     return { success: false, error: 'SMTP not configured' };
   }
@@ -334,3 +377,9 @@ export async function verifySmtpConnection(): Promise<{ success: boolean; error?
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * Export SmtpConfig type and getSmtpConfig for admin UI
+ */
+export type { SmtpConfig };
+export { getSmtpConfig, getSmtpConfigDefaults };
