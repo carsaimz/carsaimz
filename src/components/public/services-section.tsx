@@ -22,6 +22,7 @@ import { resolveI18nContent } from '@/lib/i18n-content';
 import { useRouter } from 'next/navigation';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { useDocumentTitle } from '@/hooks/use-document-title';
+import { RichTextRenderer } from '@/components/common/rich-text-editor';
 
 const TechPatternSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
@@ -71,6 +72,46 @@ function getCoverImage(images: string | null | undefined): string | null {
 }
 
 // No fallback data - all data comes from the database via API
+
+/**
+ * Strip HTML tags and decode HTML entities from a string.
+ * Used to clean up descriptions stored as HTML in the database.
+ */
+function stripHtml(html: string): string {
+  if (!html) return '';
+  // Decode common HTML entities
+  let text = html
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&mdash;/g, '—')
+    .replace(/&ndash;/g, '–');
+  // Remove HTML tags
+  text = text.replace(/<[^>]*>/g, '');
+  // Clean up extra whitespace
+  text = text.replace(/\s+/g, ' ').trim();
+  return text;
+}
+
+/**
+ * Render description: use RichTextRenderer for HTML content,
+ * or plain text for non-HTML descriptions.
+ */
+function renderDescription(content: string) {
+  if (!content) return null;
+  const isHtml = content.includes('<') && content.includes('>');
+  if (isHtml) {
+    return <RichTextRenderer content={content} className="text-sm leading-relaxed" />;
+  }
+  return (
+    <p className="text-muted-foreground text-sm leading-relaxed">
+      {content}
+    </p>
+  );
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -209,9 +250,7 @@ export function ServicesSection() {
                     )}
                   </CardHeader>
                   <CardContent className="pb-4">
-                    <p className="text-muted-foreground text-sm leading-relaxed">
-                      {resolvedDescription}
-                    </p>
+                    {renderDescription(resolvedDescription)}
                   </CardContent>
                   <CardFooter className="flex items-center justify-between pt-0">
                     {displayPrice && (

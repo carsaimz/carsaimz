@@ -273,7 +273,7 @@ export function ServiceDetail() {
               </p>
               <Button
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                onClick={() => router.push('/contact')}
+                onClick={() => router.push(`/quote?service=${service.slug}`)}
               >
                 {t('common.requestQuote') || 'Request Quote'}
               </Button>

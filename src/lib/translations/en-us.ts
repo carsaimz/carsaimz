@@ -285,6 +285,50 @@ export const enUS: TranslationObject = {
   },
 
   // ============================================================================
+  // Quote / Checkout Page
+  // ============================================================================
+  quote: {
+    title: 'Request a Quote',
+    subtitle: 'Specify your request and proceed to payment',
+    selectService: 'Select Service',
+    selectServiceDesc: 'Choose the service you want to hire',
+    specifications: 'Specifications',
+    specificationsDesc: 'Describe in detail what you need. The final price will depend on the complexity and additional features requested.',
+    descriptionLabel: 'Order description',
+    descriptionPlaceholder: 'Describe your project, specific requirements, desired features...',
+    budgetLabel: 'Estimated budget (MT)',
+    budgetPlaceholder: 'e.g. 15000',
+    urgencyLabel: 'Urgency',
+    urgencyNormal: 'Normal (2-4 weeks)',
+    urgencyUrgent: 'Urgent (1-2 weeks)',
+    urgencyExpress: 'Express (3-7 days)',
+    additionalFeatures: 'Additional features',
+    additionalFeaturesPlaceholder: 'e.g. login system, admin panel, M-Pesa integration...',
+    priceNotice: 'The final price will depend on the complexity and additional features requested. The value below is only a base reference.',
+    basePrice: 'Base price',
+    estimatedPrice: 'Estimated price',
+    finalPriceTBD: 'Final price to be confirmed',
+    proceedToPayment: 'Proceed to Payment',
+    checkout: 'Complete Order',
+    checkoutDesc: 'Complete payment to confirm your order',
+    paymentSuccess: 'Order submitted successfully!',
+    paymentSuccessDesc: 'Your order has been registered. You will receive a detailed proposal with the final price via email. For manual payments, send proof of payment and wait for confirmation.',
+    proofOfPayment: 'Proof of payment',
+    proofUpload: 'Upload proof',
+    proofUploadDesc: 'For manual payments (bank transfer, M-Pesa), upload your payment proof. The administrator will confirm receipt.',
+    proofDragDrop: 'Drag image here or click to select',
+    proofFormat: 'Formats: PNG, JPG, JPEG (max 5MB)',
+    manualPaymentNote: 'Manual payments require administrator confirmation after proof submission.',
+    autoPaymentNote: 'Automatic payments are confirmed immediately.',
+    orderSummary: 'Order summary',
+    serviceLabel: 'Service',
+    descriptionSummary: 'Description',
+    urgencySummary: 'Urgency',
+    featuresSummary: 'Extra features',
+    backToServices: 'Back to services',
+  },
+
+  // ============================================================================
   // Projects Section
   // ============================================================================
   projects: {

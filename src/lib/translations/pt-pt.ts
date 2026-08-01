@@ -292,6 +292,50 @@ export const ptPT: TranslationObject = {
   },
 
   // ============================================================================
+  // Quote / Checkout Page
+  // ============================================================================
+  quote: {
+    title: 'Solicitar Orçamento',
+    subtitle: 'Especifique o seu pedido e proceda ao pagamento',
+    selectService: 'Seleccionar Serviço',
+    selectServiceDesc: 'Escolha o serviço que pretende contratar',
+    specifications: 'Especificações',
+    specificationsDesc: 'Descreva detalhadamente o que pretende. O preço final dependerá da complexidade e funcionalidades adicionais solicitadas.',
+    descriptionLabel: 'Descrição do pedido',
+    descriptionPlaceholder: 'Descreva o seu projecto, requisitos específicos, funcionalidades desejadas...',
+    budgetLabel: 'Orçamento estimado (MT)',
+    budgetPlaceholder: 'Ex: 15000',
+    urgencyLabel: 'Urgência',
+    urgencyNormal: 'Normal (2-4 semanas)',
+    urgencyUrgent: 'Urgente (1-2 semanas)',
+    urgencyExpress: 'Expresso (3-7 dias)',
+    additionalFeatures: 'Funcionalidades adicionais',
+    additionalFeaturesPlaceholder: 'Ex: sistema de login, painel admin, integração com M-Pesa...',
+    priceNotice: 'O preço final dependerá da complexidade e funcionalidades adicionais solicitadas. O valor abaixo é apenas uma referência base.',
+    basePrice: 'Preço base',
+    estimatedPrice: 'Preço estimado',
+    finalPriceTBD: 'Preço final a confirmar',
+    proceedToPayment: 'Prosseguir para Pagamento',
+    checkout: 'Finalizar Pedido',
+    checkoutDesc: 'Complete o pagamento para confirmar o seu pedido',
+    paymentSuccess: 'Pedido submetido com sucesso!',
+    paymentSuccessDesc: 'O seu pedido foi registado. Receberá uma proposta detalhada com o preço final por e-mail. Para pagamentos manuais, envie o comprovativo e aguarde confirmação.',
+    proofOfPayment: 'Comprovativo de pagamento',
+    proofUpload: 'Carregar comprovativo',
+    proofUploadDesc: 'Para pagamentos manuais (transferência bancária, M-Pesa), carregue o comprovativo de pagamento. O administrador confirmará a recepção.',
+    proofDragDrop: 'Arraste a imagem aqui ou clique para seleccionar',
+    proofFormat: 'Formatos: PNG, JPG, JPEG (máx. 5MB)',
+    manualPaymentNote: 'Pagamentos manuais requerem confirmação do administrador após envio do comprovativo.',
+    autoPaymentNote: 'Pagamentos automáticos são confirmados imediatamente.',
+    orderSummary: 'Resumo do pedido',
+    serviceLabel: 'Serviço',
+    descriptionSummary: 'Descrição',
+    urgencySummary: 'Urgência',
+    featuresSummary: 'Funcionalidades extra',
+    backToServices: 'Voltar aos serviços',
+  },
+
+  // ============================================================================
   // Projects Section
   // ============================================================================
   projects: {
