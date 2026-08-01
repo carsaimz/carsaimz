@@ -18,7 +18,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { requestFCMToken, messagingClient } from '@/lib/firebase-client';
+import { requestFCMToken, onForegroundMessage, messagingClient } from '@/lib/firebase-client';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { useAuthStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
@@ -26,6 +26,7 @@ import { isCapacitorApp, isElectronApp } from '@/lib/api-base';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Bell, BellOff, BellRing, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 // ─── Types ───
 
@@ -47,6 +48,29 @@ export function PushNotificationSetup({ compact = false, onPermissionChange }: P
   const [loading, setLoading] = useState(false);
   const [tokenRegistered, setTokenRegistered] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // ── Listen for foreground FCM messages and show toast ──
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!('Notification' in window)) return;
+
+    let unsubscribe: (() => void) | undefined;
+
+    onForegroundMessage((payload) => {
+      const title = payload?.notification?.title || 'Notification';
+      const body = payload?.notification?.body || '';
+      toast(title, {
+        description: body,
+        icon: <BellRing className="size-4" />,
+      });
+    }).then((unsub) => {
+      unsubscribe = unsub;
+    });
+
+    return () => {
+      unsubscribe?.();
+    };
+  }, []);
 
   // ── Check current permission status on mount ──
   useEffect(() => {

@@ -22,7 +22,7 @@ import { resolveI18nContent } from '@/lib/i18n-content';
 import { useRouter } from 'next/navigation';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { useDocumentTitle } from '@/hooks/use-document-title';
-import { RichTextRenderer } from '@/components/common/rich-text-editor';
+import { stripHtml } from '@/lib/utils';
 
 const TechPatternSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
@@ -74,41 +74,18 @@ function getCoverImage(images: string | null | undefined): string | null {
 // No fallback data - all data comes from the database via API
 
 /**
- * Strip HTML tags and decode HTML entities from a string.
- * Used to clean up descriptions stored as HTML in the database.
- */
-function stripHtml(html: string): string {
-  if (!html) return '';
-  // Decode common HTML entities
-  let text = html
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&mdash;/g, '—')
-    .replace(/&ndash;/g, '–');
-  // Remove HTML tags
-  text = text.replace(/<[^>]*>/g, '');
-  // Clean up extra whitespace
-  text = text.replace(/\s+/g, ' ').trim();
-  return text;
-}
-
-/**
- * Render description: use RichTextRenderer for HTML content,
- * or plain text for non-HTML descriptions.
+ * Render description as plain text in listing cards.
+ * Strips HTML tags/entities to avoid showing raw HTML,
+ * and uses overflow-wrap: break-word for proper wrapping
+ * without breaking words in the middle.
  */
 function renderDescription(content: string) {
   if (!content) return null;
-  const isHtml = content.includes('<') && content.includes('>');
-  if (isHtml) {
-    return <RichTextRenderer content={content} className="text-sm leading-relaxed" />;
-  }
+  const plainText = stripHtml(content);
+  if (!plainText) return null;
   return (
-    <p className="text-muted-foreground text-sm leading-relaxed">
-      {content}
+    <p className="text-muted-foreground text-sm leading-relaxed [overflow-wrap:break-word] [word-break:break-word]">
+      {plainText}
     </p>
   );
 }
@@ -126,7 +103,12 @@ const cardVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
-export function ServicesSection() {
+interface ServicesSectionProps {
+  maxItems?: number;
+  showViewAll?: boolean;
+}
+
+export function ServicesSection({ maxItems, showViewAll }: ServicesSectionProps = {}) {
   const { t, language } = useLanguage();
   useDocumentTitle('nav.services', 'Serviços');
   const router = useRouter();
@@ -206,7 +188,7 @@ export function ServicesSection() {
               {t('common.noResults')}
             </div>
           ) : null}
-          {services.map((service) => {
+          {(maxItems ? services.slice(0, maxItems) : services).map((service) => {
             const IconComponent = iconMap[service.icon || 'Globe'] || Globe;
             // Support legacy field names: name → title, featured → isFeatured
             const displayTitle = service.title || service.name || 'Serviço';
@@ -276,6 +258,25 @@ export function ServicesSection() {
             );
           })}
         </motion.div>
+
+        {/* View All Button */}
+        {showViewAll && maxItems && services.length > maxItems && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mt-8"
+          >
+            <Button
+              variant="outline"
+              className="gap-2 border-emerald-200 dark:border-emerald-800/50 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-700 dark:hover:text-emerald-300"
+              onClick={() => router.push('/services')}
+            >
+              {t('common.viewMore') || 'Ver Mais'}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </motion.div>
+        )}
       </div>
     </section>
   );

@@ -6,6 +6,7 @@ import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "next-themes";
 import { LanguageProvider } from "@/contexts/language-context";
 import { AppProvider } from "@/contexts/app-context";
+import { NotificationProvider } from "@/contexts/notification-context";
 import { CapacitorBackButtonHandler } from "@/components/common/capacitor-back-handler";
 import { ClientLayoutWrapper } from "@/components/common/client-layout-wrapper";
 import { DatabaseSetup } from "@/components/common/database-setup";
@@ -190,13 +191,15 @@ export default function RootLayout({
         >
           <LanguageProvider>
             <AppProvider>
-              <DatabaseSetup />
-              <CapacitorBackButtonHandler />
-              <ClientLayoutWrapper>
-                {children}
-              </ClientLayoutWrapper>
-              <PwaInstallPrompt />
-              <PushNotificationSetup />
+              <NotificationProvider>
+                <DatabaseSetup />
+                <CapacitorBackButtonHandler />
+                <ClientLayoutWrapper>
+                  {children}
+                </ClientLayoutWrapper>
+                <PwaInstallPrompt />
+                <PushNotificationSetup compact />
+              </NotificationProvider>
             </AppProvider>
           </LanguageProvider>
         </ThemeProvider>

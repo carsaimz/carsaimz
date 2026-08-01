@@ -1,4 +1,7 @@
 /**
+ * @deprecated Use `/api/notifications/register-token` instead.
+ * This endpoint is kept for backward compatibility only.
+ *
  * Carsai Mozambique — FCM Token Registration API
  * Client devices send their FCM push notification tokens here.
  */

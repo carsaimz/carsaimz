@@ -141,7 +141,7 @@ export function contactFormTemplate(data: {
   message: string;
 }): EmailOptions {
   return {
-    to: cfg().fromEmail, // Send to self (admin)
+    to: ['carsaimozambique@gmail.com', 'suporte.carsaimz@gmail.com'],
     replyTo: data.email,
     subject: data.subject || `Novo contato de ${data.name}`,
     html: `
@@ -184,7 +184,7 @@ export function ticketNotificationTemplate(data: {
     : 'Seu ticket foi recebido';
 
   return {
-    to: data.isAdminCopy ? cfg().fromEmail : data.userEmail,
+    to: data.isAdminCopy ? ['carsaimozambique@gmail.com', 'suporte.carsaimz@gmail.com'] : data.userEmail,
     replyTo: data.isAdminCopy ? data.userEmail : undefined,
     subject: data.isAdminCopy
       ? `[Suporte] ${data.ticketSubject}`

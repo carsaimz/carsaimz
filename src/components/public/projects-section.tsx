@@ -8,6 +8,7 @@ import {
   ExternalLink,
   Filter,
   FolderOpen,
+  ArrowRight,
 } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -87,7 +88,12 @@ const colorPalettes = [
   'from-teal-600 to-emerald-700',
 ];
 
-export function ProjectsSection() {
+interface ProjectsSectionProps {
+  maxItems?: number;
+  showViewAll?: boolean;
+}
+
+export function ProjectsSection({ maxItems, showViewAll }: ProjectsSectionProps = {}) {
   const { t, language } = useLanguage();
   useDocumentTitle('nav.projects', 'Projectos');
   const router = useRouter();
@@ -196,7 +202,7 @@ export function ProjectsSection() {
           viewport={{ once: true }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {filteredProjects.map((project, index) => {
+          {(maxItems ? filteredProjects.slice(0, maxItems) : filteredProjects).map((project, index) => {
             const gradient = colorPalettes[index % colorPalettes.length];
             const techs = project.technologies
               ? (Array.isArray(project.technologies)
@@ -251,7 +257,7 @@ export function ProjectsSection() {
                   </CardHeader>
 
                   <CardContent className="pb-3">
-                    <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mb-3">
+                    <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mb-3 [overflow-wrap:break-word] [word-break:break-word]">
                       {stripHtml(resolvedDescription)}
                     </p>
                     {techs.length > 0 && (
@@ -309,6 +315,25 @@ export function ProjectsSection() {
           <div className="text-center py-12 text-muted-foreground">
             {t('common.noResults')}
           </div>
+        )}
+
+        {/* View All Button */}
+        {showViewAll && maxItems && filteredProjects.length > maxItems && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mt-8"
+          >
+            <Button
+              variant="outline"
+              className="gap-2 border-emerald-200 dark:border-emerald-800/50 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-700 dark:hover:text-emerald-300"
+              onClick={() => router.push('/projects')}
+            >
+              {t('common.viewMore') || 'Ver Mais'}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </motion.div>
         )}
       </div>
     </section>

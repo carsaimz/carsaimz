@@ -291,6 +291,8 @@
 
 .ql-editor-content {
   line-height: 1.7;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .ql-editor-content p {

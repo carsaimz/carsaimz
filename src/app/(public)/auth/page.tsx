@@ -12,6 +12,8 @@ import {
   Phone,
   Mail,
   ArrowLeft,
+  KeyRound,
+  CheckCircle2,
 } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
@@ -31,6 +33,7 @@ import { useDocumentTitle } from '@/hooks/use-document-title';
 import { FEATURES } from '@/lib/client-config';
 import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
+import { auth, sendPasswordResetEmail } from '@/lib/firebase-client';
 
 // ──────────────────────────────────────────────
 // Auth Page Component
@@ -47,6 +50,12 @@ export default function AuthPage() {
 
   const [activeTab, setActiveTab] = useState<string>('login');
   const [loginMode, setLoginMode] = useState<LoginMode>('email');
+
+  // Forgot password form state
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetError, setResetError] = useState('');
 
   // Login form state
   const [loginIdentifier, setLoginIdentifier] = useState('');
@@ -187,7 +196,12 @@ export default function AuthPage() {
             />
           </div>
           <p className="text-muted-foreground text-sm text-center">
-            {activeTab === 'login' ? t('auth.welcomeBack') : t('auth.createAccount')}
+            {activeTab === 'forgot'
+              ? t('auth.forgotPassword')
+              : activeTab === 'login'
+                ? t('auth.welcomeBack')
+                : t('auth.createAccount')
+            }
           </p>
         </div>
 
@@ -203,6 +217,10 @@ export default function AuthPage() {
                 <TabsTrigger value="register" className="flex-1 gap-1">
                   <UserPlus className="size-4" />
                   {t('auth.register')}
+                </TabsTrigger>
+                <TabsTrigger value="forgot" className="flex-1 gap-1">
+                  <KeyRound className="size-4" />
+                  {t('auth.forgotPassword')}
                 </TabsTrigger>
               </TabsList>
 
@@ -398,7 +416,14 @@ export default function AuthPage() {
                   </Button>
                 </div>
 
-                <div className="text-center">
+                <div className="text-center space-y-2">
+                  <button
+                    type="button"
+                    className="text-sm text-primary hover:underline font-medium"
+                    onClick={() => setActiveTab('forgot')}
+                  >
+                    {t('auth.forgotPassword')}
+                  </button>
                   <p className="text-xs text-muted-foreground">
                     {t('auth.noAccount')}{' '}
                     <button
@@ -543,6 +568,110 @@ export default function AuthPage() {
                     </button>
                   </p>
                 </div>
+              </TabsContent>
+
+              {/* ── Forgot Password Tab ── */}
+              <TabsContent value="forgot" className="space-y-4">
+                {resetSent ? (
+                  <div className="space-y-4 text-center py-4">
+                    <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <CheckCircle2 className="size-6 text-primary" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {t('auth.resetPasswordSent')}
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="w-full gap-2"
+                      onClick={() => {
+                        setResetSent(false);
+                        setResetEmail('');
+                        setResetError('');
+                        setActiveTab('login');
+                      }}
+                    >
+                      <ArrowLeft className="size-4" />
+                      {t('auth.backToLogin')}
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground text-center">
+                      {t('auth.resetPasswordDesc')}
+                    </p>
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="reset-email">{t('auth.email')}</Label>
+                        <Input
+                          id="reset-email"
+                          type="email"
+                          placeholder="seu@email.mz"
+                          value={resetEmail}
+                          onChange={(e) => setResetEmail(e.target.value)}
+                          autoComplete="email"
+                        />
+                      </div>
+
+                      {resetError && (
+                        <p className="text-sm text-destructive">{resetError}</p>
+                      )}
+
+                      <Button
+                        onClick={async () => {
+                          setResetError('');
+                          if (!resetEmail) {
+                            setResetError(t('auth.emailRequired'));
+                            return;
+                          }
+                          setResetLoading(true);
+                          try {
+                            await sendPasswordResetEmail(auth, resetEmail, {
+                              url: `${window.location.origin}/auth`,
+                              handleCodeInApp: false,
+                            });
+                            setResetSent(true);
+                            toast.success(t('auth.resetPasswordSent'));
+                          } catch (error: any) {
+                            const code = error?.code || '';
+                            let msg = t('common.error');
+                            if (code === 'auth/user-not-found') {
+                              msg = t('auth.invalidCredentials') || 'No account found with this email.';
+                            } else if (code === 'auth/invalid-email') {
+                              msg = t('auth.emailInvalid') || 'Invalid email address.';
+                            } else if (code === 'auth/too-many-requests') {
+                              msg = t('common.networkError') || 'Too many requests. Try again later.';
+                            }
+                            setResetError(msg);
+                            toast.error(msg);
+                          }
+                          setResetLoading(false);
+                        }}
+                        className="w-full"
+                        disabled={resetLoading}
+                      >
+                        {resetLoading ? (
+                          <span className="animate-pulse">{t('auth.resetPassword')}...</span>
+                        ) : (
+                          t('auth.resetPassword')
+                        )}
+                      </Button>
+                    </div>
+
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-medium"
+                        onClick={() => {
+                          setResetError('');
+                          setActiveTab('login');
+                        }}
+                      >
+                        <ArrowLeft className="size-4" />
+                        {t('auth.backToLogin')}
+                      </button>
+                    </div>
+                  </>
+                )}
               </TabsContent>
             </Tabs>
           </CardContent>

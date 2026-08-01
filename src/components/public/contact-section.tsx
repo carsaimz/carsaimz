@@ -10,8 +10,6 @@ import {
   Phone,
   Mail,
   Clock,
-  MessageCircle,
-  Globe,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,7 +17,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/contexts/language-context';
-import { GITHUB_URL } from '@/lib/client-config';
+import { apiFetch, safeJson } from '@/lib/api-fetch';
+import { useToast } from '@/hooks/use-toast';
+
 
 const TechPatternSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
@@ -28,6 +28,7 @@ const TechPatternSVG = dynamic(
 
 export function ContactSection() {
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -36,20 +37,41 @@ export function ContactSection() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const res = await apiFetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await safeJson(res);
 
-    setIsSubmitting(false);
-    setSubmitted(true);
-    setFormData({ name: '', email: '', subject: '', message: '' });
-
-    // Reset submitted state after 3 seconds
-    setTimeout(() => setSubmitted(false), 3000);
+      if (data?.success) {
+        setSubmitted(true);
+        setFormData({ name: '', email: '', subject: '', message: '' });
+        toast({
+          title: t('contact.sentSuccess') || 'Mensagem enviada',
+          description: t('contact.sentSuccessDesc') || 'Entraremos em contacto em breve.',
+        });
+        setTimeout(() => setSubmitted(false), 5000);
+      } else {
+        const msg = data?.message || 'Failed to send message';
+        setError(msg);
+        toast({ title: t('common.error') || 'Erro', description: msg, variant: 'destructive' });
+      }
+    } catch {
+      const msg = t('common.networkError') || 'Network error';
+      setError(msg);
+      toast({ title: t('common.error') || 'Erro', description: msg, variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (
@@ -58,15 +80,7 @@ export function ContactSection() {
     setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
 
-  const socialLinks = [
-    { icon: MessageCircle, label: t('footer.socialWhatsapp'), href: 'https://wa.me/258847545020', color: 'text-green-600 hover:text-green-700' },
-    { icon: Globe, label: t('footer.socialFacebook'), href: 'https://facebook.com/carsaimz', color: 'text-blue-600 hover:text-blue-700' },
-    { icon: Globe, label: t('footer.socialInstagram'), href: 'https://instagram.com/carsaimz', color: 'text-pink-600 hover:text-pink-700' },
-    { icon: Globe, label: t('footer.socialTiktok'), href: 'https://tiktok.com/@carsaimz', color: 'text-red-600 hover:text-red-700' },
-    { icon: Globe, label: t('footer.socialYoutube'), href: 'https://youtube.com/@carsaimz', color: 'text-red-700 hover:text-red-800' },
-    { icon: MessageCircle, label: t('footer.socialDiscord'), href: 'https://discord.gg/carsaimz', color: 'text-indigo-600 hover:text-indigo-700' },
-    { icon: Globe, label: t('footer.socialGithub'), href: GITHUB_URL, color: 'text-gray-700 hover:text-gray-800' },
-  ];
+
 
   return (
     <section id="contact" className="relative py-16 sm:py-24 bg-background overflow-hidden">
@@ -264,31 +278,7 @@ export function ContactSection() {
               </CardContent>
             </Card>
 
-            {/* Social Media */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                  {t('contact.socialMedia')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {socialLinks.map((social) => (
-                    <a
-                      key={social.label}
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 p-2 rounded-lg border border-emerald-100 dark:border-emerald-900/30 hover:border-emerald-300 transition-colors text-sm"
-                    >
-                      <social.icon className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                      <span className="text-muted-foreground">{social.label}</span>
-                    </a>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+
           </motion.div>
         </div>
       </div>

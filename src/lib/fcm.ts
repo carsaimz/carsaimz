@@ -43,16 +43,42 @@ export async function sendPushNotification(
       return false
     }
 
+    // Normalize tokens: stored tokens may be objects {token, platform, registeredAt}
+    // or plain strings — extract the FCM token string in either case.
+    const normalizeToken = (t: unknown): string | null => {
+      if (typeof t === 'string') return t
+      if (t && typeof t === 'object' && 'token' in (t as Record<string, unknown>)) {
+        const tokenStr = (t as { token: unknown }).token
+        if (typeof tokenStr === 'string') return tokenStr
+      }
+      return null
+    }
+
+    const tokenEntries: Array<{ raw: unknown; normalized: string }> = []
+    for (const raw of user.fcmTokens) {
+      const normalized = normalizeToken(raw)
+      if (normalized) {
+        tokenEntries.push({ raw, normalized })
+      } else {
+        console.warn('[FCM] Skipping un-normalizable token:', raw)
+      }
+    }
+
+    if (tokenEntries.length === 0) {
+      console.log(`[FCM] No valid FCM tokens for user ${uid}`)
+      return false
+    }
+
     // Send to all registered tokens for this user
     const results = await Promise.allSettled(
-      user.fcmTokens.map((token: string) =>
+      tokenEntries.map(({ normalized }) =>
         messaging.send({
           notification: {
             title: notification.title,
             body: notification.body,
           },
           data: data || {},
-          token,
+          token: normalized,
           android: {
             notification: {
               icon: notification.icon || 'logo',
@@ -68,13 +94,13 @@ export async function sendPushNotification(
       )
     )
 
-    // Remove invalid tokens
-    const validTokens: string[] = []
+    // Remove invalid tokens (keep the raw entry so Firestore format is preserved)
+    const validTokens: unknown[] = []
     results.forEach((result, i) => {
       if (result.status === 'fulfilled') {
-        validTokens.push(user.fcmTokens[i])
+        validTokens.push(tokenEntries[i].raw)
       } else {
-        console.warn(`[FCM] Invalid token removed: ${user.fcmTokens[i]}`)
+        console.warn(`[FCM] Invalid token removed:`, tokenEntries[i].raw)
       }
     })
 
@@ -113,15 +139,23 @@ export async function sendBulkPushNotification(
 
 // ─── Register an FCM token for a user ───
 
-export async function registerFCMToken(uid: string, token: string): Promise<void> {
+export async function registerFCMToken(uid: string, token: string, platform: string = 'web'): Promise<void> {
   const user = await getDoc('users', uid)
   if (!user) return
 
-  const currentTokens: string[] = user.fcmTokens || []
+  const currentTokens: Array<unknown> = user.fcmTokens || []
 
-  // Avoid duplicates
-  if (!currentTokens.includes(token)) {
-    currentTokens.push(token)
+  // Avoid duplicates — compare against the token string inside objects or plain strings
+  const exists = currentTokens.some((t: unknown) =>
+    typeof t === 'string' ? t === token : (t as Record<string, unknown>)?.token === token
+  )
+
+  if (!exists) {
+    currentTokens.push({
+      token,
+      platform,
+      registeredAt: new Date().toISOString(),
+    })
     await updateDoc('users', uid, { fcmTokens: currentTokens })
   }
 }
@@ -132,6 +166,8 @@ export async function removeFCMToken(uid: string, token: string): Promise<void> 
   const user = await getDoc('users', uid)
   if (!user) return
 
-  const updatedTokens = (user.fcmTokens || []).filter((t: string) => t !== token)
+  const updatedTokens = (user.fcmTokens || []).filter((t: unknown) =>
+    typeof t === 'string' ? t !== token : (t as Record<string, unknown>)?.token !== token
+  )
   await updateDoc('users', uid, { fcmTokens: updatedTokens })
 }

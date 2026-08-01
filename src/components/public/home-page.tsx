@@ -27,6 +27,13 @@ const FloatingOrbs = dynamic(
   () => import('@/components/common/3d-elements').then((mod) => mod.FloatingOrbs),
   { ssr: false }
 );
+const BlogPreviewSection = dynamic(
+  () => import('./blog-preview-section').then((mod) => mod.BlogPreviewSection),
+  { ssr: false }
+);
+
+/** Maximum items to show on the home page before "View More" */
+const HOME_MAX_ITEMS = 8;
 
 export function HomePage() {
   useDocumentTitle('nav.home', 'Início', true);
@@ -37,19 +44,19 @@ export function HomePage() {
       {/* Home Top Banner Ad */}
       <AdPlacement placement="home_top" />
 
-      {/* Services Section */}
+      {/* Services Section - limited on home */}
       <div className="relative overflow-hidden">
         <Suspense fallback={null}>
           <TechPatternSVG className="top-0 right-0 w-[300px] h-[300px]" opacity={0.04} />
         </Suspense>
-        <ServicesSection />
+        <ServicesSection maxItems={HOME_MAX_ITEMS} showViewAll />
       </div>
 
       <GradientWaveSVG height={60} />
 
-      {/* Projects Section */}
+      {/* Projects Section - limited on home */}
       <div className="relative overflow-hidden">
-        <ProjectsSection />
+        <ProjectsSection maxItems={HOME_MAX_ITEMS} showViewAll />
       </div>
 
       {/* Home Sidebar Ad (on desktop) */}
@@ -58,6 +65,13 @@ export function HomePage() {
       </div>
 
       <GradientWaveSVG height={50} flip />
+
+      {/* Blog Preview Section */}
+      <Suspense fallback={null}>
+        <BlogPreviewSection maxItems={HOME_MAX_ITEMS} />
+      </Suspense>
+
+      <GradientWaveSVG height={50} />
 
       {/* Testimonials Section */}
       <div className="relative overflow-hidden">

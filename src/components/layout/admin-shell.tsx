@@ -54,6 +54,7 @@ const ADMIN_MENU_ITEMS: SidebarLink[] = [
   { path: '/admin/blog', labelKey: 'admin.posts', icon: FileText },
   { path: '/admin/categories', labelKey: 'admin.categories', icon: Tag },
   { path: '/admin/testimonials', labelKey: 'admin.testimonials', icon: MessageSquare },
+  { path: '/admin/members', labelKey: 'admin.members', icon: Users },
   { path: '/admin/forum', labelKey: 'admin.forum', icon: MessagesSquare },
   { path: '/admin/users', labelKey: 'admin.users', icon: Users },
   { path: '/admin/support', labelKey: 'admin.support', icon: Headphones },
