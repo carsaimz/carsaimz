@@ -665,6 +665,7 @@ export const esES: TranslationObject = {
     general: 'General',
     generalSettings: 'Configuración general',
     maintenanceMode: 'Modo de mantenimiento',
+    maintenanceModeDesc: 'Cuando está activado, el sitio está en mantenimiento. Solo los administradores pueden acceder. La página de mantenimiento permite el inicio de sesión de administrador.',
     settingsSaved: 'Configuración guardada',
     settingsSavedDesc: 'La configuración se ha guardado correctamente',
     settingsSaveFailed: 'Error al guardar la configuración',
@@ -1566,11 +1567,13 @@ export const esES: TranslationObject = {
     message: 'Estamos realizando mejoras en la plataforma. Gracias por su paciencia.',
     backSoon: '¡Volveremos pronto!',
     adminLogin: 'Acceso Administrativo',
+    adminOnly: 'Solo los administradores pueden acceder durante el mantenimiento',
     email: 'Correo electrónico',
     password: 'Contraseña',
     login: 'Iniciar sesión',
     loginFailed: 'Credenciales inválidas',
     loginSuccess: 'Sesión iniciada correctamente',
+    emailRequired: 'El correo electrónico es obligatorio',
   },
 
   // ============================================================================

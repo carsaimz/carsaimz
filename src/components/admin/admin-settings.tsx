@@ -173,12 +173,19 @@ export function AdminSettings() {
 
               <Separator />
 
-              <div className="flex items-center gap-3">
-                <Switch
-                  checked={formData.maintenanceMode}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, maintenanceMode: checked }))}
-                />
-                <Label className="text-sm">{t('admin.maintenanceMode')}</Label>
+              <div className="flex items-start gap-3">
+                <div className="pt-0.5">
+                  <Switch
+                    checked={formData.maintenanceMode}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, maintenanceMode: checked }))}
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm">{t('admin.maintenanceMode')}</Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t('admin.maintenanceModeDesc') || 'Quando ativado, o site fica em manutenção. Apenas administradores podem aceder. A página de manutenção permite login para admins.'}
+                  </p>
+                </div>
               </div>
 
               <Separator />

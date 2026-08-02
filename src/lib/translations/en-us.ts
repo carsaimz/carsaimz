@@ -667,6 +667,7 @@ export const enUS: TranslationObject = {
     general: 'General',
     generalSettings: 'General Settings',
     maintenanceMode: 'Maintenance Mode',
+    maintenanceModeDesc: 'When enabled, the site is under maintenance. Only administrators can access. The maintenance page allows admin login.',
     settingsSaved: 'Settings saved',
     settingsSavedDesc: 'Settings have been saved successfully',
     settingsSaveFailed: 'Failed to save settings',
@@ -1569,11 +1570,13 @@ export const enUS: TranslationObject = {
     message: 'We are making improvements to the platform. Thank you for your patience.',
     backSoon: 'We\'ll be back soon!',
     adminLogin: 'Admin Access',
+    adminOnly: 'Only administrators can access the site during maintenance',
     email: 'Email',
     password: 'Password',
     login: 'Log In',
     loginFailed: 'Invalid credentials',
     loginSuccess: 'Successfully logged in',
+    emailRequired: 'Email is required',
   },
 
   // ============================================================================

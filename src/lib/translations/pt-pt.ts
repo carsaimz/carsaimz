@@ -677,6 +677,7 @@ export const ptPT: TranslationObject = {
     general: 'Geral',
     generalSettings: 'Configurações Gerais',
     maintenanceMode: 'Modo de Manutenção',
+    maintenanceModeDesc: 'Quando ativado, o site fica em manutenção. Apenas administradores podem aceder. A página de manutenção permite login para admins.',
     settingsSaved: 'Configurações guardadas',
     settingsSavedDesc: 'As configurações foram guardadas com sucesso',
     settingsSaveFailed: 'Falha ao guardar configurações',
@@ -1579,11 +1580,13 @@ export const ptPT: TranslationObject = {
     message: 'Estamos a realizar melhorias na plataforma. Agradecemos a sua paciência.',
     backSoon: 'Voltaremos em breve!',
     adminLogin: 'Acesso Administrativo',
+    adminOnly: 'Apenas administradores podem aceder durante a manutenção',
     email: 'E-mail',
     password: 'Palavra-passe',
     login: 'Entrar',
     loginFailed: 'Credenciais inválidas',
     loginSuccess: 'Sessão iniciada com sucesso',
+    emailRequired: 'O e-mail é obrigatório',
   },
 
   // ============================================================================

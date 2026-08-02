@@ -672,6 +672,7 @@ export const swTZ: TranslationObject = {
     general: 'Kawaida',
     generalSettings: 'Mipangilio ya Kawaida',
     maintenanceMode: 'Hali ya Matengenezo',
+    maintenanceModeDesc: 'Ikiwashwa, tovuti iko katika matengenezo. Waendeshaji pekee wanaweza kufikia. Ukurasa wa matengenezo unaruhusu kuingia kwa msimamizi.',
     settingsSaved: 'Mipangilio imehifadhiwa',
     settingsSavedDesc: 'Mipangilio imehifadhiwa kwa mafanikio',
     settingsSaveFailed: 'Imeshindwa kuhifadhi mipangilio',
@@ -1576,11 +1577,13 @@ export const swTZ: TranslationObject = {
     message: 'Tunafanya maboresho kwenye jukwaa. Asante kwa uvumilivu wako.',
     backSoon: 'Tutarudi hivi karibuni!',
     adminLogin: 'Ufikiaji wa Msimamizi',
+    adminOnly: 'Watu wa usimamizi pekee wanaweza kufikia wakati wa matengenezo',
     email: 'Barua pepe',
     password: 'Nenosiri',
     login: 'Ingia',
     loginFailed: 'Vitambulisho batili',
     loginSuccess: 'Umefanikiwa kuingia',
+    emailRequired: 'Barua pepe inahitajika',
   },
 
   // ============================================================================

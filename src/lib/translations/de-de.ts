@@ -665,6 +665,7 @@ export const deDE: TranslationObject = {
     general: 'Allgemein',
     generalSettings: 'Allgemeine Einstellungen',
     maintenanceMode: 'Wartungsmodus',
+    maintenanceModeDesc: 'Wenn aktiviert, befindet sich die Seite im Wartungsmodus. Nur Administratoren haben Zugriff. Die Wartungsseite ermöglicht den Admin-Login.',
     settingsSaved: 'Einstellungen gespeichert',
     settingsSavedDesc: 'Die Einstellungen wurden erfolgreich gespeichert',
     settingsSaveFailed: 'Fehler beim Speichern der Einstellungen',
@@ -1566,11 +1567,13 @@ export const deDE: TranslationObject = {
     message: 'Wir führen Verbesserungen an der Plattform durch. Vielen Dank für Ihre Geduld.',
     backSoon: 'Wir sind bald zurück!',
     adminLogin: 'Admin-Zugang',
+    adminOnly: 'Nur Administratoren können während der Wartung auf die Seite zugreifen',
     email: 'E-Mail',
     password: 'Passwort',
     login: 'Anmelden',
     loginFailed: 'Ungültige Anmeldedaten',
     loginSuccess: 'Erfolgreich angemeldet',
+    emailRequired: 'E-Mail ist erforderlich',
   },
 
   // ============================================================================

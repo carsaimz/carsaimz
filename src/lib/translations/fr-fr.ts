@@ -665,6 +665,7 @@ export const frFR: TranslationObject = {
     general: 'Général',
     generalSettings: 'Paramètres généraux',
     maintenanceMode: 'Mode maintenance',
+    maintenanceModeDesc: 'Lorsqu\'activé, le site est en maintenance. Seuls les administrateurs peuvent y accéder. La page de maintenance permet la connexion admin.',
     settingsSaved: 'Paramètres enregistrés',
     settingsSavedDesc: 'Les paramètres ont été enregistrés avec succès',
     settingsSaveFailed: 'Échec de l\'enregistrement des paramètres',
@@ -1566,11 +1567,13 @@ export const frFR: TranslationObject = {
     message: 'Nous effectuons des améliorations sur la plateforme. Merci de votre patience.',
     backSoon: 'Nous reviendrons bientôt !',
     adminLogin: 'Accès Administrateur',
+    adminOnly: 'Seuls les administrateurs peuvent accéder pendant la maintenance',
     email: 'E-mail',
     password: 'Mot de passe',
     login: 'Connexion',
     loginFailed: 'Identifiants invalides',
     loginSuccess: 'Connexion réussie',
+    emailRequired: 'L\'e-mail est obligatoire',
   },
 
   // ============================================================================

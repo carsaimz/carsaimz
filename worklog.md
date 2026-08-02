@@ -26,3 +26,25 @@ Stage Summary:
 - All 8 reported issues addressed
 - Build passes successfully
 - Changes pushed to `main` branch (commit 256db00)
+---
+Task ID: 1
+Agent: main
+Task: Improve maintenance mode — Firestore-based, admin bypass, language switcher, visible login
+
+Work Log:
+- Updated proxy.ts to async function that reads maintenance mode from Firestore settings collection (not just cookies)
+- Added Firebase ID token verification in proxy.ts to check admin/super_admin role (via carsai-id-token cookie + carsai-role cookie fallback)
+- Updated setUserInStore in store.ts to set carsai-role cookie on every login
+- Updated setIdToken in store.ts to set carsai-id-token cookie on every login
+- Updated logout in store.ts to clear both cookies on logout
+- Rewrote maintenance page with visible admin login button (ShieldCheck icon), language switcher dropdown (Globe icon, all 8 languages), and proper form with cancel button
+- Added adminOnly and emailRequired i18n keys to all 8 language files
+- Added maintenanceModeDesc i18n key to all 8 language files for admin settings description
+- Updated admin settings to show maintenance mode description with the switch
+
+Stage Summary:
+- Maintenance mode now reads from Firestore (source of truth) with cookie fallback
+- Admin/super_admin can bypass maintenance mode via ID token verification
+- Maintenance page has visible language switcher and admin login button
+- All 8 languages have complete maintenance translations
+- TypeScript compilation passes, Next.js build succeeds

@@ -665,6 +665,7 @@ export const zhCN: TranslationObject = {
     general: '常规',
     generalSettings: '常规设置',
     maintenanceMode: '维护模式',
+    maintenanceModeDesc: '启用后，网站进入维护状态。仅管理员可访问。维护页面允许管理员登录。',
     settingsSaved: '设置已保存',
     settingsSavedDesc: '设置已成功保存',
     settingsSaveFailed: '保存设置失败',
@@ -1566,11 +1567,13 @@ export const zhCN: TranslationObject = {
     message: '我们正在对平台进行改进。感谢您的耐心等待。',
     backSoon: '我们很快回来！',
     adminLogin: '管理员登录',
+    adminOnly: '维护期间仅管理员可访问',
     email: '邮箱',
     password: '密码',
     login: '登录',
     loginFailed: '凭据无效',
     loginSuccess: '登录成功',
+    emailRequired: '邮箱为必填项',
   },
 
   // ============================================================================

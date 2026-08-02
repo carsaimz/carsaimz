@@ -116,6 +116,11 @@ function setUserInStore(set: (partial: Partial<AuthState>) => void, user: User) 
     isSuperAdmin: userRole === 'super_admin',
     isLoading: false,
   })
+
+  // Sync auth cookies for middleware/proxy (server-side role checks)
+  if (typeof document !== 'undefined') {
+    document.cookie = `carsai-role=${userRole};path=/;max-age=${60 * 60 * 24 * 30};SameSite=Lax`
+  }
 }
 
 function mapRole(roleData: any): UserRole {
@@ -976,6 +981,12 @@ export const useAuthStore = create<AuthState>()(
           lastLoginError: null,
           lastRegisterError: null,
         })
+
+        // Clear auth cookies on logout
+        if (typeof document !== 'undefined') {
+          document.cookie = 'carsai-role=;path=/;max-age=0;SameSite=Lax'
+          document.cookie = 'carsai-id-token=;path=/;max-age=0;SameSite=Lax'
+        }
       },
 
       setUser: (user: User) => {
@@ -991,6 +1002,10 @@ export const useAuthStore = create<AuthState>()(
 
       setIdToken: (token: string) => {
         set({ idToken: token })
+        // Sync ID token cookie for middleware/proxy (server-side auth verification)
+        if (typeof document !== 'undefined' && token) {
+          document.cookie = `carsai-id-token=${token};path=/;max-age=${60 * 60 * 24 * 30};SameSite=Lax`
+        }
       },
     }),
     {
