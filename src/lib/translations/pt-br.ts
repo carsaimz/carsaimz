@@ -621,7 +621,7 @@ export const ptBR: TranslationObject = {
     systemLogs: 'Registros do sistema',
     systemSettings: 'Configurações do sistema',
     systemBackup: 'Backup do sistema',
-    dashboard: 'Painel de Administração',
+    dashboard: 'Painel de Controle',
     totalRevenue: 'Receitas totais',
     monthlyRevenue: 'Receitas mensais',
     growthRate: 'Taxa de crescimento',

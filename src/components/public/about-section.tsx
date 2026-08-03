@@ -37,6 +37,10 @@ const MozambiqueMapSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.MozambiqueMapSVG),
   { ssr: false }
 );
+const TechParticles = dynamic(
+  () => import('@/components/common/visual-effects').then((mod) => mod.TechParticles),
+  { ssr: false }
+);
 
 const values = [
   {
@@ -130,6 +134,10 @@ export function AboutSection() {
       <Suspense fallback={null}>
         <AfricanPatternSVG className="top-[5%] right-[2%] w-[200px] h-[200px]" opacity={0.04} />
         <MozambiqueMapSVG className="bottom-[5%] left-[2%] w-[400px] h-[200px]" opacity={0.04} />
+      </Suspense>
+      {/* Subtle floating tech particles */}
+      <Suspense fallback={null}>
+        <TechParticles count={15} color="emerald" />
       </Suspense>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}

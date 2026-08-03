@@ -25,6 +25,14 @@ const TechPatternSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
   { ssr: false }
 );
+const TechParticles = dynamic(
+  () => import('@/components/common/visual-effects').then((mod) => mod.TechParticles),
+  { ssr: false }
+);
+const GlowPulse = dynamic(
+  () => import('@/components/common/visual-effects').then((mod) => mod.GlowPulse),
+  { ssr: false }
+);
 
 export function ContactSection() {
   const { t } = useLanguage();
@@ -87,6 +95,13 @@ export function ContactSection() {
       {/* Decorative background */}
       <Suspense fallback={null}>
         <TechPatternSVG className="bottom-[5%] right-[2%] w-[250px] h-[250px]" opacity={0.03} />
+      </Suspense>
+      {/* Subtle particles + glow */}
+      <Suspense fallback={null}>
+        <TechParticles count={12} color="amber" />
+      </Suspense>
+      <Suspense fallback={null}>
+        <GlowPulse className="left-[20%] top-[30%]" color="rgba(245, 158, 11, 0.06)" size={250} />
       </Suspense>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}

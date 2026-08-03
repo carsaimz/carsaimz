@@ -18,6 +18,10 @@ const FloatingOrbs = dynamic(
   () => import('@/components/common/3d-elements').then((mod) => mod.FloatingOrbs),
   { ssr: false }
 );
+const TechParticles = dynamic(
+  () => import('@/components/common/visual-effects').then((mod) => mod.TechParticles),
+  { ssr: false }
+);
 
 interface TestimonialData {
   id: string;
@@ -153,6 +157,9 @@ export function TestimonialsSection() {
       {/* Decorative background */}
       <Suspense fallback={null}>
         <FloatingOrbs count={2} opacity={0.06} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <TechParticles count={10} color="emerald" />
       </Suspense>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

@@ -203,7 +203,7 @@ export const frFR: TranslationObject = {
     resolved: 'Résolu',
     inProgress: 'En cours',
     unread: 'non lues',
-    na: 'N/A',
+    na: 'S/O',
     title: 'Titre',
     back: 'Retour',
     notFound: 'Non trouvé',

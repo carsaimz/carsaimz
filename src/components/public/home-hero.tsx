@@ -29,6 +29,24 @@ const MozambiqueMapSVG = dynamic(
   { ssr: false }
 );
 
+// New visual effects — dynamic imports for code splitting
+const TechParticles = dynamic(
+  () => import('@/components/common/visual-effects').then((mod) => mod.TechParticles),
+  { ssr: false }
+);
+const FloatingTechIcons = dynamic(
+  () => import('@/components/common/visual-effects').then((mod) => mod.FloatingTechIcons),
+  { ssr: false }
+);
+const GradientMesh = dynamic(
+  () => import('@/components/common/visual-effects').then((mod) => mod.GradientMesh),
+  { ssr: false }
+);
+const GlowPulse = dynamic(
+  () => import('@/components/common/visual-effects').then((mod) => mod.GlowPulse),
+  { ssr: false }
+);
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -58,9 +76,24 @@ export function HomeHero() {
       id="hero"
       className="relative overflow-hidden bg-gradient-to-br from-red-900 via-red-800 to-red-700 min-h-[90vh] flex items-center"
     >
+      {/* Gradient Mesh — subtle animated color overlay */}
+      <Suspense fallback={null}>
+        <GradientMesh opacity={0.06} />
+      </Suspense>
+
       {/* Floating Orbs - background decoration */}
       <Suspense fallback={null}>
         <FloatingOrbs count={4} opacity={0.12} />
+      </Suspense>
+
+      {/* Tech Particles — floating dots with mixed colors */}
+      <Suspense fallback={null}>
+        <TechParticles count={35} color="mixed" />
+      </Suspense>
+
+      {/* Floating Tech Icons — FontAwesome icons (code, server, cloud, AI, etc.) */}
+      <Suspense fallback={null}>
+        <FloatingTechIcons count={10} opacity={0.1} theme="dark" />
       </Suspense>
 
       {/* Parallax background for subtle depth */}
@@ -83,6 +116,14 @@ export function HomeHero() {
       {/* Particle Network - subtle tech overlay */}
       <Suspense fallback={null}>
         <ParticleNetwork className="bottom-[15%] left-[5%] w-[400px] h-[400px]" particleCount={20} color="#D32F2F" />
+      </Suspense>
+
+      {/* Glow pulses behind CTA area */}
+      <Suspense fallback={null}>
+        <GlowPulse className="left-1/2 top-[55%] -translate-x-1/2" color="rgba(250, 204, 21, 0.08)" size={300} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <GlowPulse className="left-[30%] top-[40%]" color="rgba(59, 130, 246, 0.06)" size={200} />
       </Suspense>
 
       {/* Mozambique flag stripe accent */}

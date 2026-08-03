@@ -28,6 +28,14 @@ const TechPatternSVG = dynamic(
   () => import('@/components/common/decorative-svg').then((mod) => mod.TechPatternSVG),
   { ssr: false }
 );
+const FloatingTechIcons = dynamic(
+  () => import('@/components/common/visual-effects').then((mod) => mod.FloatingTechIcons),
+  { ssr: false }
+);
+const SparkleLine = dynamic(
+  () => import('@/components/common/visual-effects').then((mod) => mod.SparkleLine),
+  { ssr: false }
+);
 
 const iconMap: Record<string, React.ElementType> = {
   Globe,
@@ -157,6 +165,17 @@ export function ServicesSection({ maxItems, showViewAll }: ServicesSectionProps 
       {/* Decorative background */}
       <Suspense fallback={null}>
         <TechPatternSVG className="top-0 right-0 w-[300px] h-[300px]" opacity={0.04} />
+      </Suspense>
+      {/* Floating tech icons in services */}
+      <Suspense fallback={null}>
+        <FloatingTechIcons count={6} opacity={0.06} theme="light" />
+      </Suspense>
+      {/* Sparkle line accents */}
+      <Suspense fallback={null}>
+        <SparkleLine className="top-[20%] left-[10%] w-[150px] h-[15px]" />
+      </Suspense>
+      <Suspense fallback={null}>
+        <SparkleLine className="bottom-[30%] right-[5%] w-[120px] h-[15px]" />
       </Suspense>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}

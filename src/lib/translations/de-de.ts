@@ -203,7 +203,7 @@ export const deDE: TranslationObject = {
     resolved: 'Gelöst',
     inProgress: 'In Bearbeitung',
     unread: 'ungelesen',
-    na: 'N/A',
+    na: 'k.A.',
     title: 'Titel',
     back: 'Zurück',
     notFound: 'Nicht gefunden',
