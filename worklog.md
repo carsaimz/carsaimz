@@ -48,3 +48,30 @@ Stage Summary:
 - Maintenance page has visible language switcher and admin login button
 - All 8 languages have complete maintenance translations
 - TypeScript compilation passes, Next.js build succeeds
+
+---
+Task ID: 2
+Agent: main
+Task: Add particles, floating tech icons, visual effects + i18n audit
+
+Work Log:
+- Created visual-effects.tsx with 5 components: TechParticles, FloatingTechIcons, GlowPulse, GradientMesh, SparkleLine
+- All use pure CSS animations (no canvas), respect prefers-reduced-motion, dynamic imports for code splitting
+- Added 7 new CSS keyframes to globals.css: tech-particle, float-icon, glow-pulse, gradient-mesh, sparkle-dash, sparkle-dot
+- Hero: added TechParticles (35 mixed colors), FloatingTechIcons (10 FontAwesome icons), GradientMesh, 2 GlowPulse
+- Services section: added FloatingTechIcons (6), 2 SparkleLine accents
+- About section: added TechParticles (15 emerald)
+- Contact section: added TechParticles (12 amber), GlowPulse
+- Testimonials section: added TechParticles (10 emerald)
+- FontAwesome icons used: faCode, faServer, faCloud, faRobot, faMobileScreen, faDatabase, faShieldHalved, faMicrochip, faGlobe, faRocket, faGithub, faAws, faDocker, faReact
+- Full i18n audit completed (1189 keys per language, 8 languages)
+- Fixed i18n bugs: es-es nav.partner "Partner"→"Socio", es-es common.all "Todo"→"Todos"
+- Fixed: pt-br admin.dashboard "Painel de Administração"→"Painel de Controle"
+- Fixed: fr-fr common.na "N/A"→"S/O", de-de common.na "N/A"→"k.A."
+- TypeScript clean, Next.js build succeeds, pushed to main
+
+Stage Summary:
+- 5 new visual effect components added across 5 sections
+- FontAwesome tech icons floating in hero and services
+- 5 i18n bugs fixed
+- All effects lightweight (CSS-only, no JS per frame)
