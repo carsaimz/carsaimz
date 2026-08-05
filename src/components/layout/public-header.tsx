@@ -107,7 +107,7 @@ export function PublicHeader() {
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* ── Logo only (no text) ── */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Link
             href="/home"
             className="flex items-center gap-2 hover:bg-transparent"
@@ -132,7 +132,7 @@ export function PublicHeader() {
         </nav>
 
         {/* ── Right side actions ── */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {/* Language Switcher with FLAG */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

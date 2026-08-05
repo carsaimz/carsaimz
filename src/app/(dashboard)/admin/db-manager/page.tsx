@@ -411,7 +411,10 @@ export default function DbManagerPage() {
   // ── Render a value for the table ──
   const renderValue = (value: any): string => {
     if (value === null || value === undefined) return '—';
-    if (typeof value === 'object') return JSON.stringify(value);
+    if (typeof value === 'object') {
+      const str = JSON.stringify(value);
+      return str.length > 80 ? str.slice(0, 80) + '…' : str;
+    }
     if (typeof value === 'boolean') return value ? '✓' : '✗';
     return String(value);
   };
@@ -501,7 +504,7 @@ export default function DbManagerPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+            <div className="space-y-2 max-h-[60vh] overflow-y-auto overflow-x-hidden">
               {entries.map(([key, value]) => (
                 <div
                   key={key}
@@ -510,9 +513,9 @@ export default function DbManagerPage() {
                   <span className="text-sm font-medium text-muted-foreground sm:min-w-[160px] sm:shrink-0">
                     {key}
                   </span>
-                  <span className="text-sm break-all">
+                  <span className="text-sm break-all overflow-wrap-anywhere">
                     {typeof value === 'object' && value !== null ? (
-                      <pre className="text-xs bg-muted p-2 rounded overflow-x-auto max-w-full">
+                      <pre className="text-xs bg-muted p-2 rounded overflow-x-auto max-w-full whitespace-pre-wrap break-all">
                         {JSON.stringify(value, null, 2)}
                       </pre>
                     ) : (
@@ -780,7 +783,7 @@ export default function DbManagerPage() {
 
       {/* Create Document Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-2xl max-h-[85vh]">
           <DialogHeader>
             <DialogTitle>{t('admin.addDocument')}</DialogTitle>
             <DialogDescription>
@@ -827,7 +830,7 @@ export default function DbManagerPage() {
 
       {/* Edit Document Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-2xl max-h-[85vh]">
           <DialogHeader>
             <DialogTitle>{t('admin.editDocument')}</DialogTitle>
             <DialogDescription>

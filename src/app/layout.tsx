@@ -46,10 +46,11 @@ const organizationJsonLd = {
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "customer service",
-    availableLanguage: ["Portuguese", "English"],
+    availableLanguage: ["Portuguese", "English", "French", "Spanish", "German", "Chinese", "Swahili"],
   },
   sameAs: [
     "https://github.com/carsaimz",
+    "https://carsaimz.vercel.app",
   ],
   knowsAbout: [
     "Desenvolvimento Web",
@@ -76,6 +77,13 @@ const websiteJsonLd = {
   },
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: 'cover',
+}
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
@@ -85,20 +93,14 @@ export const metadata: Metadata = {
   description:
     "Plataforma tecnológica para transformação digital em Mozambique. Soluções inovadoras de desenvolvimento web, mobile, cloud e IA que impulsionam o crescimento empresarial.",
   keywords: [
-    "Carsai",
-    "Mozambique",
-    "tecnologia",
-    "transformação digital",
-    "desenvolvimento web",
-    "mobile",
-    "cloud",
-    "IA",
-    "inteligência artificial",
-    "software",
-    "aplicações",
-    "Maputo",
-    "soluções tecnológicas",
-    "desenvolvimento de software",
+    "Carsai", "Mozambique", "Moçambique", "tecnologia", "technology",
+    "transformação digital", "digital transformation",
+    "desenvolvimento web", "web development",
+    "mobile", "cloud", "IA", "AI", "inteligência artificial", "artificial intelligence",
+    "software", "aplicações", "applications", "Maputo",
+    "soluções tecnológicas", "tech solutions",
+    "desenvolvimento de software", "software development",
+    "hosting", "hospedagem", "devops", "consultoria", "consulting",
   ],
   authors: [{ name: "Carsai Mozambique", url: SITE_URL }],
   creator: "Carsai Mozambique",
@@ -147,6 +149,16 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: SITE_URL,
+    languages: {
+      'pt-MZ': SITE_URL,
+      'pt-BR': SITE_URL,
+      'en-US': SITE_URL,
+      'es-ES': SITE_URL,
+      'fr-FR': SITE_URL,
+      'de-DE': SITE_URL,
+      'zh-CN': SITE_URL,
+      'sw-TZ': SITE_URL,
+    },
   },
   other: {
     "apple-mobile-web-app-capable": "yes",
@@ -163,7 +175,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-MZ" suppressHydrationWarning>
+    <html lang="pt" suppressHydrationWarning>
       <head>
         {/* JSON-LD Structured Data — Organization */}
         <script

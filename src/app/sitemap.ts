@@ -83,6 +83,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     staticEntry('/faq', 0.7, 'monthly'),
     staticEntry('/contact', 0.7, 'monthly'),
     staticEntry('/testimonials', 0.7, 'monthly'),
+    staticEntry('/quote', 0.8, 'monthly'),
     staticEntry('/privacy', 0.3, 'yearly'),
     staticEntry('/terms', 0.3, 'yearly'),
     staticEntry('/cookies', 0.3, 'yearly'),
@@ -173,6 +174,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Firestore unavailable — skip dynamic entries
   }
 
+  // ─── Dynamic forum topic pages ───
+  let forumEntries: MetadataRoute.Sitemap = []
+  try {
+    const forumTopics = await safeGetDocs<{ slug: string; updatedAt?: string }>('forum_topics')
+    forumEntries = forumTopics
+      .filter((t: any) => t.slug)
+      .map((t: any) => ({
+        url: `${SITE_URL}/forum/${t.slug}`,
+        lastModified: safeToDate(t.updatedAt) ?? new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+      }))
+  } catch {
+    // Firestore unavailable — skip dynamic entries
+  }
+
   // ─── Combine all entries ───
-  return [...staticPages, ...serviceEntries, ...projectEntries, ...blogEntries]
+  return [...staticPages, ...serviceEntries, ...projectEntries, ...blogEntries, ...forumEntries]
 }
