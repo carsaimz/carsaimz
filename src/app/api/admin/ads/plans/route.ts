@@ -82,6 +82,8 @@ export async function POST(request: NextRequest) {
     const {
       name,
       description,
+      nameI18n,
+      descriptionI18n,
       price,
       features,
       isFree,
@@ -133,6 +135,8 @@ export async function POST(request: NextRequest) {
     const planId = await createDoc('ad_plans', {
       name,
       description: description || '',
+      nameI18n: nameI18n || '',
+      descriptionI18n: descriptionI18n || '',
       price: price || 0,
       features: {
         maxAds: features.maxAds || 0,
@@ -192,7 +196,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, name, description, price, features, isFree, isActive, order } = body
+    const { id, name, description, nameI18n, descriptionI18n, price, features, isFree, isActive, order } = body
 
     if (!id) {
       return NextResponse.json(
@@ -215,6 +219,8 @@ export async function PUT(request: NextRequest) {
 
     if (name !== undefined) updateData.name = name
     if (description !== undefined) updateData.description = description
+    if (nameI18n !== undefined) updateData.nameI18n = nameI18n
+    if (descriptionI18n !== undefined) updateData.descriptionI18n = descriptionI18n
     if (price !== undefined) updateData.price = price
     if (isFree !== undefined) updateData.isFree = isFree
     if (isActive !== undefined) updateData.isActive = isActive

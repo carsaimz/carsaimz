@@ -21,7 +21,8 @@ import { useAuthStore } from '@/lib/store';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { useToast } from '@/hooks/use-toast';
 import { useDocumentTitle } from '@/hooks/use-document-title';
-import { AD_PLACEMENTS, type AdPlacementId } from '@/lib/ad-placements';
+import { AD_PLACEMENTS, getPlacementName, type AdPlacementId } from '@/lib/ad-placements';
+import { resolveI18nContent } from '@/lib/i18n-content';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -98,7 +99,9 @@ interface AdData {
 interface AdPlanData {
   id: string;
   name: string;
+  nameI18n?: string;
   description: string;
+  descriptionI18n?: string;
   price: number;
   features: {
     maxAds: number;
@@ -133,7 +136,7 @@ function getStatusColor(status: string): string {
 // ── Component ──
 
 export function AdminAdsManager() {
-  const { t, formatDate, formatCurrency } = useLanguage();
+  const { t, formatDate, formatCurrency, language } = useLanguage();
   useDocumentTitle('ads.title', 'Anúncios');
   const { toast } = useToast();
   const { user, idToken } = useAuthStore();
@@ -173,7 +176,9 @@ export function AdminAdsManager() {
   const [editingPlan, setEditingPlan] = useState<AdPlanData | null>(null);
   const [planForm, setPlanForm] = useState({
     name: '',
+    nameI18n: '',
     description: '',
+    descriptionI18n: '',
     price: 0,
     isFree: false,
     isActive: true,
@@ -381,7 +386,9 @@ export function AdminAdsManager() {
   const resetPlanForm = () => {
     setPlanForm({
       name: '',
+      nameI18n: '',
       description: '',
+      descriptionI18n: '',
       price: 0,
       isFree: false,
       isActive: true,
@@ -403,7 +410,9 @@ export function AdminAdsManager() {
     setEditingPlan(plan);
     setPlanForm({
       name: plan.name,
+      nameI18n: plan.nameI18n || '',
       description: plan.description,
+      descriptionI18n: plan.descriptionI18n || '',
       price: plan.price,
       isFree: plan.isFree,
       isActive: plan.isActive,
@@ -589,7 +598,7 @@ export function AdminAdsManager() {
                                 <div className="flex flex-wrap gap-1">
                                   {ad.placement?.slice(0, 2).map((p) => (
                                     <Badge key={p} variant="secondary" className="text-[10px]">
-                                      {AD_PLACEMENTS[p as AdPlacementId]?.name || p}
+                                      {getPlacementName(p, t) || p}
                                     </Badge>
                                   ))}
                                   {ad.placement?.length > 2 && (
@@ -708,21 +717,21 @@ export function AdminAdsManager() {
                 <Card key={plan.id} className={!plan.isActive ? 'opacity-60' : ''}>
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{plan.name}</CardTitle>
+                      <CardTitle className="text-lg">{resolveI18nContent(plan.nameI18n, plan.name, language)}</CardTitle>
                       <Badge variant={plan.isFree ? 'secondary' : 'default'} className="text-xs">
-                        {plan.isFree ? 'Free' : formatCurrency(plan.price)}
+                        {plan.isFree ? t('ads.free') : formatCurrency(plan.price)}
                       </Badge>
                     </div>
-                    {plan.description && (
-                      <p className="text-sm text-muted-foreground">{plan.description}</p>
+                    {(plan.description || plan.descriptionI18n) && (
+                      <p className="text-sm text-muted-foreground">{resolveI18nContent(plan.descriptionI18n, plan.description, language)}</p>
                     )}
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div><span className="text-muted-foreground">Max Ads:</span> {plan.features.maxAds || '∞'}</div>
-                      <div><span className="text-muted-foreground">Max Impr:</span> {plan.features.maxImpressions || '∞'}</div>
-                      <div><span className="text-muted-foreground">Priority:</span> {plan.features.priority}</div>
-                      <div><span className="text-muted-foreground">Support:</span> {plan.features.supportLevel}</div>
+                      <div><span className="text-muted-foreground">{t('ads.adsCount', { count: '' }).trim() || 'Ads'}:</span> {plan.features.maxAds || '∞'}</div>
+                      <div><span className="text-muted-foreground">{t('ads.impressions')}:</span> {plan.features.maxImpressions || '∞'}</div>
+                      <div><span className="text-muted-foreground">{t('ads.priority')}:</span> {plan.features.priority}</div>
+                      <div><span className="text-muted-foreground">{t('ads.supportLevel')}:</span> {plan.features.supportLevel}</div>
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {plan.features.formats?.map((f) => (
@@ -735,7 +744,7 @@ export function AdminAdsManager() {
                         {t('ads.editPlacement')}
                       </Button>
                       <Badge variant={plan.isActive ? 'default' : 'secondary'} className="text-xs">
-                        {plan.isActive ? 'Active' : 'Inactive'}
+                        {plan.isActive ? t('ads.active') : t('ads.paused')}
                       </Badge>
                     </div>
                   </CardContent>
@@ -801,7 +810,7 @@ export function AdminAdsManager() {
                   <span className="flex flex-wrap gap-1 justify-end">
                     {selectedAd.placement?.map((p) => (
                       <Badge key={p} variant="secondary" className="text-xs">
-                        {AD_PLACEMENTS[p as AdPlacementId]?.name || p}
+                        {getPlacementName(p, t) || p}
                       </Badge>
                     ))}
                   </span>
@@ -940,7 +949,7 @@ export function AdminAdsManager() {
                   className="rounded border-border"
                 />
                 <label htmlFor={`placement-${key}`} className="flex-1 cursor-pointer">
-                  <p className="text-sm font-medium">{config.name}</p>
+                  <p className="text-sm font-medium">{getPlacementName(key, t)}</p>
                   <p className="text-xs text-muted-foreground">{config.description}</p>
                 </label>
                 <Badge variant="outline" className="text-[10px]">{config.type}</Badge>
@@ -980,9 +989,9 @@ export function AdminAdsManager() {
       <Dialog open={planDialogOpen} onOpenChange={setPlanDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingPlan ? 'Edit Plan' : 'Create Plan'}</DialogTitle>
+            <DialogTitle>{editingPlan ? t('ads.editPlacement') : t('ads.createAd')}</DialogTitle>
             <DialogDescription>
-              {editingPlan ? 'Update the ad plan details' : 'Create a new ad plan'}
+              {editingPlan ? t('ads.save') : t('ads.createAdDesc')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -1008,19 +1017,39 @@ export function AdminAdsManager() {
             </div>
 
             <div>
-              <Label>Description</Label>
+              <Label>{t('ads.planFeatures')}</Label>
               <Textarea
                 value={planForm.description}
                 onChange={(e) => setPlanForm((p) => ({ ...p, description: e.target.value }))}
-                placeholder="Plan description"
+                placeholder={language === 'pt-pt' ? 'Descrição do plano' : 'Plan description'}
                 className="mt-1.5"
+                rows={2}
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">{t('ads.planName')} i18n (JSON)</Label>
+              <Textarea
+                value={planForm.nameI18n || ''}
+                onChange={(e) => setPlanForm((p) => ({ ...p, nameI18n: e.target.value }))}
+                placeholder='{"en-us":"Name","fr-fr":"Nom",...}'
+                className="mt-1.5 font-mono text-xs"
+                rows={2}
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">{t('ads.planFeatures')} i18n (JSON)</Label>
+              <Textarea
+                value={planForm.descriptionI18n || ''}
+                onChange={(e) => setPlanForm((p) => ({ ...p, descriptionI18n: e.target.value }))}
+                placeholder='{"en-us":"Description","fr-fr":"Description",...}'
+                className="mt-1.5 font-mono text-xs"
                 rows={2}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Max Ads</Label>
+                <Label>Max {t('ads.title')}</Label>
                 <Input
                   type="number"
                   value={planForm.features.maxAds}
@@ -1029,7 +1058,7 @@ export function AdminAdsManager() {
                 />
               </div>
               <div>
-                <Label>Max Impressions</Label>
+                <Label>{t('ads.maxImpressions')}</Label>
                 <Input
                   type="number"
                   value={planForm.features.maxImpressions}
@@ -1038,7 +1067,7 @@ export function AdminAdsManager() {
                 />
               </div>
               <div>
-                <Label>Priority</Label>
+                <Label>{t('ads.priority')}</Label>
                 <Input
                   type="number"
                   value={planForm.features.priority}
@@ -1047,7 +1076,7 @@ export function AdminAdsManager() {
                 />
               </div>
               <div>
-                <Label>Support Level</Label>
+                <Label>{t('ads.supportLevel')}</Label>
                 <Select
                   value={planForm.features.supportLevel}
                   onValueChange={(v) => setPlanForm((p) => ({ ...p, features: { ...p.features, supportLevel: v } }))}
@@ -1071,34 +1100,34 @@ export function AdminAdsManager() {
                   checked={planForm.isFree}
                   onCheckedChange={(v) => setPlanForm((p) => ({ ...p, isFree: v }))}
                 />
-                <Label>Free Plan</Label>
+                <Label>{t('ads.free')}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Switch
                   checked={planForm.isActive}
                   onCheckedChange={(v) => setPlanForm((p) => ({ ...p, isActive: v }))}
                 />
-                <Label>Active</Label>
+                <Label>{t('ads.active')}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Switch
                   checked={planForm.features.customBranding}
                   onCheckedChange={(v) => setPlanForm((p) => ({ ...p, features: { ...p.features, customBranding: v } }))}
                 />
-                <Label>Custom Branding</Label>
+                <Label>{t('ads.customBranding')}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Switch
                   checked={planForm.features.analytics}
                   onCheckedChange={(v) => setPlanForm((p) => ({ ...p, features: { ...p.features, analytics: v } }))}
                 />
-                <Label>Analytics</Label>
+                <Label>{t('ads.analytics')}</Label>
               </div>
             </div>
 
             {/* Placements */}
             <div>
-              <Label className="mb-2 block">Placements</Label>
+              <Label className="mb-2 block">{t('ads.availablePlacements')}</Label>
               <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                 {Object.entries(AD_PLACEMENTS).map(([key, config]) => (
                   <div key={key} className="flex items-center gap-2">
@@ -1116,7 +1145,7 @@ export function AdminAdsManager() {
                       className="rounded border-border"
                     />
                     <label htmlFor={`plan-placement-${key}`} className="text-xs cursor-pointer">
-                      {config.name}
+                      {getPlacementName(key, t)}
                     </label>
                   </div>
                 ))}
@@ -1125,7 +1154,7 @@ export function AdminAdsManager() {
 
             {/* Formats */}
             <div>
-              <Label className="mb-2 block">Formats</Label>
+              <Label className="mb-2 block">{t('ads.availableFormats')}</Label>
               <div className="flex flex-wrap gap-2">
                 {['html', 'script', 'image_base64', 'video_base64', 'text_quill', 'url'].map((fmt) => (
                   <div key={fmt} className="flex items-center gap-1.5">
@@ -1149,7 +1178,7 @@ export function AdminAdsManager() {
             </div>
 
             <div>
-              <Label>Order</Label>
+              <Label>{t('ads.priority')}</Label>
               <Input
                 type="number"
                 value={planForm.order}

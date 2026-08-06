@@ -50,6 +50,8 @@ export interface AdPlan {
   id: string
   name: string
   description: string
+  nameI18n?: string
+  descriptionI18n?: string
   price: number
   features: {
     maxAds: number
@@ -192,6 +194,8 @@ const DEFAULT_AD_PLANS = [
   {
     name: 'Gratuito',
     description: 'Plano gratuito para começar a publicitar o seu negócio. Ideal para testar a plataforma.',
+    nameI18n: '{"pt-pt":"Gratuito","en-us":"Free","pt-br":"Gratuito","fr-fr":"Gratuit","es-es":"Gratuito","zh-cn":"免费","de-de":"Kostenlos","sw-tz":"Bure"}',
+    descriptionI18n: '{"pt-pt":"Plano gratuito para começar a publicitar o seu negócio. Ideal para testar a plataforma.","en-us":"Free plan to start advertising your business. Ideal for testing the platform.","pt-br":"Plano gratuito para começar a publicitar o seu negócio. Ideal para testar a plataforma.","fr-fr":"Plan gratuit pour commencer à faire la publicité de votre entreprise. Idéal pour tester la plateforme.","es-es":"Plan gratuito para empezar a publicitar su negocio. Ideal para probar la plataforma.","zh-cn":"免费计划，开始为您的业务做广告。非常适合测试平台。","de-de":"Kostenloser Plan, um mit der Werbung für Ihr Unternehmen zu beginnen. Ideal zum Testen der Plattform.","sw-tz":"Mpango wa bure kuanza kutangaza biashara yako. Bora kwa kujaribu jukwaa."}',
     price: 0,
     features: {
       maxAds: 1,
@@ -210,6 +214,8 @@ const DEFAULT_AD_PLANS = [
   {
     name: 'Básico',
     description: 'Plano básico com mais alcance e opções de formatos. Ideal para pequenos negócios.',
+    nameI18n: '{"pt-pt":"Básico","en-us":"Basic","pt-br":"Básico","fr-fr":"Basique","es-es":"Básico","zh-cn":"基础","de-de":"Basis","sw-tz":"Msingi"}',
+    descriptionI18n: '{"pt-pt":"Plano básico com mais alcance e opções de formatos. Ideal para pequenos negócios.","en-us":"Basic plan with more reach and format options.- Ideal for small businesses.","pt-br":"Plano básico com mais alcance e opções de formatos. Ideal para pequenos negócios.","fr-fr":"Plan basique avec plus de portée et d\'options de formats. Idéal pour les petites entreprises.","es-es":"Plan básico con más alcance y opciones de formatos. Ideal para pequeños negocios.","zh-cn":"基础计划，覆盖范围更广，格式选项更多。适合小型企业。","de-de":"Basisplan mit mehr Reichweite und Formatoptionen. Ideal für kleine Unternehmen.","sw-tz":"Mpango wa msingi na ufikivu zaidi na chaguo za muundo. Bora kwa biashara ndogo."}',
     price: 500,
     features: {
       maxAds: 3,
@@ -228,6 +234,8 @@ const DEFAULT_AD_PLANS = [
   {
     name: 'Profissional',
     description: 'Plano profissional com acesso total a placements e analytics avançados. Ideal para empresas em crescimento.',
+    nameI18n: '{"pt-pt":"Profissional","en-us":"Professional","pt-br":"Profissional","fr-fr":"Professionnel","es-es":"Profesional","zh-cn":"专业","de-de":"Professionell","sw-tz":"Kitaalamu"}',
+    descriptionI18n: '{"pt-pt":"Plano profissional com acesso total a placements e analytics avançados. Ideal para empresas em crescimento.","en-us":"Professional plan with full placement access and advanced analytics. Ideal for growing businesses.","pt-br":"Plano profissional com acesso total a placements e analytics avançados. Ideal para empresas em crescimento.","fr-fr":"Plan professionnel avec accès complet aux emplacements et analyses avancées. Idéal pour les entreprises en croissance.","es-es":"Plan profesional con acceso total a ubicaciones y análisis avanzados. Ideal para empresas en crecimiento.","zh-cn":"专业计划，拥有全部展示位和高级分析功能。适合成长型企业。","de-de":"Professioneller Plan mit vollem Platzierungszugang und erweiterten Analysen. Ideal für wachsende Unternehmen.","sw-tz":"Mpango wa kitaalamu na ufikivu kamili wa maeneo na uchambuzi wa hali ya juu. Bora kwa biashara zinazokua."}',
     price: 1500,
     features: {
       maxAds: 10,
@@ -251,6 +259,8 @@ const DEFAULT_AD_PLANS = [
   {
     name: 'Premium',
     description: 'Plano premium com recursos ilimitados, branding personalizado e suporte dedicado. Ideal para grandes anunciantes.',
+    nameI18n: '{"pt-pt":"Premium","en-us":"Premium","pt-br":"Premium","fr-fr":"Premium","es-es":"Premium","zh-cn":"高级","de-de":"Premium","sw-tz":"Bora"}',
+    descriptionI18n: '{"pt-pt":"Plano premium com recursos ilimitados, branding personalizado e suporte dedicado. Ideal para grandes anunciantes.","en-us":"Premium plan with unlimited features, custom branding and dedicated support. Ideal for large advertisers.","pt-br":"Plano premium com recursos ilimitados, branding personalizado e suporte dedicado. Ideal para grandes anunciantes.","fr-fr":"Plan premium avec des fonctionnalités illimitées, image de marque personnalisée et support dédié. Idéal pour les grands annonceurs.","es-es":"Plan premium con recursos ilimitados, marca personalizada y soporte dedicado. Ideal para grandes anunciantes.","zh-cn":"高级计划，功能无限制，自定义品牌和专属支持。适合大型广告主。","de-de":"Premium-Plan mit unbegrenzten Funktionen, individuellem Branding und dediziertem Support. Ideal für große Werbetreibende.","sw-tz":"Mpango wa bora na vipengele visivyopimwa, chapa ya kibinafsi na msaada wa kipekee. Bora kwa watangazaji wakubwa."}',
     price: 3000,
     features: {
       maxAds: 0, // unlimited

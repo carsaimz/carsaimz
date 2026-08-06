@@ -130,7 +130,7 @@ function AdContent({ ad }: { ad: AdData }) {
       <iframe
         srcDoc={`<!DOCTYPE html><html><head><style>body{margin:0;padding:0;overflow:hidden;}</style></head><body>${content}</body></html>`}
         sandbox="allow-scripts allow-popups"
-        className="w-full border-0 min-h-[60px]"
+        className="w-full border-0 min-h-[60px] max-h-[300px]"
         title="Ad"
       />
     );
@@ -143,7 +143,7 @@ function AdContent({ ad }: { ad: AdData }) {
       <img
         src={src}
         alt={ad.title || 'Advertisement'}
-        className="max-w-full h-auto rounded"
+        className="w-full max-w-full h-auto rounded object-contain"
         loading="lazy"
       />
     );
@@ -155,7 +155,7 @@ function AdContent({ ad }: { ad: AdData }) {
     return (
       <video
         src={src}
-        className="max-w-full h-auto rounded"
+        className="w-full max-w-full h-auto rounded"
         controls
         muted
         playsInline
@@ -180,7 +180,7 @@ function AdContent({ ad }: { ad: AdData }) {
     return (
       <iframe
         src={content}
-        className="w-full border-0 min-h-[60px]"
+        className="w-full border-0 min-h-[60px] max-h-[300px]"
         sandbox="allow-scripts allow-popups allow-same-origin"
         title="Ad"
         loading="lazy"
@@ -241,14 +241,13 @@ function ClickableAd({
 
 function BannerAd({ ad, placement }: { ad: AdData; placement?: string }) {
   return (
-    <div className="relative w-full">
+    <div className="relative w-full max-w-full">
       <AdLabel />
       <ClickableAd ad={ad} placement={placement}>
-        <div className="rounded-lg overflow-hidden border border-border/30 bg-background shadow-sm hover:shadow-md transition-shadow">
+        <div className="rounded-lg overflow-hidden border border-border/30 bg-background shadow-sm hover:shadow-md transition-shadow p-2 sm:p-3">
           <AdContent ad={ad} />
         </div>
       </ClickableAd>
-      {/* Impression pixel URLs */}
       {ad.pixelUrls?.map((url, i) => (
         <img key={i} src={url} width={1} height={1} alt="" className="absolute -left-[9999px]" />
       ))}
@@ -260,10 +259,10 @@ function BannerAd({ ad, placement }: { ad: AdData; placement?: string }) {
 
 function SidebarAd({ ad, placement }: { ad: AdData; placement?: string }) {
   return (
-    <div className="relative w-full">
+    <div className="relative w-full max-w-full">
       <AdLabel />
       <ClickableAd ad={ad} placement={placement}>
-        <div className="rounded-lg overflow-hidden border border-border/30 bg-background shadow-sm hover:shadow-md transition-shadow p-3">
+        <div className="rounded-lg overflow-hidden border border-border/30 bg-background shadow-sm hover:shadow-md transition-shadow p-3 sm:p-4">
           <AdContent ad={ad} />
         </div>
       </ClickableAd>
@@ -278,15 +277,15 @@ function SidebarAd({ ad, placement }: { ad: AdData; placement?: string }) {
 
 function NativeAd({ ad, placement }: { ad: AdData; placement?: string }) {
   return (
-    <div className="relative w-full">
+    <div className="relative w-full max-w-full">
       <AdLabel />
       <ClickableAd ad={ad} placement={placement}>
-        <div className="rounded-lg overflow-hidden border border-border/20 bg-muted/30 p-4 hover:bg-muted/50 transition-colors">
+        <div className="rounded-lg overflow-hidden border border-border/20 bg-muted/30 p-3 sm:p-4 hover:bg-muted/50 transition-colors">
           {ad.title && (
-            <h4 className="font-semibold text-sm mb-1 group-hover:underline">{ad.title}</h4>
+            <h4 className="font-semibold text-sm mb-1 group-hover:underline line-clamp-2">{ad.title}</h4>
           )}
           {ad.description && (
-            <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{ad.description}</p>
+            <p className="text-xs text-muted-foreground mb-2 line-clamp-3">{ad.description}</p>
           )}
           <AdContent ad={ad} />
         </div>
@@ -323,7 +322,7 @@ function InterstitialAd({ ad, placement, onClose }: { ad: AdData; placement?: st
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget && canClose) handleClose();
       }}
@@ -332,7 +331,7 @@ function InterstitialAd({ ad, placement, onClose }: { ad: AdData; placement?: st
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="relative max-w-lg w-full mx-4 bg-background rounded-xl shadow-2xl overflow-hidden"
+        className="relative max-w-lg w-full bg-background rounded-xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
       >
         {/* Close button */}
         <button
@@ -358,6 +357,9 @@ function InterstitialAd({ ad, placement, onClose }: { ad: AdData; placement?: st
           <div className="p-4">
             {ad.title && (
               <h3 className="font-semibold text-lg mb-2 group-hover:underline">{ad.title}</h3>
+            )}
+            {ad.description && (
+              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{ad.description}</p>
             )}
             <AdContent ad={ad} />
           </div>
@@ -469,10 +471,12 @@ export function AdPlacement({ placement, className }: { placement: AdPlacementId
   if (ads.length === 0 && !interstitialAd) return null;
 
   return (
-    <div className={className}>
-      {/* Regular ads */}
-      {ads.map((ad) => (
-        <AdRenderer key={ad.id} ad={ad} placement={placement} />
+    <div className={`w-full max-w-full ${className || ''}`}>
+      {/* Regular ads - with spacing between multiple ads */}
+      {ads.map((ad, index) => (
+        <div key={ad.id} className={index > 0 ? 'mt-4' : ''}>
+          <AdRenderer ad={ad} placement={placement} />
+        </div>
       ))}
 
       {/* Interstitial ad */}
