@@ -285,17 +285,20 @@ export function PartnerAdsManager() {
         headers: { Authorization: `Bearer ${idToken}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      const data = await safeJson<{ success: boolean }>(res);
+      const data = await safeJson<{ success: boolean; message?: string }>(res);
       if (data?.success) {
         toast({ title: t('ads.save'), description: editingAd ? 'Ad updated' : 'Ad created' });
         setFormOpen(false);
         setEditingAd(null);
         fetchAds();
       } else {
-        toast({ title: 'Error', description: 'Failed to save ad', variant: 'destructive' });
+        const errorMsg = data?.message || (res.status === 401 ? 'Authentication required' : res.status === 403 ? 'Permission denied' : 'Failed to save ad');
+        toast({ title: 'Error', description: errorMsg, variant: 'destructive' });
+        console.error('[Partner Ads] Save failed:', res.status, data?.message);
       }
-    } catch {
-      toast({ title: 'Error', description: 'Failed to save ad', variant: 'destructive' });
+    } catch (err) {
+      console.error('[Partner Ads] Save error:', err);
+      toast({ title: 'Error', description: 'Failed to save ad — network error', variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -308,15 +311,20 @@ export function PartnerAdsManager() {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${idToken}` },
       });
-      const data = await safeJson<{ success: boolean }>(res);
+      const data = await safeJson<{ success: boolean; message?: string }>(res);
       if (data?.success) {
         toast({ title: t('ads.delete'), description: 'Ad deleted' });
         setDeleteOpen(false);
         setDeleteAd(null);
         fetchAds();
+      } else {
+        const errorMsg = data?.message || 'Failed to delete ad';
+        toast({ title: 'Error', description: errorMsg, variant: 'destructive' });
+        console.error('[Partner Ads] Delete failed:', res.status, data?.message);
       }
-    } catch {
-      toast({ title: 'Error', description: 'Failed to delete ad', variant: 'destructive' });
+    } catch (err) {
+      console.error('[Partner Ads] Delete error:', err);
+      toast({ title: 'Error', description: 'Failed to delete ad — network error', variant: 'destructive' });
     }
   };
 

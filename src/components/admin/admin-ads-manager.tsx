@@ -369,16 +369,21 @@ export function AdminAdsManager() {
         headers: { Authorization: `Bearer ${idToken}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      const data = await safeJson<{ success: boolean }>(res);
+      const data = await safeJson<{ success: boolean; message?: string }>(res);
       if (data?.success) {
         toast({ title: t('ads.save'), description: editingPlan ? 'Plan updated' : 'Plan created' });
         setPlanDialogOpen(false);
         setEditingPlan(null);
         resetPlanForm();
         fetchPlans();
+      } else {
+        const errorMsg = data?.message || 'Failed to save plan';
+        toast({ title: 'Error', description: errorMsg, variant: 'destructive' });
+        console.error('[Admin Ads] Plan save failed:', res.status, data?.message);
       }
-    } catch {
-      toast({ title: 'Error', description: 'Failed to save plan', variant: 'destructive' });
+    } catch (err) {
+      console.error('[Admin Ads] Plan save error:', err);
+      toast({ title: 'Error', description: 'Failed to save plan — network error', variant: 'destructive' });
     } finally {
       setPlanSaving(false);
     }

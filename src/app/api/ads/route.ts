@@ -214,8 +214,9 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     console.error('[Ads] POST error:', error)
+    const message = error instanceof Error ? error.message : 'Failed to create ad'
     return NextResponse.json(
-      { success: false, message: 'Failed to create ad' },
+      { success: false, message },
       { status: 500 }
     )
   }

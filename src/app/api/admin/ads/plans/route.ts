@@ -161,8 +161,9 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     console.error('[Admin Ads Plans] POST error:', error)
+    const message = error instanceof Error ? error.message : 'Failed to create ad plan'
     return NextResponse.json(
-      { success: false, message: 'Failed to create ad plan' },
+      { success: false, message },
       { status: 500 }
     )
   }
@@ -260,8 +261,9 @@ export async function PUT(request: NextRequest) {
     })
   } catch (error) {
     console.error('[Admin Ads Plans] PUT error:', error)
+    const message = error instanceof Error ? error.message : 'Failed to update ad plan'
     return NextResponse.json(
-      { success: false, message: 'Failed to update ad plan' },
+      { success: false, message },
       { status: 500 }
     )
   }

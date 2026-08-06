@@ -220,8 +220,9 @@ export async function PUT(
     })
   } catch (error) {
     console.error('[Ads] PUT [id] error:', error)
+    const message = error instanceof Error ? error.message : 'Failed to update ad'
     return NextResponse.json(
-      { success: false, message: 'Failed to update ad' },
+      { success: false, message },
       { status: 500 }
     )
   }
@@ -296,8 +297,9 @@ export async function DELETE(
     })
   } catch (error) {
     console.error('[Ads] DELETE [id] error:', error)
+    const message = error instanceof Error ? error.message : 'Failed to delete ad'
     return NextResponse.json(
-      { success: false, message: 'Failed to delete ad' },
+      { success: false, message },
       { status: 500 }
     )
   }
