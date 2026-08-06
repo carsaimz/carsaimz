@@ -25,6 +25,8 @@ import { useLanguage } from '@/contexts/language-context';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // ──────────────────────────────────────────────
 // Types
@@ -327,15 +329,9 @@ export function TopicDetail({ slug: propSlug }: { slug?: string }) {
           <Card className="border-emerald-200/50 dark:border-emerald-800/30 bg-emerald-50/20 dark:bg-emerald-950/20">
             <CardContent className="p-4 md:p-6">
               {topic.content ? (
-                topic.content.split('\n').map((line, i) => (
-                  <React.Fragment key={i}>
-                    {line.trim() === '' ? (
-                      <div className="h-2" />
-                    ) : (
-                      <p className="text-muted-foreground leading-relaxed">{line}</p>
-                    )}
-                  </React.Fragment>
-                ))
+                <div className="prose prose-sm max-w-none dark:prose-invert prose-p:text-muted-foreground prose-p:leading-relaxed prose-headings:text-foreground prose-a:text-emerald-600 dark:prose-a:text-emerald-400 prose-code:text-foreground">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{topic.content}</ReactMarkdown>
+                </div>
               ) : (
                 <p className="text-muted-foreground">{t('common.noResults')}</p>
               )}
@@ -432,9 +428,9 @@ export function TopicDetail({ slug: propSlug }: { slug?: string }) {
                               {formatRelativeTime(reply.createdAt)}
                             </span>
                           </div>
-                          <p className="text-sm text-muted-foreground leading-relaxed">
-                            {reply.content}
-                          </p>
+                          <div className="text-sm prose prose-sm max-w-none dark:prose-invert prose-p:text-muted-foreground prose-p:leading-relaxed prose-p:my-0">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{reply.content}</ReactMarkdown>
+                          </div>
                         </div>
                       </div>
                     </CardContent>

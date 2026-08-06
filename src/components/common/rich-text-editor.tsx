@@ -142,6 +142,7 @@ export function RichTextEditor({
 
 /**
  * RichTextRenderer — renders HTML content from the editor for display
+ * Uses DOMPurify sanitization for safe HTML rendering
  */
 export function RichTextRenderer({
   content,
@@ -150,12 +151,15 @@ export function RichTextRenderer({
   content: string;
   className?: string;
 }) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { sanitizeQuillHtml } = require('@/lib/sanitize-html') as typeof import('@/lib/sanitize-html');
+
   if (!content) return null;
 
   return (
     <div
       className={`ql-editor-content prose prose-sm max-w-none dark:prose-invert ${className}`}
-      dangerouslySetInnerHTML={{ __html: content }}
+      dangerouslySetInnerHTML={{ __html: sanitizeQuillHtml(content) }}
     />
   );
 }

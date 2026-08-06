@@ -51,6 +51,7 @@ import {
   BarChart3, LayoutGrid, DollarSign, Plus, Megaphone, ExternalLink,
   MousePointerClick, Target, TrendingUp,
 } from 'lucide-react';
+import { sanitizeQuillHtml } from '@/lib/sanitize-html';
 
 // ── Animation variants ──
 const containerVariants = {
@@ -870,7 +871,7 @@ export function AdminAdsManager() {
                       className="max-w-full h-auto"
                     />
                   ) : selectedAd.format === 'text_quill' ? (
-                    <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: selectedAd.content }} />
+                    <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeQuillHtml(selectedAd.content) }} />
                   ) : (
                     <pre className="text-xs whitespace-pre-wrap break-all">{selectedAd.content?.slice(0, 500)}{selectedAd.content?.length > 500 ? '...' : ''}</pre>
                   )}

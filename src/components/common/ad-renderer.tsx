@@ -25,6 +25,7 @@ import { X } from 'lucide-react';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import { AD_PLACEMENTS, type AdPlacementId } from '@/lib/ad-placements';
 import { useLanguage } from '@/contexts/language-context';
+import { sanitizeAdHtml, sanitizeQuillHtml } from '@/lib/sanitize-html';
 
 // ── Types ──
 
@@ -114,12 +115,12 @@ function AdLabel() {
 function AdContent({ ad }: { ad: AdData }) {
   const { format, content, targetUrl } = ad;
 
-  // HTML format - render in sandboxed div
+  // HTML format - render in sandboxed div with sanitization
   if (format === 'html') {
     return (
       <div
         className="ad-content-html"
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: sanitizeAdHtml(content) }}
       />
     );
   }
@@ -165,12 +166,12 @@ function AdContent({ ad }: { ad: AdData }) {
     );
   }
 
-  // Text/Quill format - render the HTML output from Quill
+  // Text/Quill format - render the HTML output from Quill with sanitization
   if (format === 'text_quill') {
     return (
       <div
         className="ad-content-quill prose prose-sm max-w-none dark:prose-invert"
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: sanitizeQuillHtml(content) }}
       />
     );
   }

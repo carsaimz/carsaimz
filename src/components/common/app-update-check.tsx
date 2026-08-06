@@ -18,6 +18,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { APP_VERSION } from '@/lib/client-config';
 import { isCapacitorApp, isElectronApp } from '@/lib/api-base';
 import { useLanguage } from '@/contexts/language-context';
@@ -439,7 +440,7 @@ export function AppUpdateCheck() {
               <div>
                 <p className="text-sm font-medium mb-2">{t('update.changelog')}</p>
                 <div className="bg-muted rounded-md p-3 max-h-48 overflow-y-auto text-sm prose prose-sm dark:prose-invert prose-headings:mb-1 prose-headings:mt-2 prose-p:mb-1 prose-li:mb-0.5 prose-ul:mb-1">
-                  <ReactMarkdown>{changelog}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{changelog}</ReactMarkdown>
                 </div>
               </div>
             )}

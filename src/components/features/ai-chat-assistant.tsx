@@ -27,6 +27,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/contexts/language-context';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
+import { ChatMarkdownRenderer } from '@/components/common/chat-markdown-renderer';
 
 // ──────────────────────────────────────────────
 // Types
@@ -903,9 +904,10 @@ export function AiChatAssistant() {
                       : 'bg-white dark:bg-red-950/50 text-foreground border border-red-200/60 dark:border-red-800/40 shadow-sm'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap break-words overflow-wrap-anywhere leading-relaxed">
-                    {msg.content}
-                  </p>
+                  <ChatMarkdownRenderer
+                    content={msg.content}
+                    isUser={msg.role === 'user'}
+                  />
                   <p
                     className={`text-[10px] mt-1 ${
                       msg.role === 'user'

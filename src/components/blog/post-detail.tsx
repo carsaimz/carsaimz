@@ -32,6 +32,10 @@ import { fetchWithFallback, fetchPostsClient } from '@/lib/client-firestore';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 
 // ──────────────────────────────────────────────
 // Types
@@ -230,38 +234,73 @@ export function PostDetail({ slug: propSlug }: { slug?: string }) {
     return `${minutes} min`;
   };
 
-  // Render markdown-like content
+  // Render markdown content using react-markdown with GFM support
   const renderContent = (content: string | null) => {
     if (!content) return <p className="text-muted-foreground">{t('common.noResults')}</p>;
 
-    const lines = content.split('\n');
-    return lines.map((line, i) => {
-      // Headers
-      if (line.startsWith('## ')) {
-        return (
-          <h2 key={i} className="text-xl font-bold text-foreground mt-6 mb-3">
-            {line.replace('## ', '')}
-          </h2>
-        );
-      }
-      if (line.startsWith('### ')) {
-        return (
-          <h3 key={i} className="text-lg font-semibold text-foreground mt-4 mb-2">
-            {line.replace('### ', '')}
-          </h3>
-        );
-      }
-      // Empty line = paragraph break
-      if (line.trim() === '') {
-        return <div key={i} className="h-2" />;
-      }
-      // Regular paragraph
-      return (
-        <p key={i} className="text-muted-foreground leading-relaxed mb-1">
-          {line}
-        </p>
-      );
-    });
+    const blogSanitizeSchema = {
+      ...defaultSchema,
+      tagNames: [
+        ...(defaultSchema.tagNames || []),
+        'u', 's', 'mark', 'sub', 'sup', 'kbd', 'var', 'samp',
+        'details', 'summary', 'input',
+      ],
+      attributes: {
+        ...defaultSchema.attributes,
+        '*': ['className', 'style'],
+        a: ['href', 'target', 'rel', 'title'],
+        img: ['src', 'alt', 'title', 'loading'],
+      },
+    };
+
+    return (
+      <div className="prose prose-lg max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-emerald-600 dark:prose-a:text-emerald-400 prose-strong:text-foreground prose-code:text-foreground prose-pre:bg-muted/50">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeRaw, [rehypeSanitize, blogSanitizeSchema]]}
+          components={{
+            h1: ({ children }) => <h1 className="text-2xl font-bold mt-8 mb-4">{children}</h1>,
+            h2: ({ children }) => <h2 className="text-xl font-bold mt-6 mb-3">{children}</h2>,
+            h3: ({ children }) => <h3 className="text-lg font-semibold mt-4 mb-2">{children}</h3>,
+            p: ({ children }) => <p className="leading-relaxed mb-3">{children}</p>,
+            a: ({ href, children, ...props }) => (
+              <a href={href} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-80" {...props}>{children}</a>
+            ),
+            code: ({ className, children, ...props }) => {
+              const match = /language-(\w+)/.exec(className || '');
+              const isInline = !className && !String(children).includes('\n');
+              if (isInline) {
+                return <code className="px-1.5 py-0.5 rounded bg-muted text-foreground text-sm font-mono" {...props}>{children}</code>;
+              }
+              return (
+                <div className="my-4 rounded-lg overflow-hidden border border-border/50">
+                  {match && (
+                    <div className="px-4 py-1.5 bg-muted/60 border-b border-border/40">
+                      <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">{match[1]}</span>
+                    </div>
+                  )}
+                  <pre className="p-4 overflow-x-auto text-sm bg-muted/30"><code className={className}>{children}</code></pre>
+                </div>
+              );
+            },
+            pre: ({ children }) => <>{children}</>,
+            blockquote: ({ children }) => (
+              <blockquote className="border-l-4 border-emerald-400 dark:border-emerald-600 pl-4 my-4 italic text-muted-foreground">{children}</blockquote>
+            ),
+            table: ({ children }) => (
+              <div className="overflow-x-auto my-4">
+                <table className="w-full border-collapse border border-border">{children}</table>
+              </div>
+            ),
+            th: ({ children }) => <th className="border border-border px-3 py-2 text-left font-semibold bg-muted/50">{children}</th>,
+            td: ({ children }) => <td className="border border-border px-3 py-2">{children}</td>,
+            img: ({ src, alt }) => <img src={src} alt={alt || ''} className="max-w-full h-auto rounded-lg my-4" loading="lazy" />,
+          }}
+        >
+          {content}
+        </ReactMarkdown>
+      </div>
+    );
   };
 
   if (loading) {

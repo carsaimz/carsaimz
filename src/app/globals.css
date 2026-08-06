@@ -565,3 +565,56 @@ html {
 main {
   animation: page-enter 200ms ease-out;
 }
+
+/* ─── Chat Markdown Content Styling ─── */
+
+.chat-markdown-content {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.chat-markdown-content > *:first-child {
+  margin-top: 0;
+}
+
+.chat-markdown-content > *:last-child {
+  margin-bottom: 0;
+}
+
+/* Code block syntax highlighter container */
+.chat-markdown-content .react-syntax-highlighter-line-number {
+  opacity: 0.4;
+}
+
+/* Task list checkbox styling */
+.chat-markdown-content input[type="checkbox"] {
+  accent-color: oklch(0.505 0.221 24.228);
+  width: 14px;
+  height: 14px;
+}
+
+/* Ensure links in chat are distinguishable */
+.chat-markdown-content a {
+  word-break: break-all;
+}
+
+/* Strikethrough */
+.chat-markdown-content del {
+  opacity: 0.7;
+}
+
+/* Ad content safety */
+.ad-content-html,
+.ad-content-quill {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.ad-content-html img,
+.ad-content-quill img {
+  max-width: 100%;
+  height: auto;
+}
