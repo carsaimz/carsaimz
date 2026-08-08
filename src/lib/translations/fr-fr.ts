@@ -1685,8 +1685,8 @@ export const frFR: TranslationObject = {
     endLabel: 'Fin',
     confirmDelete: 'Êtes-vous sûr de vouloir supprimer cette annonce? Cette action est irréversible.',
     enterRejectReason: 'Entrez la raison du rejet...',
-    nameI18n: 'Nom (i18n JSON)',
-    descriptionI18n: 'Description (i18n JSON)',
+    nameI18n: 'Nom (multilingue)',
+    descriptionI18n: 'Description (multilingue)',
   },
 
   // ============================================================================

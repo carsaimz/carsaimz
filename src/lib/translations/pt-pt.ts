@@ -1698,8 +1698,8 @@ export const ptPT: TranslationObject = {
     endLabel: 'Fim',
     confirmDelete: 'Tem a certeza que deseja eliminar este anúncio? Esta acção não pode ser desfeita.',
     enterRejectReason: 'Introduza o motivo da rejeição...',
-    nameI18n: 'Nome (i18n JSON)',
-    descriptionI18n: 'Descrição (i18n JSON)',
+    nameI18n: 'Nome (multilíngue)',
+    descriptionI18n: 'Descrição (multilíngue)',
   },
 
   // ============================================================================

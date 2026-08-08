@@ -1685,8 +1685,8 @@ export const zhCN: TranslationObject = {
     endLabel: '结束',
     confirmDelete: '确定要删除此广告吗？此操作无法撤销。',
     enterRejectReason: '输入拒绝原因...',
-    nameI18n: '名称 (i18n JSON)',
-    descriptionI18n: '描述 (i18n JSON)',
+    nameI18n: '名称（多语言）',
+    descriptionI18n: '描述（多语言）',
   },
 
   // ============================================================================

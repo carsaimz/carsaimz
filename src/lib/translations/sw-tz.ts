@@ -1695,8 +1695,8 @@ export const swTZ: TranslationObject = {
     endLabel: 'Mwisho',
     confirmDelete: 'Je, una uhakika unataka kufuta tangazo hili? Kitendo hiki hakiwezi kurudishwa.',
     enterRejectReason: 'Ingiza sababu ya kukataa...',
-    nameI18n: 'Jina (i18n JSON)',
-    descriptionI18n: 'Maelezo (i18n JSON)',
+    nameI18n: 'Jina (lugha nyingi)',
+    descriptionI18n: 'Maelezo (lugha nyingi)',
   },
 
   // ============================================================================

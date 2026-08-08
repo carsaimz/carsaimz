@@ -52,6 +52,7 @@ import {
   MousePointerClick, Target, TrendingUp,
 } from 'lucide-react';
 import { sanitizeQuillHtml } from '@/lib/sanitize-html';
+import { I18nFieldTabs } from '@/components/common/i18n-field-tabs';
 
 // ── Animation variants ──
 const containerVariants = {
@@ -1001,57 +1002,38 @@ export function AdminAdsManager() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>{t('ads.planName')}</Label>
-                <Input
-                  value={planForm.name}
-                  onChange={(e) => setPlanForm((p) => ({ ...p, name: e.target.value }))}
-                  placeholder="Plan name"
-                  className="mt-1.5"
-                />
-              </div>
-              <div>
-                <Label>{t('ads.planPrice')} (MZN)</Label>
-                <Input
-                  type="number"
-                  value={planForm.price}
-                  onChange={(e) => setPlanForm((p) => ({ ...p, price: Number(e.target.value) }))}
-                  className="mt-1.5"
-                />
-              </div>
-            </div>
+            {/* Plan name with i18n tabs */}
+            <I18nFieldTabs
+              label={t('ads.planName')}
+              defaultValue={planForm.name}
+              i18nValue={planForm.nameI18n || ''}
+              onDefaultChange={(v) => setPlanForm((p) => ({ ...p, name: v }))}
+              onI18nChange={(v) => setPlanForm((p) => ({ ...p, nameI18n: v }))}
+              placeholder={language === 'pt-pt' ? 'Nome do plano' : 'Plan name'}
+              singleLine
+            />
 
             <div>
-              <Label>{t('ads.planFeatures')}</Label>
-              <Textarea
-                value={planForm.description}
-                onChange={(e) => setPlanForm((p) => ({ ...p, description: e.target.value }))}
-                placeholder={language === 'pt-pt' ? 'Descrição do plano' : 'Plan description'}
+              <Label>{t('ads.planPrice')} (MZN)</Label>
+              <Input
+                type="number"
+                value={planForm.price}
+                onChange={(e) => setPlanForm((p) => ({ ...p, price: Number(e.target.value) }))}
                 className="mt-1.5"
-                rows={2}
               />
             </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">{t('ads.planName')} i18n (JSON)</Label>
-              <Textarea
-                value={planForm.nameI18n || ''}
-                onChange={(e) => setPlanForm((p) => ({ ...p, nameI18n: e.target.value }))}
-                placeholder='{"en-us":"Name","fr-fr":"Nom",...}'
-                className="mt-1.5 font-mono text-xs"
-                rows={2}
-              />
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">{t('ads.planFeatures')} i18n (JSON)</Label>
-              <Textarea
-                value={planForm.descriptionI18n || ''}
-                onChange={(e) => setPlanForm((p) => ({ ...p, descriptionI18n: e.target.value }))}
-                placeholder='{"en-us":"Description","fr-fr":"Description",...}'
-                className="mt-1.5 font-mono text-xs"
-                rows={2}
-              />
-            </div>
+
+            {/* Plan description with i18n tabs + QuillJS */}
+            <I18nFieldTabs
+              label={t('ads.planFeatures')}
+              defaultValue={planForm.description}
+              i18nValue={planForm.descriptionI18n || ''}
+              onDefaultChange={(v) => setPlanForm((p) => ({ ...p, description: v }))}
+              onI18nChange={(v) => setPlanForm((p) => ({ ...p, descriptionI18n: v }))}
+              placeholder={language === 'pt-pt' ? 'Descrição do plano' : 'Plan description'}
+              richText
+              editorLevel="basic"
+            />
 
             <div className="grid grid-cols-2 gap-4">
               <div>

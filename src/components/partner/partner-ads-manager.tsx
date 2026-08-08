@@ -538,13 +538,14 @@ export function PartnerAdsManager() {
               </div>
               <div>
                 <Label>Description</Label>
-                <Textarea
-                  value={form.description}
-                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                  placeholder="Ad description"
-                  className="mt-1.5"
-                  rows={2}
-                />
+                <div className="mt-1.5">
+                  <RichTextEditor
+                    value={form.description}
+                    onChange={(v) => setForm((f) => ({ ...f, description: v }))}
+                    placeholder="Ad description"
+                    level="minimal"
+                  />
+                </div>
               </div>
             </div>
 

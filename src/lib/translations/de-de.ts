@@ -1685,8 +1685,8 @@ export const deDE: TranslationObject = {
     endLabel: 'Ende',
     confirmDelete: 'Sind Sie sicher, dass Sie diese Anzeige löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
     enterRejectReason: 'Geben Sie den Ablehnungsgrund ein...',
-    nameI18n: 'Name (i18n JSON)',
-    descriptionI18n: 'Beschreibung (i18n JSON)',
+    nameI18n: 'Name (mehrsprachig)',
+    descriptionI18n: 'Beschreibung (mehrsprachig)',
   },
 
   // ============================================================================

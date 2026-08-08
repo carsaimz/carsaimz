@@ -1685,8 +1685,8 @@ export const esES: TranslationObject = {
     endLabel: 'Fin',
     confirmDelete: '¿Está seguro de que desea eliminar este anuncio? Esta acción no se puede deshacer.',
     enterRejectReason: 'Ingrese el motivo del rechazo...',
-    nameI18n: 'Nombre (i18n JSON)',
-    descriptionI18n: 'Descripción (i18n JSON)',
+    nameI18n: 'Nombre (multilingüe)',
+    descriptionI18n: 'Descripción (multilingüe)',
   },
 
   // ============================================================================

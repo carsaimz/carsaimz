@@ -141,6 +141,62 @@ export async function updateDoc(
 }
 
 /**
+ * Upsert a document by ID — creates if missing, merges if exists.
+ * Uses Firestore set() with { merge: true } which:
+ * - Creates the document with all fields + timestamps if it doesn't exist
+ * - Only updates the specified fields (preserving existing) if it does exist
+ * - Always updates updatedAt
+ *
+ * This is the "auto-create" pattern: any missing fields or documents
+ * are silently created without overwriting existing data.
+ */
+export async function upsertDoc(
+  collectionName: string,
+  id: string,
+  data: Record<string, any>
+): Promise<void> {
+  const ref = getDb().collection(collectionName).doc(id)
+  const docData = {
+    ...data,
+    updatedAt: FieldValue.serverTimestamp(),
+  }
+  await ref.set(docData, { merge: true })
+}
+
+/**
+ * Ensure a document field exists — if the field is missing or null,
+ * set it to the provided default value. Non-destructive; never overwrites
+ * existing non-null values.
+ *
+ * This is the "auto-create missing fields" pattern.
+ */
+export async function ensureDocField(
+  collectionName: string,
+  id: string,
+  field: string,
+  defaultValue: any
+): Promise<void> {
+  const snap = await getDb().collection(collectionName).doc(id).get()
+  if (!snap.exists) {
+    // Document doesn't exist — create it with just this field
+    await getDb().collection(collectionName).doc(id).set({
+      [field]: defaultValue,
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    })
+    return
+  }
+  const data = snap.data()
+  if (data && (data[field] === undefined || data[field] === null)) {
+    // Field is missing or null — set it
+    await getDb().collection(collectionName).doc(id).update({
+      [field]: defaultValue,
+      updatedAt: FieldValue.serverTimestamp(),
+    })
+  }
+}
+
+/**
  * Delete a document by ID.
  */
 export async function deleteDoc(

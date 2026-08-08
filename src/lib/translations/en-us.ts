@@ -1688,8 +1688,8 @@ export const enUS: TranslationObject = {
     endLabel: 'End',
     confirmDelete: 'Are you sure you want to delete this ad? This action cannot be undone.',
     enterRejectReason: 'Enter the reason for rejection...',
-    nameI18n: 'Name (i18n JSON)',
-    descriptionI18n: 'Description (i18n JSON)',
+    nameI18n: 'Name (multilingual)',
+    descriptionI18n: 'Description (multilingual)',
   },
 
   // ============================================================================

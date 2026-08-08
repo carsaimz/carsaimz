@@ -29,12 +29,15 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 2000,
+      launchShowDuration: 3000,
       launchAutoHide: true,
       backgroundColor: '#1565C0', // Blue (contrast with red logo)
       showSpinner: true,
       spinnerColor: '#FFFFFF',
       androidScaleType: 'CENTER_CROP',
+      // Use the logo image as splash center
+      splashFullScreen: true,
+      splashImmersive: true,
     },
     StatusBar: {
       style: 'DARK',
