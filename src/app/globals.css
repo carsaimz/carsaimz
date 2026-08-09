@@ -373,7 +373,16 @@ p, li, td, th, span, label, div {
 }
 
 /* Ensure images never overflow their containers */
-img, video, svg, iframe, embed, object {
+/* NOTE: 'height: auto' is NOT applied to <img> here because it breaks
+   next/image with the 'fill' prop (which relies on height:100% inside
+   a relative parent).  next/image manages its own sizing via inline
+   styles and object-fit.  For user-authored <img> tags, setting an
+   explicit width attribute + max-width:100% + height:auto inline is
+   sufficient for responsive behaviour.  */
+img {
+  max-width: 100%;
+}
+video, svg, iframe, embed, object {
   max-width: 100%;
   height: auto;
 }

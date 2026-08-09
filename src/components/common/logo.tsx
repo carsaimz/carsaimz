@@ -10,8 +10,11 @@ import Image from 'next/image';
  * generation, CSS specificity, flex/grid stretching, or any other
  * interference. The 1024×1024 source must NEVER render at full size.
  *
- * The container is a <div> (block-level) for maximum reliability
- * across all layout contexts (flex, grid, sidebar, header, etc.).
+ * IMPORTANT: This component does NOT use next/image "fill" prop.
+ * Instead it uses explicit width/height props + inline style override
+ * (width:100%, height:100%, objectFit:contain) to be immune to
+ * global CSS rules like `img { height: auto }` that previously
+ * caused the logo to render at its natural 1024px size.
  *
  * Usage:
  *   <Logo size="sm" />        // sidebar icon (28px)
@@ -86,19 +89,32 @@ export function Logo({
 
   const imgClass = `object-contain ${brightnessClass}`;
 
+  /**
+   * Inline style applied to the <img> element rendered by next/image.
+   * This ensures width/height/objectFit are ALWAYS set correctly,
+   * even if a global CSS rule (e.g. `img { height: auto }`) exists.
+   */
+  const imgStyle: React.CSSProperties = {
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain' as const,
+  };
+
   if (useNextImage) {
     return (
       <div className={containerClass} style={containerStyle}>
         <Image
           src="/logo.png"
           alt={alt}
-          fill
+          width={px}
+          height={px}
           sizes={
             size === 'hero'
               ? '(max-width: 640px) 80px, (max-width: 768px) 96px, 112px'
               : `${px}px`
           }
           className={imgClass}
+          style={imgStyle}
           priority={size === 'hero' || size === '2xl'}
         />
       </div>
@@ -114,6 +130,7 @@ export function Logo({
         width={px}
         height={px}
         className={`w-full h-full ${imgClass}`}
+        style={imgStyle}
       />
     </div>
   );
