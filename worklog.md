@@ -169,3 +169,28 @@ Stage Summary:
 - Testimonials/reviews system complete and working
 - Admin must publish testimonials (click eye icon) for them to appear publicly
 - Service reviews integrated into service detail pages
+---
+Task ID: 1
+Agent: Main
+Task: Fix logo size everywhere + audit project features
+
+Work Log:
+- Explored full project structure (Next.js 16 + React 19 + TypeScript + Firebase)
+- Identified root cause of enormous logo: global CSS rule `img { height: auto }` in globals.css was overriding next/image fill prop's height
+- Fixed globals.css: Removed `height: auto` from img selector (kept on video/svg/iframe)
+- Fixed logo.tsx: Replaced `fill` prop with explicit width/height + inline style override for immunity against CSS overrides
+- Verified all 14 Logo component usages have appropriate size variants
+- Confirmed public testimonials system already exists (page, carousel, API routes, service reviews)
+- Confirmed ads management already has partner assignment and plan separation
+- Confirmed notification sender already has full user list with checkbox multiselect
+- Confirmed manual payment methods already exist (transfer, POS, QR, merchant code) with i18n instructions
+- Removed unused LoadingOverlay component (never imported anywhere)
+- Added 19 missing i18n translation keys to pt-pt and en-us
+- TypeScript compiles clean, Next.js builds successfully
+- All changes committed and pushed to origin/main
+
+Stage Summary:
+- Logo fix: CSS root cause + component hardening (2 files)
+- LoadingOverlay: deleted (unused)
+- i18n: 19 missing keys added to pt-pt and en-us
+- Most requested features already existed; the logo bug was making everything appear broken
