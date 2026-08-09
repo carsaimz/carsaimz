@@ -797,6 +797,12 @@ export const ptPT: TranslationObject = {
     revenue: 'Receitas',
     target: 'Objectivo',
     totalUsers: 'Total de Utilizadores',
+    avatar: 'Foto',
+    contact: 'Contacto',
+    coverImage: 'Imagem de Capa',
+    i18nDescription: 'Forneça nomes traduzidos para cada idioma. O nome predefinido (acima) é usado como fallback.',
+    itemCreated: 'Criado',
+    socialLinks: 'Links Sociais',
   },
 
   // ============================================================================
@@ -864,6 +870,15 @@ export const ptPT: TranslationObject = {
     shareText: 'Conheça a Carsai Mozambique — Soluções Digitais e Hospedagem Web Gratuita!',
     accountDetails: 'Detalhes da conta',
     scanQR: 'Escanear QR',
+    commissionOverview: 'Visão Geral de Comissões',
+    couponUsage: 'Uso de Cupões',
+    fromCoupons: 'De Cupões',
+    fromServices: 'De Serviços',
+    noReferrals: 'Sem referências ainda',
+    recentReferrals: 'Referências Recentes',
+    shareToStart: 'Partilhe o seu link de afiliado para começar a ganhar',
+    totalCommission: 'Comissão Total',
+    totalReferred: 'Total Referenciado',
   },
 
   // ============================================================================
@@ -1564,6 +1579,8 @@ export const ptPT: TranslationObject = {
     installNow: 'Instalar agora',
     installFailed: 'Falha na instalação',
     checkFailed: 'Falha ao verificar actualizações',
+    downloadExe: 'Descarregar .exe',
+    visitDownloadPage: 'Visitar página de download',
   },
 
   // ============================================================================
@@ -1839,6 +1856,7 @@ export const ptPT: TranslationObject = {
     beFirst: 'Seja o primeiro a partilhar a sua experiência!',
     nameContentRequired: 'Nome e conteúdo são obrigatórios',
     submittedForReview: 'Testemunho enviado para revisão',
+    viewAll: 'Ver Todos os Testemunhos',
   },
 
   // ============================================================================
@@ -1925,5 +1943,6 @@ export const ptPT: TranslationObject = {
     deleteWarning: 'Isto irá eliminar permanentemente',
     deleteWarningAction: 'Esta acção não pode ser desfeita.',
     total: 'Total',
+    amount: 'Valor',
   },
 };

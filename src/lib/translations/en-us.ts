@@ -787,6 +787,12 @@ export const enUS: TranslationObject = {
     revenue: 'Revenue',
     target: 'Target',
     totalUsers: 'Total Users',
+    avatar: 'Photo',
+    contact: 'Contact Information',
+    coverImage: 'Cover Image',
+    i18nDescription: 'Provide translated names for each language. The default name (above) is used as fallback.',
+    itemCreated: 'Created',
+    socialLinks: 'Social Links',
   },
 
   // ============================================================================
@@ -854,6 +860,15 @@ export const enUS: TranslationObject = {
     shareText: 'Check out Carsai Mozambique — Digital Solutions and Free Web Hosting!',
     accountDetails: 'Account details',
     scanQR: 'Scan QR',
+    commissionOverview: 'Commission Overview',
+    couponUsage: 'Coupon Usage',
+    fromCoupons: 'From Coupons',
+    fromServices: 'From Services',
+    noReferrals: 'No referrals yet',
+    recentReferrals: 'Recent Referrals',
+    shareToStart: 'Share your affiliate link to start earning',
+    totalCommission: 'Total Commission',
+    totalReferred: 'Total Referred',
   },
 
   // ============================================================================
@@ -1554,6 +1569,8 @@ export const enUS: TranslationObject = {
     installNow: 'Install Now',
     installFailed: 'Installation Failed',
     checkFailed: 'Failed to check for updates',
+    downloadExe: 'Download .exe',
+    visitDownloadPage: 'Visit download page',
   },
 
   // ============================================================================
@@ -1829,6 +1846,7 @@ export const enUS: TranslationObject = {
     beFirst: 'Be the first to share your experience!',
     nameContentRequired: 'Name and content are required',
     submittedForReview: 'Testimonial submitted for review',
+    viewAll: 'View All Testimonials',
   },
 
   // ============================================================================
@@ -1918,5 +1936,6 @@ export const enUS: TranslationObject = {
     deleteWarning: 'This will permanently delete',
     deleteWarningAction: 'This action cannot be undone.',
     total: 'Total',
+    amount: 'Amount',
   },
 };
