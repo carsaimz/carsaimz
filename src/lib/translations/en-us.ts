@@ -25,6 +25,7 @@ export const enUS: TranslationObject = {
     language: 'Language',
     menu: 'Menu',
     close: 'Close',
+    testimonials: 'Testimonials',
     back: 'Back',
     next: 'Next',
     skipToContent: 'Skip to content',
@@ -609,6 +610,7 @@ export const enUS: TranslationObject = {
     projects: 'Projects',
     posts: 'Blog',
     testimonials: 'Testimonials',
+    serviceReviews: 'Service Reviews',
     members: 'Members',
     forum: 'Forum',
     categories: 'Categories',
@@ -1827,6 +1829,22 @@ export const enUS: TranslationObject = {
     beFirst: 'Be the first to share your experience!',
     nameContentRequired: 'Name and content are required',
     submittedForReview: 'Testimonial submitted for review',
+  },
+
+  // ============================================================================
+  // Service Reviews
+  // ============================================================================
+  serviceReviews: {
+    title: 'Reviews',
+    writeReview: 'Write a Review',
+    yourReview: 'Your Review',
+    contentPlaceholder: 'Share your experience with this service...',
+    noReviews: 'No reviews yet',
+    beFirst: 'Be the first to share your experience!',
+    review: 'review',
+    reviews: 'reviews',
+    submittedForReview: 'Your review has been submitted and will appear after approval',
+    minLength: 'Review must be at least 10 characters',
   },
 
   // ============================================================================

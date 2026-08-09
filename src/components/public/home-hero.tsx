@@ -7,6 +7,7 @@ import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/language-context';
 import { useRouter } from 'next/navigation';
+import { Logo } from '@/components/common/logo';
 import { StatsCounterSection } from '@/components/features/stats-counter';
 import { ScrollReveal } from '@/components/common/scroll-reveal';
 import { GradientWaveSVG } from '@/components/common/decorative-svg';
@@ -148,7 +149,7 @@ export function HomeHero() {
           {/* Logo prominently displayed - ScrollReveal */}
           <ScrollReveal animation="fadeUp" delay={100}>
             <motion.div variants={itemVariants} className="mb-6">
-              <img src="/logo.png" alt="CarsaiMZ Logo" className="h-20 sm:h-24 md:h-28 w-auto mx-auto drop-shadow-lg" />
+              <Logo size="hero" className="mx-auto drop-shadow-lg" />
             </motion.div>
           </ScrollReveal>
 

@@ -41,6 +41,7 @@ import { useAppStore, useAuthStore, useNotificationStore, type AppView } from '@
 import { useLanguage } from '@/contexts/language-context';
 import { LoginModal } from '@/components/common/login-modal';
 import { useRouter } from 'next/navigation';
+import { Logo } from '@/components/common/logo';
 
 // ──────────────────────────────────────────────
 // Navigation items mapped to AppView
@@ -105,7 +106,7 @@ export function Header() {
               className="flex items-center gap-2 font-bold text-lg hover:bg-transparent"
               onClick={() => handleNavClick('home')}
             >
-              <img src="/logo.png" alt="CarsaiMZ" className="h-8 w-auto" />
+              <Logo size="md" />
             </Button>
           </div>
 
@@ -305,7 +306,7 @@ export function Header() {
               <SheetContent side="right" className="w-72">
                 <SheetHeader>
                   <SheetTitle className="flex items-center gap-2">
-                    <img src="/logo.png" alt="CarsaiMZ" className="h-8 w-auto" />
+                    <Logo size="md" />
                   </SheetTitle>
                 </SheetHeader>
 

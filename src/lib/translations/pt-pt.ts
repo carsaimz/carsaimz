@@ -32,6 +32,7 @@ export const ptPT: TranslationObject = {
     language: 'Idioma',
     menu: 'Menu',
     close: 'Fechar',
+    testimonials: 'Depoimentos',
     back: 'Voltar',
     next: 'Próximo',
     skipToContent: 'Saltar para o conteúdo',
@@ -619,6 +620,7 @@ export const ptPT: TranslationObject = {
     projects: 'Projetos',
     posts: 'Blog',
     testimonials: 'Testemunhos',
+    serviceReviews: 'Avaliações de Serviços',
     members: 'Membros',
     forum: 'Fórum',
     categories: 'Categorias',
@@ -1837,6 +1839,22 @@ export const ptPT: TranslationObject = {
     beFirst: 'Seja o primeiro a partilhar a sua experiência!',
     nameContentRequired: 'Nome e conteúdo são obrigatórios',
     submittedForReview: 'Testemunho enviado para revisão',
+  },
+
+  // ============================================================================
+  // Service Reviews
+  // ============================================================================
+  serviceReviews: {
+    title: 'Avaliações',
+    writeReview: 'Escrever Avaliação',
+    yourReview: 'A Sua Avaliação',
+    contentPlaceholder: 'Partilhe a sua experiência com este serviço...',
+    noReviews: 'Sem avaliações ainda',
+    beFirst: 'Seja o primeiro a partilhar a sua experiência!',
+    review: 'avaliação',
+    reviews: 'avaliações',
+    submittedForReview: 'A sua avaliação foi submetida e aparecerá após aprovação',
+    minLength: 'A avaliação deve ter pelo menos 10 caracteres',
   },
 
   // ============================================================================

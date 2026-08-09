@@ -25,6 +25,7 @@ export const zhCN: TranslationObject = {
     language: '语言',
     menu: '菜单',
     close: '关闭',
+    testimonials: '客户评价',
     back: '返回',
     next: '下一步',
     skipToContent: '跳转到内容',
@@ -607,6 +608,7 @@ export const zhCN: TranslationObject = {
     projects: '项目',
     posts: '博客',
     testimonials: '客户评价',
+    serviceReviews: '服务评价',
     members: '成员',
     forum: '论坛',
     categories: '分类',
@@ -1810,6 +1812,22 @@ export const zhCN: TranslationObject = {
     beFirst: '成为第一个分享体验的人！',
     nameContentRequired: '姓名和内容为必填项',
     submittedForReview: '评价已提交审核',
+  },
+
+  // ============================================================================
+  // Service Reviews
+  // ============================================================================
+  serviceReviews: {
+    title: '评价',
+    writeReview: '撰写评价',
+    yourReview: '您的评价',
+    contentPlaceholder: '分享您对此服务的体验...',
+    noReviews: '暂无评价',
+    beFirst: '成为第一个分享体验的人！',
+    review: '条评价',
+    reviews: '条评价',
+    submittedForReview: '您的评价已提交，审批后将显示',
+    minLength: '评价至少需要10个字符',
   },
 
   // ============================================================================

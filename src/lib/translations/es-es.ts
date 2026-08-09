@@ -25,6 +25,7 @@ export const esES: TranslationObject = {
     language: 'Idioma',
     menu: 'Menú',
     close: 'Cerrar',
+    testimonials: 'Testimonios',
     back: 'Atrás',
     next: 'Siguiente',
     skipToContent: 'Ir al contenido',
@@ -607,6 +608,7 @@ export const esES: TranslationObject = {
     projects: 'Proyectos',
     posts: 'Blog',
     testimonials: 'Testimonios',
+    serviceReviews: 'Reseñas de Servicios',
     members: 'Miembros',
     forum: 'Foro',
     categories: 'Categorías',
@@ -1810,6 +1812,22 @@ export const esES: TranslationObject = {
     beFirst: '¡Sé el primero en compartir tu experiencia!',
     nameContentRequired: 'El nombre y el contenido son obligatorios',
     submittedForReview: 'Testimonio enviado para revisión',
+  },
+
+  // ============================================================================
+  // Service Reviews
+  // ============================================================================
+  serviceReviews: {
+    title: 'Reseñas',
+    writeReview: 'Escribir Reseña',
+    yourReview: 'Tu Reseña',
+    contentPlaceholder: 'Comparte tu experiencia con este servicio...',
+    noReviews: 'Sin reseñas aún',
+    beFirst: '¡Sé el primero en compartir tu experiencia!',
+    review: 'reseña',
+    reviews: 'reseñas',
+    submittedForReview: 'Tu reseña ha sido enviada y aparecerá tras aprobación',
+    minLength: 'La reseña debe tener al menos 10 caracteres',
   },
 
   // ============================================================================

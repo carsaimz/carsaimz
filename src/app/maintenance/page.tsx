@@ -13,6 +13,7 @@ import { useAuthStore } from '@/lib/store';
 import { toast } from 'sonner';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 import type { LanguageCode } from '@/lib/i18n';
+import { Logo } from '@/components/common/logo';
 
 export default function MaintenancePage() {
   const { t, language, setLanguage, languages } = useLanguage();
@@ -132,11 +133,7 @@ export default function MaintenancePage() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="text-center mb-8"
         >
-          <img
-            src="/logo.png"
-            alt="Carsai Mozambique"
-            className="h-16 w-16 mx-auto mb-4 rounded-xl shadow-lg"
-          />
+          <Logo size="2xl" className="mx-auto mb-4 rounded-xl shadow-lg" />
           <h1 className="text-2xl font-bold text-foreground">CarsaiMz</h1>
         </motion.div>
 

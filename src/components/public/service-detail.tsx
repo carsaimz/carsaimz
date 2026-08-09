@@ -30,6 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { RichTextRenderer } from '@/components/common/rich-text-editor';
+import { ServiceReviews } from '@/components/public/service-reviews';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveI18nContent } from '@/lib/i18n-content';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
@@ -279,6 +280,15 @@ export function ServiceDetail() {
               </Button>
             </CardContent>
           </Card>
+        </motion.div>
+
+        {/* Service Reviews / Ratings */}
+        <motion.div
+          variants={fadeInVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <ServiceReviews serviceId={service.id} serviceName={resolvedTitle} />
         </motion.div>
       </div>
     </div>

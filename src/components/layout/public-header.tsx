@@ -39,6 +39,7 @@ import { Separator } from '@/components/ui/separator';
 
 import { useAuthStore, useNotificationStore } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
+import { Logo } from '@/components/common/logo';
 
 // ──────────────────────────────────────────────
 // Navigation items mapped to URL paths
@@ -53,6 +54,7 @@ const NAV_ITEMS: NavItem[] = [
   { path: '/home', labelKey: 'nav.home' },
   { path: '/services', labelKey: 'nav.services' },
   { path: '/projects', labelKey: 'nav.projects' },
+  { path: '/testimonials', labelKey: 'nav.testimonials' },
   { path: '/blog', labelKey: 'nav.blog' },
   { path: '/forum', labelKey: 'nav.forum' },
   { path: '/contact', labelKey: 'nav.contact' },
@@ -112,7 +114,7 @@ export function PublicHeader() {
             href="/home"
             className="flex items-center gap-2 hover:bg-transparent"
           >
-            <img src="/logo.png" alt="CarsaiMZ" className="h-8 w-auto" />
+            <Logo size="md" />
           </Link>
         </div>
 
@@ -312,7 +314,7 @@ export function PublicHeader() {
             <SheetContent side="right" className="w-72">
               <SheetHeader>
                 <SheetTitle className="flex items-center gap-2">
-                  <img src="/logo.png" alt="CarsaiMZ" className="h-8 w-auto" />
+                  <Logo size="md" />
                 </SheetTitle>
               </SheetHeader>
 

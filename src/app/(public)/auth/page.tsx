@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Logo } from '@/components/common/logo';
 import {
   Eye,
   EyeOff,
@@ -186,14 +186,7 @@ export default function AuthPage() {
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">
           <div className="flex items-center">
-            <Image
-              src="/logo.png"
-              alt="Carsai Mozambique"
-              width={48}
-              height={48}
-              className="h-12 w-auto"
-              priority
-            />
+            <Logo size="xl" />
           </div>
           <p className="text-muted-foreground text-sm text-center">
             {activeTab === 'forgot'

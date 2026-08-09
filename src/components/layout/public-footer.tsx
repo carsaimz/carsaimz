@@ -23,6 +23,7 @@ import { NewsletterForm } from '@/components/features/newsletter-form';
 
 import { useLanguage } from '@/contexts/language-context';
 import { GITHUB_URL } from '@/lib/client-config';
+import { Logo } from '@/components/common/logo';
 
 // ──────────────────────────────────────────────
 // Footer quick links (URL-based)
@@ -36,6 +37,7 @@ interface FooterLink {
 const QUICK_LINKS: FooterLink[] = [
   { path: '/services', labelKey: 'nav.services' },
   { path: '/projects', labelKey: 'nav.projects' },
+  { path: '/testimonials', labelKey: 'nav.testimonials' },
   { path: '/blog', labelKey: 'nav.blog' },
   { path: '/forum', labelKey: 'nav.forum' },
   { path: '/about', labelKey: 'nav.about' },
@@ -78,7 +80,7 @@ export function PublicFooter({ className }: { className?: string }) {
           {/* Brand Column */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <img src="/logo.png" alt="CarsaiMZ" className="h-10 w-auto" />
+              <Logo size="lg" />
             </div>
             <p className="text-sm text-muted-foreground max-w-xs">
               {t('footer.companyDescription')}

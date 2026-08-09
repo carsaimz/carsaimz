@@ -44,6 +44,7 @@ import { Separator } from '@/components/ui/separator';
 
 import { useAppStore, useAuthStore, type AppView, type UserRole } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
+import { Logo } from '@/components/common/logo';
 
 // ──────────────────────────────────────────────
 // Sidebar menu items per role
@@ -136,7 +137,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
       <Sidebar collapsible="icon">
         <SidebarHeader>
           <div className="flex items-center gap-2 px-2 py-1 min-w-0">
-            <img src="/logo.png" alt="CarsaiMZ" className="h-7 w-auto max-w-[2.5rem] shrink-0 object-contain" />
+            <Logo size="sm" />
             <div className="group-data-[collapsible=icon]:hidden flex flex-col min-w-0">
               <span className="font-bold text-sm truncate">Carsai</span>
               <span className="text-xs text-muted-foreground truncate">

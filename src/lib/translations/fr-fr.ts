@@ -25,6 +25,7 @@ export const frFR: TranslationObject = {
     language: 'Langue',
     menu: 'Menu',
     close: 'Fermer',
+    testimonials: 'Témoignages',
     back: 'Retour',
     next: 'Suivant',
     skipToContent: 'Aller au contenu',
@@ -607,6 +608,7 @@ export const frFR: TranslationObject = {
     projects: 'Projets',
     posts: 'Blog',
     testimonials: 'Témoignages',
+    serviceReviews: 'Avis sur Services',
     members: 'Membres',
     forum: 'Forum',
     categories: 'Catégories',
@@ -1810,6 +1812,22 @@ export const frFR: TranslationObject = {
     beFirst: 'Soyez le premier à partager votre expérience !',
     nameContentRequired: 'Le nom et le contenu sont obligatoires',
     submittedForReview: 'Témoignage soumis pour examen',
+  },
+
+  // ============================================================================
+  // Service Reviews
+  // ============================================================================
+  serviceReviews: {
+    title: 'Avis',
+    writeReview: 'Écrire un Avis',
+    yourReview: 'Votre Avis',
+    contentPlaceholder: 'Partagez votre expérience avec ce service...',
+    noReviews: 'Aucun avis pour le moment',
+    beFirst: 'Soyez le premier à partager votre expérience !',
+    review: 'avis',
+    reviews: 'avis',
+    submittedForReview: 'Votre avis a été soumis et apparaîtra après approbation',
+    minLength: "L'avis doit contenir au moins 10 caractères",
   },
 
   // ============================================================================

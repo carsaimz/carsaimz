@@ -32,6 +32,7 @@ export const swTZ: TranslationObject = {
     language: 'Lugha',
     menu: 'Menyu',
     close: 'Funga',
+    testimonials: 'Ushahidi',
     back: 'Rudi',
     next: 'Mbele',
     skipToContent: 'Ruka hadi maudhui',
@@ -614,6 +615,7 @@ export const swTZ: TranslationObject = {
     projects: 'Miradi',
     posts: 'Blogu',
     testimonials: 'Ushuhuda',
+    serviceReviews: 'Mapitio ya Huduma',
     members: 'Wajumbe',
     forum: 'Jukwaa',
     categories: 'Makundi',
@@ -1820,6 +1822,22 @@ export const swTZ: TranslationObject = {
     beFirst: 'Kuwa wa kwanza kushiriki uzoefu wako!',
     nameContentRequired: 'Jina na maudhui ni lazima',
     submittedForReview: 'Ushuhuda umewasilishwa kwa uhakiki',
+  },
+
+  // ============================================================================
+  // Service Reviews
+  // ============================================================================
+  serviceReviews: {
+    title: 'Mapitio',
+    writeReview: 'Andika Mapitio',
+    yourReview: 'Mapitio Yako',
+    contentPlaceholder: 'Shiriki uzoefu wako na huduma hii...',
+    noReviews: 'Hakuna mapitio bado',
+    beFirst: 'Kuwa wa kwanza kushiriki uzoefu wako!',
+    review: 'mapitio',
+    reviews: 'mapitio',
+    submittedForReview: 'Mapitio yako yamewasilishwa na yataonekana baada ya idhini',
+    minLength: 'Mapitio lazima iwe na angalau herufi 10',
   },
 
   // ============================================================================

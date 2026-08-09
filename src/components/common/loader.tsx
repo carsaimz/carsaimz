@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { Logo } from '@/components/common/logo';
 
 /**
  * Full-page loader overlay that shows during initial page load.
@@ -37,7 +38,7 @@ export function Loader() {
     >
       <div className="flex flex-col items-center gap-4">
         <div className="relative flex items-center justify-center">
-          <img src="/logo.png" alt="CarsaiMZ" className="h-16 w-auto animate-pulse" />
+          <Logo size="2xl" className="animate-pulse" />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="size-16 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
           </div>

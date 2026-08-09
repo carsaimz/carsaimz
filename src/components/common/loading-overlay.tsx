@@ -11,9 +11,9 @@
  *   <LoadingOverlay isVisible={isInitializing} />
  */
 
-import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/language-context';
+import { Logo } from '@/components/common/logo';
 
 // ============================================================================
 // Props
@@ -55,14 +55,7 @@ export function LoadingOverlay({ isVisible }: LoadingOverlayProps) {
           <div className="relative z-10 flex flex-col items-center gap-6">
             {/* Logo image */}
             <div className="relative flex items-center justify-center">
-              <Image
-                src="/logo.png"
-                alt="Carsai Mozambique"
-                width={180}
-                height={180}
-                priority
-                className="object-contain drop-shadow-lg"
-              />
+              <Logo size="2xl" className="drop-shadow-lg" />
               {/* Subtle glow behind logo */}
               <div className="absolute inset-0 -z-10 blur-2xl bg-blue-600/20 dark:bg-blue-500/20 scale-150" />
             </div>

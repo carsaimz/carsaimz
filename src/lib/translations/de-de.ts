@@ -25,6 +25,7 @@ export const deDE: TranslationObject = {
     language: 'Sprache',
     menu: 'Menü',
     close: 'Schließen',
+    testimonials: 'Referenzen',
     back: 'Zurück',
     next: 'Weiter',
     skipToContent: 'Zum Inhalt springen',
@@ -607,6 +608,7 @@ export const deDE: TranslationObject = {
     projects: 'Projekte',
     posts: 'Blog',
     testimonials: 'Testimonials',
+    serviceReviews: 'Service-Bewertungen',
     members: 'Mitglieder',
     forum: 'Forum',
     categories: 'Kategorien',
@@ -1810,6 +1812,22 @@ export const deDE: TranslationObject = {
     beFirst: 'Seien Sie der Erste, der seine Erfahrung teilt!',
     nameContentRequired: 'Name und Inhalt sind erforderlich',
     submittedForReview: 'Zeugnis zur Überprüfung eingereicht',
+  },
+
+  // ============================================================================
+  // Service Reviews
+  // ============================================================================
+  serviceReviews: {
+    title: 'Bewertungen',
+    writeReview: 'Bewertung Schreiben',
+    yourReview: 'Ihre Bewertung',
+    contentPlaceholder: 'Teilen Sie Ihre Erfahrung mit diesem Service...',
+    noReviews: 'Noch keine Bewertungen',
+    beFirst: 'Seien Sie der Erste, der seine Erfahrung teilt!',
+    review: 'Bewertung',
+    reviews: 'Bewertungen',
+    submittedForReview: 'Ihre Bewertung wurde eingereicht und erscheint nach Freigabe',
+    minLength: 'Die Bewertung muss mindestens 10 Zeichen lang sein',
   },
 
   // ============================================================================

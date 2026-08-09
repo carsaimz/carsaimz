@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
+import { Logo } from '@/components/common/logo';
 
 const LANGUAGE_FLAGS: Record<string, string> = {
   'pt-pt': '🇲🇿', 'en-us': '🇺🇸', 'pt-br': '🇧🇷',
@@ -54,6 +55,7 @@ const ADMIN_MENU_ITEMS: SidebarLink[] = [
   { path: '/admin/blog', labelKey: 'admin.posts', icon: FileText },
   { path: '/admin/categories', labelKey: 'admin.categories', icon: Tag },
   { path: '/admin/testimonials', labelKey: 'admin.testimonials', icon: MessageSquare },
+  { path: '/admin/service-reviews', labelKey: 'admin.serviceReviews', icon: Star },
   { path: '/admin/members', labelKey: 'admin.members', icon: Users },
   { path: '/admin/forum', labelKey: 'admin.forum', icon: MessagesSquare },
   { path: '/admin/users', labelKey: 'admin.users', icon: Users },
@@ -119,7 +121,7 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
         <Sidebar collapsible="icon">
           <SidebarHeader>
             <div className="flex items-center gap-2 px-2 py-1 min-w-0">
-              <img src="/logo.png" alt="CarsaiMZ" className="h-7 w-auto max-w-[2.5rem] shrink-0 object-contain" />
+              <Logo size="sm" />
               <div className="group-data-[collapsible=icon]:hidden flex flex-col min-w-0">
                 <span className="text-xs text-muted-foreground truncate">{t('nav.admin')}</span>
               </div>

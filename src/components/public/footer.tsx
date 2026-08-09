@@ -20,6 +20,7 @@ import {
 } from '@fortawesome/free-brands-svg-icons';
 import { GITHUB_URL } from '@/lib/client-config';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
+import { Logo } from '@/components/common/logo';
 
 export function Footer() {
   const { t } = useLanguage();
@@ -71,7 +72,7 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="mb-3">
-              <img src="/logo.png" alt="CarsaiMZ" className="h-10 w-auto brightness-200" />
+              <Logo size="lg" brightOnDark />
             </div>
             <p className="text-emerald-200 text-sm leading-relaxed mb-3">
               {t('footer.companyDescription')}

@@ -49,6 +49,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
+import { Logo } from '@/components/common/logo';
 import {
   UserCircle,
   ClipboardList,
@@ -174,7 +175,7 @@ function UserShellContent({ children }: { children: React.ReactNode }) {
         <Sidebar collapsible="icon">
           <SidebarHeader>
             <div className="flex items-center gap-2 px-2 py-1 min-w-0">
-              <img src="/logo.png" alt="CarsaiMZ" className="h-7 w-auto max-w-[2.5rem] shrink-0 object-contain" />
+              <Logo size="sm" />
               <div className="group-data-[collapsible=icon]:hidden flex flex-col min-w-0">
                 <span className="text-xs text-muted-foreground truncate">{t('nav.dashboard')}</span>
               </div>

@@ -23,6 +23,7 @@ import { NewsletterForm } from '@/components/features/newsletter-form';
 import { useAppStore, type AppView } from '@/lib/store';
 import { useLanguage } from '@/contexts/language-context';
 import { GITHUB_URL } from '@/lib/client-config';
+import { Logo } from '@/components/common/logo';
 
 // ──────────────────────────────────────────────
 // Footer quick links
@@ -81,7 +82,7 @@ export function Footer({ className }: { className?: string }) {
           {/* Brand Column */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <img src="/logo.png" alt="CarsaiMZ" className="h-10 w-auto" />
+              <Logo size="lg" />
             </div>
             <p className="text-sm text-muted-foreground max-w-xs">
               {t('footer.companyDescription')}
