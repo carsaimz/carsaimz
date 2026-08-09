@@ -56,6 +56,7 @@ const NAV_ITEMS: NavItem[] = [
   { view: 'home', labelKey: 'nav.home' },
   { view: 'services', labelKey: 'nav.services' },
   { view: 'projects', labelKey: 'nav.projects' },
+  { view: 'testimonials', labelKey: 'nav.testimonials' },
   { view: 'blog', labelKey: 'nav.blog' },
   { view: 'forum', labelKey: 'nav.forum' },
   { view: 'contact', labelKey: 'nav.contact' },

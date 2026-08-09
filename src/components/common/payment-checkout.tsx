@@ -17,6 +17,8 @@ import {
   ExternalLink,
   Banknote,
   RefreshCw,
+  Hash,
+  QrCode,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -68,6 +70,10 @@ const PROVIDER_ICONS: Record<string, React.ReactNode> = {
   mpesa: <Smartphone className="size-5" />,
   emola: <Smartphone className="size-5" />,
   bank_transfer: <Building2 className="size-5" />,
+  manual_transfer: <Building2 className="size-5" />,
+  pos: <CreditCard className="size-5" />,
+  merchant_code: <Hash className="size-5" />,
+  qr_payment: <QrCode className="size-5" />,
 };
 
 const PROVIDER_COLORS: Record<string, string> = {
@@ -76,6 +82,10 @@ const PROVIDER_COLORS: Record<string, string> = {
   mpesa: 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800 hover:border-red-400',
   emola: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 hover:border-emerald-400',
   bank_transfer: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 hover:border-amber-400',
+  manual_transfer: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 hover:border-amber-400',
+  pos: 'bg-sky-50 dark:bg-sky-950/30 border-sky-200 dark:border-sky-800 hover:border-sky-400',
+  merchant_code: 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800 hover:border-indigo-400',
+  qr_payment: 'bg-teal-50 dark:bg-teal-950/30 border-teal-200 dark:border-teal-800 hover:border-teal-400',
 };
 
 // ─── Component ───
@@ -273,8 +283,12 @@ export function PaymentCheckout({
           break;
         }
 
-        case 'bank_transfer': {
-          // Bank transfer — show bank details
+        case 'bank_transfer':
+        case 'manual_transfer':
+        case 'pos':
+        case 'merchant_code':
+        case 'qr_payment': {
+          // Manual payment methods — show instructions
           setStep('payment-form');
           break;
         }
@@ -554,8 +568,8 @@ export function PaymentCheckout({
           </motion.div>
         )}
 
-        {/* Step 3: Bank Transfer Details */}
-        {step === 'payment-form' && selectedProvider?.name === 'bank_transfer' && paymentData && (
+        {/* Step 3: Manual Payment Instructions (bank_transfer, manual_transfer, pos, merchant_code, qr_payment) */}
+        {step === 'payment-form' && selectedProvider && paymentData && ['bank_transfer', 'manual_transfer', 'pos', 'merchant_code', 'qr_payment'].includes(selectedProvider.name) && (
           <motion.div
             key="bank-transfer"
             initial={{ opacity: 0, x: -20 }}
@@ -566,58 +580,109 @@ export function PaymentCheckout({
             <Card className="border-amber-200 dark:border-amber-800">
               <CardContent className="pt-4 space-y-4">
                 <h3 className="font-semibold text-lg flex items-center gap-2">
-                  <Building2 className="size-5 text-amber-600" />
-                  {t('payment.bankTransferDetails') || 'Bank Transfer Details'}
+                  {selectedProvider.name === 'qr_payment' ? <QrCode className="size-5 text-teal-600" /> :
+                   selectedProvider.name === 'merchant_code' ? <Hash className="size-5 text-indigo-600" /> :
+                   selectedProvider.name === 'pos' ? <CreditCard className="size-5 text-sky-600" /> :
+                   <Building2 className="size-5 text-amber-600" />}
+                  {selectedProvider.name === 'bank_transfer' ? (t('payment.bankTransferDetails') || 'Bank Transfer Details') :
+                   selectedProvider.name === 'manual_transfer' ? (t('payment.manualTransferDetails') || 'Manual Transfer Instructions') :
+                   selectedProvider.name === 'pos' ? (t('payment.posPaymentDetails') || 'POS Payment Instructions') :
+                   selectedProvider.name === 'merchant_code' ? (t('payment.merchantCodeDetails') || 'Merchant Code Payment') :
+                   selectedProvider.name === 'qr_payment' ? (t('payment.qrPaymentDetails') || 'QR Code Payment') :
+                   selectedProvider.displayName}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {t('payment.bankTransferInstructions') || 'Please make the transfer using the details below and send proof of payment.'}
+                  {paymentData.providerData?.message || t('payment.bankTransferInstructions') || 'Please follow the instructions below and send proof of payment.'}
                 </p>
 
                 <div className="space-y-3">
-                  {paymentData.providerData?.bankName && (
+                  {/* Bank Transfer specific fields */}
+                  {selectedProvider.name === 'bank_transfer' && (
+                    <>
+                      {paymentData.providerData?.bankName && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">{t('payment.bankName') || 'Bank'}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">{paymentData.providerData.bankName}</span>
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => copyToClipboard(paymentData.providerData.bankName)}>
+                              <Copy className="size-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      {paymentData.providerData?.accountName && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">{t('payment.accountName') || 'Account Name'}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">{paymentData.providerData.accountName}</span>
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => copyToClipboard(paymentData.providerData.accountName)}>
+                              <Copy className="size-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      {paymentData.providerData?.accountNumber && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">{t('payment.accountNumber') || 'Account Number'}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium font-mono">{paymentData.providerData.accountNumber}</span>
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => copyToClipboard(paymentData.providerData.accountNumber)}>
+                              <Copy className="size-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      {paymentData.providerData?.iban && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">IBAN</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium font-mono">{paymentData.providerData.iban}</span>
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => copyToClipboard(paymentData.providerData.iban)}>
+                              <Copy className="size-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* POS terminal ID */}
+                  {selectedProvider.name === 'pos' && paymentData.providerData?.terminalId && (
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">{t('payment.bankName') || 'Bank'}</span>
+                      <span className="text-sm text-muted-foreground">{t('payment.terminalId') || 'Terminal ID'}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{paymentData.providerData.bankName}</span>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => copyToClipboard(paymentData.providerData.bankName)}>
+                        <span className="text-sm font-medium font-mono">{paymentData.providerData.terminalId}</span>
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => copyToClipboard(paymentData.providerData.terminalId)}>
                           <Copy className="size-3" />
                         </Button>
                       </div>
                     </div>
                   )}
-                  {paymentData.providerData?.accountName && (
+
+                  {/* Merchant Code */}
+                  {selectedProvider.name === 'merchant_code' && paymentData.providerData?.merchantCode && (
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">{t('payment.accountName') || 'Account Name'}</span>
+                      <span className="text-sm text-muted-foreground">{t('payment.merchantCode') || 'Merchant Code'}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{paymentData.providerData.accountName}</span>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => copyToClipboard(paymentData.providerData.accountName)}>
+                        <span className="text-sm font-bold font-mono text-indigo-600 dark:text-indigo-400">{paymentData.providerData.merchantCode}</span>
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => copyToClipboard(paymentData.providerData.merchantCode)}>
                           <Copy className="size-3" />
                         </Button>
                       </div>
                     </div>
                   )}
-                  {paymentData.providerData?.accountNumber && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">{t('payment.accountNumber') || 'Account Number'}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium font-mono">{paymentData.providerData.accountNumber}</span>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => copyToClipboard(paymentData.providerData.accountNumber)}>
-                          <Copy className="size-3" />
-                        </Button>
-                      </div>
+
+                  {/* QR Code image */}
+                  {selectedProvider.name === 'qr_payment' && paymentData.providerData?.qrCodeUrl && (
+                    <div className="flex justify-center py-4">
+                      <img
+                        src={paymentData.providerData.qrCodeUrl}
+                        alt="QR Code for payment"
+                        className="w-48 h-48 rounded-lg border"
+                      />
                     </div>
                   )}
-                  {paymentData.providerData?.iban && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">IBAN</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium font-mono">{paymentData.providerData.iban}</span>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => copyToClipboard(paymentData.providerData.iban)}>
-                          <Copy className="size-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+
                   <Separator />
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">{t('payment.reference') || 'Reference'}</span>

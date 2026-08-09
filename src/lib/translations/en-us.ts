@@ -1896,6 +1896,12 @@ export const enUS: TranslationObject = {
     // Bank Transfer
     bankTransferDetails: 'Bank Transfer Details',
     bankTransferInstructions: 'Please make the transfer using the details below and send proof of payment.',
+    manualTransferDetails: 'Manual Transfer Instructions',
+    posPaymentDetails: 'POS Payment Instructions',
+    merchantCodeDetails: 'Merchant Code Payment',
+    qrPaymentDetails: 'QR Code Payment',
+    terminalId: 'Terminal ID',
+    merchantCode: 'Merchant Code',
     bankName: 'Bank Name',
     accountName: 'Account Name',
     accountNumber: 'Account Number',

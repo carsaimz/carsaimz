@@ -113,6 +113,22 @@ export async function POST(request: NextRequest) {
         providerData = processBankTransfer(provider, paymentId)
         break
       }
+      case 'manual_transfer': {
+        providerData = processManualTransfer(provider, paymentId)
+        break
+      }
+      case 'pos': {
+        providerData = processPosPayment(provider, paymentId)
+        break
+      }
+      case 'merchant_code': {
+        providerData = processMerchantCodePayment(provider, paymentId)
+        break
+      }
+      case 'qr_payment': {
+        providerData = processQrPayment(provider, paymentId)
+        break
+      }
       default: {
         return NextResponse.json(
           { success: false, message: `Unsupported provider: ${provider.name}` },
@@ -463,8 +479,76 @@ function processBankTransfer(
     accountNumber: provider.config.bankAccountNumber || 'Not configured',
     iban: provider.config.bankIban || 'Not configured',
     instructions: provider.config.bankInstructions || 'Please make the transfer and send proof of payment.',
+    instructionsI18n: provider.config.bankInstructionsI18n || null,
     reference: paymentId,
     status: 'pending',
     message: 'Please make the bank transfer using the details above and send proof of payment.',
+  }
+}
+
+// ─── Manual Transfer Processing ───
+
+function processManualTransfer(
+  provider: PaymentProvider,
+  paymentId: string
+): Record<string, any> {
+  return {
+    type: 'manual_transfer',
+    instructions: provider.config.transferInstructions || 'Please contact us for manual transfer instructions.',
+    instructionsI18n: provider.config.transferInstructionsI18n || null,
+    reference: paymentId,
+    status: 'pending',
+    message: 'Please follow the transfer instructions and send proof of payment.',
+  }
+}
+
+// ─── POS Payment Processing ───
+
+function processPosPayment(
+  provider: PaymentProvider,
+  paymentId: string
+): Record<string, any> {
+  return {
+    type: 'pos',
+    terminalId: provider.config.posTerminalId || null,
+    instructions: provider.config.posInstructions || 'Visit our office to pay via POS terminal.',
+    instructionsI18n: provider.config.posInstructionsI18n || null,
+    reference: paymentId,
+    status: 'pending',
+    message: 'Please visit our office and use the POS terminal to complete payment.',
+  }
+}
+
+// ─── Merchant Code Payment Processing ───
+
+function processMerchantCodePayment(
+  provider: PaymentProvider,
+  paymentId: string
+): Record<string, any> {
+  return {
+    type: 'merchant_code',
+    merchantCode: provider.config.merchantCode || null,
+    instructions: provider.config.merchantCodeInstructions || 'Use the merchant code to make your payment at any authorized agent.',
+    instructionsI18n: provider.config.merchantCodeInstructionsI18n || null,
+    reference: paymentId,
+    status: 'pending',
+    message: 'Use the merchant code provided to complete your payment at any authorized agent.',
+  }
+}
+
+// ─── QR Payment Processing ───
+
+function processQrPayment(
+  provider: PaymentProvider,
+  paymentId: string
+): Record<string, any> {
+  return {
+    type: 'qr_payment',
+    qrCodeUrl: provider.config.qrCodeUrl || null,
+    instructions: provider.config.qrInstructions || 'Scan the QR code with your mobile payment app to complete payment.',
+    instructionsI18n: provider.config.qrInstructionsI18n || null,
+    reference: paymentId,
+    status: 'pending',
+    message: 'Scan the QR code with your mobile payment app to complete the payment.',
   }
 }

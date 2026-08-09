@@ -37,6 +37,7 @@ interface FooterLink {
 const QUICK_LINKS: FooterLink[] = [
   { view: 'services', labelKey: 'nav.services' },
   { view: 'projects', labelKey: 'nav.projects' },
+  { view: 'testimonials', labelKey: 'nav.testimonials' },
   { view: 'blog', labelKey: 'nav.blog' },
   { view: 'forum', labelKey: 'nav.forum' },
 ];

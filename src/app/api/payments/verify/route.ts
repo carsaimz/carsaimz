@@ -81,6 +81,14 @@ export async function POST(request: NextRequest) {
             providerStatus = paymentData.status
             break
           }
+          case 'manual_transfer':
+          case 'pos':
+          case 'merchant_code':
+          case 'qr_payment': {
+            // All manual payment methods — status stays as pending until admin confirms
+            providerStatus = paymentData.status
+            break
+          }
         }
       }
     }

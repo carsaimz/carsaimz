@@ -47,7 +47,7 @@ export interface Notification {
   createdAt: Date
 }
 
-export type AppView = 'home' | 'services' | 'projects' | 'about' | 'faq' | 'blog' | 'forum' | 'blogPost' | 'forumTopic' | 'contact' | 'dashboard' | 'vehicles' | 'partners' | 'reports' | 'settings' | 'map' | 'analytics' | 'admin' | 'partner' | 'chat'
+export type AppView = 'home' | 'services' | 'projects' | 'about' | 'faq' | 'testimonials' | 'blog' | 'forum' | 'blogPost' | 'forumTopic' | 'contact' | 'dashboard' | 'vehicles' | 'partners' | 'reports' | 'settings' | 'map' | 'analytics' | 'admin' | 'partner' | 'chat'
 
 export type Language = 'en' | 'pt' | 'fr' | 'es' | 'zh' | 'de'
 
