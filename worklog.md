@@ -75,3 +75,97 @@ Stage Summary:
 - FontAwesome tech icons floating in hero and services
 - 5 i18n bugs fixed
 - All effects lightweight (CSS-only, no JS per frame)
+
+---
+Task ID: 1
+Agent: main
+Task: Fix logo size everywhere (auth, footer, header, sidebar)
+
+Work Log:
+- Analyzed Logo component (logo.tsx) - found it uses next/image with width/height props that generate inline styles overriding Tailwind CSS classes
+- Root cause: next/image with explicit width/height creates inline styles that bypass CSS class constraints, causing 1024x1024 source to render huge
+- Rewrote Logo component to use container span + next/image with `fill` prop, guaranteeing CSS-determined dimensions are always respected
+- New SIZE_MAP uses explicit h-X w-X classes on container (e.g., sm = h-7 w-7 = 28x28px)
+- All 14 component usages remain compatible (size, className, brightOnDark, useNextImage props preserved)
+
+Stage Summary:
+- Logo component fixed with robust container-based approach
+- Sizes: xs=20px, sm=28px, md=32px, lg=40px, xl=48px, 2xl=64px, hero=80-112px responsive
+
+---
+Task ID: 2
+Agent: main
+Task: Fix/add Ads management - separate from plans, proper CRUD, partner assignment
+
+Work Log:
+- Reviewed admin-ads-manager.tsx (71.5KB) - found it already has proper structure
+- Ads tab has "Create Ad" button opening createAdOpen dialog
+- Plans tab has "Create Plan" button opening planDialogOpen dialog
+- Create ad dialog has partner assignment (select from partners list) and plan assignment
+- Translation keys verified: createAd = "Criar Anúncio", createPlan = "Criar Plano" (correct)
+
+Stage Summary:
+- Ads management already has proper CRUD with partner assignment - no changes needed
+
+---
+Task ID: 3
+Agent: main
+Task: Add manual payment methods with multilingual instructions
+
+Work Log:
+- Updated ProviderName type: added 'manual_transfer' | 'pos' | 'merchant_code' | 'qr_payment'
+- Updated PaymentProviderConfig: added i18n fields for all manual methods (posInstructionsI18n, merchantCodeInstructionsI18n, qrInstructionsI18n, transferInstructionsI18n, bankInstructionsI18n)
+- Added 4 new default providers to DEFAULT_PROVIDERS: manual_transfer, pos, merchant_code, qr_payment
+- Updated getPublicProviderConfig to expose all manual method instruction fields
+- Admin payment providers component already had manual method UI support (MANUAL_METHODS, addManualOpen, etc.)
+
+Stage Summary:
+- Manual payment methods (transfer, POS, merchant code, QR) added with i18n instruction support
+- Server-side types and defaults updated in payment-helpers.ts
+
+---
+Task ID: 4
+Agent: main
+Task: Improve payment methods listing responsiveness
+
+Work Log:
+- Added overflow-x-auto wrapper around payments table
+- Added hidden sm:table-cell to Method column (hides on mobile)
+- Added hidden md:table-cell to Date column (hides on small screens)
+- Added whitespace-nowrap to Amount and Date cells for proper wrapping
+
+Stage Summary:
+- Payments manager table now responsive with horizontal scroll and hidden columns on mobile
+
+---
+Task ID: 5
+Agent: main
+Task: Notifications improvements
+
+Work Log:
+- Reviewed admin-notification-sender.tsx - found it already has full user list with checkboxes
+- Features present: search filter, role filter, select all/none, checkbox per user, sticky table header, count display
+- No changes needed - already meets requirements
+
+Stage Summary:
+- Notification sender already has full user list with checkbox/radio multiselect
+
+---
+Task ID: 6
+Agent: main
+Task: Testimonials/reviews public system
+
+Work Log:
+- Reviewed full testimonials system: public page (/testimonials), home carousel, admin content manager
+- Public submit form exists at /testimonials page
+- Service reviews component (ServiceReviews) exists and is integrated into service detail pages (/services/[slug])
+- Admin can publish/unpublish testimonials via eye icon toggle
+- The testimonials not showing publicly is because they need isPublished=true (admin must publish them)
+- Added 'service_reviews' to ContentType in admin-content-manager.tsx
+- Fixed getApiEndpoint for service_reviews → /api/admin/service-reviews (hyphen not underscore)
+- Added service_reviews case to getContentLabel
+
+Stage Summary:
+- Testimonials/reviews system complete and working
+- Admin must publish testimonials (click eye icon) for them to appear publicly
+- Service reviews integrated into service detail pages

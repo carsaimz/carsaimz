@@ -51,7 +51,7 @@ const itemVariants = {
 // Types
 // ============================================================================
 
-type ContentType = 'services' | 'projects' | 'posts' | 'testimonials';
+type ContentType = 'services' | 'projects' | 'posts' | 'testimonials' | 'service_reviews';
 
 interface ContentItem {
   id: string;
@@ -128,6 +128,7 @@ function stringifyI18n(obj: Record<string, string>): string | null {
 }
 
 function getApiEndpoint(type: ContentType): string {
+  if (type === 'service_reviews') return '/api/admin/service-reviews';
   return `/api/admin/${type}`;
 }
 
@@ -997,6 +998,7 @@ export function AdminContentManager({ contentType }: { contentType: ContentType 
       case 'projects': return t('admin.projects');
       case 'posts': return t('admin.posts');
       case 'testimonials': return t('admin.testimonials');
+      case 'service_reviews': return t('admin.serviceReviews') || 'Service Reviews';
     }
   };
 

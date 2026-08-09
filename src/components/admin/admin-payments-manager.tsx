@@ -158,25 +158,26 @@ export function AdminPaymentsManager() {
             ) : payments.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">{t('admin.noItems') || 'No payments'}</div>
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t('financial.amount') || 'Amount'}</TableHead>
                     <TableHead>{t('admin.name') || 'User'}</TableHead>
                     <TableHead>{t('admin.status') || 'Status'}</TableHead>
-                    <TableHead>{t('financial.paymentMethod') || 'Method'}</TableHead>
-                    <TableHead>{t('admin.date') || 'Date'}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{t('financial.paymentMethod') || 'Method'}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t('admin.date') || 'Date'}</TableHead>
                     <TableHead>{t('admin.actions') || 'Actions'}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {payments.map((payment) => (
                     <TableRow key={payment.id}>
-                      <TableCell className="font-semibold">{formatCurrency(payment.amount)}</TableCell>
+                      <TableCell className="font-semibold whitespace-nowrap">{formatCurrency(payment.amount)}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">{payment.user?.name || payment.userId?.slice(0, 8) || '—'}</TableCell>
                       <TableCell>{statusBadge(payment.status)}</TableCell>
-                      <TableCell className="text-muted-foreground text-sm">{payment.method || '—'}</TableCell>
-                      <TableCell className="text-muted-foreground text-xs">{formatDate(payment.createdAt)}</TableCell>
+                      <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">{payment.method || '—'}</TableCell>
+                      <TableCell className="hidden md:table-cell text-muted-foreground text-xs whitespace-nowrap">{formatDate(payment.createdAt)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Button variant="ghost" size="sm" className="size-8" onClick={() => openDetail(payment)}>
@@ -191,6 +192,7 @@ export function AdminPaymentsManager() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>

@@ -10,7 +10,7 @@ import { FieldValue } from 'firebase-admin/firestore'
 
 // ─── Types ───
 
-export type ProviderName = 'stripe' | 'paypal' | 'mpesa' | 'emola' | 'bank_transfer'
+export type ProviderName = 'stripe' | 'paypal' | 'mpesa' | 'emola' | 'bank_transfer' | 'manual_transfer' | 'pos' | 'merchant_code' | 'qr_payment'
 
 export interface PaymentProviderConfig {
   // Stripe
@@ -34,6 +34,22 @@ export interface PaymentProviderConfig {
   bankAccountNumber?: string | null
   bankIban?: string | null
   bankInstructions?: string | null
+  bankInstructionsI18n?: string | null
+  // Manual Transfer
+  transferInstructions?: string | null
+  transferInstructionsI18n?: string | null
+  // POS Terminal
+  posTerminalId?: string | null
+  posInstructions?: string | null
+  posInstructionsI18n?: string | null
+  // Merchant Code
+  merchantCode?: string | null
+  merchantCodeInstructions?: string | null
+  merchantCodeInstructionsI18n?: string | null
+  // QR Payment
+  qrCodeUrl?: string | null
+  qrInstructions?: string | null
+  qrInstructionsI18n?: string | null
 }
 
 export interface PaymentProvider {
@@ -161,6 +177,7 @@ const DEFAULT_PROVIDERS: Omit<PaymentProvider, 'id' | 'createdAt' | 'updatedAt'>
       bankAccountNumber: null,
       bankIban: null,
       bankInstructions: null,
+      bankInstructionsI18n: null,
     },
     supportedCurrencies: ['MZN', 'USD'],
     processingFee: 0,
@@ -168,6 +185,77 @@ const DEFAULT_PROVIDERS: Omit<PaymentProvider, 'id' | 'createdAt' | 'updatedAt'>
     minAmount: 0,
     maxAmount: 0,
     order: 5,
+  },
+  {
+    name: 'manual_transfer',
+    displayName: 'Transferência Manual',
+    description: 'Pagamento via transferência bancária manual com instruções',
+    isActive: false,
+    isTestMode: false,
+    config: {
+      transferInstructions: null,
+      transferInstructionsI18n: null,
+    },
+    supportedCurrencies: ['MZN', 'USD'],
+    processingFee: 0,
+    processingFeeFixed: 0,
+    minAmount: 0,
+    maxAmount: 0,
+    order: 6,
+  },
+  {
+    name: 'pos',
+    displayName: 'Pagamento via POS',
+    description: 'Pagamento através de terminal POS (máquina de cartão)',
+    isActive: false,
+    isTestMode: false,
+    config: {
+      posTerminalId: null,
+      posInstructions: null,
+      posInstructionsI18n: null,
+    },
+    supportedCurrencies: ['MZN', 'USD'],
+    processingFee: 2.5,
+    processingFeeFixed: 0,
+    minAmount: 10,
+    maxAmount: 0,
+    order: 7,
+  },
+  {
+    name: 'merchant_code',
+    displayName: 'Código de Comerciante',
+    description: 'Pagamento usando código de comerciante (referência)',
+    isActive: false,
+    isTestMode: false,
+    config: {
+      merchantCode: null,
+      merchantCodeInstructions: null,
+      merchantCodeInstructionsI18n: null,
+    },
+    supportedCurrencies: ['MZN'],
+    processingFee: 0,
+    processingFeeFixed: 0,
+    minAmount: 0,
+    maxAmount: 0,
+    order: 8,
+  },
+  {
+    name: 'qr_payment',
+    displayName: 'Pagamento via QR Code',
+    description: 'Pagamento escaneando QR Code (EMV/M-Pesa)',
+    isActive: false,
+    isTestMode: false,
+    config: {
+      qrCodeUrl: null,
+      qrInstructions: null,
+      qrInstructionsI18n: null,
+    },
+    supportedCurrencies: ['MZN'],
+    processingFee: 1.0,
+    processingFeeFixed: 0,
+    minAmount: 5,
+    maxAmount: 0,
+    order: 9,
   },
 ]
 
@@ -378,5 +466,21 @@ export function getPublicProviderConfig(
   if (provider.config.bankAccountNumber) config.bankAccountNumber = provider.config.bankAccountNumber
   if (provider.config.bankIban) config.bankIban = provider.config.bankIban
   if (provider.config.bankInstructions) config.bankInstructions = provider.config.bankInstructions
+  if (provider.config.bankInstructionsI18n) config.bankInstructionsI18n = provider.config.bankInstructionsI18n
+  // Manual transfer instructions
+  if (provider.config.transferInstructions) config.transferInstructions = provider.config.transferInstructions
+  if (provider.config.transferInstructionsI18n) config.transferInstructionsI18n = provider.config.transferInstructionsI18n
+  // POS instructions
+  if (provider.config.posTerminalId) config.posTerminalId = provider.config.posTerminalId
+  if (provider.config.posInstructions) config.posInstructions = provider.config.posInstructions
+  if (provider.config.posInstructionsI18n) config.posInstructionsI18n = provider.config.posInstructionsI18n
+  // Merchant code instructions
+  if (provider.config.merchantCode) config.merchantCode = provider.config.merchantCode
+  if (provider.config.merchantCodeInstructions) config.merchantCodeInstructions = provider.config.merchantCodeInstructions
+  if (provider.config.merchantCodeInstructionsI18n) config.merchantCodeInstructionsI18n = provider.config.merchantCodeInstructionsI18n
+  // QR payment instructions
+  if (provider.config.qrCodeUrl) config.qrCodeUrl = provider.config.qrCodeUrl
+  if (provider.config.qrInstructions) config.qrInstructions = provider.config.qrInstructions
+  if (provider.config.qrInstructionsI18n) config.qrInstructionsI18n = provider.config.qrInstructionsI18n
   return config
 }
