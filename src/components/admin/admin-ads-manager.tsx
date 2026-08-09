@@ -198,6 +198,26 @@ export function AdminAdsManager() {
   });
   const [planSaving, setPlanSaving] = useState(false);
 
+  // Create Ad dialog
+  const [createAdOpen, setCreateAdOpen] = useState(false);
+  const [createAdSaving, setCreateAdSaving] = useState(false);
+  const [partners, setPartners] = useState<{ id: string; name: string; email: string }[]>([]);
+  const [createAdForm, setCreateAdForm] = useState({
+    title: '',
+    description: '',
+    type: 'banner' as string,
+    format: 'html' as string,
+    content: '',
+    targetUrl: '',
+    placement: [] as string[],
+    priority: 50,
+    maxImpressions: 0,
+    maxClicks: 0,
+    maxConversions: 0,
+    partnerId: '',
+    planId: '',
+  });
+
   // Action loading states
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
 
@@ -247,6 +267,26 @@ export function AdminAdsManager() {
       fetchPlans();
     }
   }, [activeTab, fetchPlans]);
+
+  // Fetch partners for ad creation
+  const fetchPartners = useCallback(async () => {
+    try {
+      const res = await apiFetch('/api/admin/users?role=partner&limit=200', {
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
+      const data = await safeJson<{ success: boolean; users?: any[]; data?: any[] }>(res);
+      if (data?.success) {
+        const users = data.users || data.data || [];
+        setPartners(users.map((u: any) => ({ id: u.id, name: u.name || u.email || '', email: u.email || '' })));
+      }
+    } catch {
+      // Silently ignore
+    }
+  }, [idToken]);
+
+  useEffect(() => {
+    fetchPartners();
+  }, [fetchPartners]);
 
   // ── Actions ──
 
@@ -435,6 +475,48 @@ export function AdminAdsManager() {
     setPlanDialogOpen(true);
   };
 
+  // ── Create Ad ──
+  const handleCreateAd = async () => {
+    if (!createAdForm.title.trim()) {
+      toast({ title: 'Error', description: 'Title is required', variant: 'destructive' });
+      return;
+    }
+    setCreateAdSaving(true);
+    try {
+      const res = await apiFetch('/api/admin/ads', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${idToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...createAdForm,
+          status: 'pending',
+          autoDeactivate: false,
+          pixelUrls: [],
+          clickPixelUrls: [],
+          conversionPixelUrls: [],
+          startDate: new Date().toISOString(),
+          endDate: null,
+        }),
+      });
+      const data = await safeJson<{ success: boolean; message?: string }>(res);
+      if (data?.success) {
+        toast({ title: t('ads.createAd'), description: 'Ad created successfully' });
+        setCreateAdOpen(false);
+        setCreateAdForm({
+          title: '', description: '', type: 'banner', format: 'html',
+          content: '', targetUrl: '', placement: [], priority: 50,
+          maxImpressions: 0, maxClicks: 0, maxConversions: 0, partnerId: '', planId: '',
+        });
+        fetchAds();
+      } else {
+        toast({ title: 'Error', description: data?.message || 'Failed to create ad', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'Error', description: 'Failed to create ad', variant: 'destructive' });
+    } finally {
+      setCreateAdSaving(false);
+    }
+  };
+
   // ── Computed stats ──
   const totalImpressions = ads.reduce((sum, a) => sum + (a.impressions || 0), 0);
   const totalClicks = ads.reduce((sum, a) => sum + (a.clicks || 0), 0);
@@ -520,8 +602,9 @@ export function AdminAdsManager() {
 
           {/* ── Ads Tab ── */}
           <TabsContent value="ads" className="space-y-4">
-            {/* Filters */}
-            <div className="flex flex-wrap gap-3 items-center">
+            {/* Filters & Create Ad */}
+            <div className="flex flex-wrap gap-3 items-center justify-between">
+              <div className="flex flex-wrap gap-3 items-center">
               <Select value={filterStatus} onValueChange={setFilterStatus}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder={t('ads.allStatuses')} />
@@ -552,9 +635,12 @@ export function AdminAdsManager() {
                   <SelectItem value="rich_media">Rich Media</SelectItem>
                 </SelectContent>
               </Select>
+              </div>
+              <Button onClick={() => setCreateAdOpen(true)} className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
+                <Plus className="h-4 w-4" />
+                {t('ads.createAd')}
+              </Button>
             </div>
-
-            {/* Ads Table */}
             <Card>
               <CardContent className="p-0">
                 {loading ? (
@@ -715,7 +801,7 @@ export function AdminAdsManager() {
             <div className="flex justify-end">
               <Button onClick={openNewPlan} className="gap-1.5">
                 <Plus className="h-4 w-4" />
-                {t('ads.createAd')}
+                {t('ads.createPlan') || 'Create Plan'}
               </Button>
             </div>
 
@@ -996,9 +1082,9 @@ export function AdminAdsManager() {
       <Dialog open={planDialogOpen} onOpenChange={setPlanDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingPlan ? t('ads.editPlacement') : t('ads.createAd')}</DialogTitle>
+            <DialogTitle>{editingPlan ? (t('ads.editPlan') || 'Edit Plan') : (t('ads.createPlan') || 'Create Plan')}</DialogTitle>
             <DialogDescription>
-              {editingPlan ? t('ads.save') : t('ads.createAdDesc')}
+              {editingPlan ? (t('ads.editPlanDesc') || 'Edit the ad plan details') : (t('ads.createPlanDesc') || 'Create a new ad plan')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -1181,6 +1267,200 @@ export function AdminAdsManager() {
             </Button>
             <Button onClick={handleSavePlan} disabled={!planForm.name || planSaving}>
               {planSaving ? '...' : t('ads.save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Create Ad Dialog ── */}
+      <Dialog open={createAdOpen} onOpenChange={setCreateAdOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Megaphone className="h-5 w-5 text-primary" />
+              {t('ads.createAd') || 'Create Ad'}
+            </DialogTitle>
+            <DialogDescription>
+              {t('ads.createAdDesc') || 'Create a new advertisement. Assign it to a partner and select placements.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>{t('ads.title') || 'Title'}</Label>
+                <Input
+                  value={createAdForm.title}
+                  onChange={(e) => setCreateAdForm((f) => ({ ...f, title: e.target.value }))}
+                  placeholder="Ad title"
+                  className="mt-1.5"
+                />
+              </div>
+              <div>
+                <Label>{t('ads.type') || 'Type'}</Label>
+                <Select value={createAdForm.type} onValueChange={(v) => setCreateAdForm((f) => ({ ...f, type: v }))}>
+                  <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="banner">Banner</SelectItem>
+                    <SelectItem value="interstitial">Interstitial</SelectItem>
+                    <SelectItem value="sidebar">Sidebar</SelectItem>
+                    <SelectItem value="native">Native</SelectItem>
+                    <SelectItem value="video">Video</SelectItem>
+                    <SelectItem value="rich_media">Rich Media</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>{t('ads.format') || 'Format'}</Label>
+                <Select value={createAdForm.format} onValueChange={(v) => setCreateAdForm((f) => ({ ...f, format: v }))}>
+                  <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="html">HTML</SelectItem>
+                    <SelectItem value="script">Script</SelectItem>
+                    <SelectItem value="image_base64">Image</SelectItem>
+                    <SelectItem value="text_quill">Rich Text</SelectItem>
+                    <SelectItem value="url">URL</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Target URL</Label>
+                <Input
+                  value={createAdForm.targetUrl}
+                  onChange={(e) => setCreateAdForm((f) => ({ ...f, targetUrl: e.target.value }))}
+                  placeholder="https://example.com"
+                  className="mt-1.5"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label>{t('ads.description') || 'Description'}</Label>
+              <Textarea
+                value={createAdForm.description}
+                onChange={(e) => setCreateAdForm((f) => ({ ...f, description: e.target.value }))}
+                placeholder="Ad description"
+                className="mt-1.5"
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <Label>Content</Label>
+              <Textarea
+                value={createAdForm.content}
+                onChange={(e) => setCreateAdForm((f) => ({ ...f, content: e.target.value }))}
+                placeholder={createAdForm.format === 'html' ? 'HTML content...' : createAdForm.format === 'url' ? 'Image/Video URL...' : 'Ad content...'}
+                className="mt-1.5"
+                rows={4}
+              />
+            </div>
+
+            {/* Partner Assignment */}
+            <div>
+              <Label className="text-sm font-medium">{t('ads.assignPartner') || 'Assign to Partner'}</Label>
+              <Select value={createAdForm.partnerId} onValueChange={(v) => setCreateAdForm((f) => ({ ...f, partnerId: v }))}>
+                <SelectTrigger className="mt-1.5">
+                  <SelectValue placeholder={t('ads.selectPartner') || 'Select a partner (optional)'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">{t('ads.noPartner') || 'No partner'}</SelectItem>
+                  {partners.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name} {p.email !== p.name ? `(${p.email})` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Plan Assignment */}
+            <div>
+              <Label className="text-sm font-medium">{t('ads.assignPlan') || 'Ad Plan'}</Label>
+              <Select value={createAdForm.planId} onValueChange={(v) => setCreateAdForm((f) => ({ ...f, planId: v }))}>
+                <SelectTrigger className="mt-1.5">
+                  <SelectValue placeholder={t('ads.selectPlan') || 'Select a plan (optional)'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">{t('ads.noPlan') || 'No plan'}</SelectItem>
+                  {plans.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name} — {p.isFree ? t('ads.free') : formatCurrency(p.price)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Placements */}
+            <div>
+              <Label className="mb-2 block">{t('ads.placement') || 'Placements'}</Label>
+              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                {Object.entries(AD_PLACEMENTS).map(([key, config]) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`create-ad-placement-${key}`}
+                      checked={createAdForm.placement.includes(key)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setCreateAdForm((f) => ({ ...f, placement: [...f.placement, key] }));
+                        } else {
+                          setCreateAdForm((f) => ({ ...f, placement: f.placement.filter((p) => p !== key) }));
+                        }
+                      }}
+                      className="rounded border-border"
+                    />
+                    <label htmlFor={`create-ad-placement-${key}`} className="text-xs cursor-pointer">
+                      {getPlacementName(key, t)}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Limits */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <Label>{t('ads.priority') || 'Priority'}</Label>
+                <Input type="number" value={createAdForm.priority} onChange={(e) => setCreateAdForm((f) => ({ ...f, priority: Number(e.target.value) }))} className="mt-1.5" />
+              </div>
+              <div>
+                <Label>Max {t('ads.impressions')}</Label>
+                <Input type="number" value={createAdForm.maxImpressions} onChange={(e) => setCreateAdForm((f) => ({ ...f, maxImpressions: Number(e.target.value) }))} className="mt-1.5" />
+              </div>
+              <div>
+                <Label>Max {t('ads.clicks')}</Label>
+                <Input type="number" value={createAdForm.maxClicks} onChange={(e) => setCreateAdForm((f) => ({ ...f, maxClicks: Number(e.target.value) }))} className="mt-1.5" />
+              </div>
+              <div>
+                <Label>Max {t('ads.conversions')}</Label>
+                <Input type="number" value={createAdForm.maxConversions} onChange={(e) => setCreateAdForm((f) => ({ ...f, maxConversions: Number(e.target.value) }))} className="mt-1.5" />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateAdOpen(false)}>
+              {t('ads.cancel') || 'Cancel'}
+            </Button>
+            <Button
+              onClick={handleCreateAd}
+              disabled={!createAdForm.title.trim() || createAdSaving}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              {createAdSaving ? (
+                <span className="flex items-center gap-2">
+                  <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  {t('ads.creating') || 'Creating...'}
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Plus className="size-4" />
+                  {t('ads.createAd') || 'Create Ad'}
+                </span>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

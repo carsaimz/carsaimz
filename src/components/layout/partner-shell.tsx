@@ -101,10 +101,10 @@ function PartnerShellContent({ children }: { children: React.ReactNode }) {
     <>
         <Sidebar collapsible="icon">
           <SidebarHeader>
-            <div className="flex items-center gap-2 px-2 py-1">
-              <img src="/logo.png" alt="CarsaiMZ" className="h-6 w-auto shrink-0" />
-              <div className="group-data-[collapsible=icon]:hidden flex flex-col">
-                <span className="text-xs text-muted-foreground">{t('nav.partner')}</span>
+            <div className="flex items-center gap-2 px-2 py-1 min-w-0">
+              <img src="/logo.png" alt="CarsaiMZ" className="h-7 w-auto max-w-[2.5rem] shrink-0 object-contain" />
+              <div className="group-data-[collapsible=icon]:hidden flex flex-col min-w-0">
+                <span className="text-xs text-muted-foreground truncate">{t('nav.partner')}</span>
               </div>
             </div>
           </SidebarHeader>

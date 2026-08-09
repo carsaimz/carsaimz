@@ -12,13 +12,19 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { apiFetch, safeJson } from '@/lib/api-fetch';
 import {
   Send, Bell, Search, Users, Mail, Smartphone, Globe,
+  CheckSquare, Square, Filter, ChevronDown, ChevronUp,
 } from 'lucide-react';
 
 // ============================================================================
@@ -42,6 +48,7 @@ interface UserOption {
   id: string;
   name: string;
   email: string;
+  role: string;
 }
 
 // ============================================================================
@@ -53,11 +60,7 @@ export function AdminNotificationSender() {
   const { toast } = useToast();
 
   // Form state
-  const [targetType, setTargetType] = useState<'all' | 'user'>('all');
-  const [selectedUserId, setSelectedUserId] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<UserOption[]>([]);
-  const [searching, setSearching] = useState(false);
+  const [targetType, setTargetType] = useState<'all' | 'selected'>('all');
   const [notificationType, setNotificationType] = useState<'info' | 'success' | 'warning' | 'error'>('info');
   const [formTitle, setFormTitle] = useState('');
   const [formMessage, setFormMessage] = useState('');
@@ -81,39 +84,82 @@ export function AdminNotificationSender() {
     setter((prev) => ({ ...prev, [lang]: value }));
   };
 
-  // Search users
-  const searchUsers = useCallback(async (query: string) => {
-    if (!query || query.length < 2) {
-      setSearchResults([]);
-      return;
-    }
-    setSearching(true);
+  // User list state
+  const [allUsers, setAllUsers] = useState<UserOption[]>([]);
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [searchFilter, setSearchFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [showUserList, setShowUserList] = useState(true);
+
+  // Fetch all users
+  const fetchUsers = useCallback(async () => {
+    setUsersLoading(true);
     try {
-      const res = await apiFetch(`/api/admin/users?search=${encodeURIComponent(query)}&limit=20`);
+      const res = await apiFetch('/api/admin/users?limit=1000');
       const data = await safeJson(res);
       if (data && data.success) {
-        setSearchResults(
-          (data.users || data.data || []).map((u: any) => ({
+        const users = data.users || data.data || [];
+        setAllUsers(
+          users.map((u: any) => ({
             id: u.id,
             name: u.name || '',
             email: u.email || '',
+            role: u.role || 'user',
           }))
         );
       }
     } catch {
-      setSearchResults([]);
+      setAllUsers([]);
     } finally {
-      setSearching(false);
+      setUsersLoading(false);
     }
   }, []);
 
-  // Debounce search
   useEffect(() => {
-    const timer = setTimeout(() => {
-      searchUsers(searchQuery);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery, searchUsers]);
+    fetchUsers();
+  }, [fetchUsers]);
+
+  // Filtered users
+  const filteredUsers = allUsers.filter((u) => {
+    const matchesSearch = !searchFilter ||
+      u.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchFilter.toLowerCase());
+    const matchesRole = roleFilter === 'all' || u.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
+
+  // Selection helpers
+  const toggleUser = (id: string) => {
+    setSelectedUserIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAllVisible = () => {
+    const visibleIds = filteredUsers.map((u) => u.id);
+    const allVisibleSelected = visibleIds.every((id) => selectedUserIds.has(id));
+    setSelectedUserIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visibleIds.forEach((id) => next.delete(id));
+      } else {
+        visibleIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
+  };
+
+  const selectAll = () => {
+    setSelectedUserIds(new Set(allUsers.map((u) => u.id)));
+  };
+
+  const deselectAll = () => {
+    setSelectedUserIds(new Set());
+  };
 
   // Send notification
   const handleSend = async () => {
@@ -126,10 +172,10 @@ export function AdminNotificationSender() {
       return;
     }
 
-    if (targetType === 'user' && !selectedUserId) {
+    if (targetType === 'selected' && selectedUserIds.size === 0) {
       toast({
         title: t('admin.error'),
-        description: 'Please select a user',
+        description: 'Please select at least one user',
         variant: 'destructive',
       });
       return;
@@ -159,80 +205,43 @@ export function AdminNotificationSender() {
         push: channelPush,
       };
 
-      if (targetType === 'all') {
-        // Fetch all users and send to each
-        const res = await apiFetch('/api/admin/users?limit=1000');
-        const data = await safeJson(res);
-        if (!data || !data.success) {
-          toast({
-            title: t('admin.error'),
-            description: 'Failed to fetch users',
-            variant: 'destructive',
-          });
-          setSending(false);
-          return;
-        }
-        const users = data.users || data.data || [];
-        let successCount = 0;
-        let failCount = 0;
+      // Determine target users
+      const targetUsers = targetType === 'all'
+        ? allUsers
+        : allUsers.filter((u) => selectedUserIds.has(u.id));
 
-        for (const user of users) {
-          try {
-            const notifRes = await apiFetch('/api/notifications', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                userId: user.id,
-                type: notificationType,
-                title: finalTitle,
-                message: finalMessage,
-                link: formLink || null,
-                channels,
-              }),
-            });
-            const notifData = await safeJson(notifRes);
-            if (notifData && notifData.success) {
-              successCount++;
-            } else {
-              failCount++;
-            }
-          } catch {
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const user of targetUsers) {
+        try {
+          const notifRes = await apiFetch('/api/notifications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: user.id,
+              type: notificationType,
+              title: finalTitle,
+              message: finalMessage,
+              link: formLink || null,
+              channels,
+            }),
+          });
+          const notifData = await safeJson(notifRes);
+          if (notifData && notifData.success) {
+            successCount++;
+          } else {
             failCount++;
           }
-        }
-
-        toast({
-          title: t('admin.notificationSent'),
-          description: `Sent to ${successCount} users${failCount > 0 ? ` (${failCount} failed)` : ''}`,
-        });
-      } else {
-        // Send to specific user
-        const res = await apiFetch('/api/notifications', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: selectedUserId,
-            type: notificationType,
-            title: finalTitle,
-            message: finalMessage,
-            link: formLink || null,
-            channels,
-          }),
-        });
-        const data = await safeJson(res);
-        if (data && data.success) {
-          toast({
-            title: t('admin.notificationSent'),
-            description: t('admin.notificationSent'),
-          });
-        } else {
-          toast({
-            title: t('admin.error'),
-            description: t('admin.notificationSendFailed'),
-            variant: 'destructive',
-          });
+        } catch {
+          failCount++;
         }
       }
+
+      toast({
+        title: t('admin.notificationSent'),
+        description: `Sent to ${successCount} users${failCount > 0 ? ` (${failCount} failed)` : ''}`,
+      });
     } catch {
       toast({
         title: t('admin.error'),
@@ -251,6 +260,16 @@ export function AdminNotificationSender() {
     warning: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300',
     error: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
   };
+
+  // Role badge colors
+  const roleColors: Record<string, string> = {
+    admin: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+    super_admin: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+    partner: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+    user: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
+  };
+
+  const targetCount = targetType === 'all' ? allUsers.length : selectedUserIds.size;
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
@@ -274,10 +293,10 @@ export function AdminNotificationSender() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Target User */}
+            {/* Target Type */}
             <div className="space-y-3">
               <Label className="text-sm font-medium">{t('admin.notificationTarget')}</Label>
-              <Select value={targetType} onValueChange={(v) => setTargetType(v as 'all' | 'user')}>
+              <Select value={targetType} onValueChange={(v) => setTargetType(v as 'all' | 'selected')}>
                 <SelectTrigger className="w-full focus-visible:ring-emerald-500">
                   <SelectValue />
                 </SelectTrigger>
@@ -285,61 +304,148 @@ export function AdminNotificationSender() {
                   <SelectItem value="all">
                     <div className="flex items-center gap-2">
                       <Users className="size-4" />
-                      {t('admin.notificationAllUsers')}
+                      {t('admin.notificationAllUsers')} ({allUsers.length})
                     </div>
                   </SelectItem>
-                  <SelectItem value="user">
+                  <SelectItem value="selected">
                     <div className="flex items-center gap-2">
-                      <Search className="size-4" />
-                      {t('admin.notificationSearchUsers')}
+                      <CheckSquare className="size-4" />
+                      {t('admin.notificationSelectedUsers') || 'Selected Users'} ({selectedUserIds.size})
                     </div>
                   </SelectItem>
                 </SelectContent>
               </Select>
-
-              {targetType === 'user' && (
-                <div className="space-y-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                    <Input
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder={t('admin.notificationSearchUsers')}
-                      className="pl-10 focus-visible:ring-emerald-500"
-                    />
-                  </div>
-                  {searching && (
-                    <p className="text-xs text-muted-foreground">Searching...</p>
-                  )}
-                  {searchResults.length > 0 && (
-                    <div className="border rounded-md max-h-48 overflow-y-auto">
-                      {searchResults.map((user) => (
-                        <button
-                          key={user.id}
-                          type="button"
-                          className={`w-full text-left px-3 py-2 hover:bg-accent transition-colors flex items-center justify-between ${
-                            selectedUserId === user.id ? 'bg-accent' : ''
-                          }`}
-                          onClick={() => {
-                            setSelectedUserId(user.id);
-                            setSearchQuery(user.name || user.email);
-                            setSearchResults([]);
-                          }}
-                        >
-                          <div>
-                            <p className="text-sm font-medium">{user.name || '—'}</p>
-                            <p className="text-xs text-muted-foreground">{user.email}</p>
-                          </div>
-                          {selectedUserId === user.id && (
-                            <Badge variant="default" className="bg-emerald-600 text-white text-xs">Selected</Badge>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
+
+            {/* User List (when "selected" is chosen) */}
+            {targetType === 'selected' && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">
+                    {t('admin.selectUsers') || 'Select Users'} — {selectedUserIds.size} selected
+                  </Label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1 h-7 text-xs"
+                    onClick={() => setShowUserList(!showUserList)}
+                  >
+                    {showUserList ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+                    {showUserList ? 'Hide' : 'Show'}
+                  </Button>
+                </div>
+
+                {showUserList && (
+                  <>
+                    {/* Search & Filter Bar */}
+                    <div className="flex flex-wrap gap-2 items-center">
+                      <div className="relative flex-1 min-w-[200px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                        <Input
+                          value={searchFilter}
+                          onChange={(e) => setSearchFilter(e.target.value)}
+                          placeholder={t('admin.notificationSearchUsers') || 'Search users...'}
+                          className="pl-10 focus-visible:ring-emerald-500"
+                        />
+                      </div>
+                      <Select value={roleFilter} onValueChange={setRoleFilter}>
+                        <SelectTrigger className="w-[140px]">
+                          <SelectValue placeholder="All roles" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All roles</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="super_admin">Super Admin</SelectItem>
+                          <SelectItem value="partner">Partner</SelectItem>
+                          <SelectItem value="user">User</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button variant="outline" size="sm" onClick={selectAll} className="gap-1 h-8 text-xs">
+                        <CheckSquare className="size-3.5" />
+                        All
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={deselectAll} className="gap-1 h-8 text-xs">
+                        <Square className="size-3.5" />
+                        None
+                      </Button>
+                    </div>
+
+                    {/* User Table */}
+                    <Card>
+                      <CardContent className="p-0">
+                        {usersLoading ? (
+                          <div className="p-4 space-y-3">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <Skeleton key={i} className="h-8 w-full" />
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="max-h-[400px] overflow-y-auto">
+                            <Table>
+                              <TableHeader className="sticky top-0 bg-background z-10">
+                                <TableRow>
+                                  <TableHead className="w-10">
+                                    <input
+                                      type="checkbox"
+                                      checked={filteredUsers.length > 0 && filteredUsers.every((u) => selectedUserIds.has(u.id))}
+                                      onChange={toggleAllVisible}
+                                      className="rounded border-border"
+                                    />
+                                  </TableHead>
+                                  <TableHead>{t('admin.name') || 'Name'}</TableHead>
+                                  <TableHead className="hidden sm:table-cell">{t('auth.email') || 'Email'}</TableHead>
+                                  <TableHead>{t('admin.role') || 'Role'}</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {filteredUsers.length === 0 ? (
+                                  <TableRow>
+                                    <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
+                                      {searchFilter || roleFilter !== 'all' ? 'No users match the filter' : 'No users found'}
+                                    </TableCell>
+                                  </TableRow>
+                                ) : (
+                                  filteredUsers.map((user) => (
+                                    <TableRow
+                                      key={user.id}
+                                      className={selectedUserIds.has(user.id) ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : ''}
+                                    >
+                                      <TableCell>
+                                        <input
+                                          type="checkbox"
+                                          checked={selectedUserIds.has(user.id)}
+                                          onChange={() => toggleUser(user.id)}
+                                          className="rounded border-border"
+                                        />
+                                      </TableCell>
+                                      <TableCell className="font-medium text-sm truncate max-w-[180px]">
+                                        {user.name || '—'}
+                                      </TableCell>
+                                      <TableCell className="hidden sm:table-cell text-xs text-muted-foreground truncate max-w-[200px]">
+                                        {user.email}
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge className={`text-[10px] ${roleColors[user.role] || roleColors.user}`}>
+                                          {user.role}
+                                        </Badge>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))
+                                )}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    <p className="text-xs text-muted-foreground">
+                      Showing {filteredUsers.length} of {allUsers.length} users — {selectedUserIds.size} selected
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Notification Type */}
             <div className="space-y-2">
@@ -462,11 +568,14 @@ export function AdminNotificationSender() {
             </div>
 
             {/* Send Button */}
-            <div className="flex justify-end pt-2">
+            <div className="flex items-center justify-between pt-2">
+              <p className="text-sm text-muted-foreground">
+                {t('admin.willSendTo') || 'Will send to'}: <strong>{targetCount}</strong> {t('admin.usersCount') || 'users'}
+              </p>
               <Button
                 className="bg-emerald-600 hover:bg-emerald-700 text-white min-w-[140px]"
                 onClick={handleSend}
-                disabled={sending || !formTitle.trim() || !formMessage.trim()}
+                disabled={sending || !formTitle.trim() || !formMessage.trim() || (targetType === 'selected' && selectedUserIds.size === 0)}
               >
                 {sending ? (
                   <span className="flex items-center gap-2">
