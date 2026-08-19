@@ -194,3 +194,26 @@ Stage Summary:
 - LoadingOverlay: deleted (unused)
 - i18n: 19 missing keys added to pt-pt and en-us
 - Most requested features already existed; the logo bug was making everything appear broken
+
+---
+Task ID: 1
+Agent: Main (continuation)
+Task: Verify all fixes are deployed and pushed to origin/main
+
+Work Log:
+- Verified Logo component (src/components/common/logo.tsx) uses inline styles with explicit width/height + container approach - immune to global CSS overrides
+- Verified all 14 Logo usages across the codebase use appropriate size variants (sm/md/lg/xl/2xl/hero)
+- Verified globals.css no longer has `img { height: auto }` rule that was breaking next/image
+- Verified public testimonials page exists at /testimonials with submit form (name, email, company, rating, content) and testimonial grid
+- Verified testimonials are linked from public-header, public-footer, header, and footer navigation
+- Verified service reviews component (ServiceReviews) exists and is integrated into /services/[slug] pages
+- Verified admin can publish/unpublish testimonials via eye icon toggle in admin-content-manager
+- TypeScript compiles cleanly (no errors)
+- Next.js build succeeds with no errors or warnings
+- Rebased local commit onto origin/main (233056a → d233692) and pushed successfully
+
+Stage Summary:
+- All previously-reported issues are confirmed fixed and deployed
+- Logo sizing issue resolved via CSS root cause fix + component hardening
+- Public testimonials/reviews system fully functional at /testimonials and /services/[slug]
+- All changes pushed to origin/main (commit d233692)
