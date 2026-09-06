@@ -1,0 +1,74 @@
+name: Compilar Windows (EXE)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versao (ex: v0.3.0)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    name: Compilar EXE para Windows
+
+    steps:
+      - name: Obter codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Instalar dependencias
+        run: bun install --frozen-lockfile
+
+      - name: Instalar Electron e electron-builder
+        run: |
+          bun add -D electron electron-builder
+
+      - name: Gerar cliente Prisma
+        run: bunx prisma generate
+
+      # ── Build Next.js (exportacao statica) ──
+      - name: Compilar Next.js (exportacao statica)
+        run: bun run export:clean
+        env:
+          NEXT_EXPORT_MODE: true
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      # ── Compilar EXE ──
+      - name: Compilar EXE com electron-builder
+        run: |
+          bunx electron-builder --win portable --config.win.target=portable
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Carregar EXE como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: carsai-windows-exe
+          path: dist/*.exe
+          retention-days: 7
+
+      # ── Compilar instalador NSIS ──
+      - name: Compilar instalador Windows (NSIS)
+        run: |
+          bunx electron-builder --win nsis --config.win.target=nsis
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Carregar instalador como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: carsai-windows-installer
+          path: dist/*.exe
+          retention-days: 7
