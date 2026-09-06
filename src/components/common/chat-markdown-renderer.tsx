@@ -220,8 +220,7 @@ export function ChatMarkdownRenderer({ content, className, isUser = false }: Cha
           ),
           li: ({ children, ...props }) => {
             // Task list items — react-markdown passes node properties
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const checked = (props as any)?.checked;
+            const checked = (props as { checked?: boolean | null })?.checked;
             if (checked !== undefined && checked !== null) {
               return (
                 <li className="flex items-start gap-1.5 mb-0.5">

@@ -328,6 +328,7 @@ export const swTZ: TranslationObject = {
     additionalFeatures: 'Vipengele vya ziada',
     additionalFeaturesPlaceholder: 'K.m.: mfumo wa kuingia, paneli ya admin, uunganishaji na M-Pesa...',
     priceNotice: 'Bei ya mwisho itategemea ugumu na vipengele vya ziada vinavyoombwa. Thamani hapa chini ni rejea ya msingi tu.',
+    noBasePriceNotice: 'Huduma hii hana bei ya msingi iliyochapishwa. Tafadhali eleza mahitaji yako na timu yetu itakupa nukuu maalum.',
     basePrice: 'Bei ya msingi',
     estimatedPrice: 'Bei iliyokisiwa',
     finalPriceTBD: 'Bei ya mwisho itathibitishwa',

@@ -321,6 +321,7 @@ export const deDE: TranslationObject = {
     additionalFeatures: 'Zusätzliche Funktionen',
     additionalFeaturesPlaceholder: 'Z.B.: Login-System, Admin-Panel, M-Pesa-Integration...',
     priceNotice: 'Der Endpreis hängt von der Komplexität und den angeforderten Zusatzfunktionen ab. Der untenstehende Wert ist nur eine Basisreferenz.',
+    noBasePriceNotice: 'Dieser Dienst hat keinen veröffentlichten Basispreis. Bitte beschreiben Sie Ihre Anforderungen und unser Team erstellt Ihnen ein individuelles Angebot.',
     basePrice: 'Basispreis',
     estimatedPrice: 'Geschätzter Preis',
     finalPriceTBD: 'Endpreis wird bestätigt',

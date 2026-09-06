@@ -321,6 +321,7 @@ export const zhCN: TranslationObject = {
     additionalFeatures: '额外功能',
     additionalFeaturesPlaceholder: '例如：登录系统、管理面板、M-Pesa集成...',
     priceNotice: '最终价格将取决于复杂度和所要求的额外功能。以下价格仅为基本参考。',
+    noBasePriceNotice: '此服务没有公布的基础价格。请描述您的需求，我们的团队将为您提供定制报价。',
     basePrice: '基础价格',
     estimatedPrice: '预估价格',
     finalPriceTBD: '最终价格待确认',

@@ -13,6 +13,8 @@
 
 'use client';
 
+/* eslint-disable @typescript-eslint/no-require-imports */
+
 import dynamic from 'next/dynamic';
 import { useCallback, useMemo } from 'react';
 
@@ -151,7 +153,6 @@ export function RichTextRenderer({
   content: string;
   className?: string;
 }) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { sanitizeQuillHtml } = require('@/lib/sanitize-html') as typeof import('@/lib/sanitize-html');
 
   if (!content) return null;

@@ -25,8 +25,7 @@ const DEFAULT_ALLOWED_ATTR = [
   'type', 'checked', 'disabled', 'name', 'value', 'id', 'data-*',
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SanitizeConfig = Record<string, any>;
+type SanitizeConfig = Record<string, unknown>;
 
 /**
  * Sanitize HTML content for safe rendering

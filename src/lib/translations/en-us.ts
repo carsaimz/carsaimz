@@ -324,6 +324,7 @@ export const enUS: TranslationObject = {
     additionalFeatures: 'Additional features',
     additionalFeaturesPlaceholder: 'e.g. login system, admin panel, M-Pesa integration...',
     priceNotice: 'The final price will depend on the complexity and additional features requested. The value below is only a base reference.',
+    noBasePriceNotice: 'This service does not have a published base price. Please describe your requirements and our team will provide a custom quote.',
     basePrice: 'Base price',
     estimatedPrice: 'Estimated price',
     finalPriceTBD: 'Final price to be confirmed',

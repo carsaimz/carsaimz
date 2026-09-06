@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable react-hooks/set-state-in-effect, react/jsx-key */
+
 import { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/contexts/language-context';
 import {

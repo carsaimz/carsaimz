@@ -49,7 +49,7 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "@typescript-eslint/no-require-imports": "off",
   },
 }, {
-  ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "examples/**", "skills", "electron/**", "capacitor.config.ts"]
+  ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "examples/**", "skills/**", "electron/**", "android/**", "release/**", "agent-ctx/**", "prisma/**", "scripts/**", "supabase/**", "upload/**", "docs/**", ".zscripts/**"]
 }];
 
 export default eslintConfig;

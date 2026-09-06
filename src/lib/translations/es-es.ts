@@ -321,6 +321,7 @@ export const esES: TranslationObject = {
     additionalFeatures: 'Funcionalidades adicionales',
     additionalFeaturesPlaceholder: 'Ej: sistema de login, panel admin, integración con M-Pesa...',
     priceNotice: 'El precio final dependerá de la complejidad y las funcionalidades adicionales solicitadas. El valor abajo es solo una referencia base.',
+    noBasePriceNotice: 'Este servicio no tiene un precio base publicado. Por favor describa sus requisitos y nuestro equipo le proporcionará un presupuesto personalizado.',
     basePrice: 'Precio base',
     estimatedPrice: 'Precio estimado',
     finalPriceTBD: 'Precio final por confirmar',

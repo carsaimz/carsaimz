@@ -72,3 +72,19 @@ download/carsaimz-project.zip
 download/*.zip
 *.zip.local
 
+
+# Local dev process ID — never commit
+.zscripts/dev.pid
+*.pid
+
+
+# Secrets and large archives — never commit
+upload/google-services.json
+upload/release.jks
+upload/*.jks
+upload/*.keystore
+release/*.zip
+release/*.apk
+release/*.aab
+release/*.exe
+

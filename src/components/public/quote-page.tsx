@@ -666,14 +666,27 @@ export function QuotePage() {
 
             <Separator />
 
-            {/* Price Notice */}
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50">
-              <Info className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-              <p className="text-sm text-amber-800 dark:text-amber-200">
-                {t('quote.priceNotice') ||
-                  'The final price will depend on the complexity and additional features requested. The value below is only a base reference.'}
-              </p>
-            </div>
+            {/* Price Notice — only shown if a base price exists */}
+            {servicePrice && (
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50">
+                <Info className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  {t('quote.priceNotice') ||
+                    'The final price will depend on the complexity and additional features requested. The value below is only a base reference.'}
+                </p>
+              </div>
+            )}
+
+            {/* No Base Price Notice — shown when service has no published price */}
+            {!servicePrice && (
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/50">
+                <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  {t('quote.noBasePriceNotice') ||
+                    'This service does not have a published base price. Please describe your requirements and our team will provide a custom quote.'}
+                </p>
+              </div>
+            )}
 
             {/* Base Price */}
             {servicePrice && (
