@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDoc, queryDocs, createDoc, deleteDoc, updateDoc, increment } from '@/lib/db'
 
-// POST /api/forum/likes — Toggle like on a forum topic
+// POST /api/forum/likes — Toggle like on a forum topic (Firestore)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the topic exists
-    const topic = await db.forumTopic.findUnique({ where: { id: topicId } })
+    const topic = await getDoc('forum_topics', topicId)
     if (!topic) {
       return NextResponse.json(
         { success: false, message: 'Topic not found' },
@@ -24,37 +24,35 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already liked
-    const existingLike = await db.forumLike.findUnique({
-      where: {
-        topicId_userId: { topicId, userId },
-      },
-    })
+    const existingLikes = await queryDocs('forum_likes', [
+      { field: 'topicId', op: '==', value: topicId },
+      { field: 'userId', op: '==', value: userId },
+    ])
+    const existingLike = existingLikes[0]
 
     if (existingLike) {
       // Remove like (toggle off)
-      await db.forumLike.delete({
-        where: { id: existingLike.id },
-      })
+      await deleteDoc('forum_likes', existingLike.id)
+      await updateDoc('forum_topics', topicId, { likesCount: increment(-1) })
 
-      const likeCount = await db.forumLike.count({ where: { topicId } })
+      const likes = await queryDocs('forum_likes', [{ field: 'topicId', op: '==', value: topicId }])
 
       return NextResponse.json({
         success: true,
         liked: false,
-        likeCount,
+        likeCount: likes.length,
       })
     } else {
       // Add like (toggle on)
-      await db.forumLike.create({
-        data: { topicId, userId },
-      })
+      await createDoc('forum_likes', { topicId, userId, createdAt: new Date().toISOString() })
+      await updateDoc('forum_topics', topicId, { likesCount: increment(1) })
 
-      const likeCount = await db.forumLike.count({ where: { topicId } })
+      const likes = await queryDocs('forum_likes', [{ field: 'topicId', op: '==', value: topicId }])
 
       return NextResponse.json({
         success: true,
         liked: true,
-        likeCount,
+        likeCount: likes.length,
       })
     }
   } catch (error) {

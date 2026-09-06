@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDoc, queryDocs, createDoc, deleteDoc, updateDoc, increment } from '@/lib/db'
 
-// POST /api/comments/likes — Toggle like on a comment
+// POST /api/comments/likes — Toggle like on a comment (Firestore)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the comment exists
-    const comment = await db.comment.findUnique({ where: { id: commentId } })
+    const comment = await getDoc('comments', commentId)
     if (!comment) {
       return NextResponse.json(
         { success: false, message: 'Comment not found' },
@@ -24,37 +24,35 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already liked
-    const existingLike = await db.commentLike.findUnique({
-      where: {
-        commentId_userId: { commentId, userId },
-      },
-    })
+    const existingLikes = await queryDocs('comment_likes', [
+      { field: 'commentId', op: '==', value: commentId },
+      { field: 'userId', op: '==', value: userId },
+    ])
+    const existingLike = existingLikes[0]
 
     if (existingLike) {
       // Remove like (toggle off)
-      await db.commentLike.delete({
-        where: { id: existingLike.id },
-      })
+      await deleteDoc('comment_likes', existingLike.id)
+      await updateDoc('comments', commentId, { likesCount: increment(-1) })
 
-      const likeCount = await db.commentLike.count({ where: { commentId } })
+      const likes = await queryDocs('comment_likes', [{ field: 'commentId', op: '==', value: commentId }])
 
       return NextResponse.json({
         success: true,
         liked: false,
-        likeCount,
+        likeCount: likes.length,
       })
     } else {
       // Add like (toggle on)
-      await db.commentLike.create({
-        data: { commentId, userId },
-      })
+      await createDoc('comment_likes', { commentId, userId, createdAt: new Date().toISOString() })
+      await updateDoc('comments', commentId, { likesCount: increment(1) })
 
-      const likeCount = await db.commentLike.count({ where: { commentId } })
+      const likes = await queryDocs('comment_likes', [{ field: 'commentId', op: '==', value: commentId }])
 
       return NextResponse.json({
         success: true,
         liked: true,
-        likeCount,
+        likeCount: likes.length,
       })
     }
   } catch (error) {

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { getDoc, queryDocs, createDoc, deleteDoc, updateDoc, increment } from '@/lib/db'
+import { serializeFirestore } from '@/lib/serialize'
 
-// POST /api/forum/posts — Create a forum reply (ForumPost)
+// POST /api/forum/posts — Create a forum reply (Firestore)
+// Note: This is an alias for /api/forum/replies for backwards compatibility.
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -15,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the topic exists and is not locked
-    const topic = await db.forumTopic.findUnique({ where: { id: topicId } })
+    const topic = await getDoc('forum_topics', topicId)
     if (!topic) {
       return NextResponse.json(
         { success: false, message: 'Topic not found' },
@@ -31,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the author exists
-    const author = await db.user.findUnique({ where: { id: authorId } })
+    const author = await getDoc('users', authorId)
     if (!author) {
       return NextResponse.json(
         { success: false, message: 'Author not found' },
@@ -40,38 +42,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the reply
-    const reply = await db.forumPost.create({
-      data: {
-        content,
-        topicId,
-        authorId,
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
-          },
-        },
-        likes: {
-          select: {
-            id: true,
-            userId: true,
-          },
-        },
-      },
+    const replyId = await createDoc('forum_posts', {
+      content,
+      topicId,
+      authorId,
+      likesCount: 0,
+      createdAt: new Date().toISOString(),
     })
+    const reply = await getDoc('forum_posts', replyId)
 
     return NextResponse.json({
       success: true,
-      data: {
-        ...reply,
-        _count: {
-          likes: reply.likes.length,
-        },
-      },
+      data: serializeFirestore(reply),
     }, { status: 201 })
   } catch (error) {
     console.error('Forum reply creation error:', error)
@@ -86,7 +68,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// POST-like: /api/forum/posts?action=like — Toggle like on a forum reply (ForumPost)
+// PUT /api/forum/posts — Toggle like on a forum reply (Firestore)
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
@@ -100,7 +82,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Verify the forum post exists
-    const forumPost = await db.forumPost.findUnique({ where: { id: postId } })
+    const forumPost = await getDoc('forum_posts', postId)
     if (!forumPost) {
       return NextResponse.json(
         { success: false, message: 'Forum post not found' },
@@ -109,37 +91,35 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check if user already liked
-    const existingLike = await db.forumPostLike.findUnique({
-      where: {
-        postId_userId: { postId, userId },
-      },
-    })
+    const existingLikes = await queryDocs('forum_post_likes', [
+      { field: 'postId', op: '==', value: postId },
+      { field: 'userId', op: '==', value: userId },
+    ])
+    const existingLike = existingLikes[0]
 
     if (existingLike) {
       // Remove like
-      await db.forumPostLike.delete({
-        where: { id: existingLike.id },
-      })
+      await deleteDoc('forum_post_likes', existingLike.id)
+      await updateDoc('forum_posts', postId, { likesCount: increment(-1) })
 
-      const likeCount = await db.forumPostLike.count({ where: { postId } })
+      const likes = await queryDocs('forum_post_likes', [{ field: 'postId', op: '==', value: postId }])
 
       return NextResponse.json({
         success: true,
         liked: false,
-        likeCount,
+        likeCount: likes.length,
       })
     } else {
       // Add like
-      await db.forumPostLike.create({
-        data: { postId, userId },
-      })
+      await createDoc('forum_post_likes', { postId, userId, createdAt: new Date().toISOString() })
+      await updateDoc('forum_posts', postId, { likesCount: increment(1) })
 
-      const likeCount = await db.forumPostLike.count({ where: { postId } })
+      const likes = await queryDocs('forum_post_likes', [{ field: 'postId', op: '==', value: postId }])
 
       return NextResponse.json({
         success: true,
         liked: true,
-        likeCount,
+        likeCount: likes.length,
       })
     }
   } catch (error) {

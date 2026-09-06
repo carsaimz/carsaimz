@@ -38,6 +38,13 @@
   ],
   "exclude": [
     "node_modules",
-    "skills"
+    "skills",
+    "examples",
+    "scripts",
+    "prisma",
+    "electron",
+    "android",
+    "release",
+    "agent-ctx"
   ]
 }
